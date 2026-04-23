@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Emirates Pride — Operations 2.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<style>
+:root{--gold:#C9A84C;--navy:#1a2744;--dark:#0f1824}
+body{background:var(--dark);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;-webkit-tap-highlight-color:transparent}
+.g{background:linear-gradient(135deg,#C9A84C,#E8C96A);color:#1a2744;font-weight:700}
+.g:active{opacity:.82;transform:scale(.97)}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+.card-r{background:rgba(127,29,29,.3);border:1px solid rgba(239,68,68,.4)}
+.card-a{background:rgba(120,53,15,.28);border:1px solid rgba(251,191,36,.35)}
+.card-g{background:rgba(20,83,45,.3);border:1px solid rgba(74,222,128,.3)}
+.tab-on{border-bottom:3px solid #C9A84C;color:#C9A84C}
+.sc{background:#7f1d1d;color:#fca5a5}.sl{background:#78350f;color:#fcd34d}
+.sh{background:#14532d;color:#86efac}.sd{background:#1f2937;color:#9ca3af}
+.sw{background:#1e3a5f;color:#93c5fd}.sn{background:#4a044e;color:#e879f9}
+.sy{background:#1e3a5f;color:#bfdbfe}
+.top{position:sticky;top:0;z-index:20}
+.scx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.scy{overflow-y:auto;-webkit-overflow-scrolling:touch}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+.fade{animation:fd .18s ease}
+@keyframes fd{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+details summary{cursor:pointer;list-style:none}
+details summary::-webkit-details-marker{display:none}
+.lock-bar{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:12px}
+.inp{background:#1f2937;border:1px solid #374151;color:#fff;border-radius:12px;padding:12px 16px;font-size:16px;width:100%}
+.inp:focus{border-color:#C9A84C;outline:none}
+select.inp option{background:#1f2937}
+.btn{border-radius:12px;font-weight:700;padding:12px 20px;font-size:15px;transition:opacity .15s}
+.pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+</style>
+</head>
+<body class="min-h-screen text-white select-none">
+<div id="app"></div>
+<script>
+// ═══════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════
+const PRODUCTS=[
+  {sku:"EP-001",name:"Oud Royale EDP 100ml",price:349},
+  {sku:"EP-002",name:"Oud Royale EDP 50ml",price:229},
+  {sku:"EP-003",name:"Rose Mystique EDP 100ml",price:299},
+  {sku:"EP-004",name:"Rose Mystique EDP 50ml",price:199},
+  {sku:"EP-005",name:"Arabian Nights EDP 100ml",price:325},
+  {sku:"EP-006",name:"Desert Pearl EDP 100ml",price:275},
+  {sku:"EP-007",name:"Gold Elixir EDP 100ml",price:389},
+  {sku:"EP-008",name:"Amber Intense EDP 100ml",price:249},
+  {sku:"EP-009",name:"Musk Noir EDP 100ml",price:219},
+  {sku:"EP-010",name:"Saffron Dreams EDP 100ml",price:359},
+  {sku:"EP-011",name:"Cedar & Oud EDP 50ml",price:179},
+  {sku:"EP-012",name:"Vanilla Musk EDP 50ml",price:159},
+  {sku:"EP-013",name:"Royal Oud Parfum 30ml",price:449},
+  {sku:"EP-014",name:"Pink Rose Parfum 30ml",price:399},
+  {sku:"EP-015",name:"Black Amber Parfum 30ml",price:425},
+];
+const OUTLETS=[
+  {id:"OUT-01",name:"Dubai Mall",loc:"Downtown Dubai"},
+  {id:"OUT-02",name:"Mall of the Emirates",loc:"Al Barsha"},
+  {id:"OUT-03",name:"Ibn Battuta Mall",loc:"Jebel Ali"},
+  {id:"OUT-04",name:"Deira City Centre",loc:"Deira"},
+  {id:"OUT-05",name:"Mirdif City Centre",loc:"Mirdif"},
+  {id:"OUT-06",name:"Dubai Festival City",loc:"Festival City"},
+  {id:"OUT-07",name:"Nakheel Mall",loc:"Palm Jumeirah"},
+  {id:"OUT-08",name:"Mercato Mall",loc:"Jumeirah"},
+  {id:"OUT-09",name:"City Walk",loc:"Al Safa"},
+  {id:"OUT-10",name:"Wafi Mall",loc:"Oud Metha"},
+  {id:"OUT-11",name:"Al Ghurair Centre",loc:"Deira"},
+  {id:"OUT-12",name:"BurJuman Centre",loc:"Bur Dubai"},
+  {id:"OUT-13",name:"Dragon Mart 2",loc:"International City"},
+  {id:"OUT-14",name:"Arabian Center",loc:"Muhaisnah"},
+  {id:"OUT-15",name:"Lamcy Plaza",loc:"Oud Metha"},
+  {id:"OUT-16",name:"Al Barsha Mall",loc:"Al Barsha"},
+  {id:"OUT-17",name:"Times Square Center",loc:"Al Quoz"},
+  {id:"OUT-18",name:"The Outlet Village",loc:"Jebel Ali"},
+  {id:"OUT-19",name:"Oasis Centre",loc:"Al Quoz"},
+  {id:"OUT-20",name:"Matajer Al Juraina",loc:"Sharjah"},
+  {id:"OUT-21",name:"Gold Souk Outlet",loc:"Deira"},
+];
+const DAYS=["MON","TUE","WED","THU","FRI","SAT","SUN"];
+const MGR_PIN="1234";
+const ADJ_REASONS=[
+  "Stock count correction","Damaged goods written off","Tester converted to stock",
+  "Found missing stock","Theft / shrinkage","Transfer error correction",
+  "Customer return","Display unit adjustment","Other (see notes)",
+];
+const TC=3.5; // tester conversion target
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+const todayKey=()=>{const d=new Date().getDay();return DAYS[d===0?6:d-1];};
+const weekMon=()=>{const d=new Date(),day=d.getDay(),diff=d.getDate()-day+(day===0?-6:1);return new Date(new Date(d).setDate(diff)).toISOString().split("T")[0];};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const now=()=>new Date().toISOString();
+const fDT=iso=>iso?new Date(iso).toLocaleString("en-AE",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}):"—";
+const fD=iso=>iso?new Date(iso).toLocaleDateString("en-AE",{day:"2-digit",month:"short",year:"numeric"}):"—";
+const aed=n=>"AED "+Number(n).toLocaleString();
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+const S={view:"login",outlet:null,staffTab:"sales",mgrTab:"dashboard",activeDay:todayKey(),modal:null,weekStart:weekMon()};
+
+// ═══════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════
+const loadAll=()=>{try{return JSON.parse(localStorage.getItem("ep2")||"{}")}catch{return{}}};
+const saveAll=d=>localStorage.setItem("ep2",JSON.stringify(d));
+
+function initOutlet(){
+  const o={opening_stock:{},grn_records:[],daily_sales:{},day_status:{},
+    transfers_in:[],transfers_out:[],testers_issued:{},testers_used:{},adjustments:[],audit:[]};
+  PRODUCTS.forEach(p=>{
+    o.opening_stock[p.sku]=0;o.testers_issued[p.sku]=0;o.testers_used[p.sku]=0;
+    DAYS.forEach(d=>{if(!o.daily_sales[d])o.daily_sales[d]={};o.daily_sales[d][p.sku]=0;});
+  });
+  return o;
+}
+function weekData(){
+  const all=loadAll(),ws=S.weekStart;
+  if(!all[ws]){all[ws]={};OUTLETS.forEach(o=>{all[ws][o.id]=initOutlet();});saveAll(all);}
+  OUTLETS.forEach(o=>{if(!all[ws][o.id])all[ws][o.id]=initOutlet();});
+  return all[ws];
+}
+const outletData=id=>{const wd=weekData();return wd[id]||initOutlet();};
+function mutateOutlet(id,fn){
+  const all=loadAll(),ws=S.weekStart;
+  if(!all[ws])all[ws]={};if(!all[ws][id])all[ws][id]=initOutlet();
+  fn(all[ws][id]);saveAll(all);
+}
+function addAudit(outletId,action,detail,utype="staff"){
+  mutateOutlet(outletId,od=>{
+    if(!od.audit)od.audit=[];
+    od.audit.unshift({id:uid(),ts:now(),action,utype,...detail});
+    if(od.audit.length>600)od.audit=od.audit.slice(0,600);
+  });
+}
+
+// ═══════════════════════════════════════════
+// COMPUTED
+// ═══════════════════════════════════════════
+const grnTotal=(od,sku)=>(od.grn_records||[]).reduce((s,g)=>s+(g.items[sku]||0),0);
+const txIn=(od,sku)=>(od.transfers_in||[]).filter(t=>t.sku===sku).reduce((s,t)=>s+t.qty,0);
+const txOut=(od,sku)=>(od.transfers_out||[]).filter(t=>t.sku===sku).reduce((s,t)=>s+t.qty,0);
+const adjTot=(od,sku)=>(od.adjustments||[]).filter(a=>a.sku===sku).reduce((s,a)=>s+a.qty,0);
+const totSold=(od,sku)=>DAYS.reduce((s,d)=>s+(od.daily_sales[d]?.[sku]||0),0);
+const closing=(od,sku)=>(od.opening_stock[sku]||0)+grnTotal(od,sku)+txIn(od,sku)-txOut(od,sku)+adjTot(od,sku)-totSold(od,sku);
+const isLocked=(od,day)=>!!(od.day_status?.[day]?.locked);
+
+function stockSt(c,sold){
+  if(c<0)return{label:"NEGATIVE",cls:"sn"};
+  if(sold===0&&c>0)return{label:"DEAD STOCK",cls:"sd"};
+  if(c===0&&sold===0)return{label:"NO DATA",cls:"sd"};
+  if(c===0)return{label:"OUT OF STOCK",cls:"sc"};
+  const dos=sold>0?(c/(sold/7)):999;
+  if(dos<7)return{label:"CRITICAL <7d",cls:"sc"};
+  if(dos<14)return{label:"LOW <14d",cls:"sl"};
+  if(dos>60)return{label:"OVERSTOCKED",cls:"sw"};
+  return{label:"HEALTHY",cls:"sh"};
+}
+const convSt=r=>r===0?{label:"ZERO SALES ⚠",cls:"sc"}:r>=TC?{label:"ON TARGET ✓",cls:"sh"}:r>=2?{label:"BELOW TARGET",cls:"sl"}:{label:"POOR CONVERSION",cls:"sc"};
+
+// ═══════════════════════════════════════════
+// RENDER ROUTER
+// ═══════════════════════════════════════════
+function render(){
+  document.getElementById("app").innerHTML=
+    S.view==="login"?loginV():S.view==="staff"?staffV():mgrV();
+  if(S.modal)showModal();
+  bindAll();
+}
+
+// ═══════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════
+function loginV(){return`
+<div class="min-h-screen flex flex-col items-center justify-center p-5" style="background:linear-gradient(160deg,#0f1824 0%,#1a2744 100%)">
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-10">
+      <div class="text-5xl mb-3" style="color:#C9A84C">✦</div>
+      <h1 class="text-3xl font-bold tracking-widest" style="color:#C9A84C">EMIRATES PRIDE</h1>
+      <p class="text-gray-400 text-xs tracking-widest mt-1">STORE OPERATIONS v2.0</p>
+    </div>
+    <div class="card rounded-2xl p-5 mb-4 fade">
+      <p class="text-xs text-gray-400 tracking-widest font-bold mb-3">STAFF LOGIN</p>
+      <select id="sel-out" class="inp mb-4">
+        <option value="">— Select Your Outlet —</option>
+        ${OUTLETS.map(o=>`<option value="${o.id}">${o.name}</option>`).join("")}
+      </select>
+      <button id="btn-sl" class="g w-full py-4 rounded-xl text-base tracking-widest">ENTER STORE</button>
+    </div>
+    <div class="card rounded-2xl p-5 fade">
+      <p class="text-xs text-gray-400 tracking-widest font-bold mb-3">MANAGEMENT ACCESS</p>
+      <input type="password" id="inp-pin" inputmode="numeric" maxlength="4" placeholder="● ● ● ●"
+        class="inp text-center text-3xl tracking-widest mb-4" style="letter-spacing:.5em">
+      <button id="btn-ml" class="w-full py-4 rounded-xl font-bold text-base bg-gray-700 text-gray-200">MANAGER DASHBOARD</button>
+    </div>
+    <p class="text-center text-gray-600 text-xs mt-5">Week: ${S.weekStart} · Manager PIN: 1234</p>
+  </div>
+</div>`;}
+
+// ═══════════════════════════════════════════
+// STAFF VIEW
+// ═══════════════════════════════════════════
+function staffV(){
+  const o=OUTLETS.find(x=>x.id===S.outlet)||{name:"",loc:""};
+  const od=outletData(S.outlet);
+  const sold=PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku),0);
+  const rev=PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku)*p.price,0);
+  const neg=PRODUCTS.filter(p=>closing(od,p.sku)<0).length;
+  const tabs=[{id:"sales",ic:"🧾",lb:"Sales"},{id:"grn",ic:"📦",lb:"Receive"},{id:"transfer",ic:"🔄",lb:"Transfer"},{id:"tester",ic:"🌸",lb:"Testers"},{id:"adjust",ic:"🔧",lb:"Adjust"}];
+  return`<div class="min-h-screen flex flex-col" style="background:#0f1824">
+    <div class="top p-4 flex items-center justify-between" style="background:#1a2744;border-bottom:1px solid rgba(201,168,76,.3)">
+      <div>
+        <div class="text-xs text-gray-400 tracking-widest">EMIRATES PRIDE</div>
+        <div class="font-bold text-base text-white">${o.name}</div>
+        <div class="text-xs text-gray-500">${o.loc} · ${S.outlet}</div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-right">
+          <div class="text-green-400 font-bold">${aed(rev)}</div>
+          <div class="text-xs text-gray-400">${sold} bottles this week</div>
+          ${neg>0?`<div class="text-xs text-red-400 font-bold">⚠ ${neg} neg stock</div>`:""}
+        </div>
+        <button id="btn-lo" class="bg-gray-700 rounded-xl px-3 py-2 text-sm text-gray-300 font-semibold">Exit</button>
+      </div>
+    </div>
+    <div class="flex border-b border-gray-700 scx" style="background:#1a2744">
+      ${tabs.map(t=>`<button class="s-tab flex-shrink-0 flex-1 py-3 text-xs font-bold tracking-wide ${S.staffTab===t.id?"tab-on":"text-gray-400"}" data-tab="${t.id}">
+        <div class="text-xl">${t.ic}</div>${t.lb}</button>`).join("")}
+    </div>
+    <div class="flex-1 scy p-4 pb-10">
+      ${S.staffTab==="sales"?salesT(od):S.staffTab==="grn"?grnT(od):S.staffTab==="transfer"?transferT(od):S.staffTab==="tester"?testerT(od):adjustT(od)}
+    </div>
+  </div>`;}
+
+// ─── SALES TAB ───────────────────────────────
+function salesT(od){
+  const day=S.activeDay;
+  const locked=isLocked(od,day);
+  const ls=od.day_status[day];
+  return`<div class="fade">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-white font-bold text-lg">Daily Sales</h2>
+      ${!locked
+        ?`<button id="btn-submit-day" class="g px-4 py-2 rounded-xl text-sm" data-day="${day}">Submit & Lock ${day}</button>`
+        :`<button id="btn-unlock-day" class="btn bg-amber-900 text-amber-300 text-sm" data-day="${day}">🔒 Unlock ${day}</button>`}
+    </div>
+    ${locked?`<div class="lock-bar p-3 mb-3 flex items-center gap-2">
+      <span class="text-amber-400 text-lg">🔒</span>
+      <div><div class="text-amber-300 text-sm font-bold">${day} submitted & locked</div>
+      <div class="text-xs text-amber-400/70">Locked ${fDT(ls?.lockedAt)} ${ls?.unlockReason?"· Unlocked: "+ls.unlockReason:""}</div></div>
+    </div>`:""}
+    <div class="flex gap-2 mb-4 scx pb-1">
+      ${DAYS.map(d=>{const lk=isLocked(od,d),ds=od.day_status[d];return`<button class="day-btn flex-shrink-0 px-4 py-2 rounded-xl font-bold text-sm relative
+        ${d===day?"g":"bg-gray-700 text-gray-300"}" data-day="${d}">
+        ${d}${lk?`<span class="absolute -top-1 -right-1 text-xs">🔒</span>`:""}
+      </button>`}).join("")}
+    </div>
+    <div class="space-y-2">
+      ${PRODUCTS.map(p=>{
+        const s=od.daily_sales[day]?.[p.sku]||0,c=closing(od,p.sku),neg=c<0;
+        return`<div class="card rounded-xl p-3 ${neg?"border-red-500 border":""}">
+          <div class="flex items-center gap-3">
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-mono font-bold" style="color:#C9A84C">${p.sku}</div>
+              <div class="font-semibold text-sm text-white">${p.name}</div>
+              <div class="text-xs mt-0.5">
+                <span class="text-gray-400">Stock: </span>
+                <span class="${neg?"text-red-400 font-bold":"text-green-400"}">${c}</span>
+                ${neg?` <span class="text-red-400">⚠ CHECK OPENING STOCK/GRN</span>`:""}
+                <span class="text-gray-500"> · AED ${p.price}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <button class="qty-btn w-11 h-11 rounded-xl text-2xl font-bold bg-gray-600 text-white flex items-center justify-center ${locked?"opacity-30":""}"
+                data-a="dec" data-day="${day}" data-sku="${p.sku}" ${locked?"disabled":""}>−</button>
+              <input type="number" min="0" inputmode="numeric"
+                class="bg-gray-800 text-white text-center w-14 h-11 rounded-xl text-xl font-bold border border-gray-600 sales-inp"
+                data-day="${day}" data-sku="${p.sku}" value="${s}" ${locked?"readonly":""} style="font-size:20px;${locked?"opacity:.4":""}">
+              <button class="qty-btn w-11 h-11 rounded-xl text-2xl font-bold bg-gray-600 text-white flex items-center justify-center ${locked?"opacity-30":""}"
+                data-a="inc" data-day="${day}" data-sku="${p.sku}" ${locked?"disabled":""}>+</button>
+            </div>
+          </div>
+        </div>`;}).join("")}
+    </div>
+  </div>`;}
+
+// ─── GRN TAB ─────────────────────────────────
+function grnT(od){
+  const recs=(od.grn_records||[]).slice().sort((a,b)=>new Date(b.enteredAt)-new Date(a.enteredAt));
+  return`<div class="fade">
+    <div class="flex items-center justify-between mb-3">
+      <div><h2 class="text-white font-bold text-lg">Receive Delivery (GRN)</h2>
+      <p class="text-xs text-gray-400">Each delivery = separate record with reference</p></div>
+      <button id="btn-new-grn" class="g px-4 py-2 rounded-xl text-sm">+ New GRN</button>
+    </div>
+    ${recs.length===0?`<div class="card rounded-xl p-8 text-center text-gray-500 mb-4">
+      <div class="text-4xl mb-2">📦</div>No deliveries recorded this week</div>`:""}
+    <div class="space-y-3">
+      ${recs.map(g=>{
+        const total=Object.values(g.items||{}).reduce((s,q)=>s+q,0);
+        const backdate=g.deliveryDate&&g.deliveryDate!==g.enteredAt?.split("T")[0];
+        return`<div class="card rounded-xl p-4 ${backdate?"border border-amber-500":""}">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <div class="font-bold text-white text-sm">DN Ref: <span style="color:#C9A84C">${g.ref}</span></div>
+              <div class="text-xs text-gray-400">Delivery Date: ${fD(g.deliveryDate+"T00:00:00")} · Entered: ${fDT(g.enteredAt)}</div>
+              ${backdate?`<div class="text-xs text-amber-400 font-bold">⚠ Backdated entry — flagged in audit</div>`:""}
+              ${g.note?`<div class="text-xs text-gray-400 mt-1">Note: ${g.note}</div>`:""}
+            </div>
+            <span class="pill bg-blue-900 text-blue-300">${total} units</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1">
+            ${Object.entries(g.items||{}).filter(([,q])=>q>0).map(([sku,qty])=>{
+              const p=PRODUCTS.find(x=>x.sku===sku);
+              return`<div class="flex justify-between text-xs bg-gray-800 rounded-lg px-2 py-1">
+                <span class="text-gray-300 truncate">${sku}</span>
+                <span class="font-bold text-white">+${qty}</span>
+              </div>`;}).join("")}
+          </div>
+        </div>`;}).join("")}
+    </div>
+    <!-- Opening Stock -->
+    <div class="mt-6 card rounded-xl overflow-hidden">
+      <button id="btn-os-toggle" class="w-full p-4 flex items-center justify-between">
+        <span class="font-bold text-white">📋 Opening Stock (Week Start) — Manager PIN Required</span>
+        <span class="text-gray-400 text-sm" id="os-arrow">▼</span>
+      </button>
+      <div id="os-panel" class="hidden px-4 pb-4 space-y-2">
+        <p class="text-xs text-amber-400 mb-3">⚠ Opening stock changes require Manager approval. Current values shown.</p>
+        ${PRODUCTS.map(p=>`<div class="flex items-center justify-between bg-gray-800 rounded-xl px-4 py-3">
+          <div><div class="text-xs font-mono" style="color:#C9A84C">${p.sku}</div>
+          <div class="text-sm text-white">${p.name}</div></div>
+          <div class="flex items-center gap-2">
+            <button class="os-btn w-10 h-10 rounded-xl bg-gray-700 text-white text-xl font-bold flex items-center justify-center" data-a="dec" data-sku="${p.sku}">−</button>
+            <input type="number" min="0" inputmode="numeric" class="os-inp bg-gray-700 text-white text-center w-16 h-10 rounded-xl text-lg font-bold border border-gray-600" data-sku="${p.sku}" value="${od.opening_stock[p.sku]||0}" style="font-size:18px">
+            <button class="os-btn w-10 h-10 rounded-xl bg-gray-700 text-white text-xl font-bold flex items-center justify-center" data-a="inc" data-sku="${p.sku}">+</button>
+          </div>
+        </div>`).join("")}
+        <button id="btn-os-save" class="g w-full py-3 rounded-xl font-bold mt-3">Request Manager Approval & Save</button>
+      </div>
+    </div>
+  </div>`;}
+
+// ─── TRANSFER TAB ────────────────────────────
+function transferT(od){
+  const all=[...(od.transfers_out||[]).map(t=>({...t,dir:"OUT"})),...(od.transfers_in||[]).map(t=>({...t,dir:"IN"}))]
+    .sort((a,b)=>new Date(b.date)-new Date(a.date));
+  return`<div class="fade">
+    <h2 class="text-white font-bold text-lg mb-4">Stock Transfers</h2>
+    <button id="btn-tx-out" class="w-full card rounded-xl p-4 flex items-center gap-4 mb-3 active:opacity-70">
+      <div class="w-14 h-14 rounded-xl flex items-center justify-center text-3xl" style="background:rgba(239,68,68,.15)">📤</div>
+      <div class="text-left flex-1"><div class="font-bold text-white">Send Stock to Another Outlet</div>
+      <div class="text-sm text-gray-400">Transfer OUT — auto-deducts from your stock</div></div><div class="text-gray-500">›</div>
+    </button>
+    <button id="btn-tx-in" class="w-full card rounded-xl p-4 flex items-center gap-4 mb-5 active:opacity-70">
+      <div class="w-14 h-14 rounded-xl flex items-center justify-center text-3xl" style="background:rgba(34,197,94,.15)">📥</div>
+      <div class="text-left flex-1"><div class="font-bold text-white">Receive Stock from Another Outlet</div>
+      <div class="text-sm text-gray-400">Transfer IN — adds to your stock</div></div><div class="text-gray-500">›</div>
+    </button>
+    <h3 class="text-gray-400 text-xs font-bold tracking-widest mb-2">MOVEMENTS THIS WEEK</h3>
+    ${all.length===0?`<div class="card rounded-xl p-6 text-center text-gray-500">No transfers this week</div>`:""}
+    <div class="space-y-2">
+      ${all.map(t=>{
+        const p=PRODUCTS.find(x=>x.sku===t.sku);
+        const other=OUTLETS.find(o=>o.id===(t.dir==="OUT"?t.to:t.from));
+        return`<div class="card rounded-xl p-3 flex items-center gap-3">
+          <div class="text-2xl">${t.dir==="OUT"?"📤":"📥"}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-sm text-white">${t.qty} × ${p?.name||t.sku}</div>
+            <div class="text-xs text-gray-400">${t.dir==="OUT"?"→ Sent to":"← From"} ${other?.name||"?"}</div>
+            <div class="text-xs text-gray-500">${fDT(t.date)}${t.notes?` · ${t.notes}`:""}</div>
+          </div>
+          <span class="pill ${t.dir==="OUT"?"bg-red-900 text-red-300":"bg-green-900 text-green-300"}">${t.dir}</span>
+        </div>`;}).join("")}
+    </div>
+  </div>`;}
+
+// ─── TESTER TAB ──────────────────────────────
+function testerT(od){
+  return`<div class="fade">
+    <div class="flex items-center justify-between mb-1">
+      <h2 class="text-white font-bold text-lg">Tester Tracker</h2>
+      <button id="btn-ts-save" class="g px-5 py-2 rounded-xl text-sm">Save</button>
+    </div>
+    <p class="text-gray-400 text-xs mb-4">Target: <strong class="text-yellow-400">${TC} bottles per tester used</strong></p>
+    <div class="space-y-2">
+      ${PRODUCTS.map(p=>{
+        const iss=od.testers_issued[p.sku]||0,usd=od.testers_used[p.sku]||0,sld=totSold(od,p.sku);
+        const rate=usd>0?+(sld/usd).toFixed(1):0,cs=convSt(rate),excess=usd>iss&&iss>0;
+        return`<div class="card rounded-xl p-3 ${excess?"border border-amber-500":""}">
+          <div class="flex items-center justify-between mb-2">
+            <div><div class="text-xs font-mono font-bold" style="color:#C9A84C">${p.sku}</div>
+            <div class="font-semibold text-sm text-white">${p.name}</div></div>
+            <span class="pill ${cs.cls}">${cs.label}</span>
+          </div>
+          ${excess?`<div class="text-xs text-amber-400 mb-2">⚠ Used (${usd}) > Issued (${iss}) — verify or raise adjustment</div>`:""}
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="text-xs text-gray-400 mb-1">Issued (Manager)</div>
+              <div class="flex items-center gap-1">
+                <button class="tst-btn w-10 h-10 rounded-xl bg-gray-600 text-white text-xl font-bold flex items-center justify-center" data-f="issued" data-a="dec" data-sku="${p.sku}">−</button>
+                <input type="number" min="0" inputmode="numeric" class="tst-inp bg-gray-800 text-white text-center w-12 h-10 rounded-xl text-lg font-bold border border-gray-600" data-f="issued" data-sku="${p.sku}" value="${iss}" style="font-size:17px">
+                <button class="tst-btn w-10 h-10 rounded-xl bg-gray-600 text-white text-xl font-bold flex items-center justify-center" data-f="issued" data-a="inc" data-sku="${p.sku}">+</button>
+              </div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-400 mb-1">Used (Salesman)</div>
+              <div class="flex items-center gap-1">
+                <button class="tst-btn w-10 h-10 rounded-xl bg-gray-600 text-white text-xl font-bold flex items-center justify-center" data-f="used" data-a="dec" data-sku="${p.sku}">−</button>
+                <input type="number" min="0" inputmode="numeric" class="tst-inp bg-gray-800 text-white text-center w-12 h-10 rounded-xl text-lg font-bold border border-gray-600" data-f="used" data-sku="${p.sku}" value="${usd}" style="font-size:17px">
+                <button class="tst-btn w-10 h-10 rounded-xl bg-gray-600 text-white text-xl font-bold flex items-center justify-center" data-f="used" data-a="inc" data-sku="${p.sku}">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 text-xs text-gray-400">Sold: <strong class="text-white">${sld}</strong> · Conv: <strong class="${rate>=TC?"text-green-400":rate>=2?"text-yellow-400":"text-red-400"}">${rate}×</strong> (target ${TC}×)</div>
+        </div>`;}).join("")}
+    </div>
+  </div>`;}
+
+// ─── ADJUST TAB ──────────────────────────────
+function adjustT(od){
+  const adjs=(od.adjustments||[]).slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
+  return`<div class="fade">
+    <div class="card-a rounded-xl p-4 mb-4">
+      <div class="font-bold text-amber-300 mb-1">🔧 Stock Adjustment — Manager PIN Required</div>
+      <div class="text-xs text-amber-400">All adjustments are logged in the audit trail and visible to management. Use only for legitimate corrections.</div>
+    </div>
+    <div class="card rounded-xl p-4 mb-5 space-y-4">
+      <div>
+        <label class="text-sm text-gray-400 block mb-1 font-semibold">Product</label>
+        <select id="adj-sku" class="inp">
+          <option value="">— Select product —</option>
+          ${PRODUCTS.map(p=>`<option value="${p.sku}">${p.sku} · ${p.name} (Stock: ${closing(od,p.sku)})</option>`).join("")}
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-sm text-gray-400 block mb-1 font-semibold">Adjustment Type</label>
+          <select id="adj-type" class="inp">
+            <option value="1">➕ Add Stock</option>
+            <option value="-1">➖ Remove Stock</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-gray-400 block mb-1 font-semibold">Quantity</label>
+          <input type="number" id="adj-qty" min="1" inputmode="numeric" placeholder="0" class="inp text-center text-2xl font-bold" style="font-size:22px">
+        </div>
+      </div>
+      <div>
+        <label class="text-sm text-gray-400 block mb-1 font-semibold">Reason <span class="text-red-400">*</span></label>
+        <select id="adj-reason" class="inp">
+          <option value="">— Select reason —</option>
+          ${ADJ_REASONS.map(r=>`<option value="${r}">${r}</option>`).join("")}
+        </select>
+      </div>
+      <div>
+        <label class="text-sm text-gray-400 block mb-1 font-semibold">Notes (mandatory for "Other")</label>
+        <input type="text" id="adj-notes" placeholder="Additional details..." class="inp" style="font-size:16px">
+      </div>
+      <button id="btn-adj-submit" class="w-full py-4 rounded-xl font-bold text-base bg-amber-700 text-amber-100 tracking-wide">REQUEST MANAGER APPROVAL →</button>
+    </div>
+    <h3 class="text-gray-400 text-xs font-bold tracking-widest mb-2">ADJUSTMENT HISTORY</h3>
+    ${adjs.length===0?`<div class="card rounded-xl p-6 text-center text-gray-500">No adjustments this week</div>`:""}
+    <div class="space-y-2">
+      ${adjs.map(a=>{
+        const p=PRODUCTS.find(x=>x.sku===a.sku);
+        return`<div class="card rounded-xl p-3 flex items-center gap-3">
+          <div class="text-2xl">${a.qty>0?"➕":"➖"}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-sm text-white">${Math.abs(a.qty)} × ${p?.name||a.sku}</div>
+            <div class="text-xs text-gray-400">${a.reason}</div>
+            <div class="text-xs text-gray-500">${fDT(a.date)}${a.notes?` · ${a.notes}`:""}</div>
+          </div>
+          <span class="pill ${a.qty>0?"bg-green-900 text-green-300":"bg-red-900 text-red-300"}">${a.qty>0?"+":""}${a.qty}</span>
+        </div>`;}).join("")}
+    </div>
+  </div>`;}
+
+// ═══════════════════════════════════════════
+// MANAGER VIEW
+// ═══════════════════════════════════════════
+function mgrV(){
+  const wd=weekData();
+  const tabs=[{id:"dashboard",ic:"📊",lb:"Overview"},{id:"outlets",ic:"🏬",lb:"Outlets"},{id:"stock",ic:"📦",lb:"Stock"},{id:"movements",ic:"🔄",lb:"Movements"},{id:"testers",ic:"🌸",lb:"Testers"},{id:"audit",ic:"🔍",lb:"Audit"},{id:"export",ic:"📥",lb:"Export"}];
+  return`<div class="min-h-screen flex flex-col" style="background:#0f1824">
+    <div class="top p-4 flex items-center justify-between" style="background:#1a2744;border-bottom:1px solid rgba(201,168,76,.3)">
+      <div>
+        <div class="text-xs tracking-widest" style="color:#C9A84C">EMIRATES PRIDE</div>
+        <div class="font-bold text-white text-lg">Management Dashboard</div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-right text-xs text-gray-400">Week: <span class="text-white font-semibold">${S.weekStart}</span></div>
+        <button id="btn-lo" class="bg-gray-700 rounded-xl px-3 py-2 text-sm text-gray-300 font-semibold">Exit</button>
+      </div>
+    </div>
+    <div class="flex scx border-b border-gray-700" style="background:#1a2744">
+      ${tabs.map(t=>`<button class="m-tab flex-shrink-0 px-4 py-3 text-xs font-bold tracking-wide ${S.mgrTab===t.id?"tab-on":"text-gray-400"}" data-tab="${t.id}">
+        <div class="text-xl">${t.ic}</div>${t.lb}</button>`).join("")}
+    </div>
+    <div class="flex-1 scy p-4 pb-10">
+      ${S.mgrTab==="dashboard"?mgrDash(wd):S.mgrTab==="outlets"?mgrOutlets(wd):S.mgrTab==="stock"?mgrStock(wd):S.mgrTab==="movements"?mgrMovements(wd):S.mgrTab==="testers"?mgrTesters(wd):S.mgrTab==="audit"?mgrAudit(wd):mgrExport(wd)}
+    </div>
+  </div>`;}
+
+function mgrDash(wd){
+  let tSold=0,tRev=0,tStk=0,tStkV=0,crit=0,neg=0,dead=0,tIss=0,tUsd=0,locked=0,unlocked=0;
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    DAYS.forEach(d=>{if(isLocked(od,d))locked++;else unlocked++;});
+    PRODUCTS.forEach(p=>{
+      const s=totSold(od,p.sku),c=closing(od,p.sku);
+      tSold+=s;tRev+=s*p.price;if(c>=0){tStk+=c;tStkV+=c*p.price;}
+      if(c<0)neg++;if(s===0&&c>0)dead++;
+      const dos=s>0?c/(s/7):999;if(dos<7&&c>0)crit++;
+      tIss+=(od.testers_issued[p.sku]||0);tUsd+=(od.testers_used[p.sku]||0);
+    });
+  });
+  const tConv=tUsd>0?(tSold/tUsd).toFixed(1):0;
+  const ranked=OUTLETS.map(o=>{const od=wd[o.id]||initOutlet();
+    return{...o,sold:PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku),0),rev:PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku)*p.price,0)};
+  }).sort((a,b)=>b.rev-a.rev);
+  const lockPct=Math.round(locked/(locked+unlocked)*100)||0;
+  return`<div class="space-y-4 fade">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="card rounded-2xl p-4"><div class="text-gray-400 text-xs tracking-wide">BOTTLES SOLD</div>
+        <div class="text-4xl font-bold mt-1" style="color:#C9A84C">${tSold.toLocaleString()}</div><div class="text-xs text-gray-500">this week</div></div>
+      <div class="card rounded-2xl p-4"><div class="text-gray-400 text-xs tracking-wide">WEEKLY REVENUE</div>
+        <div class="text-3xl font-bold text-green-400 mt-1">AED ${(tRev/1000).toFixed(0)}K</div><div class="text-xs text-gray-500">${tRev.toLocaleString()}</div></div>
+      <div class="card rounded-2xl p-4"><div class="text-gray-400 text-xs tracking-wide">STOCK ON HAND</div>
+        <div class="text-4xl font-bold text-blue-400 mt-1">${tStk.toLocaleString()}</div><div class="text-xs text-gray-500">AED ${(tStkV/1000).toFixed(0)}K value</div></div>
+      <div class="card rounded-2xl p-4"><div class="text-gray-400 text-xs tracking-wide">TESTER CONV.</div>
+        <div class="text-4xl font-bold mt-1 ${+tConv>=TC?"text-green-400":"text-red-400"}">${tConv}×</div><div class="text-xs text-gray-500">target ${TC}×</div></div>
+    </div>
+    <div class="card rounded-xl p-4">
+      <div class="text-xs text-gray-400 tracking-wide mb-2 font-bold">DATA INTEGRITY STATUS</div>
+      <div class="grid grid-cols-3 gap-3 text-center">
+        <div class="bg-gray-800 rounded-xl p-3">
+          <div class="text-2xl font-bold ${lockPct>80?"text-green-400":lockPct>50?"text-yellow-400":"text-red-400"}">${lockPct}%</div>
+          <div class="text-xs text-gray-400">Days Locked</div>
+        </div>
+        <div class="bg-gray-800 rounded-xl p-3">
+          <div class="text-2xl font-bold ${neg===0?"text-green-400":"text-red-400"}">${neg}</div>
+          <div class="text-xs text-gray-400">Neg Stock</div>
+        </div>
+        <div class="bg-gray-800 rounded-xl p-3">
+          <div class="text-2xl font-bold ${crit===0?"text-green-400":"text-red-400"}">${crit}</div>
+          <div class="text-xs text-gray-400">Critical SKUs</div>
+        </div>
+      </div>
+    </div>
+    ${(neg>0||crit>0)?`<div class="card-r rounded-2xl p-4">
+      <div class="font-bold text-red-300 mb-2">⚠️ URGENT ALERTS</div>
+      ${neg>0?`<div class="text-sm text-red-200 mb-1">• ${neg} negative stock entries — data error, investigate immediately</div>`:""}
+      ${crit>0?`<div class="text-sm text-red-200 mb-1">• ${crit} SKU-outlet combos critically low (&lt;7 days supply)</div>`:""}
+      ${dead>0?`<div class="text-sm text-yellow-200">• ${dead} dead stock SKUs — no sales, clearance needed</div>`:""}
+    </div>`:`<div class="card-g rounded-2xl p-4"><div class="font-bold text-green-300">✓ No critical stock alerts</div></div>`}
+    <div>
+      <h3 class="text-gray-400 text-xs font-bold tracking-widest mb-2">OUTLET REVENUE RANKING</h3>
+      <div class="space-y-2">
+        ${ranked.map((o,i)=>`<div class="card rounded-xl p-3 flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0
+            ${i===0?"bg-yellow-500 text-black":i===1?"bg-gray-400 text-black":i===2?"bg-yellow-700 text-white":"bg-gray-700 text-gray-400"}">${i+1}</div>
+          <div class="flex-1 min-w-0"><div class="font-semibold text-white text-sm">${o.name}</div>
+            <div class="text-xs text-gray-400">${o.sold} bottles</div></div>
+          <div class="font-bold text-green-400">AED ${o.rev.toLocaleString()}</div>
+        </div>`).join("")}
+      </div>
+    </div>
+  </div>`;}
+
+function mgrOutlets(wd){
+  return`<div class="fade"><h2 class="text-white font-bold text-lg mb-3">All Outlets — Weekly Summary</h2>
+    <div class="space-y-3">
+      ${OUTLETS.map(o=>{const od=wd[o.id]||initOutlet();
+        const sold=PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku),0);
+        const rev=PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku)*p.price,0);
+        const neg=PRODUCTS.filter(p=>closing(od,p.sku)<0).length;
+        const crit=PRODUCTS.filter(p=>{const c=closing(od,p.sku),s=totSold(od,p.sku);return c>0&&s>0&&c/(s/7)<7;}).length;
+        const adjs=(od.adjustments||[]).length;
+        const tUsd=PRODUCTS.reduce((s,p)=>s+(od.testers_used[p.sku]||0),0);
+        const conv=tUsd>0?+(sold/tUsd).toFixed(1):0,cs=convSt(conv);
+        const lockedDays=DAYS.filter(d=>isLocked(od,d)).length;
+        return`<div class="card rounded-xl p-4">
+          <div class="flex items-start justify-between mb-2">
+            <div><div class="font-bold text-white">${o.name}</div>
+            <div class="text-xs text-gray-400">${o.id} · ${o.loc} · ${lockedDays}/7 days locked</div></div>
+            <div class="text-right"><div class="font-bold text-green-400">AED ${rev.toLocaleString()}</div>
+            <div class="text-xs text-gray-400">${sold} bottles</div></div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            ${neg>0?`<span class="pill sn">⚠ ${neg} Neg</span>`:""}
+            ${crit>0?`<span class="pill sc">${crit} Critical</span>`:""}
+            ${adjs>0?`<span class="pill sl">${adjs} Adjustments</span>`:""}
+            <span class="pill ${cs.cls}">Conv ${conv}×</span>
+            <span class="pill ${lockedDays===7?"sh":"sl"}">${lockedDays}/7 locked</span>
+          </div>
+        </div>`;}).join("")}
+    </div>
+  </div>`;}
+
+function mgrStock(wd){
+  return`<div class="fade"><h2 class="text-white font-bold text-lg mb-3">Stock On Hand — By Product</h2>
+    <div class="space-y-3">
+      ${PRODUCTS.map(p=>{
+        let totC=0,totS=0;
+        const bd=OUTLETS.map(o=>{const od=wd[o.id]||initOutlet();const c=closing(od,p.sku),s=totSold(od,p.sku);totC+=c;totS+=s;return{o,c,s};});
+        const ss=stockSt(totC,totS);
+        const dos=totS>0?(totC/(totS/7)).toFixed(0):"∞";
+        const neg=bd.filter(b=>b.c<0).map(b=>b.o.name);
+        return`<div class="card rounded-xl p-4">
+          <div class="flex items-start justify-between mb-2">
+            <div><div class="text-xs font-mono font-bold" style="color:#C9A84C">${p.sku}</div>
+            <div class="font-bold text-white">${p.name}</div>
+            <div class="text-xs text-gray-400">AED ${p.price} · DOS: ${dos}d · Sold: ${totS}</div></div>
+            <div class="text-right"><div class="text-3xl font-bold text-white">${totC}</div>
+            <span class="pill ${ss.cls} mt-1 inline-block">${ss.label}</span></div>
+          </div>
+          <div class="text-xs text-gray-400">Value: AED ${(totC*p.price).toLocaleString()}</div>
+          ${neg.length>0?`<div class="text-xs text-purple-300 mt-1">⚠ Negative at: ${neg.join(", ")}</div>`:""}
+          <details class="mt-2">
+            <summary class="text-xs text-gray-500">View by outlet ▼</summary>
+            <div class="mt-2 grid grid-cols-2 gap-1">
+              ${bd.map(b=>`<div class="flex justify-between text-xs bg-gray-800 rounded-lg px-2 py-1">
+                <span class="text-gray-400 truncate">${b.o.name.split(" ").slice(0,2).join(" ")}</span>
+                <span class="font-bold ${b.c<0?"text-red-400":b.c===0?"text-gray-500":"text-white"}">${b.c}</span>
+              </div>`).join("")}
+            </div>
+          </details>
+        </div>`;}).join("")}
+    </div>
+  </div>`;}
+
+function mgrMovements(wd){
+  const all=[];
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    (od.grn_records||[]).forEach(g=>{const tot=Object.values(g.items||{}).reduce((s,q)=>s+q,0);
+      all.push({type:"GRN",outN:o.name,ref:g.ref,qty:tot,date:g.enteredAt,delivDate:g.deliveryDate,note:g.note||""});});
+    (od.transfers_in||[]).forEach(t=>{const p=PRODUCTS.find(x=>x.sku===t.sku);
+      all.push({type:"TXI",outN:o.name,sku:t.sku,pname:p?.name||t.sku,qty:t.qty,from:OUTLETS.find(x=>x.id===t.from)?.name||"?",date:t.date});});
+    (od.transfers_out||[]).forEach(t=>{const p=PRODUCTS.find(x=>x.sku===t.sku);
+      all.push({type:"TXO",outN:o.name,sku:t.sku,pname:p?.name||t.sku,qty:t.qty,to:OUTLETS.find(x=>x.id===t.to)?.name||"?",date:t.date});});
+    (od.adjustments||[]).forEach(a=>{const p=PRODUCTS.find(x=>x.sku===a.sku);
+      all.push({type:"ADJ",outN:o.name,sku:a.sku,pname:p?.name||a.sku,qty:a.qty,reason:a.reason,note:a.notes||"",date:a.date});});
+  });
+  all.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const icons={GRN:"📦",TXI:"📥",TXO:"📤",ADJ:"🔧"};
+  const cls={GRN:"bg-blue-900 text-blue-300",TXI:"bg-green-900 text-green-300",TXO:"bg-red-900 text-red-300",ADJ:"bg-amber-900 text-amber-300"};
+  return`<div class="fade"><h2 class="text-white font-bold text-lg mb-3">All Stock Movements</h2>
+    ${all.length===0?`<div class="card rounded-xl p-10 text-center text-gray-500"><div class="text-5xl mb-3">📋</div>No movements this week</div>`:`
+    <div class="space-y-2">
+      ${all.map(m=>`<div class="card rounded-xl p-3 flex items-center gap-3">
+        <div class="text-2xl">${icons[m.type]}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm text-white">
+            ${m.type==="GRN"?`DN: ${m.ref} (${m.qty} units)`:`${m.qty>0&&m.type==="ADJ"?"+":""}${m.qty} × ${m.pname||""}`}
+          </div>
+          <div class="text-xs text-gray-400">
+            ${m.outN}
+            ${m.type==="TXI"?` ← from ${m.from}`:""}
+            ${m.type==="TXO"?` → to ${m.to}`:""}
+            ${m.type==="ADJ"?` · ${m.reason}`:""}
+            ${m.type==="GRN"&&m.delivDate?` · Delivery: ${fD(m.delivDate+"T00:00:00")}`:""}
+          </div>
+          <div class="text-xs text-gray-500">${fDT(m.date)}${m.note?` · ${m.note}`:""}</div>
+        </div>
+        <span class="pill ${cls[m.type]}">${m.type}</span>
+      </div>`).join("")}
+    </div>`}
+  </div>`;}
+
+function mgrTesters(wd){
+  return`<div class="fade"><h2 class="text-white font-bold text-lg mb-1">Tester Performance</h2>
+    <p class="text-gray-400 text-xs mb-4">Target: ${TC} bottles sold per tester used</p>
+    <div class="space-y-3">
+      ${PRODUCTS.map(p=>{
+        let tI=0,tU=0,tS=0;
+        const rows=OUTLETS.map(o=>{const od=wd[o.id]||initOutlet();
+          const i=od.testers_issued[p.sku]||0,u=od.testers_used[p.sku]||0,s=totSold(od,p.sku);
+          tI+=i;tU+=u;tS+=s;return{o,i,u,s};});
+        const conv=tU>0?+(tS/tU).toFixed(1):0,cs=convSt(conv);
+        const wasted=rows.filter(r=>r.u>0&&r.s===0);
+        const excess=rows.filter(r=>r.u>r.i&&r.i>0);
+        return`<div class="card rounded-xl p-4">
+          <div class="flex items-start justify-between mb-3">
+            <div><div class="text-xs font-mono font-bold" style="color:#C9A84C">${p.sku}</div>
+            <div class="font-bold text-white">${p.name}</div></div>
+            <span class="pill ${cs.cls}">${cs.label}</span>
+          </div>
+          <div class="grid grid-cols-4 gap-2 text-center mb-3">
+            ${[["Issued",tI,"text-white"],["Used",tU,"text-white"],["Sold",tS,"text-white"],["Conv",conv+"×",conv>=TC?"text-green-400":conv>=2?"text-yellow-400":"text-red-400"]]
+              .map(([l,v,c])=>`<div class="bg-gray-800 rounded-xl p-2"><div class="text-xl font-bold ${c}">${v}</div><div class="text-xs text-gray-400">${l}</div></div>`).join("")}
+          </div>
+          ${wasted.length>0?`<div class="text-xs text-red-300 bg-red-900 bg-opacity-30 rounded-lg p-2 mb-1">🚫 Zero sales despite testers: ${wasted.map(r=>r.o.name).join(", ")}</div>`:""}
+          ${excess.length>0?`<div class="text-xs text-amber-300 bg-amber-900 bg-opacity-30 rounded-lg p-2">⚠ Excess tester use: ${excess.map(r=>r.o.name).join(", ")}</div>`:""}
+        </div>`;}).join("")}
+    </div>
+  </div>`;}
+
+function mgrAudit(wd){
+  const all=[];
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    (od.audit||[]).forEach(a=>all.push({...a,outletName:o.name,outletId:o.id}));});
+  all.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const actionCls={SALES_ENTRY:"bg-blue-900 text-blue-300",SALES_LOCK:"bg-green-900 text-green-300",SALES_UNLOCK:"bg-red-900 text-red-300",GRN:"bg-blue-800 text-blue-200",TRANSFER_OUT:"bg-red-900 text-red-300",TRANSFER_IN:"bg-green-900 text-green-300",ADJUSTMENT:"bg-amber-900 text-amber-300",OPENING_STOCK:"bg-purple-900 text-purple-300",TESTER:"bg-pink-900 text-pink-300"};
+  return`<div class="fade">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-white font-bold text-lg">Audit Trail</h2>
+      <span class="pill bg-gray-700 text-gray-300">${all.length} entries</span>
+    </div>
+    ${all.length===0?`<div class="card rounded-xl p-8 text-center text-gray-500"><div class="text-4xl mb-2">🔍</div>No audit entries yet</div>`:`
+    <div class="space-y-2">
+      ${all.slice(0,150).map(a=>`<div class="card rounded-xl p-3 flex items-start gap-3">
+        <span class="pill ${actionCls[a.action]||"bg-gray-700 text-gray-300"} flex-shrink-0 mt-0.5">${a.action}</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-semibold text-white">${a.outletName}</div>
+          <div class="text-xs text-gray-400">${a.detail||""}</div>
+          <div class="text-xs text-gray-500">${fDT(a.ts)} · ${a.utype==="manager"?"👔 Manager":"👤 Staff"}</div>
+        </div>
+      </div>`).join("")}
+      ${all.length>150?`<div class="text-center text-gray-500 text-sm py-3">+ ${all.length-150} more — export for full list</div>`:""}
+    </div>`}
+  </div>`;}
+
+// ─── EXPORT TAB ──────────────────────────────
+function mgrExport(wd){
+  return`<div class="fade">
+    <h2 class="text-white font-bold text-lg mb-1">Export Reports</h2>
+    <p class="text-gray-400 text-xs mb-5">Generates Excel (.xlsx) files for ${S.weekStart}</p>
+    <div class="space-y-3">
+
+      <div class="card rounded-xl p-4">
+        <div class="font-bold text-white mb-1">📊 Full Operations Report</div>
+        <div class="text-xs text-gray-400 mb-3">Outlet summary · SKU performance · Top & slow movers · Tester report — all in one file (8 sheets)</div>
+        <button class="exp-btn g w-full py-3 rounded-xl font-bold" data-report="full">Generate & Download</button>
+      </div>
+
+      <div class="card rounded-xl p-4">
+        <div class="font-bold text-white mb-1">📦 Supply Chain & Stock Report</div>
+        <div class="text-xs text-gray-400 mb-3">Stock on hand matrix · Days of supply · Reorder recommendations · Transfer opportunities</div>
+        <button class="exp-btn g w-full py-3 rounded-xl font-bold" data-report="supply">Generate & Download</button>
+      </div>
+
+      <div class="card rounded-xl p-4">
+        <div class="font-bold text-white mb-1">🔄 Movement Log</div>
+        <div class="text-xs text-gray-400 mb-3">All GRNs with delivery refs · Transfers · Adjustments with reasons — chronological</div>
+        <button class="exp-btn g w-full py-3 rounded-xl font-bold" data-report="movements">Generate & Download</button>
+      </div>
+
+      <div class="card rounded-xl p-4">
+        <div class="font-bold text-white mb-1">🔍 Audit Trail Export</div>
+        <div class="text-xs text-gray-400 mb-3">Every action logged with timestamp, outlet, user type, and details</div>
+        <button class="exp-btn g w-full py-3 rounded-xl font-bold" data-report="audit">Generate & Download</button>
+      </div>
+
+      <div class="card-a rounded-xl p-4">
+        <div class="font-bold text-amber-300 mb-1">⚠️ Integrity Flags Report</div>
+        <div class="text-xs text-amber-400 mb-3">Negative stock · Backdated GRNs · Unlocked days · Excess tester use — for investigation</div>
+        <button class="exp-btn w-full py-3 rounded-xl font-bold bg-amber-700 text-amber-100" data-report="integrity">Generate & Download</button>
+      </div>
+
+    </div>
+  </div>`;}
+
+// ═══════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════
+function showModal(){
+  const m=S.modal;if(!m)return;
+  const wrap=document.createElement("div");
+  wrap.id="modal-wrap";wrap.className="fixed inset-0 z-50 flex items-end justify-center";
+  wrap.style.background="rgba(0,0,0,.78)";
+  wrap.innerHTML=`<div id="modal-body" class="w-full max-w-lg scy" style="background:#1a2744;border-radius:24px 24px 0 0;border-top:2px solid #C9A84C;max-height:90vh;padding:24px">
+    ${m.type==="tx-out"?txOutM():m.type==="tx-in"?txInM():m.type==="grn"?grnM():m.type==="pin"?pinM(m):""}
+  </div>`;
+  document.body.appendChild(wrap);
+  wrap.addEventListener("click",e=>{if(e.target===wrap)closeModal();});
+  bindModal();
+}
+function closeModal(){S.modal=null;const el=document.getElementById("modal-wrap");if(el)el.remove();}
+
+function txOutM(){const od=outletData(S.outlet);
+  return`<div class="fade"><div class="flex items-center justify-between mb-5">
+    <h3 class="text-xl font-bold text-white">📤 Send Stock Out</h3>
+    <button id="m-close" class="text-gray-400 text-3xl leading-none">×</button></div>
+    <div class="space-y-4">
+      <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Send to Outlet</label>
+        <select id="txo-to" class="inp">${["<option value=''>— Select —</option>",...OUTLETS.filter(o=>o.id!==S.outlet).map(o=>`<option value="${o.id}">${o.name}</option>`)].join("")}</select></div>
+      <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Product</label>
+        <select id="txo-sku" class="inp">${["<option value=''>— Select —</option>",...PRODUCTS.map(p=>{const av=closing(od,p.sku);return`<option value="${p.sku}" ${av<=0?"disabled":""}>  ${p.name} — Stock: ${av}</option>`;})].join("")}</select></div>
+      <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Quantity</label>
+        <input type="number" id="txo-qty" min="1" inputmode="numeric" placeholder="0" class="inp text-center text-2xl font-bold" style="font-size:22px"></div>
+      <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Notes (optional)</label>
+        <input type="text" id="txo-notes" class="inp" placeholder="e.g. Emergency transfer" style="font-size:16px"></div>
+      <button id="btn-do-txo" class="g w-full py-4 rounded-xl font-bold text-lg">CONFIRM SEND</button>
+    </div>
+  </div>`;}
+
+function txInM(){
+  return`<div class="fade"><div class="flex items-center justify-between mb-5">
+    <h3 class="text-xl font-bold text-white">📥 Receive Stock In</h3>
+    <button id="m-close" class="text-gray-400 text-3xl leading-none">×</button></div>
+    <div class="space-y-4">
+      <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Received from Outlet</label>
+        <select id="txi-from" class="inp">${["<option value=''>— Select —</option>",...OUTLETS.filter(o=>o.id!==S.outlet).map(o=>`<option value="${o.id}">${o.name}</option>`)].join("")}</select></div>
+      <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Product</label>
+        <select id="txi-sku" class="inp">${["<option value=''>— Select —</option>",...PRODUCTS.map(p=>`<option value="${p.sku}">${p.name}</option>`)].join("")}</select></div>
+      <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Quantity Received</label>
+        <input type="number" id="txi-qty" min="1" inputmode="numeric" placeholder="0" class="inp text-center text-2xl font-bold" style="font-size:22px"></div>
+      <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Notes (optional)</label>
+        <input type="text" id="txi-notes" class="inp" style="font-size:16px"></div>
+      <button id="btn-do-txi" class="w-full py-4 rounded-xl font-bold text-lg text-white" style="background:linear-gradient(135deg,#16a34a,#22c55e)">CONFIRM RECEIVED</button>
+    </div>
+  </div>`;}
+
+function grnM(){
+  const today=new Date().toISOString().split("T")[0];
+  const basket=S.grnBasket||{};
+  const bItems=Object.entries(basket).filter(([,q])=>q>0);
+  const bTotal=bItems.reduce((s,[,q])=>s+q,0);
+  return`<div class="fade">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-bold text-white">📦 New Delivery (GRN)</h3>
+      <button id="m-close" class="text-gray-400 text-3xl leading-none">×</button>
+    </div>
+    <div class="card-a rounded-xl p-3 mb-4 text-xs text-amber-400">
+      ⚠ If delivery date ≠ today, this will be flagged as <strong>backdated</strong> in the audit trail.
+    </div>
+    <div class="space-y-3 mb-4">
+      <div>
+        <label class="text-xs text-gray-400 font-bold block mb-1 tracking-widest">DELIVERY NOTE REF <span class="text-red-400">*</span></label>
+        <input type="text" id="grn-ref" placeholder="e.g. DN-2024-1234" class="inp" style="font-size:17px;letter-spacing:.04em" autocapitalize="characters" autocorrect="off" autocomplete="off">
+      </div>
+      <div>
+        <label class="text-xs text-gray-400 font-bold block mb-1 tracking-widest">ACTUAL DELIVERY DATE <span class="text-red-400">*</span></label>
+        <input type="date" id="grn-date" value="${today}" class="inp" style="font-size:16px">
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.1)" class="pt-4 mb-3">
+      <label class="text-xs text-gray-400 font-bold block mb-2 tracking-widest">ADD PRODUCTS RECEIVED</label>
+      <select id="grn-pick-sku" class="inp mb-2" style="font-size:15px">
+        <option value="">— Select product —</option>
+        ${PRODUCTS.map(p=>`<option value="${p.sku}">${p.sku} · ${p.name}</option>`).join("")}
+      </select>
+      <div class="flex gap-2">
+        <input type="number" id="grn-pick-qty" min="1" inputmode="numeric" placeholder="Qty"
+          class="inp text-center font-bold" style="font-size:26px;height:58px;flex:1">
+        <button id="btn-grn-add" class="g rounded-xl font-bold text-base flex-shrink-0"
+          style="height:58px;min-width:90px;font-size:16px">+ ADD</button>
+      </div>
+    </div>
+    <div id="grn-basket-wrap" class="mb-4">${grnBasketHTML(bItems,bTotal)}</div>
+    <div class="mb-4">
+      <label class="text-xs text-gray-400 font-bold block mb-1 tracking-widest">NOTES (optional)</label>
+      <input type="text" id="grn-notes" class="inp" placeholder="e.g. Partial delivery, 3 cartons missing" style="font-size:15px">
+    </div>
+    <button id="btn-do-grn" class="g w-full py-4 rounded-xl font-bold text-lg" style="opacity:${bTotal===0?.45:1}">
+      ${bTotal===0?"SELECT PRODUCTS ABOVE TO CONTINUE":`SAVE DELIVERY RECORD (${bTotal} units)`}
+    </button>
+  </div>`;}
+
+function grnBasketHTML(items,total){
+  if(!items||items.length===0)
+    return`<div class="card rounded-xl p-5 text-center text-gray-500 text-sm">
+      <div class="text-3xl mb-2">📋</div>No products added yet<br>
+      <span class="text-xs">Select a product and qty above, then tap + ADD</span></div>`;
+  return`<div class="rounded-xl overflow-hidden" style="border:1px solid rgba(201,168,76,.3)">
+    <div class="flex items-center justify-between px-3 py-2" style="background:rgba(201,168,76,.12);border-bottom:1px solid rgba(201,168,76,.2)">
+      <span class="text-xs font-bold tracking-widest" style="color:#C9A84C">DELIVERY CONTENTS</span>
+      <span class="pill bg-green-900 text-green-300">${total} UNITS TOTAL</span>
+    </div>
+    ${items.map(([sku,qty])=>{const p=PRODUCTS.find(x=>x.sku===sku);return`
+      <div class="flex items-center gap-3 px-3 py-3" style="border-bottom:1px solid rgba(255,255,255,.06)">
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-mono font-bold" style="color:#C9A84C">${sku}</div>
+          <div class="text-sm font-semibold text-white truncate">${p?.name||sku}</div>
+        </div>
+        <div class="text-2xl font-bold text-white w-14 text-center">${qty}</div>
+        <button class="grn-remove w-10 h-10 rounded-xl font-bold text-lg flex-shrink-0"
+          style="background:rgba(127,29,29,.6);color:#fca5a5" data-sku="${sku}">×</button>
+      </div>`;}).join("")}
+  </div>`;}
+
+function updateGrnBasket(){
+  const basket=S.grnBasket||{};
+  const items=Object.entries(basket).filter(([,q])=>q>0);
+  const total=items.reduce((s,[,q])=>s+q,0);
+  const wrap=document.getElementById("grn-basket-wrap");
+  if(wrap){wrap.innerHTML=grnBasketHTML(items,total);
+    wrap.querySelectorAll(".grn-remove").forEach(b=>b.addEventListener("click",()=>{
+      delete S.grnBasket[b.dataset.sku];updateGrnBasket();
+    }));}
+  const btn=document.getElementById("btn-do-grn");
+  if(btn){btn.textContent=total===0?"SELECT PRODUCTS ABOVE TO CONTINUE":`SAVE DELIVERY RECORD (${total} units)`;
+    btn.style.opacity=total===0?.45:1;}
+  const qi=document.getElementById("grn-pick-qty");if(qi)qi.value="";
+  const si=document.getElementById("grn-pick-sku");if(si)si.value="";
+}
+
+function pinM(m){
+  return`<div class="fade text-center"><div class="flex items-center justify-between mb-5">
+    <div></div><button id="m-close" class="text-gray-400 text-3xl leading-none">×</button></div>
+    <div class="text-4xl mb-3">🔐</div>
+    <h3 class="text-xl font-bold text-white mb-1">${m.title||"Manager Approval"}</h3>
+    <p class="text-gray-400 text-sm mb-5">${m.desc||"Enter manager PIN to continue"}</p>
+    ${m.extraHTML||""}
+    <input type="password" id="pin-inp" inputmode="numeric" maxlength="4" placeholder="● ● ● ●"
+      class="inp text-center text-3xl tracking-widest mb-4" style="letter-spacing:.5em;font-size:28px" autocomplete="off">
+    <div id="pin-err" class="text-red-400 text-sm mb-3 hidden">Incorrect PIN — try again</div>
+    <button id="btn-pin-ok" class="g w-full py-4 rounded-xl font-bold text-lg">CONFIRM</button>
+  </div>`;}
+
+// ═══════════════════════════════════════════
+// EVENT BINDING
+// ═══════════════════════════════════════════
+function bindAll(){
+  // Login
+  q("btn-sl")?.addEventListener("click",()=>{
+    const v=q("sel-out")?.value;
+    if(!v){toast("Select your outlet first");return;}
+    S.outlet=v;S.view="staff";S.staffTab="sales";render();
+  });
+  q("btn-ml")?.addEventListener("click",()=>{
+    if(q("inp-pin")?.value!==MGR_PIN){toast("Incorrect PIN");return;}
+    S.view="manager";S.mgrTab="dashboard";render();
+  });
+  q("inp-pin")?.addEventListener("keydown",e=>{if(e.key==="Enter")q("btn-ml")?.click();});
+
+  // Logout
+  q("btn-lo")?.addEventListener("click",()=>{S.view="login";S.outlet=null;render();});
+
+  // Staff tabs
+  qAll(".s-tab").forEach(b=>b.addEventListener("click",()=>{S.staffTab=b.dataset.tab;render();}));
+  // Manager tabs
+  qAll(".m-tab").forEach(b=>b.addEventListener("click",()=>{S.mgrTab=b.dataset.tab;render();}));
+
+  // Day selector
+  qAll(".day-btn").forEach(b=>b.addEventListener("click",()=>{S.activeDay=b.dataset.day;render();}));
+
+  // Submit / unlock day
+  q("btn-submit-day")?.addEventListener("click",()=>{
+    const day=q("btn-submit-day").dataset.day;
+    const od=outletData(S.outlet);
+    const totalToday=PRODUCTS.reduce((s,p)=>s+(od.daily_sales[day]?.[p.sku]||0),0);
+    mutateOutlet(S.outlet,od=>{
+      if(!od.day_status)od.day_status={};
+      od.day_status[day]={locked:true,lockedAt:now()};
+    });
+    addAudit(S.outlet,"SALES_LOCK",{detail:`${day} locked — ${totalToday} bottles total`},"staff");
+    toast(`✓ ${day} submitted and locked (${totalToday} bottles)`);render();
+  });
+  q("btn-unlock-day")?.addEventListener("click",()=>{
+    const day=q("btn-unlock-day").dataset.day;
+    S.modal={type:"pin",title:`Unlock ${day} Sales`,desc:"Manager PIN + reason required. This action is fully audited.",
+      extraHTML:`<div class="mb-4"><label class="text-sm text-gray-400 block mb-1 font-semibold">Reason for unlock <span class="text-red-400">*</span></label>
+        <input type="text" id="unlock-reason" placeholder="e.g. Data entry error on EP-001" class="inp" style="font-size:16px"></div>`,
+      onOk:()=>{
+        const reason=document.getElementById("unlock-reason")?.value||"No reason given";
+        mutateOutlet(S.outlet,od=>{if(!od.day_status)od.day_status={};od.day_status[day]={locked:false,unlockedAt:now(),unlockReason:reason};});
+        addAudit(S.outlet,"SALES_UNLOCK",{detail:`${day} UNLOCKED. Reason: ${reason}`},"manager");
+        toast(`🔓 ${day} unlocked`);closeModal();render();
+      }};
+    render();
+  });
+
+  // Sales qty
+  qAll(".qty-btn").forEach(b=>b.addEventListener("click",()=>{
+    const{a,day,sku}=b.dataset;
+    const od=outletData(S.outlet);
+    if(isLocked(od,day)){toast("🔒 Day locked — manager unlock required");return;}
+    const cur=od.daily_sales[day]?.[sku]||0,nv=Math.max(0,cur+(a==="inc"?1:-1));
+    mutateOutlet(S.outlet,od=>{if(!od.daily_sales[day])od.daily_sales[day]={};od.daily_sales[day][sku]=nv;});
+    addAudit(S.outlet,"SALES_ENTRY",{sku,day,detail:`${sku} ${day}: ${cur}→${nv}`});
+    render();
+  }));
+  qAll(".sales-inp").forEach(inp=>inp.addEventListener("change",()=>{
+    const{day,sku}=inp.dataset,od=outletData(S.outlet);
+    if(isLocked(od,day)){toast("🔒 Day locked");render();return;}
+    const old=od.daily_sales[day]?.[sku]||0,nv=Math.max(0,parseInt(inp.value)||0);
+    mutateOutlet(S.outlet,od=>{if(!od.daily_sales[day])od.daily_sales[day]={};od.daily_sales[day][sku]=nv;});
+    addAudit(S.outlet,"SALES_ENTRY",{sku,day,detail:`${sku} ${day}: ${old}→${nv}`});
+    inp.value=nv;
+  }));
+
+  // GRN
+  q("btn-new-grn")?.addEventListener("click",()=>{S.grnBasket={};S.modal={type:"grn"};render();});
+
+  // Opening stock toggle
+  q("btn-os-toggle")?.addEventListener("click",()=>{
+    const p=q("os-panel"),a=q("os-arrow");
+    p?.classList.toggle("hidden");
+    if(a)a.textContent=p?.classList.contains("hidden")?"▼":"▲";
+  });
+  qAll(".os-btn").forEach(b=>b.addEventListener("click",()=>{
+    const inp=document.querySelector(`.os-inp[data-sku="${b.dataset.sku}"]`);
+    if(inp)inp.value=Math.max(0,(parseInt(inp.value)||0)+(b.dataset.a==="inc"?1:-1));
+  }));
+  q("btn-os-save")?.addEventListener("click",()=>{
+    const vals={};qAll(".os-inp").forEach(i=>{vals[i.dataset.sku]=Math.max(0,parseInt(i.value)||0);});
+    S.modal={type:"pin",title:"Set Opening Stock",desc:"Opening stock changes require Manager approval.",
+      onOk:()=>{
+        mutateOutlet(S.outlet,od=>{Object.entries(vals).forEach(([sku,qty])=>{od.opening_stock[sku]=qty;});});
+        addAudit(S.outlet,"OPENING_STOCK",{detail:`Opening stock updated: ${Object.entries(vals).filter(([,q])=>q>0).map(([s,q])=>`${s}:${q}`).join(", ")||"all zero"}`},"manager");
+        toast("✓ Opening stock saved");closeModal();render();
+      }};
+    render();
+  });
+
+  // Transfers
+  q("btn-tx-out")?.addEventListener("click",()=>{S.modal={type:"tx-out"};render();});
+  q("btn-tx-in")?.addEventListener("click",()=>{S.modal={type:"tx-in"};render();});
+
+  // Testers save
+  q("btn-ts-save")?.addEventListener("click",()=>{
+    const vals={issued:{},used:{}};
+    qAll(".tst-inp").forEach(i=>{vals[i.dataset.f][i.dataset.sku]=Math.max(0,parseInt(i.value)||0);});
+    mutateOutlet(S.outlet,od=>{Object.assign(od.testers_issued,vals.issued);Object.assign(od.testers_used,vals.used);});
+    addAudit(S.outlet,"TESTER",{detail:`Tester data updated`});
+    toast("✓ Tester data saved");render();
+  });
+  qAll(".tst-btn").forEach(b=>b.addEventListener("click",()=>{
+    const inp=document.querySelector(`.tst-inp[data-f="${b.dataset.f}"][data-sku="${b.dataset.sku}"]`);
+    if(inp)inp.value=Math.max(0,(parseInt(inp.value)||0)+(b.dataset.a==="inc"?1:-1));
+  }));
+
+  // Adjustment submit
+  q("btn-adj-submit")?.addEventListener("click",()=>{
+    const sku=q("adj-sku")?.value,type=parseInt(q("adj-type")?.value||"1");
+    const qty=parseInt(q("adj-qty")?.value)||0,reason=q("adj-reason")?.value,notes=q("adj-notes")?.value||"";
+    if(!sku){toast("Select a product");return;}
+    if(qty<=0){toast("Enter a quantity > 0");return;}
+    if(!reason){toast("Select a reason");return;}
+    if(reason.includes("Other")&&!notes){toast("Notes required for 'Other' reason");return;}
+    const finalQty=type*qty,skuName=PRODUCTS.find(p=>p.sku===sku)?.name||sku;
+    S.modal={type:"pin",title:"Approve Adjustment",desc:`${finalQty>0?"+":""}${finalQty} × ${skuName}\nReason: ${reason}`,
+      onOk:()=>{
+        const rec={id:uid(),sku,qty:finalQty,reason,notes,date:now()};
+        mutateOutlet(S.outlet,od=>{if(!od.adjustments)od.adjustments=[];od.adjustments.push(rec);});
+        addAudit(S.outlet,"ADJUSTMENT",{sku,detail:`${finalQty>0?"+":""}${finalQty} × ${skuName} | Reason: ${reason}${notes?" | Notes: "+notes:""}`},"manager");
+        toast(`✓ Adjustment saved: ${finalQty>0?"+":""}${finalQty} × ${skuName}`);closeModal();render();
+      }};
+    render();
+  });
+
+  // Export buttons
+  qAll(".exp-btn").forEach(b=>b.addEventListener("click",()=>exportReport(b.dataset.report)));
+}
+
+function bindModal(){
+  q("m-close")?.addEventListener("click",closeModal);
+
+  // GRN — add product to basket
+  q("btn-grn-add")?.addEventListener("click",()=>{
+    const sku=q("grn-pick-sku")?.value;
+    const qty=parseInt(q("grn-pick-qty")?.value)||0;
+    if(!sku){toast("Select a product first");return;}
+    if(qty<=0){toast("Enter quantity received");return;}
+    if(!S.grnBasket)S.grnBasket={};
+    S.grnBasket[sku]=(S.grnBasket[sku]||0)+qty;
+    updateGrnBasket();
+  });
+  q("grn-pick-qty")?.addEventListener("keydown",e=>{if(e.key==="Enter")q("btn-grn-add")?.click();});
+  // GRN — remove from basket (initial render)
+  qAll(".grn-remove").forEach(b=>b.addEventListener("click",()=>{
+    delete S.grnBasket[b.dataset.sku];updateGrnBasket();
+  }));
+  // GRN — save record
+  q("btn-do-grn")?.addEventListener("click",()=>{
+    const ref=(q("grn-ref")?.value||"").trim(),date=q("grn-date")?.value,notes=q("grn-notes")?.value||"";
+    if(!ref){toast("Delivery reference is mandatory");return;}
+    if(!date){toast("Delivery date is mandatory");return;}
+    const items=Object.fromEntries(Object.entries(S.grnBasket||{}).filter(([,v])=>v>0));
+    if(Object.keys(items).length===0){toast("Add at least one product to this delivery");return;}
+    const today=new Date().toISOString().split("T")[0];
+    const backdate=date!==today;
+    const rec={id:uid(),ref,deliveryDate:date,enteredAt:now(),items,note:notes};
+    mutateOutlet(S.outlet,od=>{if(!od.grn_records)od.grn_records=[];od.grn_records.push(rec);});
+    const tot=Object.values(items).reduce((s,v)=>s+v,0);
+    addAudit(S.outlet,"GRN",{detail:`GRN ${ref} — ${tot} units${backdate?` ⚠ BACKDATED (delivery ${date}, entered ${today})`:""}`});
+    S.grnBasket={};
+    toast(`✓ GRN saved: ${tot} units${backdate?" ⚠ flagged as backdated":""}`);closeModal();render();
+  });
+
+  // Transfer out
+  q("btn-do-txo")?.addEventListener("click",()=>{
+    const to=q("txo-to")?.value,sku=q("txo-sku")?.value;
+    const qty=parseInt(q("txo-qty")?.value)||0,notes=q("txo-notes")?.value||"";
+    if(!to||!sku||qty<=0){toast("Fill in all fields");return;}
+    const od=outletData(S.outlet),avail=closing(od,sku);
+    if(qty>avail){toast(`Only ${avail} available — cannot send ${qty}`);return;}
+    const id=uid(),d=now();
+    mutateOutlet(S.outlet,od=>{od.transfers_out.push({id,sku,qty,to,date:d,notes});});
+    mutateOutlet(to,od=>{od.transfers_in.push({id,sku,qty,from:S.outlet,date:d,notes});});
+    const toName=OUTLETS.find(o=>o.id===to)?.name||"";
+    addAudit(S.outlet,"TRANSFER_OUT",{sku,detail:`${qty} × ${sku} → ${toName}`});
+    addAudit(to,"TRANSFER_IN",{sku,detail:`${qty} × ${sku} ← ${OUTLETS.find(o=>o.id===S.outlet)?.name||""}`});
+    toast(`✓ Sent ${qty} units to ${toName}`);closeModal();render();
+  });
+
+  // Transfer in
+  q("btn-do-txi")?.addEventListener("click",()=>{
+    const from=q("txi-from")?.value,sku=q("txi-sku")?.value;
+    const qty=parseInt(q("txi-qty")?.value)||0,notes=q("txi-notes")?.value||"";
+    if(!from||!sku||qty<=0){toast("Fill in all fields");return;}
+    const id=uid(),d=now();
+    mutateOutlet(S.outlet,od=>{od.transfers_in.push({id,sku,qty,from,date:d,notes});});
+    const fromName=OUTLETS.find(o=>o.id===from)?.name||"";
+    addAudit(S.outlet,"TRANSFER_IN",{sku,detail:`${qty} × ${sku} ← ${fromName}`});
+    toast(`✓ Received ${qty} units from ${fromName}`);closeModal();render();
+  });
+
+  // PIN confirm
+  q("btn-pin-ok")?.addEventListener("click",()=>{
+    const pin=q("pin-inp")?.value;
+    if(pin!==MGR_PIN){const e=q("pin-err");if(e)e.classList.remove("hidden");return;}
+    S.modal?.onOk?.();
+  });
+  q("pin-inp")?.addEventListener("keydown",e=>{if(e.key==="Enter")q("btn-pin-ok")?.click();});
+}
+
+// ═══════════════════════════════════════════
+// EXCEL EXPORT ENGINE
+// ═══════════════════════════════════════════
+function exportReport(type){
+  try{
+    if(typeof XLSX==="undefined"){toast("Excel library loading... try again in a moment");return;}
+    const wd=weekData(),wb=XLSX.utils.book_new();
+    const W=s=>({v:s,t:"s"}); // string cell helper
+    const N=(n,fmt)=>({v:Number(n)||0,t:"n",...(fmt?{z:fmt}:{})});
+    const H=s=>({v:s,t:"s"}); // header (same for now, style not in free XLSX)
+
+    if(type==="full"||type==="all"){
+      addOutletSummarySheet(wb,wd,W,N,H);
+      addSKUPerfSheet(wb,wd,W,N,H);
+      addMoversSheet(wb,wd,W,N,H);
+      addDailySalesSheet(wb,wd,W,N,H);
+      addTesterSheet2(wb,wd,W,N,H);
+      addStockMatrixSheet(wb,wd,W,N,H);
+      addMovementSheet(wb,wd,W,N,H);
+      addSupplyChainSheet(wb,wd,W,N,H);
+      addAuditSheet(wb,wd,W,N,H);
+    } else if(type==="supply"){
+      addStockMatrixSheet(wb,wd,W,N,H);
+      addSupplyChainSheet(wb,wd,W,N,H);
+      addMoversSheet(wb,wd,W,N,H);
+    } else if(type==="movements"){
+      addMovementSheet(wb,wd,W,N,H);
+    } else if(type==="audit"){
+      addAuditSheet(wb,wd,W,N,H);
+    } else if(type==="integrity"){
+      addIntegritySheet(wb,wd,W,N,H);
+    }
+
+    if(wb.SheetNames.length===0){toast("No data to export this week");return;}
+    XLSX.writeFile(wb,`EmiratesPride_${type}_${S.weekStart}.xlsx`);
+    toast("✓ Excel file downloaded!");
+  }catch(e){console.error(e);toast("Export error — check console");}
+}
+
+function setColWidths(ws,widths){ws["!cols"]=widths.map(w=>({wch:w}));}
+function addRow(data,row){data.push(row);}
+
+function addOutletSummarySheet(wb,wd,W,N,H){
+  const rows=[["EMIRATES PRIDE — Outlet Weekly Summary","","","","","","","","","",""],
+    ["Week:",S.weekStart,"","Generated:",new Date().toLocaleString("en-AE")],[""],
+    ["Outlet","Code","Revenue (AED)","Bottles Sold","Neg Stock SKUs","Critical SKUs","Adjustments","Days Locked","Tester Conv.","Conv. Status","Location"]];
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    const sold=PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku),0);
+    const rev=PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku)*p.price,0);
+    const neg=PRODUCTS.filter(p=>closing(od,p.sku)<0).length;
+    const crit=PRODUCTS.filter(p=>{const c=closing(od,p.sku),s=totSold(od,p.sku);return c>0&&s>0&&c/(s/7)<7;}).length;
+    const adjs=(od.adjustments||[]).length;
+    const lockedD=DAYS.filter(d=>isLocked(od,d)).length;
+    const tUsd=PRODUCTS.reduce((s,p)=>s+(od.testers_used[p.sku]||0),0);
+    const conv=tUsd>0?(sold/tUsd).toFixed(1):"0";
+    rows.push([o.name,o.id,rev,sold,neg,crit,adjs,lockedD+"/7",conv,+conv>=TC?"ON TARGET":"BELOW TARGET",o.loc]);
+  });
+  const totRev=OUTLETS.reduce((s,o)=>{const od=wd[o.id]||initOutlet();return s+PRODUCTS.reduce((s2,p)=>s2+totSold(od,p.sku)*p.price,0);},0);
+  const totSoldAll=OUTLETS.reduce((s,o)=>{const od=wd[o.id]||initOutlet();return s+PRODUCTS.reduce((s2,p)=>s2+totSold(od,p.sku),0);},0);
+  rows.push(["","","","","","","","","","",""],
+    ["TOTAL","",totRev,totSoldAll,"","","","","","",""]);
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  setColWidths(ws,[28,8,16,14,14,12,14,12,12,14,18]);
+  XLSX.utils.book_append_sheet(wb,ws,"Outlet Summary");
+}
+
+function addSKUPerfSheet(wb,wd,W,N,H){
+  const rows=[["EMIRATES PRIDE — SKU Performance Report"],["Week:",S.weekStart],[""],
+    ["SKU","Product","Price (AED)","Total Sold","Revenue (AED)","Closing Stock","Stock Value (AED)","DOS (days)","ABC","Velocity","Status","Action"]];
+  const skuData=PRODUCTS.map(p=>{
+    let tS=0,tC=0;
+    OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();tS+=totSold(od,p.sku);tC+=closing(od,p.sku);});
+    const rev=tS*p.price,stkVal=tC*p.price,dos=tS>0?(tC/(tS/7)).toFixed(1):"∞";
+    return{p,tS,tC,rev,stkVal,dos:parseFloat(dos)||999};
+  }).sort((a,b)=>b.rev-a.rev);
+  let cumRev=0,totalRev=skuData.reduce((s,x)=>s+x.rev,0);
+  skuData.forEach((x,i)=>{
+    cumRev+=x.rev;
+    const abc=cumRev/totalRev<0.7?"A":cumRev/totalRev<0.9?"B":"C";
+    const vel=x.tS>20?"FAST":x.tS>5?"MEDIUM":x.tS>0?"SLOW":"DEAD";
+    const st=stockSt(x.tC,x.tS);
+    const action=x.dos<7?"ORDER URGENT":x.dos<14?"Order soon":x.tS===0&&x.tC>0?"Clearance":"Monitor";
+    rows.push([x.p.sku,x.p.name,x.p.price,x.tS,x.rev,x.tC,x.stkVal,x.dos===999?"∞":x.dos,abc,vel,st.label,action]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  setColWidths(ws,[8,26,12,12,16,14,16,10,5,8,16,18]);
+  XLSX.utils.book_append_sheet(wb,ws,"SKU Performance");
+}
+
+function addMoversSheet(wb,wd,W,N,H){
+  const skuData=PRODUCTS.map(p=>{
+    let tS=0,tC=0;
+    OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();tS+=totSold(od,p.sku);tC+=closing(od,p.sku);});
+    return{p,tS,tC,rev:tS*p.price};
+  }).sort((a,b)=>b.tS-a.tS);
+  const rows=[["EMIRATES PRIDE — Top & Slow Movers"],["Week:",S.weekStart],[""],
+    ["── TOP 5 MOVERS (by units sold) ──"],
+    ["Rank","SKU","Product","Units Sold","Revenue (AED)","Closing Stock"],
+    ...skuData.slice(0,5).map((x,i)=>[i+1,x.p.sku,x.p.name,x.tS,x.rev,x.tC]),
+    [""],["── SLOW MOVERS (< 10 units) ──"],
+    ["SKU","Product","Units Sold","Closing Stock","DOS","Recommendation"],
+    ...skuData.filter(x=>x.tS<10).map(x=>[x.p.sku,x.p.name,x.tS,x.tC,x.tS>0?(x.tC/(x.tS/7)).toFixed(0):"∞",x.tS===0&&x.tC>0?"CLEARANCE — no sales":"Order only when needed"]),
+    [""],["── DEAD STOCK (zero sales) ──"],
+    ["SKU","Product","Closing Stock","Stock Value (AED)","Recommendation"],
+    ...skuData.filter(x=>x.tS===0&&x.tC>0).map(x=>[x.p.sku,x.p.name,x.tC,x.tC*x.p.price,"Clearance / liquidate / consolidate"]),
+  ];
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  setColWidths(ws,[6,8,28,12,16,14,20]);
+  XLSX.utils.book_append_sheet(wb,ws,"Top & Slow Movers");
+}
+
+function addDailySalesSheet(wb,wd,W,N,H){
+  const hdr=["Outlet","SKU","Product",...DAYS,"Total","Revenue (AED)","Locked Days"];
+  const rows=[["EMIRATES PRIDE — Daily Sales Breakdown"],["Week:",S.weekStart],[""],hdr];
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    PRODUCTS.forEach(p=>{
+      const daily=DAYS.map(d=>od.daily_sales[d]?.[p.sku]||0);
+      const tot=daily.reduce((s,x)=>s+x,0);
+      if(tot>0){
+        const locked=DAYS.filter(d=>isLocked(od,d)).length;
+        rows.push([o.name,p.sku,p.name,...daily,tot,tot*p.price,locked+"/7"]);
+      }
+    });
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  setColWidths(ws,[22,8,26,...DAYS.map(()=>7),8,14,10]);
+  XLSX.utils.book_append_sheet(wb,ws,"Daily Sales");
+}
+
+function addTesterSheet2(wb,wd,W,N,H){
+  const rows=[["EMIRATES PRIDE — Tester Performance Report"],["Week:",S.weekStart],["Target:",TC+" bottles per tester used"],[""],
+    ["Product","SKU","Issued","Used","Sold","Conversion","vs Target","Status","Zero-Sale Outlets","Excess-Use Outlets"]];
+  PRODUCTS.forEach(p=>{
+    let tI=0,tU=0,tS=0;const zero=[],excess=[];
+    OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+      const i=od.testers_issued[p.sku]||0,u=od.testers_used[p.sku]||0,s=totSold(od,p.sku);
+      tI+=i;tU+=u;tS+=s;
+      if(u>0&&s===0)zero.push(o.name);
+      if(u>i&&i>0)excess.push(o.name);
+    });
+    const conv=tU>0?(tS/tU).toFixed(2):0;
+    rows.push([p.name,p.sku,tI,tU,tS,conv,+conv>=TC?"ON TARGET":`${(+conv-TC).toFixed(2)}`,
+      +conv>=TC?"✓ Good":+conv>=2?"Below Target":"Poor/Zero",zero.join(", ")||"None",excess.join(", ")||"None"]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  setColWidths(ws,[28,8,8,8,8,10,10,12,30,30]);
+  XLSX.utils.book_append_sheet(wb,ws,"Tester Report");
+}
+
+function addStockMatrixSheet(wb,wd,W,N,H){
+  const rows=[["EMIRATES PRIDE — Stock on Hand Matrix (Closing Stock)"],["Week:",S.weekStart],[""],
+    ["Outlet",...PRODUCTS.map(p=>p.sku),"TOTAL UNITS","STOCK VALUE (AED)"]];
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    const stocks=PRODUCTS.map(p=>closing(od,p.sku));
+    const totUnits=stocks.reduce((s,x)=>s+Math.max(0,x),0);
+    const totVal=PRODUCTS.reduce((s,p)=>s+Math.max(0,closing(od,p.sku))*p.price,0);
+    rows.push([o.name,...stocks,totUnits,totVal]);
+  });
+  const totSkus=PRODUCTS.map(p=>OUTLETS.reduce((s,o)=>s+closing(wd[o.id]||initOutlet(),p.sku),0));
+  const grandUnits=totSkus.reduce((s,x)=>s+Math.max(0,x),0);
+  const grandVal=PRODUCTS.reduce((s,p,i)=>s+Math.max(0,totSkus[i])*p.price,0);
+  rows.push(["TOTAL",...totSkus,grandUnits,grandVal]);
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  setColWidths(ws,[24,...PRODUCTS.map(()=>8),12,16]);
+  XLSX.utils.book_append_sheet(wb,ws,"Stock Matrix");
+}
+
+function addSupplyChainSheet(wb,wd,W,N,H){
+  const rows=[["EMIRATES PRIDE — Supply Chain Insights"],["Week:",S.weekStart],[""],
+    ["SKU","Product","Total Sold","Avg/Day","Closing Stock","DOS","Weeks of Supply","Reorder?","Transfer From → To","ABC"]];
+  const skuData=PRODUCTS.map(p=>{
+    let tS=0,tC=0;
+    const byOutlet=OUTLETS.map(o=>{const od=wd[o.id]||initOutlet();const s=totSold(od,p.sku),c=closing(od,p.sku);tS+=s;tC+=c;return{o,s,c};});
+    const dos=tS>0?(tC/(tS/7)).toFixed(1):"∞";
+    const reorder=+dos<14||tC<=0;
+    // Transfer: outlets with >30 DOS send to outlets with <14 DOS
+    const highDOS=byOutlet.filter(x=>x.s>0&&x.c/(x.s/7)>30).map(x=>x.o.name).join(", ");
+    const lowDOS=byOutlet.filter(x=>x.c>=0&&(x.s>0?x.c/(x.s/7):999)<14).map(x=>x.o.name).join(", ");
+    const txOpp=highDOS&&lowDOS?`${highDOS} → ${lowDOS}`:"—";
+    return{p,tS,tC,dos,reorder,txOpp};
+  }).sort((a,b)=>parseFloat(a.dos)-parseFloat(b.dos));
+  let cum=0,totRev=skuData.reduce((s,x)=>s+x.tS*x.p.price,0);
+  skuData.forEach(x=>{
+    cum+=x.tS*x.p.price;const abc=cum/totRev<0.7?"A":cum/totRev<0.9?"B":"C";
+    rows.push([x.p.sku,x.p.name,x.tS,x.tS>0?(x.tS/7).toFixed(1):"0",x.tC,x.dos===999?"∞":x.dos,
+      x.dos===999?"∞":(parseFloat(x.dos)/7).toFixed(1),x.reorder?"🔴 ORDER":"✓ OK",x.txOpp,abc]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  setColWidths(ws,[8,26,10,8,12,8,12,10,40,5]);
+  XLSX.utils.book_append_sheet(wb,ws,"Supply Chain");
+}
+
+function addMovementSheet(wb,wd,W,N,H){
+  const rows=[["EMIRATES PRIDE — Stock Movement Log"],["Week:",S.weekStart],[""],
+    ["Type","Outlet","Reference/SKU","Product/Details","Qty","Date Entered","Delivery Date","Notes","Flag"]];
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    (od.grn_records||[]).forEach(g=>{
+      const tot=Object.values(g.items||{}).reduce((s,q)=>s+q,0);
+      const bd=g.deliveryDate!==g.enteredAt?.split("T")[0]?"⚠ BACKDATED":"";
+      rows.push(["GRN",o.name,g.ref,Object.entries(g.items||{}).filter(([,q])=>q>0).map(([s,q])=>`${s}:${q}`).join(", "),tot,fDT(g.enteredAt),fD(g.deliveryDate+"T00:00:00"),g.note||"",bd]);
+    });
+    (od.transfers_out||[]).forEach(t=>{
+      const p=PRODUCTS.find(x=>x.sku===t.sku);
+      rows.push(["TRANSFER OUT",o.name,t.sku,p?.name||"",t.qty,fDT(t.date),"","→ "+(OUTLETS.find(x=>x.id===t.to)?.name||"?"),""]);
+    });
+    (od.transfers_in||[]).forEach(t=>{
+      const p=PRODUCTS.find(x=>x.sku===t.sku);
+      rows.push(["TRANSFER IN",o.name,t.sku,p?.name||"",t.qty,fDT(t.date),"","← "+(OUTLETS.find(x=>x.id===t.from)?.name||"?"),""]);
+    });
+    (od.adjustments||[]).forEach(a=>{
+      const p=PRODUCTS.find(x=>x.sku===a.sku);
+      rows.push(["ADJUSTMENT",o.name,a.sku,p?.name||"",a.qty,fDT(a.date),"",`${a.reason}${a.notes?" | "+a.notes:""}`,a.qty<0?"⚠ NEG ADJ":""]);
+    });
+  });
+  rows.sort((a,b)=>a[0].localeCompare(b[0]));
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  setColWidths(ws,[14,22,16,32,6,16,14,36,12]);
+  XLSX.utils.book_append_sheet(wb,ws,"Movement Log");
+}
+
+function addAuditSheet(wb,wd,W,N,H){
+  const all=[];
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    (od.audit||[]).forEach(a=>all.push({...a,outletName:o.name}));});
+  all.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const rows=[["EMIRATES PRIDE — Full Audit Trail"],["Week:",S.weekStart],["Total Entries:",all.length],[""],
+    ["Timestamp","Outlet","Action","Detail","User Type"]];
+  all.forEach(a=>rows.push([fDT(a.ts),a.outletName,a.action,a.detail||"",a.utype==="manager"?"Manager":"Staff"]));
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  setColWidths(ws,[18,22,16,60,10]);
+  XLSX.utils.book_append_sheet(wb,ws,"Audit Trail");
+}
+
+function addIntegritySheet(wb,wd,W,N,H){
+  const rows=[["EMIRATES PRIDE — Data Integrity Flags Report"],["Week:",S.weekStart],[""],
+    ["⚠ Negative Stock"],["Outlet","SKU","Product","Closing Stock","Likely Cause"]];
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    PRODUCTS.forEach(p=>{const c=closing(od,p.sku);
+      if(c<0)rows.push([o.name,p.sku,p.name,c,"Missing opening stock, GRN, or sales entered > stock"]);});});
+  rows.push([""],["⚠ Backdated GRN Entries"],["Outlet","DN Ref","Delivery Date","Entry Date","Units","Flag"]);
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    (od.grn_records||[]).filter(g=>g.deliveryDate!==g.enteredAt?.split("T")[0])
+      .forEach(g=>{const tot=Object.values(g.items||{}).reduce((s,q)=>s+q,0);
+        rows.push([o.name,g.ref,fD(g.deliveryDate+"T00:00:00"),fDT(g.enteredAt),tot,"BACKDATED — verify"]);});});
+  rows.push([""],["⚠ Unlocked / Not Submitted Days"],["Outlet","Day","Reason for Unlock","Unlocked At"]);
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    DAYS.forEach(d=>{const ds=od.day_status?.[d];
+      if(ds&&!ds.locked&&ds.unlockedAt)rows.push([o.name,d,ds.unlockReason||"No reason",fDT(ds.unlockedAt)]);
+      if(!ds||ds.locked===undefined)rows.push([o.name,d,"Day never submitted","—"]);
+    });});
+  rows.push([""],["⚠ Large Negative Adjustments"],["Outlet","SKU","Product","Qty","Reason","Notes","Date"]);
+  OUTLETS.forEach(o=>{const od=wd[o.id]||initOutlet();
+    (od.adjustments||[]).filter(a=>a.qty<-5).forEach(a=>{
+      const p=PRODUCTS.find(x=>x.sku===a.sku);
+      rows.push([o.name,a.sku,p?.name||"",a.qty,a.reason,a.notes||"",fDT(a.date)]);});});
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  setColWidths(ws,[22,12,28,20,10,20,30,20]);
+  XLSX.utils.book_append_sheet(wb,ws,"Integrity Flags");
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+const q=id=>document.getElementById(id);
+const qAll=sel=>document.querySelectorAll(sel);
+function toast(msg,dur=3000){
+  document.querySelectorAll(".toast-el").forEach(e=>e.remove());
+  const el=document.createElement("div");
+  el.className="toast-el";
+  el.textContent=msg;
+  el.style.cssText="position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#C9A84C;color:#1a2744;font-weight:700;padding:12px 22px;border-radius:50px;font-size:15px;z-index:9999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.6);max-width:90vw;text-align:center";
+  document.body.appendChild(el);
+  setTimeout(()=>{el.style.transition="opacity .35s";el.style.opacity="0";setTimeout(()=>el.remove(),400);},dur);
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+render();
+</script>
+</body>
+</html>
