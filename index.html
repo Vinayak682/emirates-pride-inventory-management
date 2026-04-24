@@ -38,6 +38,16 @@ select.inp option{background:#1f2937}
 .ar{font-family:'IBM Plex Sans Arabic',sans-serif;direction:rtl;text-align:right}
 .sp-card{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:12px;padding:12px}
 .ai-item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px}
+.bar-track{height:7px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden;flex:1}
+.bar-fill{height:100%;border-radius:4px;transition:width .3s}
+.bar-g{background:linear-gradient(90deg,#16a34a,#4ade80)}
+.bar-a{background:linear-gradient(90deg,#d97706,#fbbf24)}
+.bar-r{background:linear-gradient(90deg,#dc2626,#f87171)}
+.stat-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:16px}
+.day-drop{background:#1f2937;border:1px solid #374151;color:#fff;border-radius:12px;padding:11px 16px;font-size:16px;font-weight:700;width:100%;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A84C' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+.day-drop:focus{border-color:#C9A84C;outline:none}
+.day-drop option{background:#1f2937}
+.today-badge{background:#C9A84C;color:#1a2744;font-weight:800;font-size:10px;letter-spacing:.08em;padding:3px 8px;border-radius:6px;white-space:nowrap}
 </style>
 </head>
 <body class="min-h-screen text-white select-none">
@@ -229,7 +239,7 @@ const aed=n=>"AED "+Number(n).toLocaleString();
 // ═══════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════
-const S={view:"login",outlet:null,staffTab:"sales",mgrTab:"dashboard",activeDay:todayKey(),modal:null,weekStart:weekMon()};
+const S={view:"login",outlet:null,staffTab:"dashboard",mgrTab:"dashboard",activeDay:todayKey(),dashDay:todayKey(),modal:null,weekStart:weekMon()};
 
 // ═══════════════════════════════════════════
 // STORAGE
@@ -338,7 +348,7 @@ function staffV(){
   const sold=PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku),0);
   const rev=PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku)*p.price,0);
   const neg=PRODUCTS.filter(p=>closing(od,p.sku)<0).length;
-  const tabs=[{id:"sales",ic:"🧾",lb:"Sales"},{id:"grn",ic:"📦",lb:"Receive"},{id:"transfer",ic:"🔄",lb:"Transfer"},{id:"tester",ic:"🌸",lb:"Testers"}];
+  const tabs=[{id:"dashboard",ic:"📊",lb:"Dashboard"},{id:"sales",ic:"🧾",lb:"Sales"},{id:"grn",ic:"📦",lb:"Receive"},{id:"transfer",ic:"🔄",lb:"Transfer"},{id:"tester",ic:"🌸",lb:"Testers"}];
   return`<div class="min-h-screen flex flex-col" style="background:#0f1824">
     <div class="top p-4 flex items-center justify-between" style="background:#1a2744;border-bottom:1px solid rgba(201,168,76,.3)">
       <div>
@@ -360,7 +370,7 @@ function staffV(){
         <div class="text-xl">${t.ic}</div>${t.lb}</button>`).join("")}
     </div>
     <div class="flex-1 scy p-4 pb-10">
-      ${S.staffTab==="sales"?salesT(od):S.staffTab==="grn"?grnT(od):S.staffTab==="transfer"?transferT(od):testerT(od)}
+      ${S.staffTab==="dashboard"?dashT(od):S.staffTab==="sales"?salesT(od):S.staffTab==="grn"?grnT(od):S.staffTab==="transfer"?transferT(od):testerT(od)}
     </div>
   </div>`;}
 
@@ -390,10 +400,15 @@ function salesT(od){
 
   const confirmOpen=S.salesConfirmOpen&&bKeys.length>0;
 
+  const todayD=todayKey();
   return`<div class="fade">
-    <div class="flex gap-2 mb-4 scx pb-1">
-      ${DAYS.map(d=>{const lk=isLocked(od,d);return`<button class="day-btn flex-shrink-0 px-4 py-2 rounded-xl font-bold text-sm relative
-        ${d===day?"g":"bg-gray-700 text-gray-300"}" data-day="${d}">${d}${lk?`<span class="absolute -top-1 -right-1 text-xs">🔒</span>`:""}</button>`;}).join("")}
+    <div class="flex items-center gap-3 mb-4">
+      <div class="flex-1">
+        <select id="day-sel" class="day-drop">
+          ${DAYS.map(d=>{const lk=isLocked(od,d);return`<option value="${d}" ${d===day?"selected":""}>${lk?"🔒 ":""}${d}${d===todayD?" (Today)":""}</option>`;}).join("")}
+        </select>
+      </div>
+      ${day===todayD?`<span class="today-badge">TODAY</span>`:""}
     </div>
 
     ${locked?`
@@ -518,6 +533,119 @@ function salesT(od){
         <p class="text-center text-gray-500 text-xs">This will lock ${day}. Unlock requires Manager PIN.</p>
       </div>
     </div>`:""}
+  </div>`;}
+
+// ─── STORE DASHBOARD ────────────────────────
+function dashT(od){
+  const todayD=todayKey();
+  const selDay=S.dashDay||todayD;
+  // Day revenue
+  let dayRev=0,dayUnits=0,weekRev=0,weekUnits=0;
+  DAYS.forEach(d=>{
+    PRODUCTS.forEach(p=>{
+      const q=od.daily_sales?.[d]?.[p.sku]||0;
+      weekRev+=q*p.price;weekUnits+=q;
+      if(d===selDay){dayRev+=q*p.price;dayUnits+=q;}
+    });
+  });
+  // Stock summary
+  const skuWithStock=PRODUCTS.filter(p=>closing(od,p.sku)>0).length;
+  const lowStock=PRODUCTS.filter(p=>{const c=closing(od,p.sku);return c>0&&c<=5;}).length;
+  const negStock=PRODUCTS.filter(p=>closing(od,p.sku)<0).length;
+  // Max closing across products for bar scaling
+  const closingVals=PRODUCTS.map(p=>closing(od,p.sku));
+  const maxC=Math.max(...closingVals,1);
+  // Only show products with any activity (stock>0 or ever sold)
+  const activeProds=PRODUCTS.filter(p=>closing(od,p.sku)>0||DAYS.some(d=>od.daily_sales?.[d]?.[p.sku]>0));
+  const dayLocked=isLocked(od,selDay);
+  const lockedCount=DAYS.filter(d=>isLocked(od,d)).length;
+
+  return`<div class="fade pb-4">
+    <!-- Header stats -->
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <div class="stat-card">
+        <div class="text-xs text-gray-400 font-bold tracking-wide mb-1">DAY REVENUE</div>
+        <div class="text-2xl font-bold text-green-400">AED ${dayRev.toLocaleString()}</div>
+        <div class="text-xs text-gray-400 mt-0.5">${dayUnits} bottle${dayUnits!==1?'s':''} — ${selDay}${dayLocked?' 🔒':''}</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-xs text-gray-400 font-bold tracking-wide mb-1">WEEK REVENUE</div>
+        <div class="text-2xl font-bold mt-0.5" style="color:#C9A84C">AED ${weekRev.toLocaleString()}</div>
+        <div class="text-xs text-gray-400 mt-0.5">${weekUnits} bottles · ${lockedCount}/7 locked</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-xs text-gray-400 font-bold tracking-wide mb-1">SKUs IN STOCK</div>
+        <div class="text-2xl font-bold text-blue-400">${skuWithStock}</div>
+        <div class="text-xs text-gray-400 mt-0.5">of ${PRODUCTS.length} total SKUs</div>
+      </div>
+      <div class="stat-card ${negStock>0?"border border-red-500":""}">
+        <div class="text-xs ${negStock>0?"text-red-400":"text-gray-400"} font-bold tracking-wide mb-1">${negStock>0?"⚠ NEGATIVE":"LOW STOCK"}</div>
+        <div class="text-2xl font-bold ${negStock>0?"text-red-400":lowStock>0?"text-yellow-400":"text-green-400"}">${negStock>0?negStock:lowStock}</div>
+        <div class="text-xs text-gray-400 mt-0.5">${negStock>0?"need urgent fix":"≤5 units remaining"}</div>
+      </div>
+    </div>
+
+    <!-- Day selector for sales view -->
+    <div class="flex items-center gap-3 mb-4">
+      <label class="text-xs text-gray-400 font-bold tracking-widest flex-shrink-0">VIEW DAY:</label>
+      <select id="dash-day-sel" class="day-drop flex-1">
+        ${DAYS.map(d=>{const lk=isLocked(od,d);return`<option value="${d}" ${d===selDay?"selected":""}>${lk?"🔒 ":""}${d}${d===todayD?" (Today)":""}</option>`;}).join("")}
+      </select>
+      ${selDay===todayD?`<span class="today-badge">TODAY</span>`:""}
+    </div>
+
+    <!-- Day sales breakdown -->
+    <div class="text-xs text-gray-400 font-bold tracking-widest mb-2">SALES — ${selDay}${dayLocked?' (LOCKED)':''}</div>
+    ${(()=>{
+      const daySales=PRODUCTS.map(p=>({p,q:od.daily_sales?.[selDay]?.[p.sku]||0})).filter(x=>x.q>0);
+      if(!daySales.length) return`<div class="card rounded-xl p-4 text-center text-gray-500 mb-4">
+        <div class="text-2xl mb-1">🧾</div>No sales recorded for ${selDay}</div>`;
+      return`<div class="space-y-2 mb-4">${daySales.map(({p,q})=>`<div class="ai-item">
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-mono font-bold" style="color:#C9A84C">${p.sku}</div>
+          <div class="font-semibold text-sm text-white">${p.name}</div>
+          ${p.nameAr?`<div class="text-xs text-gray-400 ar">${p.nameAr}</div>`:""}
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="text-xl font-bold text-white">${q}</div>
+          <div class="text-xs text-gray-400">AED ${(q*p.price).toLocaleString()}</div>
+        </div>
+      </div>`).join("")}</div>`;
+    })()}
+
+    <!-- Stock inventory table -->
+    <div class="text-xs text-gray-400 font-bold tracking-widest mb-2">INVENTORY STATUS</div>
+    ${activeProds.length===0?`<div class="card rounded-xl p-6 text-center text-gray-500">No stock data yet — record a GRN to set opening stock</div>`:`
+    <div class="space-y-2">
+      ${activeProds.map(p=>{
+        const c=closing(od,p.sku);
+        const wkSold=DAYS.reduce((s,d)=>s+(od.daily_sales?.[d]?.[p.sku]||0),0);
+        const pct=Math.round((Math.max(0,c)/maxC)*100);
+        const neg=c<0;
+        const barCls=neg?"bar-r":pct>50?"bar-g":pct>20?"bar-a":"bar-r";
+        return`<div class="card rounded-xl p-3 ${neg?"border border-red-500":""}">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex-1 min-w-0 mr-3">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="text-xs font-mono font-bold" style="color:#C9A84C">${p.sku}</span>
+                ${p.brand&&p.brand!=="Emirates Pride Perfumes"?`<span class="pill bg-gray-700 text-gray-300" style="font-size:9px">${p.brand}</span>`:""}
+              </div>
+              <div class="font-semibold text-sm text-white leading-tight">${p.name}</div>
+              ${p.nameAr?`<div class="text-xs text-gray-400 ar">${p.nameAr}</div>`:""}
+            </div>
+            <div class="text-right flex-shrink-0">
+              <div class="text-2xl font-bold ${neg?"text-red-400":c===0?"text-gray-500":"text-white"}">${c}</div>
+              <div class="text-xs ${neg?"text-red-400":"text-gray-500"}">${neg?"⚠ NEGATIVE":"left"}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="bar-track"><div class="bar-fill ${barCls}" style="width:${pct}%"></div></div>
+            <div class="text-xs text-gray-400 flex-shrink-0">Sold: <strong class="text-white">${wkSold}</strong></div>
+          </div>
+          ${p.price>0?`<div class="text-xs text-gray-500 mt-1">AED ${p.price} · Stock value: AED ${Math.max(0,c)*p.price>0?(Math.max(0,c)*p.price).toLocaleString():"0"}</div>`:""}
+        </div>`;
+      }).join("")}
+    </div>`}
   </div>`;}
 
 // ─── GRN TAB ─────────────────────────────────
@@ -1241,8 +1369,10 @@ function bindAll(){
   // Manager tabs
   qAll(".m-tab").forEach(b=>b.addEventListener("click",()=>{S.mgrTab=b.dataset.tab;render();}));
 
-  // Day selector
-  qAll(".day-btn").forEach(b=>b.addEventListener("click",()=>{S.activeDay=b.dataset.day;S.salesBasket={};S.salesConfirmOpen=false;render();}));
+  // Day selector (sales tab dropdown)
+  q("day-sel")?.addEventListener("change",()=>{S.activeDay=q("day-sel").value;S.salesBasket={};S.salesConfirmOpen=false;render();});
+  // Dashboard day selector
+  q("dash-day-sel")?.addEventListener("change",()=>{S.dashDay=q("dash-day-sel").value;render();});
 
   // Submit / unlock day
   q("btn-submit-day")?.addEventListener("click",()=>{
