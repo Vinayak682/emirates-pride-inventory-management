@@ -34,6 +34,10 @@ details summary::-webkit-details-marker{display:none}
 select.inp option{background:#1f2937}
 .btn{border-radius:12px;font-weight:700;padding:12px 20px;font-size:15px;transition:opacity .15s}
 .pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap');
+.ar{font-family:'IBM Plex Sans Arabic',sans-serif;direction:rtl;text-align:right}
+.sp-card{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:12px;padding:12px}
+.ai-item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px}
 </style>
 </head>
 <body class="min-h-screen text-white select-none">
@@ -43,44 +47,164 @@ select.inp option{background:#1f2937}
 // CONSTANTS
 // ═══════════════════════════════════════════
 const PRODUCTS=[
-  {sku:"EP-001",name:"Oud Royale EDP 100ml",price:349},
-  {sku:"EP-002",name:"Oud Royale EDP 50ml",price:229},
-  {sku:"EP-003",name:"Rose Mystique EDP 100ml",price:299},
-  {sku:"EP-004",name:"Rose Mystique EDP 50ml",price:199},
-  {sku:"EP-005",name:"Arabian Nights EDP 100ml",price:325},
-  {sku:"EP-006",name:"Desert Pearl EDP 100ml",price:275},
-  {sku:"EP-007",name:"Gold Elixir EDP 100ml",price:389},
-  {sku:"EP-008",name:"Amber Intense EDP 100ml",price:249},
-  {sku:"EP-009",name:"Musk Noir EDP 100ml",price:219},
-  {sku:"EP-010",name:"Saffron Dreams EDP 100ml",price:359},
-  {sku:"EP-011",name:"Cedar & Oud EDP 50ml",price:179},
-  {sku:"EP-012",name:"Vanilla Musk EDP 50ml",price:159},
-  {sku:"EP-013",name:"Royal Oud Parfum 30ml",price:449},
-  {sku:"EP-014",name:"Pink Rose Parfum 30ml",price:399},
-  {sku:"EP-015",name:"Black Amber Parfum 30ml",price:425},
+  {sku:"C00002",name:"White 100ml Perfume",nameAr:"وايت 100 مل",price:245,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"C00013",name:"White overdose",nameAr:"وايت أوفردوز ١٠٠مل",price:385,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"C00004",name:"Maroon 100 ml Perfume",nameAr:"مارون 100 مل",price:285,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"C00012",name:"Navy Perfume 100ml",nameAr:"عطر نيفي 100 مل",price:345,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"C00010",name:"Maroon Intense",nameAr:"مارون انتنس",price:365,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"C00011",name:"Violet 100ml Perfume",nameAr:"فيوليت مل",price:285,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0005",name:"No.4",nameAr:"رقم4",price:365,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"C00014",name:"Black Perfume 100ml",nameAr:"بلاك برفيوم ١٠٠مل",price:285,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00015",name:"Hidden Leather",nameAr:"هيدن ليذر ١٠٠مل",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00008",name:"Midnight Glow",nameAr:"ميدنايت غلو",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00019",name:"Masters Perfume 100ml",nameAr:"ماسترز برفيوم ١٠٠مل",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00005",name:"Mystery",nameAr:"ميستري",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00007",name:"Peaceful Life",nameAr:"بيسفول لايف",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00004",name:"Meydan",nameAr:"ميدان",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00018",name:"Hidden Tobacco",nameAr:"هيدن توباكو ١٠٠مل",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00003",name:"Amber Bel Oud",nameAr:"عنبر بالعود",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00017",name:"Thekrayat",nameAr:"ذكريات ١٠٠مل",price:675,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00001",name:"Bergamot bel Amber",nameAr:"برغموت بالعنبر",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00002",name:"Jasmine bel Musk",nameAr:"جاسمين بالمسك",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00012",name:"Ambergris",nameAr:"عنبرغريس ١٠٠مل",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00014",name:"Firewood",nameAr:"فايروود ١٠٠مل",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00013",name:"Arabica",nameAr:"أرابيكا ١٠٠مل",price:0,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00010",name:"Sakura",nameAr:"ساكورا ١٠٠مل",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00020",name:"Master Signature",nameAr:"ماستر سيجنتشر ١٠٠مل",price:585,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00016",name:"Mysterious Rose",nameAr:"ميستيريوس روز ١٠٠مل",price:675,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00006",name:"Mersal",nameAr:"مرسال",price:465,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0009",name:"White Oud Set Box",nameAr:"مجموعة وايت عود",price:545,size:"100/8",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0012",name:"White Set Box",nameAr:"صندوق هدية وايت",price:470,size:"100/30/8",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0006",name:"MORE OF OUD",nameAr:"مجموعة المزيد من العود",price:545,size:"100/8",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0013",name:"Maroon Set Box",nameAr:"صندوق هدية مارون",price:495,size:"100/30/8",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0023",name:"Masters Signature Booster Set",nameAr:"طقم ماسترز سيجنتشر بوستر",price:1440,size:"100/30",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0022",name:"Reflection Set Box",nameAr:"صندوق ريفليكشن",price:685,size:"100/30/8",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0029",name:"Midnight Glow Set Box",nameAr:"صندوق ميدنايت غلو",price:870,size:"100/30/8",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0031",name:"Summer Collection Set",nameAr:"طقم مجموعة الصيف",price:345,size:"10",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0033",name:"White Kit",nameAr:"طقم وايت",price:385,size:"30/8/40/80",brand:"Emirates Pride Perfumes"},
+  {sku:"AC0004",name:"Picker",nameAr:"بيكر",price:20,size:"",brand:"Emirates Pride Perfumes"},
+  {sku:"AC0002",name:"Charcoal",nameAr:"فحم",price:0,size:"",brand:"Emirates Pride Perfumes"},
+  {sku:"AC0003",name:"Lighter",nameAr:"ولاعة",price:115,size:"",brand:"Emirates Pride Perfumes"},
+  {sku:"AC0001",name:"Medkhan (Small)",nameAr:"مدخن (صغير)",price:285,size:"",brand:"Emirates Pride Perfumes"},
+  {sku:"I00003",name:"White Oil 8ml",nameAr:"زيت وايت ٨مل",price:145,size:"8",brand:"Emirates Pride Perfumes"},
+  {sku:"I00004",name:"Maroon Oil 8ml",nameAr:"زيت مارون ٨مل",price:145,size:"8",brand:"Emirates Pride Perfumes"},
+  {sku:"I00006",name:"Musk Oil 8ml",nameAr:"زيت مسك ٨مل",price:145,size:"8",brand:"Emirates Pride Perfumes"},
+  {sku:"I00005",name:"No.4 Oil 8ml",nameAr:"زيت رقم٤ ٨مل",price:145,size:"8",brand:"Emirates Pride Perfumes"},
+  {sku:"I00001",name:"Hindi Special",nameAr:"هندي سبيشل ٣مل",price:420,size:"3",brand:"Emirates Pride Perfumes"},
+  {sku:"I00002",name:"Seufi Special",nameAr:"سيوفي سبيشل ٣مل",price:420,size:"3",brand:"Emirates Pride Perfumes"},
+  {sku:"D00001",name:"Dakhoon Al Emarat",nameAr:"دخون الإمارات",price:295,size:"135",brand:"Emirates Pride Perfumes"},
+  {sku:"D00004",name:"Dakhoon Al Dar",nameAr:"دخون الدار",price:295,size:"135",brand:"Emirates Pride Perfumes"},
+  {sku:"D00002",name:"Dakhoon Al Marasim",nameAr:"دخون المراسيم",price:295,size:"135",brand:"Emirates Pride Perfumes"},
+  {sku:"D00003",name:"Dakhoon Badia",nameAr:"دخون بادية",price:295,size:"135",brand:"Emirates Pride Perfumes"},
+  {sku:"D00008",name:"Dakhoon Retaj",nameAr:"دخون رتاج",price:295,size:"135",brand:"Emirates Pride Perfumes"},
+  {sku:"D00005",name:"Dakhoon Al Barzah",nameAr:"دخون البرزة",price:295,size:"135",brand:"Emirates Pride Perfumes"},
+  {sku:"O00006",name:"Oud Al Fakhamah",nameAr:"عود الفخامة",price:295,size:"35",brand:"Emirates Pride Perfumes"},
+  {sku:"O00002",name:"Oud Meydan",nameAr:"عود ميدان",price:295,size:"35",brand:"Emirates Pride Perfumes"},
+  {sku:"O00003",name:"Oud Al Emarat",nameAr:"عود الإمارات",price:295,size:"35",brand:"Emirates Pride Perfumes"},
+  {sku:"O00001",name:"Oud Amiri",nameAr:"عود أميري",price:295,size:"35",brand:"Emirates Pride Perfumes"},
+  {sku:"O00008",name:"Oud Hindi Malaki - White Box",nameAr:"عود هندي ملكي - صندوق أبيض",price:1420,size:"42",brand:"Emirates Pride Perfumes"},
+  {sku:"O0007",name:"Oud Hindi Khas - Black Box",nameAr:"عود هندي خاص - صندوق أسود",price:1420,size:"42",brand:"Emirates Pride Perfumes"},
+  {sku:"BX0011",name:"Dekoon Gift Set",nameAr:"طقم هدية دخون",price:965,size:"35",brand:"Emirates Pride Perfumes"},
+  {sku:"BX0012",name:"VIP Combo Box",nameAr:"صندوق كومبو VIP",price:2240,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"HR0003",name:"Al Emarat Heritage Collection",nameAr:"الإمارات - مجموعة هيريتيج",price:975,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"HR0002",name:"Danah Heritage Collection",nameAr:"دانة - مجموعة هيريتيج",price:975,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"HR0001",name:"Qalah Heritage Collection",nameAr:"قلعة - مجموعة هيريتيج",price:975,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"HR0007",name:"Dallah Heritage Collection",nameAr:"دلة - مجموعة هيريتيج",price:975,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"HR0006",name:"Safeena Heritage Collection",nameAr:"سفينة - مجموعة هيريتيج",price:975,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"HR0005",name:"Khaimah Heritage Collection",nameAr:"الخيمة - مجموعة هيريتيج",price:975,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"HR0004",name:"Barjeel Heritage Collection",nameAr:"البرجيل - مجموعة هيريتيج",price:975,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"B00021",name:"Midnight Bloom 100ml",nameAr:"ميدنايت بلوم ١٠٠مل",price:585,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0037",name:"Future Bakhoor 100ml",nameAr:"فيوتشر بخور ١٠٠مل",price:695,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0038",name:"Future Oud 100ml",nameAr:"فيوتشر عود ١٠٠مل",price:795,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"SP0039",name:"Future Traditional Set",nameAr:"طقم فيوتشر التراثي",price:1490,size:"100",brand:"Emirates Pride Perfumes"},
+  {sku:"AP001",name:"Black Vanilla",nameAr:"بلاك فانيلا ٥٠مل",price:385,size:"50",brand:"ASL"},
+  {sku:"AP002",name:"Secret Leather",nameAr:"سيكريت ليذر ٥٠مل",price:385,size:"50",brand:"ASL"},
+  {sku:"AP003",name:"White Bouquet",nameAr:"وايت بوكيه ٥٠مل",price:385,size:"50",brand:"ASL"},
+  {sku:"AP004",name:"Leather Intense",nameAr:"ليذر إنتنس ٥٠مل",price:385,size:"50",brand:"ASL"},
+  {sku:"AP005",name:"Rich Vanilla",nameAr:"ريتش فانيلا ٥٠مل",price:385,size:"50",brand:"ASL"},
+  {sku:"AP006",name:"Spicy Sandal",nameAr:"سبايسي ساندال ٥٠مل",price:385,size:"50",brand:"ASL"},
+  {sku:"AP007",name:"Velvet Amber",nameAr:"فيلفيت عنبر ٥٠مل",price:385,size:"50",brand:"ASL"},
+  {sku:"AP008",name:"Dark Musk",nameAr:"دارك مسك ٥٠مل",price:385,size:"50",brand:"ASL"},
+  {sku:"AP009",name:"Royal Tobacco",nameAr:"رويال توباكو ٥٠مل",price:385,size:"50",brand:"ASL"},
+  {sku:"AP010",name:"Patchouli Glow",nameAr:"باتشولي غلو ٥٠مل",price:385,size:"50",brand:"ASL"},
+  {sku:"AP011",name:"Dark Wood Perfume 50ml",nameAr:"دارك وود برفيوم ٥٠مل",price:385,size:"50",brand:"ASL"},
+  {sku:"AH005",name:"Black Vanilla Hair & Body Mist",nameAr:"بخاخ بلاك فانيلا للشعر والجسم",price:195,size:"50",brand:"ASL"},
+  {sku:"AH006",name:"Secret Leather Hair & Body Mist",nameAr:"بخاخ سيكريت ليذر للشعر والجسم",price:195,size:"50",brand:"ASL"},
+  {sku:"AH003",name:"Velvet Amber Hair & Body Mist",nameAr:"بخاخ فيلفيت عنبر للشعر والجسم",price:195,size:"50",brand:"ASL"},
+  {sku:"AH008",name:"Dark Musk Hair & Body Mist",nameAr:"بخاخ دارك مسك للشعر والجسم",price:195,size:"50",brand:"ASL"},
+  {sku:"AH009",name:"Royal Tobacco Hair & Body Mist",nameAr:"بخاخ رويال توباكو للشعر والجسم",price:195,size:"50",brand:"ASL"},
+  {sku:"AO001",name:"Black Vanilla Oil 6ml",nameAr:"زيت بلاك فانيلا ٦مل",price:145,size:"6",brand:"ASL"},
+  {sku:"AO002",name:"Secret Leather Oil 6ml",nameAr:"زيت سيكريت ليذر ٦مل",price:145,size:"6",brand:"ASL"},
+  {sku:"AO003",name:"White Bouquet Oil 6ml",nameAr:"زيت وايت بوكيه ٦مل",price:145,size:"6",brand:"ASL"},
+  {sku:"AO004",name:"Leather Intense Oil 6ml",nameAr:"زيت ليذر إنتنس ٦مل",price:145,size:"6",brand:"ASL"},
+  {sku:"AO005",name:"Rich Vanilla Oil 6ml",nameAr:"زيت ريتش فانيلا ٦مل",price:145,size:"6",brand:"ASL"},
+  {sku:"AO006",name:"Spicy Sandal Oil 6ml",nameAr:"زيت سبايسي ساندال ٦مل",price:145,size:"6",brand:"ASL"},
+  {sku:"AO007",name:"Velvet Amber Oil 6ml",nameAr:"زيت فيلفيت عنبر ٦مل",price:145,size:"6",brand:"ASL"},
+  {sku:"AO008",name:"Dark Musk Oil 6ml",nameAr:"زيت دارك مسك ٦مل",price:145,size:"6",brand:"ASL"},
+  {sku:"AO009",name:"Royal Tobacco Oil 6ml",nameAr:"زيت رويال توباكو ٦مل",price:145,size:"6",brand:"ASL"},
+  {sku:"AO010",name:"Patchouli Glow Oil 6ml",nameAr:"زيت باتشولي غلو ٦مل",price:145,size:"6",brand:"ASL"},
+  {sku:"AO011",name:"Dark Wood Oil 6ml",nameAr:"زيت دارك وود ٦مل",price:145,size:"6",brand:"ASL"},
+  {sku:"ABL001",name:"Royal Tobacco Body Lotion 200ml",nameAr:"لوشن رويال توباكو ٢٠٠مل",price:245,size:"200",brand:"ASL"},
+  {sku:"ABL002",name:"Velvet Amber Body Lotion 200ml",nameAr:"لوشن فيلفيت عنبر ٢٠٠مل",price:245,size:"200",brand:"ASL"},
+  {sku:"ABL003",name:"Secret Leather Body Lotion 200ml",nameAr:"لوشن سيكريت ليذر ٢٠٠مل",price:245,size:"200",brand:"ASL"},
+  {sku:"ABL004",name:"Dark Musk Body Lotion 200ml",nameAr:"لوشن دارك مسك ٢٠٠مل",price:245,size:"200",brand:"ASL"},
+  {sku:"ARD001",name:"Secret Leather Reed Diffuser 110ml",nameAr:"معطر سيكريت ليذر ١١٠مل",price:245,size:"110",brand:"ASL"},
+  {sku:"ARD002",name:"Cool Violet Reed Diffuser 110ml",nameAr:"معطر كول فيوليت ١١٠مل",price:245,size:"110",brand:"ASL"},
+  {sku:"ARD003",name:"White Bouquet Reed Diffuser 110ml",nameAr:"معطر وايت بوكيه ١١٠مل",price:245,size:"110",brand:"ASL"},
+  {sku:"AAF001",name:"Cool Violet Air Freshener 250ml",nameAr:"معطر جو كول فيوليت ٢٥٠مل",price:195,size:"250",brand:"ASL"},
+  {sku:"AAF002",name:"White Bouquet Air Freshener 250ml",nameAr:"معطر جو وايت بوكيه ٢٥٠مل",price:195,size:"250",brand:"ASL"},
+  {sku:"ATO001",name:"Sunbeam Tanning Oil 250ml",nameAr:"زيت تان سانبيم ٢٥٠مل",price:145,size:"250",brand:"ASL"},
+  {sku:"RM2001",name:"Velvet Topaz Perfume 100ml",nameAr:"عطر فيلفيت توباز ١٠٠مل",price:0,size:"100",brand:"RIMAL"},
+  {sku:"RM2002",name:"Soft Turquoise Perfume 100ml",nameAr:"عطر سوفت تركواز ١٠٠مل",price:0,size:"100",brand:"RIMAL"},
+  {sku:"RM2003",name:"Smoky Jasper Perfume 100ml",nameAr:"عطر سموكي جاسبر ١٠٠مل",price:0,size:"100",brand:"RIMAL"},
+  {sku:"RM2004",name:"Silky Crystal Perfume 100ml",nameAr:"عطر سيلكي كريستال ١٠٠مل",price:0,size:"100",brand:"RIMAL"},
+  {sku:"RM2005",name:"Royal Garnet Perfume 100ml",nameAr:"عطر رويال غارنيت ١٠٠مل",price:0,size:"100",brand:"RIMAL"},
+  {sku:"RM2006",name:"Precious Quartz Perfume 100ml",nameAr:"عطر بريشيوس كوارتز ١٠٠مل",price:0,size:"100",brand:"RIMAL"},
+  {sku:"RM2007",name:"Noir Obsidian Perfume 100ml",nameAr:"عطر نوار أوبسيديان ١٠٠مل",price:0,size:"100",brand:"RIMAL"},
+  {sku:"RM2008",name:"Light Jade Perfume 100ml",nameAr:"عطر لايت جيد ١٠٠مل",price:0,size:"100",brand:"RIMAL"},
+  {sku:"SR3004",name:"Rose Wood Noir 50ml",nameAr:"روز وود نوار ٥٠مل",price:0,size:"50",brand:"Serenity"},
+  {sku:"SR3005",name:"Mystic Garden 50ml",nameAr:"ميستيك جاردن ٥٠مل",price:0,size:"50",brand:"Serenity"},
+  {sku:"SR3006",name:"Woods Chill Black 50ml",nameAr:"وودز تشيل بلاك ٥٠مل",price:0,size:"50",brand:"Serenity"},
+  {sku:"SR3003",name:"Woodland Harmony 65ml",nameAr:"وودلاند هارموني ٦٥مل",price:0,size:"65",brand:"Serenity"},
+  {sku:"SR3001",name:"Golden Forest 65ml",nameAr:"غولدن فورست ٦٥مل",price:0,size:"65",brand:"Serenity"},
+  {sku:"SR3002",name:"Woody Horizon 65ml",nameAr:"وودي هورايزون ٦٥مل",price:0,size:"65",brand:"Serenity"},
+  {sku:"FS1001",name:"Mimosa Glow Perfume 65ml",nameAr:"عطر ميموزا غلو ٦٥مل",price:0,size:"65",brand:"FLOWER SCENT"},
+  {sku:"FS1002",name:"Pure Jasmin Perfume 65ml",nameAr:"عطر ياسمين نقي ٦٥مل",price:0,size:"65",brand:"FLOWER SCENT"},
+  {sku:"FS1003",name:"Scarlet Rose Perfume 65ml",nameAr:"عطر سكارليت روز ٦٥مل",price:0,size:"65",brand:"FLOWER SCENT"},
+  {sku:"FS1004",name:"Tuberose Bloom Perfume 65ml",nameAr:"عطر تيوبروز بلوم ٦٥مل",price:0,size:"65",brand:"FLOWER SCENT"},
+  {sku:"FS1005",name:"Timeless Sakura Perfume 65ml",nameAr:"عطر ساكورا الخالد ٦٥مل",price:0,size:"65",brand:"FLOWER SCENT"},
+  {sku:"FS1006",name:"Orange Blossom Perfume 65ml",nameAr:"عطر زهر البرتقال ٦٥مل",price:0,size:"65",brand:"FLOWER SCENT"},
+  {sku:"FS1007",name:"Silky Violet Perfume 65ml",nameAr:"عطر سيلكي فيوليت ٦٥مل",price:0,size:"65",brand:"FLOWER SCENT"},
 ];
 const OUTLETS=[
-  {id:"OUT-01",name:"Dubai Mall",loc:"Downtown Dubai"},
-  {id:"OUT-02",name:"Mall of the Emirates",loc:"Al Barsha"},
-  {id:"OUT-03",name:"Ibn Battuta Mall",loc:"Jebel Ali"},
-  {id:"OUT-04",name:"Deira City Centre",loc:"Deira"},
-  {id:"OUT-05",name:"Mirdif City Centre",loc:"Mirdif"},
-  {id:"OUT-06",name:"Dubai Festival City",loc:"Festival City"},
-  {id:"OUT-07",name:"Nakheel Mall",loc:"Palm Jumeirah"},
-  {id:"OUT-08",name:"Mercato Mall",loc:"Jumeirah"},
-  {id:"OUT-09",name:"City Walk",loc:"Al Safa"},
-  {id:"OUT-10",name:"Wafi Mall",loc:"Oud Metha"},
-  {id:"OUT-11",name:"Al Ghurair Centre",loc:"Deira"},
-  {id:"OUT-12",name:"BurJuman Centre",loc:"Bur Dubai"},
-  {id:"OUT-13",name:"Dragon Mart 2",loc:"International City"},
-  {id:"OUT-14",name:"Arabian Center",loc:"Muhaisnah"},
-  {id:"OUT-15",name:"Lamcy Plaza",loc:"Oud Metha"},
-  {id:"OUT-16",name:"Al Barsha Mall",loc:"Al Barsha"},
-  {id:"OUT-17",name:"Times Square Center",loc:"Al Quoz"},
-  {id:"OUT-18",name:"The Outlet Village",loc:"Jebel Ali"},
-  {id:"OUT-19",name:"Oasis Centre",loc:"Al Quoz"},
-  {id:"OUT-20",name:"Matajer Al Juraina",loc:"Sharjah"},
-  {id:"OUT-21",name:"Gold Souk Outlet",loc:"Deira"},
+  {id:"A0010",name:"Bawabat al Sharq Mall Shop 2",loc:"Abu Dhabi",brand:"EPP"},
+  {id:"A0001",name:"Bawabat al Sharq Mall Shop",loc:"Abu Dhabi",brand:"EPP"},
+  {id:"A0002",name:"Bawabat al Sharq Mall Kiosk",loc:"Abu Dhabi",brand:"EPP"},
+  {id:"BAS001",name:"Bawabat al Sharq Mall Kiosk",loc:"Abu Dhabi",brand:"ASL"},
+  {id:"A0003",name:"Dalma Mall Shop",loc:"Abu Dhabi",brand:"EPP"},
+  {id:"A0004",name:"Dalma Mall Kiosk",loc:"Abu Dhabi",brand:"EPP"},
+  {id:"A0005",name:"Deerfield Mall Kiosk",loc:"Abu Dhabi",brand:"EPP"},
+  {id:"A0009",name:"Yas Mall Podium",loc:"Abu Dhabi",brand:"EPP"},
+  {id:"A0007",name:"Yas Mall Kiosk 2",loc:"Abu Dhabi",brand:"EPP"},
+  {id:"A0008",name:"Yas Mall Kiosk 3",loc:"Abu Dhabi",brand:"EPP"},
+  {id:"YMK001",name:"Yas Mall",loc:"Abu Dhabi",brand:"ASL"},
+  {id:"AL001",name:"Al Ain Mall Kiosk",loc:"Al Ain",brand:"EPP"},
+  {id:"AL002",name:"Bawadi Mall Kiosk 1",loc:"Al Ain",brand:"EPP"},
+  {id:"AL003",name:"Bawadi Mall Kiosk 2",loc:"Al Ain",brand:"EPP"},
+  {id:"BAW001",name:"Bawadi Mall",loc:"Al Ain",brand:"ASL"},
+  {id:"AL004",name:"Jimi Mall Shop",loc:"Al Ain",brand:"EPP"},
+  {id:"AL006",name:"Makhani Zakhar Mall Shop",loc:"Al Ain",brand:"EPP"},
+  {id:"MAK001",name:"Makhani Zakhar Mall",loc:"Al Ain",brand:"ASL"},
+  {id:"DX001",name:"Dubai Mall Shop",loc:"Dubai",brand:"EPP"},
+  {id:"DX004",name:"Mall of the Emirates Kiosk",loc:"Dubai",brand:"EPP"},
+  {id:"DX005",name:"Mirdif City Centre Kiosk",loc:"Dubai",brand:"EPP"},
+  {id:"DX006",name:"Dubai Hills Mall Shop",loc:"Dubai",brand:"EPP"},
+  {id:"RK001",name:"Manar Mall Shop",loc:"Ras Al Khaimah",brand:"EPP"},
+  {id:"RK002",name:"Manar Mall Kiosk",loc:"Ras Al Khaimah",brand:"EPP"},
+  {id:"FJ001",name:"Fujairah City Centre Kiosk",loc:"Fujairah",brand:"EPP"},
+  {id:"FJ0001",name:"Fujairah City Centre",loc:"Fujairah",brand:"ASL"},
+  {id:"SH001",name:"Zahia City Centre Kiosk",loc:"Sharjah",brand:"EPP"},
+  {id:"AJ001",name:"Ajman City Centre Kiosk",loc:"Ajman",brand:"EPP"},
 ];
 const DAYS=["MON","TUE","WED","THU","FRI","SAT","SUN"];
 const MGR_PIN="1234";
@@ -214,7 +338,7 @@ function staffV(){
   const sold=PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku),0);
   const rev=PRODUCTS.reduce((s,p)=>s+totSold(od,p.sku)*p.price,0);
   const neg=PRODUCTS.filter(p=>closing(od,p.sku)<0).length;
-  const tabs=[{id:"sales",ic:"🧾",lb:"Sales"},{id:"grn",ic:"📦",lb:"Receive"},{id:"transfer",ic:"🔄",lb:"Transfer"},{id:"tester",ic:"🌸",lb:"Testers"},{id:"adjust",ic:"🔧",lb:"Adjust"}];
+  const tabs=[{id:"sales",ic:"🧾",lb:"Sales"},{id:"grn",ic:"📦",lb:"Receive"},{id:"transfer",ic:"🔄",lb:"Transfer"},{id:"tester",ic:"🌸",lb:"Testers"}];
   return`<div class="min-h-screen flex flex-col" style="background:#0f1824">
     <div class="top p-4 flex items-center justify-between" style="background:#1a2744;border-bottom:1px solid rgba(201,168,76,.3)">
       <div>
@@ -236,7 +360,7 @@ function staffV(){
         <div class="text-xl">${t.ic}</div>${t.lb}</button>`).join("")}
     </div>
     <div class="flex-1 scy p-4 pb-10">
-      ${S.staffTab==="sales"?salesT(od):S.staffTab==="grn"?grnT(od):S.staffTab==="transfer"?transferT(od):S.staffTab==="tester"?testerT(od):adjustT(od)}
+      ${S.staffTab==="sales"?salesT(od):S.staffTab==="grn"?grnT(od):S.staffTab==="transfer"?transferT(od):testerT(od)}
     </div>
   </div>`;}
 
@@ -244,52 +368,156 @@ function staffV(){
 function salesT(od){
   const day=S.activeDay;
   const locked=isLocked(od,day);
-  const ls=od.day_status[day];
+  const basket=S.salesBasket||{};
+  const bKeys=Object.keys(basket).filter(k=>basket[k]>0);
+  const bTotal=bKeys.reduce((s,k)=>s+basket[k],0);
+  const bRev=bKeys.reduce((s,k)=>{const p=PRODUCTS.find(x=>x.sku===k);return s+(basket[k]||0)*(p?.price||0);},0);
+  const ls=od.day_status?.[day];
+
+  // Locked items
+  const lItems=[];let lUnits=0,lRev=0;
+  if(locked){PRODUCTS.forEach(p=>{const q=od.daily_sales?.[day]?.[p.sku]||0;if(q>0){lItems.push({p,q});lUnits+=q;lRev+=q*p.price;}});}
+
+  // Product selector options grouped by brand
+  const brands=[...new Set(PRODUCTS.map(p=>p.brand).filter(Boolean))];
+  const prodOpts=brands.map(b=>{
+    const grp=PRODUCTS.filter(p=>p.brand===b);
+    return`<optgroup label="${b}">`+grp.map(p=>{
+      const stk=closing(od,p.sku);
+      return`<option value="${p.sku}" ${stk<=0?'disabled':''}>${p.sku} — ${p.name}${p.nameAr?' | '+p.nameAr:''} (Stock: ${stk})</option>`;
+    }).join('')+'</optgroup>';
+  }).join('');
+
+  const confirmOpen=S.salesConfirmOpen&&bKeys.length>0;
+
   return`<div class="fade">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="text-white font-bold text-lg">Daily Sales</h2>
-      ${!locked
-        ?`<button id="btn-submit-day" class="g px-4 py-2 rounded-xl text-sm" data-day="${day}">Submit & Lock ${day}</button>`
-        :`<button id="btn-unlock-day" class="btn bg-amber-900 text-amber-300 text-sm" data-day="${day}">🔒 Unlock ${day}</button>`}
-    </div>
-    ${locked?`<div class="lock-bar p-3 mb-3 flex items-center gap-2">
-      <span class="text-amber-400 text-lg">🔒</span>
-      <div><div class="text-amber-300 text-sm font-bold">${day} submitted & locked</div>
-      <div class="text-xs text-amber-400/70">Locked ${fDT(ls?.lockedAt)} ${ls?.unlockReason?"· Unlocked: "+ls.unlockReason:""}</div></div>
-    </div>`:""}
     <div class="flex gap-2 mb-4 scx pb-1">
-      ${DAYS.map(d=>{const lk=isLocked(od,d),ds=od.day_status[d];return`<button class="day-btn flex-shrink-0 px-4 py-2 rounded-xl font-bold text-sm relative
-        ${d===day?"g":"bg-gray-700 text-gray-300"}" data-day="${d}">
-        ${d}${lk?`<span class="absolute -top-1 -right-1 text-xs">🔒</span>`:""}
-      </button>`}).join("")}
+      ${DAYS.map(d=>{const lk=isLocked(od,d);return`<button class="day-btn flex-shrink-0 px-4 py-2 rounded-xl font-bold text-sm relative
+        ${d===day?"g":"bg-gray-700 text-gray-300"}" data-day="${d}">${d}${lk?`<span class="absolute -top-1 -right-1 text-xs">🔒</span>`:""}</button>`;}).join("")}
     </div>
+
+    ${locked?`
+    <div class="lock-bar p-3 mb-4 flex items-center gap-2">
+      <span class="text-amber-400 text-xl">🔒</span>
+      <div class="flex-1 min-w-0">
+        <div class="text-amber-300 font-bold text-sm">${day} submitted & locked</div>
+        <div class="text-xs text-amber-400 opacity-70">Locked ${fDT(ls?.lockedAt)}${ls?.unlockReason?" · Unlocked: "+ls.unlockReason:""}</div>
+      </div>
+      <button id="btn-unlock-day" class="bg-amber-900 text-amber-300 text-xs px-3 py-2 rounded-xl font-bold" data-day="${day}">🔓 Unlock</button>
+    </div>
+    ${lItems.length>0?`
+    <div class="text-xs text-gray-400 font-bold tracking-widest mb-2">LOCKED SALES — ${lUnits} bottles · AED ${lRev.toLocaleString()}</div>
     <div class="space-y-2">
-      ${PRODUCTS.map(p=>{
-        const s=od.daily_sales[day]?.[p.sku]||0,c=closing(od,p.sku),neg=c<0;
-        return`<div class="card rounded-xl p-3 ${neg?"border-red-500 border":""}">
-          <div class="flex items-center gap-3">
-            <div class="flex-1 min-w-0">
-              <div class="text-xs font-mono font-bold" style="color:#C9A84C">${p.sku}</div>
-              <div class="font-semibold text-sm text-white">${p.name}</div>
-              <div class="text-xs mt-0.5">
-                <span class="text-gray-400">Stock: </span>
-                <span class="${neg?"text-red-400 font-bold":"text-green-400"}">${c}</span>
-                ${neg?` <span class="text-red-400">⚠ CHECK OPENING STOCK/GRN</span>`:""}
-                <span class="text-gray-500"> · AED ${p.price}</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <button class="qty-btn w-11 h-11 rounded-xl text-2xl font-bold bg-gray-600 text-white flex items-center justify-center ${locked?"opacity-30":""}"
-                data-a="dec" data-day="${day}" data-sku="${p.sku}" ${locked?"disabled":""}>−</button>
-              <input type="number" min="0" inputmode="numeric"
-                class="bg-gray-800 text-white text-center w-14 h-11 rounded-xl text-xl font-bold border border-gray-600 sales-inp"
-                data-day="${day}" data-sku="${p.sku}" value="${s}" ${locked?"readonly":""} style="font-size:20px;${locked?"opacity:.4":""}">
-              <button class="qty-btn w-11 h-11 rounded-xl text-2xl font-bold bg-gray-600 text-white flex items-center justify-center ${locked?"opacity-30":""}"
-                data-a="inc" data-day="${day}" data-sku="${p.sku}" ${locked?"disabled":""}>+</button>
-            </div>
+      ${lItems.map(({p,q})=>`<div class="ai-item">
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-mono font-bold" style="color:#C9A84C">${p.sku}</div>
+          <div class="font-semibold text-sm text-white">${p.name}</div>
+          ${p.nameAr?`<div class="text-xs text-gray-400 ar">${p.nameAr}</div>`:""}
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="text-2xl font-bold text-white">${q}</div>
+          <div class="text-xs text-gray-400">AED ${(q*p.price).toLocaleString()}</div>
+        </div>
+      </div>`).join("")}
+    </div>`:`<div class="card rounded-xl p-8 text-center text-gray-500"><div class="text-4xl mb-2">🧾</div>No sales recorded this day</div>`}
+    `:`
+    <div class="card rounded-xl p-4 mb-4">
+      <label class="text-xs text-gray-400 font-bold block mb-2 tracking-widest">SELECT PRODUCT</label>
+      <select id="sales-prod-sel" class="inp mb-3" style="font-size:15px">
+        <option value="">— Select product —</option>
+        ${prodOpts}
+      </select>
+      <div id="sales-preview" style="display:none" class="sp-card mb-3">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="text-xs font-mono font-bold mb-0.5" id="sp-code" style="color:#C9A84C"></div>
+            <div class="font-bold text-white text-base leading-tight" id="sp-en"></div>
+            <div class="text-sm text-gray-300 ar mt-1" id="sp-ar"></div>
           </div>
-        </div>`;}).join("")}
+          <div class="text-right flex-shrink-0 ml-3">
+            <div class="text-2xl font-bold text-green-400" id="sp-price"></div>
+            <div class="text-xs mt-1" id="sp-stock"></div>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <select id="sales-qty-sel" class="inp flex-1 text-center font-bold" style="font-size:20px">
+          <option value="">Qty</option>
+          ${Array.from({length:50},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
+        </select>
+        <button id="btn-sales-add" class="g rounded-xl font-bold text-base flex-shrink-0 px-6" style="height:54px;min-width:90px" disabled>+ ADD</button>
+      </div>
     </div>
+
+    <div class="mb-20">
+      <div class="text-xs text-gray-400 font-bold tracking-widest mb-2">
+        ${bKeys.length===0?"ADDED ITEMS":`ADDED ITEMS (${bKeys.length} SKU · ${bTotal} bottles · AED ${bRev.toLocaleString()})`}
+      </div>
+      ${bKeys.length===0?`<div class="card rounded-xl p-6 text-center text-gray-500">
+        <div class="text-3xl mb-2">🧾</div><div class="text-sm">No items added yet</div>
+        <div class="text-xs mt-1">Select a product above and tap + ADD</div>
+      </div>`:`<div class="space-y-2">
+        ${bKeys.map(sku=>{const p=PRODUCTS.find(x=>x.sku===sku),q=basket[sku];
+          return`<div class="ai-item">
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-mono font-bold" style="color:#C9A84C">${sku}</div>
+              <div class="font-semibold text-sm text-white">${p?.name||sku}</div>
+              ${p?.nameAr?`<div class="text-xs text-gray-400 ar">${p.nameAr}</div>`:""}
+            </div>
+            <div class="text-right flex-shrink-0 mr-2">
+              <div class="text-2xl font-bold text-white">${q}</div>
+              <div class="text-xs text-gray-400">AED ${((q||0)*(p?.price||0)).toLocaleString()}</div>
+            </div>
+            <button class="sales-remove w-10 h-10 rounded-xl font-bold text-lg flex-shrink-0"
+              style="background:rgba(127,29,29,.6);color:#fca5a5" data-sku="${sku}">×</button>
+          </div>`;}).join("")}
+      </div>`}
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 p-3 z-30" style="background:#0f1824;border-top:1px solid rgba(255,255,255,.08)">
+      <div class="flex items-center gap-3">
+        <div class="flex-1">
+          <div class="text-white font-bold text-lg">AED ${bRev.toLocaleString()}</div>
+          <div class="text-xs text-gray-400">${bTotal} bottle${bTotal!==1?'s':''} selected</div>
+        </div>
+        <button id="btn-submit-day" class="g px-6 py-3 rounded-xl font-bold text-sm ${bTotal===0?'opacity-40':''}"
+          data-day="${day}" ${bTotal===0?"disabled":""}>Submit & Lock ${day} ✓</button>
+      </div>
+    </div>
+    `}
+
+    ${confirmOpen?`
+    <div class="fixed inset-0 z-50 flex flex-col justify-end" style="background:rgba(0,0,0,.85)">
+      <div class="scy p-5" style="background:#1a2744;border-radius:24px 24px 0 0;border-top:2px solid #C9A84C;max-height:88vh">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-white">Confirm Sales</h3>
+            <p class="text-gray-400 text-sm">${day} · ${bKeys.length} SKU${bKeys.length>1?'s':''}</p>
+          </div>
+          <button id="btn-confirm-cancel" class="text-gray-400 text-3xl leading-none w-10 h-10 flex items-center justify-center">×</button>
+        </div>
+        <div class="space-y-2 mb-4">
+          ${bKeys.map(sku=>{const p=PRODUCTS.find(x=>x.sku===sku),q=basket[sku];
+            return`<div class="ai-item">
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-mono" style="color:#C9A84C">${sku}</div>
+                <div class="font-semibold text-sm text-white">${p?.name||sku}</div>
+                ${p?.nameAr?`<div class="text-xs text-gray-300 ar">${p.nameAr}</div>`:""}
+              </div>
+              <div class="text-right flex-shrink-0">
+                <div class="text-xl font-bold text-white">${q}</div>
+                <div class="text-xs text-gray-400">AED ${((q||0)*(p?.price||0)).toLocaleString()}</div>
+              </div>
+            </div>`;}).join("")}
+        </div>
+        <div class="card-g rounded-xl p-4 mb-4 flex items-center justify-between">
+          <div class="text-green-300 font-bold">Total Revenue</div>
+          <div class="text-2xl font-bold text-green-400">AED ${bRev.toLocaleString()}</div>
+        </div>
+        <button id="btn-confirm-submit" class="g w-full py-4 rounded-xl font-bold text-lg mb-3">Submit & Lock ${day} ✓</button>
+        <p class="text-center text-gray-500 text-xs">This will lock ${day}. Unlock requires Manager PIN.</p>
+      </div>
+    </div>`:""}
   </div>`;}
 
 // ─── GRN TAB ─────────────────────────────────
@@ -337,7 +565,8 @@ function grnT(od){
         <p class="text-xs text-amber-400 mb-3">⚠ Opening stock changes require Manager approval. Current values shown.</p>
         ${PRODUCTS.map(p=>`<div class="flex items-center justify-between bg-gray-800 rounded-xl px-4 py-3">
           <div><div class="text-xs font-mono" style="color:#C9A84C">${p.sku}</div>
-          <div class="text-sm text-white">${p.name}</div></div>
+          <div class="text-sm text-white">${p.name}</div>
+          ${p.nameAr?`<div class="text-xs text-gray-400 ar">${p.nameAr}</div>`:""}</div>
           <div class="flex items-center gap-2">
             <button class="os-btn w-10 h-10 rounded-xl bg-gray-700 text-white text-xl font-bold flex items-center justify-center" data-a="dec" data-sku="${p.sku}">−</button>
             <input type="number" min="0" inputmode="numeric" class="os-inp bg-gray-700 text-white text-center w-16 h-10 rounded-xl text-lg font-bold border border-gray-600" data-sku="${p.sku}" value="${od.opening_stock[p.sku]||0}" style="font-size:18px">
@@ -398,7 +627,8 @@ function testerT(od){
         return`<div class="card rounded-xl p-3 ${excess?"border border-amber-500":""}">
           <div class="flex items-center justify-between mb-2">
             <div><div class="text-xs font-mono font-bold" style="color:#C9A84C">${p.sku}</div>
-            <div class="font-semibold text-sm text-white">${p.name}</div></div>
+            <div class="font-semibold text-sm text-white">${p.name}</div>
+            ${p.nameAr?`<div class="text-xs text-gray-400 ar">${p.nameAr}</div>`:""}</div>
             <span class="pill ${cs.cls}">${cs.label}</span>
           </div>
           ${excess?`<div class="text-xs text-amber-400 mb-2">⚠ Used (${usd}) > Issued (${iss}) — verify or raise adjustment</div>`:""}
@@ -489,7 +719,7 @@ function adjustT(od){
 // ═══════════════════════════════════════════
 function mgrV(){
   const wd=weekData();
-  const tabs=[{id:"dashboard",ic:"📊",lb:"Overview"},{id:"outlets",ic:"🏬",lb:"Outlets"},{id:"stock",ic:"📦",lb:"Stock"},{id:"movements",ic:"🔄",lb:"Movements"},{id:"testers",ic:"🌸",lb:"Testers"},{id:"audit",ic:"🔍",lb:"Audit"},{id:"export",ic:"📥",lb:"Export"}];
+  const tabs=[{id:"dashboard",ic:"📊",lb:"Overview"},{id:"outlets",ic:"🏬",lb:"Outlets"},{id:"stock",ic:"📦",lb:"Stock"},{id:"movements",ic:"🔄",lb:"Movements"},{id:"testers",ic:"🌸",lb:"Testers"},{id:"audit",ic:"🔍",lb:"Audit"},{id:"adjust",ic:"🔧",lb:"Adjust"},{id:"export",ic:"📥",lb:"Export"}];
   return`<div class="min-h-screen flex flex-col" style="background:#0f1824">
     <div class="top p-4 flex items-center justify-between" style="background:#1a2744;border-bottom:1px solid rgba(201,168,76,.3)">
       <div>
@@ -506,7 +736,7 @@ function mgrV(){
         <div class="text-xl">${t.ic}</div>${t.lb}</button>`).join("")}
     </div>
     <div class="flex-1 scy p-4 pb-10">
-      ${S.mgrTab==="dashboard"?mgrDash(wd):S.mgrTab==="outlets"?mgrOutlets(wd):S.mgrTab==="stock"?mgrStock(wd):S.mgrTab==="movements"?mgrMovements(wd):S.mgrTab==="testers"?mgrTesters(wd):S.mgrTab==="audit"?mgrAudit(wd):mgrExport(wd)}
+      ${S.mgrTab==="dashboard"?mgrDash(wd):S.mgrTab==="outlets"?mgrOutlets(wd):S.mgrTab==="stock"?mgrStock(wd):S.mgrTab==="movements"?mgrMovements(wd):S.mgrTab==="testers"?mgrTesters(wd):S.mgrTab==="audit"?mgrAudit(wd):S.mgrTab==="adjust"?mgrAdjust(wd):mgrExport(wd)}
     </div>
   </div>`;}
 
@@ -728,6 +958,77 @@ function mgrAudit(wd){
     </div>`}
   </div>`;}
 
+// ─── MANAGER ADJUST TAB ──────────────────────
+function mgrAdjust(wd){
+  const selId=S.adjOutlet||OUTLETS[0].id;
+  const od=wd[selId]||initOutlet();
+  const allAdjs=[];
+  OUTLETS.forEach(o=>{(wd[o.id]?.adjustments||[]).forEach(a=>{
+    const p=PRODUCTS.find(x=>x.sku===a.sku);
+    allAdjs.push({...a,outletName:o.name,pname:p?.name||a.sku});
+  });});
+  allAdjs.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  return`<div class="fade">
+    <div class="card-a rounded-xl p-4 mb-4">
+      <div class="font-bold text-amber-300 mb-1">🔧 Stock Adjustments — Manager Only</div>
+      <div class="text-xs text-amber-400">All adjustments require Manager PIN approval and are permanently logged in the audit trail.</div>
+    </div>
+    <div class="mb-4">
+      <label class="text-xs text-gray-400 font-bold block mb-1 tracking-widest">SELECT OUTLET</label>
+      <select id="adj-outlet" class="inp">
+        ${OUTLETS.map(o=>`<option value="${o.id}" ${o.id===selId?"selected":""}>${o.name} (${o.loc})</option>`).join("")}
+      </select>
+    </div>
+    <div class="card rounded-xl p-4 mb-5 space-y-4">
+      <div>
+        <label class="text-sm text-gray-400 block mb-1 font-semibold">Product (Current Stock shown)</label>
+        <select id="adj-sku" class="inp">
+          <option value="">— Select product —</option>
+          ${PRODUCTS.map(p=>`<option value="${p.sku}">${p.sku} · ${p.name} (Stock: ${closing(od,p.sku)})</option>`).join("")}
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-sm text-gray-400 block mb-1 font-semibold">Type</label>
+          <select id="adj-type" class="inp">
+            <option value="1">➕ Add Stock</option>
+            <option value="-1">➖ Remove Stock</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-gray-400 block mb-1 font-semibold">Quantity</label>
+          <input type="number" id="adj-qty" min="1" inputmode="numeric" placeholder="0" class="inp text-center text-2xl font-bold" style="font-size:22px">
+        </div>
+      </div>
+      <div>
+        <label class="text-sm text-gray-400 block mb-1 font-semibold">Reason <span class="text-red-400">*</span></label>
+        <select id="adj-reason" class="inp">
+          <option value="">— Select reason —</option>
+          ${ADJ_REASONS.map(r=>`<option value="${r}">${r}</option>`).join("")}
+        </select>
+      </div>
+      <div>
+        <label class="text-sm text-gray-400 block mb-1 font-semibold">Notes (mandatory for "Other")</label>
+        <input type="text" id="adj-notes" placeholder="Additional details..." class="inp" style="font-size:16px">
+      </div>
+      <button id="btn-adj-submit" class="w-full py-4 rounded-xl font-bold text-base bg-amber-700 text-amber-100 tracking-wide">REQUEST MANAGER APPROVAL →</button>
+    </div>
+    <h3 class="text-gray-400 text-xs font-bold tracking-widest mb-2">ALL ADJUSTMENTS THIS WEEK (${allAdjs.length})</h3>
+    ${allAdjs.length===0?`<div class="card rounded-xl p-6 text-center text-gray-500">No adjustments this week</div>`:""}
+    <div class="space-y-2">
+      ${allAdjs.map(a=>`<div class="card rounded-xl p-3 flex items-center gap-3">
+        <div class="text-2xl">${a.qty>0?"➕":"➖"}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm text-white">${Math.abs(a.qty)} × ${a.pname}</div>
+          <div class="text-xs font-bold" style="color:#C9A84C">${a.outletName}</div>
+          <div class="text-xs text-gray-400">${a.reason}</div>
+          <div class="text-xs text-gray-500">${fDT(a.date)}${a.notes?` · ${a.notes}`:""}</div>
+        </div>
+        <span class="pill ${a.qty>0?"bg-green-900 text-green-300":"bg-red-900 text-red-300"}">${a.qty>0?"+":""}${a.qty}</span>
+      </div>`).join("")}
+    </div>
+  </div>`;}
+
 // ─── EXPORT TAB ──────────────────────────────
 function mgrExport(wd){
   return`<div class="fade">
@@ -793,7 +1094,7 @@ function txOutM(){const od=outletData(S.outlet);
       <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Send to Outlet</label>
         <select id="txo-to" class="inp">${["<option value=''>— Select —</option>",...OUTLETS.filter(o=>o.id!==S.outlet).map(o=>`<option value="${o.id}">${o.name}</option>`)].join("")}</select></div>
       <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Product</label>
-        <select id="txo-sku" class="inp">${["<option value=''>— Select —</option>",...PRODUCTS.map(p=>{const av=closing(od,p.sku);return`<option value="${p.sku}" ${av<=0?"disabled":""}>  ${p.name} — Stock: ${av}</option>`;})].join("")}</select></div>
+        <select id="txo-sku" class="inp">${["<option value=''>— Select —</option>",...PRODUCTS.map(p=>{const av=closing(od,p.sku);return`<option value="${p.sku}" ${av<=0?"disabled":""}>${p.sku} — ${p.name} — Stock: ${av}</option>`;})].join("")}</select></div>
       <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Quantity</label>
         <input type="number" id="txo-qty" min="1" inputmode="numeric" placeholder="0" class="inp text-center text-2xl font-bold" style="font-size:22px"></div>
       <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Notes (optional)</label>
@@ -810,7 +1111,7 @@ function txInM(){
       <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Received from Outlet</label>
         <select id="txi-from" class="inp">${["<option value=''>— Select —</option>",...OUTLETS.filter(o=>o.id!==S.outlet).map(o=>`<option value="${o.id}">${o.name}</option>`)].join("")}</select></div>
       <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Product</label>
-        <select id="txi-sku" class="inp">${["<option value=''>— Select —</option>",...PRODUCTS.map(p=>`<option value="${p.sku}">${p.name}</option>`)].join("")}</select></div>
+        <select id="txi-sku" class="inp">${["<option value=''>— Select —</option>",...PRODUCTS.map(p=>`<option value="${p.sku}">${p.sku} — ${p.name}</option>`)].join("")}</select></div>
       <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Quantity Received</label>
         <input type="number" id="txi-qty" min="1" inputmode="numeric" placeholder="0" class="inp text-center text-2xl font-bold" style="font-size:22px"></div>
       <div><label class="text-sm text-gray-400 block mb-1 font-semibold">Notes (optional)</label>
@@ -846,7 +1147,7 @@ function grnM(){
       <label class="text-xs text-gray-400 font-bold block mb-2 tracking-widest">ADD PRODUCTS RECEIVED</label>
       <select id="grn-pick-sku" class="inp mb-2" style="font-size:15px">
         <option value="">— Select product —</option>
-        ${PRODUCTS.map(p=>`<option value="${p.sku}">${p.sku} · ${p.name}</option>`).join("")}
+        ${(()=>{const brands=[...new Set(PRODUCTS.map(p=>p.brand).filter(Boolean))];return brands.map(b=>`<optgroup label="${b}">`+PRODUCTS.filter(p=>p.brand===b).map(p=>`<option value="${p.sku}">${p.sku} · ${p.name}${p.nameAr?' | '+p.nameAr:''}</option>`).join('')+'</optgroup>').join('');})()}
       </select>
       <div class="flex gap-2">
         <input type="number" id="grn-pick-qty" min="1" inputmode="numeric" placeholder="Qty"
@@ -941,19 +1242,29 @@ function bindAll(){
   qAll(".m-tab").forEach(b=>b.addEventListener("click",()=>{S.mgrTab=b.dataset.tab;render();}));
 
   // Day selector
-  qAll(".day-btn").forEach(b=>b.addEventListener("click",()=>{S.activeDay=b.dataset.day;render();}));
+  qAll(".day-btn").forEach(b=>b.addEventListener("click",()=>{S.activeDay=b.dataset.day;S.salesBasket={};S.salesConfirmOpen=false;render();}));
 
   // Submit / unlock day
   q("btn-submit-day")?.addEventListener("click",()=>{
-    const day=q("btn-submit-day").dataset.day;
-    const od=outletData(S.outlet);
-    const totalToday=PRODUCTS.reduce((s,p)=>s+(od.daily_sales[day]?.[p.sku]||0),0);
+    if(!S.salesBasket||Object.keys(S.salesBasket).filter(k=>S.salesBasket[k]>0).length===0){toast("Add items first");return;}
+    S.salesConfirmOpen=true;render();
+  });
+  q("btn-confirm-cancel")?.addEventListener("click",()=>{S.salesConfirmOpen=false;render();});
+  q("btn-confirm-submit")?.addEventListener("click",()=>{
+    const day=S.activeDay;const basket=S.salesBasket||{};
+    const items=Object.entries(basket).filter(([,q2])=>q2>0);
+    if(!items.length)return;
     mutateOutlet(S.outlet,od=>{
+      if(!od.daily_sales[day])od.daily_sales[day]={};
+      items.forEach(([sku,qty])=>{od.daily_sales[day][sku]=(od.daily_sales[day][sku]||0)+qty;});
       if(!od.day_status)od.day_status={};
       od.day_status[day]={locked:true,lockedAt:now()};
     });
-    addAudit(S.outlet,"SALES_LOCK",{detail:`${day} locked — ${totalToday} bottles total`},"staff");
-    toast(`✓ ${day} submitted and locked (${totalToday} bottles)`);render();
+    const total=items.reduce((s,[,q2])=>s+q2,0);
+    addAudit(S.outlet,"SALES_LOCK",{detail:`${day} locked — ${total} bottles total`},"staff");
+    const rev=items.reduce((s,[sku,q2])=>{const p=PRODUCTS.find(x=>x.sku===sku);return s+(p?.price||0)*q2;},0);
+    S.salesBasket={};S.salesConfirmOpen=false;
+    toast(`✓ ${day} locked — ${total} bottles · AED ${rev.toLocaleString()}`);render();
   });
   q("btn-unlock-day")?.addEventListener("click",()=>{
     const day=q("btn-unlock-day").dataset.day;
@@ -969,23 +1280,37 @@ function bindAll(){
     render();
   });
 
-  // Sales qty
-  qAll(".qty-btn").forEach(b=>b.addEventListener("click",()=>{
-    const{a,day,sku}=b.dataset;
-    const od=outletData(S.outlet);
-    if(isLocked(od,day)){toast("🔒 Day locked — manager unlock required");return;}
-    const cur=od.daily_sales[day]?.[sku]||0,nv=Math.max(0,cur+(a==="inc"?1:-1));
-    mutateOutlet(S.outlet,od=>{if(!od.daily_sales[day])od.daily_sales[day]={};od.daily_sales[day][sku]=nv;});
-    addAudit(S.outlet,"SALES_ENTRY",{sku,day,detail:`${sku} ${day}: ${cur}→${nv}`});
-    render();
-  }));
-  qAll(".sales-inp").forEach(inp=>inp.addEventListener("change",()=>{
-    const{day,sku}=inp.dataset,od=outletData(S.outlet);
-    if(isLocked(od,day)){toast("🔒 Day locked");render();return;}
-    const old=od.daily_sales[day]?.[sku]||0,nv=Math.max(0,parseInt(inp.value)||0);
-    mutateOutlet(S.outlet,od=>{if(!od.daily_sales[day])od.daily_sales[day]={};od.daily_sales[day][sku]=nv;});
-    addAudit(S.outlet,"SALES_ENTRY",{sku,day,detail:`${sku} ${day}: ${old}→${nv}`});
-    inp.value=nv;
+  // Sales product select
+  q("sales-prod-sel")?.addEventListener("change",()=>{
+    const code=q("sales-prod-sel")?.value;
+    const preview=q("sales-preview");const addBtn=q("btn-sales-add");
+    if(!code){if(preview)preview.style.display="none";if(addBtn)addBtn.disabled=true;return;}
+    const p=PRODUCTS.find(x=>x.sku===code);if(!p)return;
+    const stk=closing(outletData(S.outlet),code);
+    const el=id=>document.getElementById(id);
+    el("sp-code").textContent=`${p.sku}${p.size?" · "+p.size:""}`;
+    el("sp-en").textContent=p.name;
+    el("sp-ar").textContent=p.nameAr||"";
+    el("sp-price").textContent=p.price>0?`AED ${p.price.toLocaleString()}`:"";
+    const stEl=el("sp-stock");
+    if(stEl){stEl.className=stk<=0?"text-red-400 font-bold text-xs":stk<=3?"text-yellow-400 font-bold text-xs":"text-green-400 text-xs";
+      stEl.textContent=stk<=0?"⛔ Out of Stock":stk<=3?`⚠ Low: ${stk} left`:`✅ ${stk} in stock`;}
+    if(preview)preview.style.display="block";
+    if(addBtn)addBtn.disabled=false;
+  });
+  q("btn-sales-add")?.addEventListener("click",()=>{
+    const code=q("sales-prod-sel")?.value,qty=parseInt(q("sales-qty-sel")?.value)||0;
+    if(!code||!qty){toast("Select a product and quantity");return;}
+    const p=PRODUCTS.find(x=>x.sku===code);
+    const od=outletData(S.outlet),stk=closing(od,code);
+    const inBasket=S.salesBasket?.[code]||0;
+    if(qty+inBasket>stk){toast(`⚠ Only ${stk} in stock`);return;}
+    if(!S.salesBasket)S.salesBasket={};
+    S.salesBasket[code]=(S.salesBasket[code]||0)+qty;
+    toast(`✅ Added ${qty}× ${p?.name||code}`);render();
+  });
+  qAll(".sales-remove").forEach(b=>b.addEventListener("click",()=>{
+    if(S.salesBasket)delete S.salesBasket[b.dataset.sku];render();
   }));
 
   // GRN
@@ -1029,8 +1354,11 @@ function bindAll(){
     if(inp)inp.value=Math.max(0,(parseInt(inp.value)||0)+(b.dataset.a==="inc"?1:-1));
   }));
 
-  // Adjustment submit
+  // Adjustment outlet selector (manager tab)
+  q("adj-outlet")?.addEventListener("change",()=>{S.adjOutlet=q("adj-outlet")?.value;render();});
+  // Adjustment submit (manager tab — uses adj-outlet, not S.outlet)
   q("btn-adj-submit")?.addEventListener("click",()=>{
+    const outletId=S.adjOutlet||OUTLETS[0].id;
     const sku=q("adj-sku")?.value,type=parseInt(q("adj-type")?.value||"1");
     const qty=parseInt(q("adj-qty")?.value)||0,reason=q("adj-reason")?.value,notes=q("adj-notes")?.value||"";
     if(!sku){toast("Select a product");return;}
@@ -1038,11 +1366,13 @@ function bindAll(){
     if(!reason){toast("Select a reason");return;}
     if(reason.includes("Other")&&!notes){toast("Notes required for 'Other' reason");return;}
     const finalQty=type*qty,skuName=PRODUCTS.find(p=>p.sku===sku)?.name||sku;
-    S.modal={type:"pin",title:"Approve Adjustment",desc:`${finalQty>0?"+":""}${finalQty} × ${skuName}\nReason: ${reason}`,
+    const outletName=OUTLETS.find(o=>o.id===outletId)?.name||outletId;
+    S.modal={type:"pin",title:"Approve Adjustment",
+      desc:`${finalQty>0?"+":""}${finalQty} × ${skuName} | ${outletName}\nReason: ${reason}`,
       onOk:()=>{
         const rec={id:uid(),sku,qty:finalQty,reason,notes,date:now()};
-        mutateOutlet(S.outlet,od=>{if(!od.adjustments)od.adjustments=[];od.adjustments.push(rec);});
-        addAudit(S.outlet,"ADJUSTMENT",{sku,detail:`${finalQty>0?"+":""}${finalQty} × ${skuName} | Reason: ${reason}${notes?" | Notes: "+notes:""}`},"manager");
+        mutateOutlet(outletId,od=>{if(!od.adjustments)od.adjustments=[];od.adjustments.push(rec);});
+        addAudit(outletId,"ADJUSTMENT",{sku,detail:`${finalQty>0?"+":""}${finalQty} × ${skuName} | Reason: ${reason}${notes?" | Notes: "+notes:""}`},"manager");
         toast(`✓ Adjustment saved: ${finalQty>0?"+":""}${finalQty} × ${skuName}`);closeModal();render();
       }};
     render();
