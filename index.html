@@ -313,30 +313,61 @@ function render(){
 // ═══════════════════════════════════════════
 // LOGIN
 // ═══════════════════════════════════════════
-function loginV(){return`
-<div class="min-h-screen flex flex-col items-center justify-center p-5" style="background:linear-gradient(160deg,#0f1824 0%,#1a2744 100%)">
-  <div class="w-full max-w-sm">
-    <div class="text-center mb-10">
-      <div class="text-5xl mb-3" style="color:#C9A84C">✦</div>
-      <h1 class="text-3xl font-bold tracking-widest" style="color:#C9A84C">EMIRATES PRIDE</h1>
-      <p class="text-gray-400 text-xs tracking-widest mt-1">STORE OPERATIONS v2.0</p>
+function loginV(){
+  // Build outlet options grouped by city
+  const cities=[...new Set(OUTLETS.map(o=>o.loc))];
+  const outletOpts=cities.map(city=>{
+    const group=OUTLETS.filter(o=>o.loc===city);
+    return`<optgroup label="${city}">`+
+      group.map(o=>`<option value="${o.id}">${o.id} · ${o.name} (${o.brand})</option>`).join("")+
+      `</optgroup>`;
+  }).join("");
+  return`
+<div class="min-h-screen flex flex-col items-center justify-center" style="background:linear-gradient(160deg,#0f1824 0%,#1a2744 100%);padding:24px 20px 40px">
+  <!-- gold top bar -->
+  <div style="position:fixed;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#B8892A,#E8C97A,#B8892A);z-index:10"></div>
+  <div class="w-full fade" style="max-width:400px">
+
+    <!-- Brand header -->
+    <div class="text-center mb-8">
+      <div style="width:76px;height:76px;background:linear-gradient(135deg,#C9A84C,#8B6914);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px;box-shadow:0 8px 32px rgba(201,168,76,.3)">🌹</div>
+      <div class="ar" style="font-size:20px;color:#C9A84C;margin-bottom:2px">فخـر الإمارات</div>
+      <div style="font-size:11px;letter-spacing:4px;color:#A08D5E;text-transform:uppercase;font-weight:600">EMIRATES PRIDE</div>
+      <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.4),transparent);margin:14px 0 0"></div>
     </div>
-    <div class="card rounded-2xl p-5 mb-4 fade">
-      <p class="text-xs text-gray-400 tracking-widest font-bold mb-3">STAFF LOGIN</p>
-      <select id="sel-out" class="inp mb-4">
-        <option value="">— Select Your Outlet —</option>
-        ${OUTLETS.map(o=>`<option value="${o.id}">${o.name}</option>`).join("")}
-      </select>
-      <button id="btn-sl" class="g w-full py-4 rounded-xl text-base tracking-widest">ENTER STORE</button>
+
+    <!-- Staff card -->
+    <div class="card rounded-2xl p-5 mb-4">
+      <p class="text-xs tracking-widest font-bold mb-1" style="color:#A08D5E">SELECT OUTLET</p>
+      <p class="text-xs text-gray-500 mb-3">Choose your store location to begin your shift</p>
+      <div style="position:relative;margin-bottom:14px">
+        <select id="sel-out" style="width:100%;background:#111827;border:1px solid rgba(201,168,76,.3);color:#fff;font-size:15px;padding:13px 42px 13px 16px;border-radius:12px;appearance:none;-webkit-appearance:none;outline:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%228%22 viewBox=%220 0 12 8%22%3E%3Cpath d=%22M1 1l5 5 5-5%22 stroke=%22%23C9A84C%22 stroke-width=%222%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 14px center" class="sel-city">
+          <option value="">— Select Your Outlet —</option>
+          ${outletOpts}
+        </select>
+      </div>
+      <p class="text-xs tracking-widest font-bold mb-1 mt-1" style="color:#A08D5E">ASSOCIATE NAME</p>
+      <p class="text-xs text-gray-500 mb-3">Enter your name for the shift log</p>
+      <input type="text" id="inp-name" placeholder="Enter your name"
+        style="width:100%;background:#111827;border:1px solid rgba(201,168,76,.3);color:#fff;font-size:15px;padding:13px 16px;border-radius:12px;outline:none;box-sizing:border-box"
+        autocomplete="off" autocorrect="off" autocapitalize="words">
+      <div id="login-err" class="text-red-400 text-sm mt-3 hidden text-center font-semibold"></div>
+      <button id="btn-sl" class="g w-full py-4 rounded-xl text-base tracking-widest font-bold mt-5"
+        style="letter-spacing:.12em">START SHIFT</button>
     </div>
-    <div class="card rounded-2xl p-5 fade">
-      <p class="text-xs text-gray-400 tracking-widest font-bold mb-3">MANAGEMENT ACCESS</p>
+
+    <!-- Manager card -->
+    <div class="card rounded-2xl p-5">
+      <p class="text-xs tracking-widest font-bold mb-3" style="color:#A08D5E">MANAGEMENT ACCESS</p>
       <input type="password" id="inp-pin" inputmode="numeric" maxlength="4" placeholder="● ● ● ●"
-        class="inp text-center text-3xl tracking-widest mb-4" style="letter-spacing:.5em">
-      <button id="btn-ml" class="w-full py-4 rounded-xl font-bold text-base bg-gray-700 text-gray-200">MANAGER DASHBOARD</button>
+        class="inp text-center mb-4" style="letter-spacing:.5em;font-size:28px" autocomplete="off">
+      <button id="btn-ml" class="w-full py-4 rounded-xl font-bold text-base bg-gray-700 text-gray-200 tracking-widest">MANAGER DASHBOARD</button>
     </div>
-    <p class="text-center text-gray-600 text-xs mt-5">Week: ${S.weekStart} · Manager PIN: 1234</p>
+
+    <p class="text-center text-gray-600 text-xs mt-5">Week: ${S.weekStart}</p>
   </div>
+  <!-- gold bottom bar -->
+  <div style="position:fixed;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#B8892A,#E8C97A,#B8892A)"></div>
 </div>`;}
 
 // ═══════════════════════════════════════════
@@ -350,17 +381,22 @@ function staffV(){
   const neg=PRODUCTS.filter(p=>closing(od,p.sku)<0).length;
   const tabs=[{id:"dashboard",ic:"📊",lb:"Dashboard"},{id:"sales",ic:"🧾",lb:"Sales"},{id:"grn",ic:"📦",lb:"Receive"},{id:"transfer",ic:"🔄",lb:"Transfer"},{id:"tester",ic:"🌸",lb:"Testers"}];
   return`<div class="min-h-screen flex flex-col" style="background:#0f1824">
-    <div class="top p-4 flex items-center justify-between" style="background:#1a2744;border-bottom:1px solid rgba(201,168,76,.3)">
-      <div>
-        <div class="text-xs text-gray-400 tracking-widest">EMIRATES PRIDE</div>
-        <div class="font-bold text-base text-white">${o.name}</div>
-        <div class="text-xs text-gray-500">${o.loc} · ${S.outlet}</div>
+    <div style="position:relative;height:3px;background:linear-gradient(90deg,#B8892A,#E8C97A,#B8892A)"></div>
+    <div class="top px-4 py-3 flex items-center justify-between" style="background:#1a2744;border-bottom:1px solid rgba(201,168,76,.2)">
+      <div class="min-w-0 flex-1 mr-3">
+        <div class="flex items-center gap-2 mb-0.5">
+          <span class="text-lg">🌹</span>
+          <span class="text-xs tracking-widest font-bold" style="color:#C9A84C">EMIRATES PRIDE</span>
+          <span class="pill bg-gray-700 text-gray-400" style="font-size:9px">${o.brand||"EPP"}</span>
+        </div>
+        <div class="font-bold text-base text-white leading-tight truncate">${o.name}</div>
+        <div class="text-xs text-gray-500 mt-0.5">${S.outlet} · ${o.loc}${S.staffName?` · 👤 ${S.staffName}`:""}</div>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 flex-shrink-0">
         <div class="text-right">
-          <div class="text-green-400 font-bold">${aed(rev)}</div>
+          <div class="text-green-400 font-bold text-sm">${aed(rev)}</div>
           <div class="text-xs text-gray-400">${sold} bottles this week</div>
-          ${neg>0?`<div class="text-xs text-red-400 font-bold">⚠ ${neg} neg stock</div>`:""}
+          ${neg>0?`<div class="text-xs text-red-400 font-bold">⚠ ${neg} neg</div>`:""}
         </div>
         <button id="btn-lo" class="bg-gray-700 rounded-xl px-3 py-2 text-sm text-gray-300 font-semibold">Exit</button>
       </div>
@@ -1349,12 +1385,24 @@ function pinM(m){
 // EVENT BINDING
 // ═══════════════════════════════════════════
 function bindAll(){
-  // Login
+  // Login — staff
   q("btn-sl")?.addEventListener("click",()=>{
     const v=q("sel-out")?.value;
-    if(!v){toast("Select your outlet first");return;}
-    S.outlet=v;S.view="staff";S.staffTab="sales";render();
+    const name=(q("inp-name")?.value||"").trim();
+    const errEl=q("login-err");
+    if(!v&&!name){if(errEl){errEl.textContent="Please select your outlet and enter your name";errEl.classList.remove("hidden");}return;}
+    if(!v){if(errEl){errEl.textContent="Please select your outlet";errEl.classList.remove("hidden");}return;}
+    if(!name){if(errEl){errEl.textContent="Please enter your name";errEl.classList.remove("hidden");}return;}
+    if(errEl)errEl.classList.add("hidden");
+    S.outlet=v;S.staffName=name;S.view="staff";S.staffTab="dashboard";render();
   });
+  // Highlight outlet border on select
+  q("sel-out")?.addEventListener("change",()=>{const s=q("sel-out");if(s)s.style.borderColor=s.value?"#C9A84C":"rgba(201,168,76,.3)";});
+  // Highlight name border on input
+  q("inp-name")?.addEventListener("input",()=>{const n=q("inp-name");if(n)n.style.borderColor=n.value.trim()?"#C9A84C":"rgba(201,168,76,.3)";});
+  // Allow Enter on name field
+  q("inp-name")?.addEventListener("keydown",e=>{if(e.key==="Enter")q("btn-sl")?.click();});
+  // Login — manager
   q("btn-ml")?.addEventListener("click",()=>{
     if(q("inp-pin")?.value!==MGR_PIN){toast("Incorrect PIN");return;}
     S.view="manager";S.mgrTab="dashboard";render();
