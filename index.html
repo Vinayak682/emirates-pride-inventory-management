@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>Emirates Pride — Operations 2.0</title>
+<title>Emirates Pride — Operations 2.0 + Stock Register</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
@@ -365,6 +365,21 @@ function loginV(){
     </div>
 
     <p class="text-center text-gray-600 text-xs mt-5">Week: ${S.weekStart}</p>
+
+    <!-- Stock Register link -->
+    <div style="margin-top:16px;">
+      <a href="stock-register.html" style="display:block;text-decoration:none;">
+        <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:16px;padding:14px 18px;display:flex;align-items:center;gap:14px;transition:background 0.2s;">
+          <div style="width:42px;height:42px;background:linear-gradient(135deg,rgba(201,168,76,0.25),rgba(201,168,76,0.1));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📋</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:#C9A84C;letter-spacing:0.3px;">Weekly Stock Register</div>
+            <div style="font-size:11px;color:#6B7280;margin-top:2px;">سجل المخزون الأسبوعي · Opening · Warehouse In · Store In · Out · Balance</div>
+          </div>
+          <div style="color:#C9A84C;font-size:18px;flex-shrink:0;">›</div>
+        </div>
+      </a>
+    </div>
+
   </div>
   <!-- gold bottom bar -->
   <div style="position:fixed;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#B8892A,#E8C97A,#B8892A)"></div>
