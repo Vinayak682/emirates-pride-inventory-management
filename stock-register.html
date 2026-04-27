@@ -569,6 +569,133 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .req-confirm:active{opacity:0.85;}
 .req-confirm:disabled{background:#1A1A1A;color:#333;cursor:not-allowed;}
 
+
+/* ═══════════════ DASHBOARD ═══════════════ */
+#dashPanel{
+  position:fixed;inset:0;background:#0D0D0D;z-index:850;
+  display:none;flex-direction:column;
+  font-family:var(--f-body);
+}
+.dash-topbar{
+  background:#000;border-bottom:1px solid #222;
+  padding:0 14px;height:48px;display:flex;align-items:center;gap:10px;
+  flex-shrink:0;
+}
+.dash-title{font-size:15px;font-weight:600;color:var(--gold2);flex:1;}
+.dash-close{background:transparent;border:1px solid #333;color:#777;
+  font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;font-family:var(--f-body);}
+.dash-close:active{background:#1A1A1A;}
+
+/* Day selector row */
+.dash-day-row{
+  background:#111;border-bottom:1px solid #222;
+  padding:10px 12px;display:flex;align-items:center;gap:6px;
+  overflow-x:auto;scrollbar-width:none;flex-shrink:0;
+}
+.dash-day-row::-webkit-scrollbar{display:none;}
+.dd-chip{
+  padding:7px 14px;border-radius:20px;font-family:var(--f-mono);font-size:11px;
+  font-weight:500;border:1px solid #2A2A2A;background:transparent;
+  color:#555;cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;
+}
+.dd-chip.active{background:var(--gold);color:#0D0D0D;border-color:var(--gold);font-weight:700;}
+.dd-chip.has-data{border-color:#3A3A2A;color:#888;}
+.dd-chip.locked{border-color:#1A3A1A;color:#4A8A4A;}
+
+/* Dashboard body */
+.dash-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;}
+
+/* KPI strip */
+.dash-kpi-row{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+}
+.kpi-card{
+  background:#141414;border:1px solid #222;border-radius:10px;
+  padding:12px 10px;text-align:center;
+}
+.kpi-val{font-family:var(--f-mono);font-size:22px;font-weight:600;display:block;margin-bottom:2px;}
+.kpi-label{font-size:9px;color:#444;text-transform:uppercase;letter-spacing:0.8px;}
+.kpi-val.kv-out{color:#E87070;}
+.kpi-val.kv-in{color:#7FC860;}
+.kpi-val.kv-wh{color:#8FC860;}
+.kpi-val.kv-bal{color:var(--gold2);}
+
+/* Activity log */
+.dash-section-title{
+  font-family:var(--f-mono);font-size:10px;font-weight:600;color:#444;
+  text-transform:uppercase;letter-spacing:1.2px;
+  padding:4px 0 8px;border-bottom:1px solid #1A1A1A;margin-bottom:8px;
+}
+.dash-log{background:#111;border:1px solid #1E1E1E;border-radius:10px;overflow:hidden;}
+.dl-row{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-bottom:1px solid #181818;transition:background 0.1s;
+}
+.dl-row:last-child{border-bottom:none;}
+.dl-row:active{background:#1A1A1A;}
+.dl-icon{
+  width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:15px;flex-shrink:0;
+}
+.dl-icon.out{background:rgba(232,112,112,0.12);}
+.dl-icon.in{background:rgba(127,200,96,0.12);}
+.dl-icon.wh{background:rgba(143,200,96,0.12);}
+.dl-icon.tr{background:rgba(201,164,78,0.10);}
+.dl-icon.lock{background:rgba(78,138,74,0.12);}
+.dl-body{flex:1;min-width:0;}
+.dl-name{font-size:13px;font-weight:500;color:#CCC;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dl-name-ar{font-family:var(--f-ar);font-size:11px;color:#555;direction:rtl;text-align:left;}
+.dl-meta{font-size:10px;color:#444;margin-top:2px;}
+.dl-right{text-align:right;flex-shrink:0;}
+.dl-qty{font-family:var(--f-mono);font-size:16px;font-weight:700;}
+.dl-qty.neg{color:#E87070;}.dl-qty.pos{color:#7FC860;}.dl-qty.neu{color:var(--gold2);}
+.dl-bal{font-family:var(--f-mono);font-size:10px;color:#444;margin-top:2px;}
+
+/* SKU snapshot table */
+.dash-sku-table{
+  background:#111;border:1px solid #1E1E1E;border-radius:10px;overflow:hidden;
+  width:100%;border-collapse:collapse;
+}
+.dash-sku-table thead th{
+  font-family:var(--f-mono);font-size:9px;font-weight:600;color:#444;
+  text-transform:uppercase;letter-spacing:0.8px;padding:8px 10px;
+  background:#0D0D0D;border-bottom:1px solid #1E1E1E;text-align:center;
+}
+.dash-sku-table thead th:first-child{text-align:left;}
+.dash-sku-table tbody tr{border-bottom:1px solid #161616;}
+.dash-sku-table tbody tr:last-child{border-bottom:none;}
+.dash-sku-table tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
+.dst-name{padding:9px 10px;}
+.dst-name-en{font-size:12px;color:#AAA;}
+.dst-name-ar{font-family:var(--f-ar);font-size:10px;color:#555;direction:rtl;text-align:left;}
+.dst-code{font-family:var(--f-mono);font-size:9px;color:#333;margin-top:1px;}
+.dst-num{font-family:var(--f-mono);font-size:13px;font-weight:600;
+  padding:9px 8px;text-align:center;}
+.dst-num.zero{color:#333;}.dst-num.low{color:#E8C97A;}.dst-num.ok{color:#7FC860;}
+.dst-num.moved{color:#E87070;}.dst-num.wh{color:#8FC860;}.dst-num.inn{color:#6FA8DC;}
+.dst-num.bal-neg{color:#E87070;font-weight:800;}
+
+/* Download bar */
+.dash-dl-bar{
+  background:#0D0D0D;border-top:1px solid #222;
+  padding:10px 12px;display:flex;gap:8px;flex-shrink:0;
+}
+.dl-btn{
+  flex:1;background:#1A1A1A;border:1px solid #2A2A2A;color:#888;
+  font-family:var(--f-body);font-size:12px;font-weight:500;
+  padding:10px 8px;border-radius:8px;cursor:pointer;text-align:center;
+  transition:all 0.15s;
+}
+.dl-btn:active{background:#252520;border-color:var(--gold);}
+.dl-btn.primary{background:#1A2A0A;border-color:#2A4A1A;color:#7FC860;}
+.dl-btn.mgr{background:#1A1A2A;border-color:#2A2A4A;color:#6FA8DC;}
+.dl-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* Empty state */
+.dash-empty{text-align:center;padding:40px 20px;color:#333;}
+.dash-empty-icon{font-size:32px;display:block;margin-bottom:10px;}
+
 </style>
 </head>
 <body>
@@ -617,6 +744,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
     <span class="top-rose">🌹</span>
     <span class="top-store" id="topStore">—</span>
     <div class="top-spacer"></div>
+    <button class="top-btn" onclick="openDash()" style="border-color:rgba(201,164,78,0.3);color:var(--gold2);">📊 Dashboard</button>
     <button class="top-btn stores-btn" onclick="openStores()">🏪 All Stores</button>
     <button class="top-btn logout" onclick="doLogout()">Logout</button>
   </div>
@@ -646,6 +774,38 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
     <div class="fdiv"></div>
     <div class="fstat"><span class="fstat-label">Balance</span><span class="fstat-val fb" id="ftBal">0</span></div>
     <button class="lock-btn" id="lockBtn" onclick="toggleLock()">🔓 Lock Day</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════ DASHBOARD PANEL ═══════════════ -->
+<div id="dashPanel">
+  <!-- Top bar -->
+  <div class="dash-topbar">
+    <span style="font-size:18px;">📊</span>
+    <div class="dash-title">
+      Daily Logbook — <span id="dashStoreName">—</span>
+    </div>
+    <button class="dash-close" onclick="closeDash()">✕ Close</button>
+  </div>
+
+  <!-- Day selector -->
+  <div class="dash-day-row" id="dashDayRow"></div>
+
+  <!-- Scrollable body -->
+  <div class="dash-body" id="dashBody"></div>
+
+  <!-- Download bar -->
+  <div class="dash-dl-bar">
+    <button class="dl-btn" id="dlDaySales" onclick="downloadDaySales()" disabled>
+      📥 My Day (CSV)
+    </button>
+    <button class="dl-btn primary" id="dlDayFull" onclick="downloadDayFull()" disabled>
+      📥 Full Day (Excel)
+    </button>
+    <button class="dl-btn mgr" id="dlWeek" onclick="downloadWeek()">
+      📥 Full Week
+    </button>
   </div>
 </div>
 
@@ -1058,8 +1218,10 @@ function doLogout(){
   me=null;pinBuf='';pc();
   document.getElementById('storeSelect').value='';
   document.getElementById('loginErr').textContent='';
+  document.getElementById('loginErr').style.color='';
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('appShell').style.display='none';
+  document.getElementById('dashPanel').style.display='none';
 }
 
 // ── DAY TABS ──
@@ -1208,6 +1370,11 @@ function confirmLock(){
   closeLockModal();
   lockDay(me.code,curDay);
   buildGrid();buildDayTabs();buildFooter();
+  // Refresh dashboard if open
+  if(document.getElementById('dashPanel').style.display==='flex'){
+    buildDashDayRow();
+    renderDash();
+  }
   toast('🔒 '+DAY_FULL[curDay]+' locked — opening carried to tomorrow');
 }
 
@@ -1666,6 +1833,400 @@ function renderMovLog(){
         <div style="font-family:var(--f-mono);font-size:10px;color:#555;margin-top:2px;">${e.prodCode}</div>
       </div>
     </div>`).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════
+let dashDay = 0;
+
+function openDash(){
+  if(!me) return;
+  dashDay = curDay;
+  document.getElementById('dashStoreName').textContent = me.name;
+  document.getElementById('dashPanel').style.display = 'flex';
+  buildDashDayRow();
+  renderDash();
+}
+function closeDash(){
+  document.getElementById('dashPanel').style.display = 'none';
+}
+
+function buildDashDayRow(){
+  const bar = document.getElementById('dashDayRow');
+  bar.innerHTML = '';
+  DAYS.forEach((d,i) => {
+    const chip = document.createElement('div');
+    const locked = isLocked(me.code, i);
+    const hasData = PRODUCTS.some(p =>
+      dbGet(me.code,i,p.code,'out')>0 ||
+      dbGet(me.code,i,p.code,'wh')>0 ||
+      dbGet(me.code,i,p.code,'inn')>0
+    );
+    chip.className = 'dd-chip' +
+      (i===dashDay?' active':'') +
+      (locked?' locked':'') +
+      (!locked&&hasData?' has-data':'');
+    chip.innerHTML = DAY_FULL[i].slice(0,3) +
+      (locked?' <span style="font-size:9px;">🔒</span>':'');
+    chip.onclick = () => {
+      dashDay = i;
+      buildDashDayRow();
+      renderDash();
+    };
+    bar.appendChild(chip);
+  });
+}
+
+function renderDash(){
+  const body = document.getElementById('dashBody');
+  const locked = isLocked(me.code, dashDay);
+
+  // Enable/disable download buttons
+  document.getElementById('dlDaySales').disabled = !locked;
+  document.getElementById('dlDayFull').disabled = !locked;
+
+  // ── KPI STRIP ──
+  let totOut=0, totIn=0, totWh=0;
+  PRODUCTS.forEach(p => {
+    totOut += dbGet(me.code,dashDay,p.code,'out');
+    totIn  += dbGet(me.code,dashDay,p.code,'inn');
+    totWh  += dbGet(me.code,dashDay,p.code,'wh');
+  });
+  const totBal = PRODUCTS.reduce((s,p)=>s+bal(me.code,dashDay,p.code),0);
+
+  // ── BUILD ACTIVITY LOG ──
+  // Collect all movements for this day
+  const activities = [];
+
+  // Products with OUT (sold/transferred)
+  PRODUCTS.forEach(p => {
+    const o = dbGet(me.code,dashDay,p.code,'open');
+    const w = dbGet(me.code,dashDay,p.code,'wh');
+    const i = dbGet(me.code,dashDay,p.code,'inn');
+    const x = dbGet(me.code,dashDay,p.code,'out');
+    const b = bal(me.code,dashDay,p.code);
+    if(x>0) activities.push({type:'out',p,o,w,i,x,b});
+    else if(w>0) activities.push({type:'wh',p,o,w,i,x,b});
+    else if(i>0) activities.push({type:'in',p,o,w,i,x,b});
+  });
+  // Sort: out first (highest qty), then wh, then in
+  activities.sort((a,b2) => {
+    const order = {out:0,wh:1,in:2};
+    if(order[a.type]!==order[b2.type]) return order[a.type]-order[b2.type];
+    return b2.x - a.x;
+  });
+
+  // Transfer log for this day
+  const dayTransfers = getTransferLog().filter(t => t.day===dashDay);
+
+  // ── RENDER HTML ──
+  body.innerHTML = '';
+
+  // KPI row
+  const kpiDiv = document.createElement('div');
+  kpiDiv.className = 'dash-kpi-row';
+  kpiDiv.innerHTML = `
+    <div class="kpi-card">
+      <span class="kpi-val kv-out">${totOut}</span>
+      <span class="kpi-label">Sold / Out</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-val kv-wh">${totWh}</span>
+      <span class="kpi-label">WH Received</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-val kv-in">${totIn}</span>
+      <span class="kpi-label">Store In</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-val kv-bal">${totBal}</span>
+      <span class="kpi-label">Balance</span>
+    </div>`;
+  body.appendChild(kpiDiv);
+
+  // Day status badge
+  const statusDiv = document.createElement('div');
+  statusDiv.style.cssText = 'display:flex;align-items:center;gap:8px;';
+  statusDiv.innerHTML = locked
+    ? `<span style="background:#1A3A1A;border:1px solid #2A4A2A;color:#6FCF97;font-size:11px;font-family:var(--f-mono);padding:5px 12px;border-radius:6px;">🔒 ${DAY_FULL[dashDay]} — Locked & Saved</span>`
+    : `<span style="background:#2A1A00;border:1px solid #3A2A00;color:#E8C97A;font-size:11px;font-family:var(--f-mono);padding:5px 12px;border-radius:6px;">⚠ ${DAY_FULL[dashDay]} — Not yet locked</span>`;
+  body.appendChild(statusDiv);
+
+  // ── ACTIVITY LOG ──
+  const logSection = document.createElement('div');
+  const logTitle = document.createElement('div');
+  logTitle.className = 'dash-section-title';
+  logTitle.textContent = '📋 Activity Log — ' + DAY_FULL[dashDay];
+  logSection.appendChild(logTitle);
+
+  if(!activities.length && !dayTransfers.length){
+    logSection.innerHTML += '<div class="dash-empty"><span class="dash-empty-icon">📭</span><div style="color:#333;font-size:13px;">No activity recorded for '+DAY_FULL[dashDay]+'</div></div>';
+  } else {
+    const logDiv = document.createElement('div');
+    logDiv.className = 'dash-log';
+
+    // Transfer movements first
+    dayTransfers.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'dl-row';
+      const isOut = t.fromStore===me.code;
+      row.innerHTML = `
+        <div class="dl-icon tr">${isOut?'📤':'📥'}</div>
+        <div class="dl-body">
+          <div class="dl-name">${t.prodName}</div>
+          ${t.prodAr?`<div class="dl-name-ar">${t.prodAr}</div>`:''}
+          <div class="dl-meta">${isOut?'→ Sent to '+t.toName:'← Received from '+t.fromName} · ${t.ts}</div>
+          ${t.note?`<div class="dl-meta" style="color:#4A4A3A;font-style:italic;">${t.note}</div>`:''}
+        </div>
+        <div class="dl-right">
+          <div class="dl-qty ${isOut?'neg':'pos'}">${isOut?'-':'+'}${t.qty}</div>
+          <div class="dl-bal">${t.prodCode}</div>
+        </div>`;
+      logDiv.appendChild(row);
+    });
+
+    // Product activities
+    activities.forEach(({type,p,o,w,i,x,b}) => {
+      const row = document.createElement('div');
+      row.className = 'dl-row';
+      const icons = {out:'📦',wh:'🏭',in:'🔄'};
+      const labels = {out:'Sold / Sent Out',wh:'Warehouse Received',in:'Store Transfer In'};
+      const qty = type==='out'?x : type==='wh'?w : i;
+      const sign = type==='out'?'-':'+';
+      const qcls = type==='out'?'neg':'pos';
+      row.innerHTML = `
+        <div class="dl-icon ${type}">${icons[type]}</div>
+        <div class="dl-body">
+          <div class="dl-name">${p.en}</div>
+          ${p.ar?`<div class="dl-name-ar">${p.ar}</div>`:''}
+          <div class="dl-meta">${labels[type]} · Opening was ${o}</div>
+        </div>
+        <div class="dl-right">
+          <div class="dl-qty ${qcls}">${sign}${qty}</div>
+          <div class="dl-bal">Bal: ${b}</div>
+        </div>`;
+      logDiv.appendChild(row);
+    });
+
+    // Lock event
+    if(locked){
+      const lockRow = document.createElement('div');
+      lockRow.className = 'dl-row';
+      lockRow.innerHTML = `
+        <div class="dl-icon lock">🔒</div>
+        <div class="dl-body">
+          <div class="dl-name" style="color:#4A8A4A;">${DAY_FULL[dashDay]} locked & saved</div>
+          <div class="dl-meta">Closing balance carried to ${DAYS[(dashDay+1)%7]} opening</div>
+        </div>
+        <div class="dl-right"><div class="dl-qty neu">${totBal}</div><div class="dl-bal">Closing</div></div>`;
+      logDiv.appendChild(lockRow);
+    }
+
+    logSection.appendChild(logDiv);
+  }
+  body.appendChild(logSection);
+
+  // ── SKU SNAPSHOT ──
+  // Only show products with any movement that day
+  const activeProds = PRODUCTS.filter(p =>
+    dbGet(me.code,dashDay,p.code,'open')>0 ||
+    dbGet(me.code,dashDay,p.code,'wh')>0 ||
+    dbGet(me.code,dashDay,p.code,'inn')>0 ||
+    dbGet(me.code,dashDay,p.code,'out')>0
+  );
+
+  if(activeProds.length > 0){
+    const snapSection = document.createElement('div');
+    const snapTitle = document.createElement('div');
+    snapTitle.className = 'dash-section-title';
+    snapTitle.textContent = '📦 SKU Snapshot — ' + activeProds.length + ' products';
+    snapSection.appendChild(snapTitle);
+
+    const table = document.createElement('table');
+    table.className = 'dash-sku-table';
+    table.innerHTML = `<thead><tr>
+      <th style="text-align:left;min-width:140px;">Product</th>
+      <th>Open</th><th>WH</th><th>In</th><th>Out</th><th>Balance</th>
+    </tr></thead>`;
+    const tbody = document.createElement('tbody');
+
+    activeProds.forEach(p => {
+      const o=dbGet(me.code,dashDay,p.code,'open');
+      const w=dbGet(me.code,dashDay,p.code,'wh');
+      const i=dbGet(me.code,dashDay,p.code,'inn');
+      const x=dbGet(me.code,dashDay,p.code,'out');
+      const b=bal(me.code,dashDay,p.code);
+      const bCls=b<0?'bal-neg':b===0?'zero':b<=3?'low':'ok';
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td class="dst-name">
+          <div class="dst-name-en">${p.en}</div>
+          ${p.ar?`<div class="dst-name-ar">${p.ar}</div>`:''}
+          <div class="dst-code">${p.code}</div>
+        </td>
+        <td class="dst-num" style="color:#555;">${o||'—'}</td>
+        <td class="dst-num wh">${w||'—'}</td>
+        <td class="dst-num inn">${i||'—'}</td>
+        <td class="dst-num moved">${x||'—'}</td>
+        <td class="dst-num ${bCls}">${b}</td>`;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    snapSection.appendChild(table);
+    body.appendChild(snapSection);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXCEL / CSV EXPORT
+// ═══════════════════════════════════════════════════════════
+
+// Convert array-of-arrays to CSV string
+function toCSV(rows){
+  return rows.map(r => r.map(c => {
+    const s = String(c===null||c===undefined?'':c);
+    return s.includes(',') || s.includes('"') || s.includes('\n')
+      ? '"' + s.replace(/"/g,'""') + '"' : s;
+  }).join(',')).join('\n');
+}
+
+// Download a CSV file
+function downloadCSV(filename, rows){
+  const csv = '\uFEFF' + toCSV(rows); // BOM for Excel UTF-8
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+// ── Associate download: what THEY sold today (locked only) ──
+function downloadDaySales(){
+  if(!me || !isLocked(me.code,dashDay)) return;
+  const rows = [];
+  rows.push(['Emirates Pride Perfumes — Daily Sales Report']);
+  rows.push([me.name + ' · ' + DAY_FULL[dashDay]]);
+  rows.push(['Generated: ' + new Date().toLocaleString('en-GB')]);
+  rows.push([]);
+  rows.push(['ERP Code','Product (English)','Product (Arabic)','Category',
+             'Opening','WH In','Store In','Sold / Out','Closing Balance']);
+
+  PRODUCTS.forEach(p => {
+    const o=dbGet(me.code,dashDay,p.code,'open');
+    const w=dbGet(me.code,dashDay,p.code,'wh');
+    const i=dbGet(me.code,dashDay,p.code,'inn');
+    const x=dbGet(me.code,dashDay,p.code,'out');
+    const b=bal(me.code,dashDay,p.code);
+    if(o>0||w>0||i>0||x>0||b>0){
+      rows.push([p.code,p.en,p.ar||'',p.cat,o,w,i,x,b]);
+    }
+  });
+
+  rows.push([]);
+  rows.push(['TOTALS','','','',
+    rows.slice(5).reduce((s,r)=>s+(+r[4]||0),0),
+    rows.slice(5).reduce((s,r)=>s+(+r[5]||0),0),
+    rows.slice(5).reduce((s,r)=>s+(+r[6]||0),0),
+    rows.slice(5).reduce((s,r)=>s+(+r[7]||0),0),
+    rows.slice(5).reduce((s,r)=>s+(+r[8]||0),0),
+  ]);
+
+  // Transfer log for this day
+  const dayTr = getTransferLog().filter(t=>t.day===dashDay);
+  if(dayTr.length){
+    rows.push([]);
+    rows.push(['TRANSFERS THIS DAY']);
+    rows.push(['Time','Direction','Product','Code','Qty','From','To','Note']);
+    dayTr.forEach(t=>{
+      const dir = t.fromStore===me.code?'SENT OUT':'RECEIVED IN';
+      rows.push([t.ts,dir,t.prodName,t.prodCode,t.qty,t.fromName,t.toName,t.note||'']);
+    });
+  }
+
+  const fname = me.code+'_'+DAYS[dashDay]+'_sales.csv';
+  downloadCSV(fname, rows);
+  toast('📥 Downloaded: '+fname);
+}
+
+// ── Full day download (all stores visible to manager) ──
+function downloadDayFull(){
+  if(!me || !isLocked(me.code,dashDay)) return;
+  const rows = [];
+  rows.push(['Emirates Pride — Full Day Stock Report']);
+  rows.push([me.name + ' · ' + DAY_FULL[dashDay] + ' — All Products']);
+  rows.push(['Generated: ' + new Date().toLocaleString('en-GB')]);
+  rows.push([]);
+  rows.push(['ERP Code','Product (English)','Product (Arabic)','Category',
+             'Opening','Warehouse In','Store In','Stock Out','Closing Balance','Status']);
+
+  PRODUCTS.forEach(p => {
+    const o=dbGet(me.code,dashDay,p.code,'open');
+    const w=dbGet(me.code,dashDay,p.code,'wh');
+    const i=dbGet(me.code,dashDay,p.code,'inn');
+    const x=dbGet(me.code,dashDay,p.code,'out');
+    const b=bal(me.code,dashDay,p.code);
+    const status=b<0?'NEGATIVE':b===0?'OUT OF STOCK':b<=3?'LOW':x>0?'MOVED':'';
+    rows.push([p.code,p.en,p.ar||'',p.cat,o,w,i,x,b,status]);
+  });
+
+  const fname = me.code+'_'+DAYS[dashDay]+'_full_stock.csv';
+  downloadCSV(fname, rows);
+  toast('📥 Downloaded: '+fname);
+}
+
+// ── Full week download (manager use) ──
+function downloadWeek(){
+  if(!me) return;
+  const rows = [];
+  rows.push(['Emirates Pride — Weekly Stock Register']);
+  rows.push([me.name + ' · Full Week']);
+  rows.push(['Generated: ' + new Date().toLocaleString('en-GB')]);
+  rows.push([]);
+
+  DAYS.forEach((d,di) => {
+    const locked = isLocked(me.code,di);
+    rows.push([DAY_FULL[di].toUpperCase() + (locked?' (LOCKED)':' (OPEN)')]);
+    rows.push(['ERP Code','Product','Arabic','Category',
+               'Opening','WH In','Store In','Stock Out','Balance']);
+    PRODUCTS.forEach(p => {
+      const o=dbGet(me.code,di,p.code,'open');
+      const w=dbGet(me.code,di,p.code,'wh');
+      const i=dbGet(me.code,di,p.code,'inn');
+      const x=dbGet(me.code,di,p.code,'out');
+      const b=bal(me.code,di,p.code);
+      if(o>0||w>0||i>0||x>0){
+        rows.push([p.code,p.en,p.ar||'',p.cat,o,w,i,x,b]);
+      }
+    });
+    // Day totals
+    const tots=[0,0,0,0,0];
+    PRODUCTS.forEach(p=>{
+      tots[0]+=dbGet(me.code,di,p.code,'open');
+      tots[1]+=dbGet(me.code,di,p.code,'wh');
+      tots[2]+=dbGet(me.code,di,p.code,'inn');
+      tots[3]+=dbGet(me.code,di,p.code,'out');
+      tots[4]+=bal(me.code,di,p.code);
+    });
+    rows.push(['','TOTALS','','', ...tots]);
+    rows.push([]); // spacer
+  });
+
+  // Full transfer log
+  const log = getTransferLog();
+  if(log.length){
+    rows.push(['TRANSFER MOVEMENTS — ALL WEEK']);
+    rows.push(['Timestamp','Day','Product','Code','Qty','From Store','To Store','Note']);
+    log.forEach(t=>{
+      rows.push([t.ts,DAY_FULL[t.day]||'',t.prodName,t.prodCode,
+                 t.qty,t.fromName,t.toName,t.note||'']);
+    });
+  }
+
+  const fname = me.code+'_week_register.csv';
+  downloadCSV(fname, rows);
+  toast('📥 Downloaded: '+fname);
 }
 
 // ── TOAST ──
