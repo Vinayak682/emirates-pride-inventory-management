@@ -1,10 +1,14 @@
 # Emirates Pride — Inventory Management System
 
-## 🚀 OPEN THE APP
+## 🚀 OPEN THE APPS
 
-**👉 [Click here to open the app](https://vinayak682.github.io/emirates-pride-inventory-management/)**
+### 📱 Operations 2.0 (Full System)
+**👉 [Click here to open Operations App](https://vinayak682.github.io/emirates-pride-inventory-management/)**
 
-`https://vinayak682.github.io/emirates-pride-inventory-management/`
+### 📋 Weekly Stock Register (New)
+**👉 [Click here to open Stock Register](https://vinayak682.github.io/emirates-pride-inventory-management/stock-register.html)**
+
+> Both apps are also linked from the Operations 2.0 login screen.
 
 ---
 
@@ -20,76 +24,104 @@
 
 ---
 
-## Login
+## App 1 — Operations 2.0
 
+### Login
 | Role | How to login |
-|------|-------------|
-| **Staff** | Select your outlet from the dropdown → tap ENTER STORE |
-| **Manager** | Enter PIN `1234` → tap MANAGER DASHBOARD |
+|---|---|
+| **Staff** | Select your outlet → Enter your store PIN → ENTER STORE |
+| **Manager** | Select Manager → Enter PIN `9999` |
 
----
+### Staff Modules
+| Module | What it does |
+|---|---|
+| 📝 Sales | Record daily sales by product, submit & lock each day |
+| 📦 Receive (GRN) | Log incoming deliveries with DN reference |
+| 🔄 Transfer | Send or receive stock between outlets |
+| 🌸 Testers | Track tester issuance and conversion |
+| 🔧 Adjust | Stock adjustments (Manager PIN required) |
 
-## Staff Modules
-
-### 📦 Receive (GRN)
-1. Tap **+ New GRN**
-2. Enter the **Delivery Note reference** (mandatory — e.g. DN-2026-0001)
-3. Confirm the **delivery date** (auto-flags backdated entries)
-4. Select each product received → enter quantity → tap **+ ADD**
-5. Repeat for all products in the delivery
-6. Tap **SAVE DELIVERY RECORD**
-
-### 🧾 Sales
-- Select the day (MON–SUN)
-- Tap **+** / **−** to record bottles sold per product
-- Tap **Submit & Lock** at end of day — locks the record
-
-### 🔄 Transfer
-- **Send Stock Out** — select outlet, product, quantity (blocked if insufficient stock)
-- **Receive Stock In** — record stock received from another outlet
-
-### 🌸 Testers
-- Record testers issued and used per product
-- App calculates conversion rate (target: 3.5× per tester)
-
-### 🔧 Adjust
-- Any stock adjustment requires **Manager PIN approval** + mandatory reason
-- All adjustments are permanently logged in the audit trail
-
----
-
-## Manager Modules
-
+### Manager Modules
 | Tab | What it shows |
-|-----|---------------|
-| Overview | Network-wide revenue, stock, integrity alerts, outlet ranking |
-| Outlets | All 21 outlets — weekly revenue, adjustments, lock status |
-| Stock | Every SKU — closing stock, days of supply, negative stock flags |
-| Movements | All GRNs, transfers, adjustments chronologically |
-| Testers | Conversion rates per SKU across all outlets |
-| Audit | Every action — timestamped, staff vs manager logged |
-| Export | Download Excel reports (5 types) |
+|---|---|
+| Overview | Network-wide revenue, stock, integrity alerts |
+| Outlets | All outlets — weekly revenue, lock status |
+| Stock | Every SKU — closing stock, days of supply |
+| Movements | All GRNs, transfers, adjustments |
+| Testers | Conversion rates per SKU |
+| Audit | Every action timestamped |
+| Export | Download Excel reports |
 
-### Excel Reports
-| Report | Sheets |
-|--------|--------|
-| Full Operations | Outlet Summary, SKU Performance, Top/Slow Movers, Daily Sales, Tester Report, Stock Matrix, Movement Log, Supply Chain, Audit Trail |
-| Supply Chain & Stock | Stock Matrix, Supply Chain, Top/Slow Movers |
-| Movement Log | All GRNs, transfers, adjustments |
-| Audit Trail | Full audit export |
-| Integrity Flags | Negative stock, backdated GRNs, unlocked days, large adjustments |
+---
+
+## App 2 — Weekly Stock Register
+
+A spreadsheet-style weekly stock grid — designed to exactly replicate the physical paper form used across Emirates Pride outlets.
+
+### Login
+Each store has a unique PIN. Select your store from the dropdown, enter your PIN, tap **ENTER**.
+
+| City | Store | PIN |
+|---|---|---|
+| Abu Dhabi | Bawabat al Sharq Shop 1 | 1101 |
+| Abu Dhabi | Bawabat al Sharq Shop 2 | 1102 |
+| Abu Dhabi | Bawabat Kiosk EPP | 1103 |
+| Abu Dhabi | Bawabat Kiosk ASL | 1104 |
+| Abu Dhabi | Dalma Mall | 1105 |
+| Abu Dhabi | Deerfield Mall | 1106 |
+| Abu Dhabi | Yas Mall Podium | 1107 |
+| Abu Dhabi | Yas Mall Kiosk 2 | 1108 |
+| Abu Dhabi | Yas Mall Kiosk 3 | 1109 |
+| Abu Dhabi | Yas Mall ASL | 1110 |
+| Al Ain | Al Ain Mall | 2201 |
+| Al Ain | Bawadi Mall Kiosk 1 | 2202 |
+| Al Ain | Bawadi Mall Kiosk 2 | 2203 |
+| Al Ain | Bawadi Mall ASL | 2204 |
+| Al Ain | Jimi Mall | 2205 |
+| Al Ain | Makhani Zakhar Mall | 2206 |
+| Dubai | Dubai Mall | 3301 |
+| Dubai | Mall of Emirates | 3302 |
+| Dubai | Mirdif City Centre | 3303 |
+| Dubai | Dubai Hills Mall | 3304 |
+| Ras Al Khaimah | Manar Mall Shop | 4401 |
+| Ras Al Khaimah | Manar Mall Kiosk | 4402 |
+| Fujairah | Fujairah CC EPP | 5501 |
+| Fujairah | Fujairah CC ASL | 5502 |
+| Sharjah | Zahia City Centre | 6601 |
+| Ajman | Ajman City Centre | 7701 |
+| Head Office | Manager (All Access) | 9999 |
+
+### Stock Grid — 5 Columns Per Day
+| Column | Letter | What to Enter |
+|---|---|---|
+| Opening Stock | A | Carried automatically from previous day's closing |
+| Warehouse IN | B | Stock received directly from Jafza warehouse |
+| Store IN | C | Stock received from another outlet transfer |
+| Stock OUT | D | Units sold or sent to another outlet |
+| Balance | Auto | A + B + C − D (calculated, cannot be edited) |
+
+### Features
+- **Mon → Sun tabs** — one grid per day, navigate freely
+- **Tap any cell** → large numpad slides up — no keyboard needed
+- **Auto-carry** — closing balance carries to next day's opening automatically
+- **Lock Day** — lock a day's data once complete (irreversible without manager override)
+- **Find Stock at Other Stores** — tap 🏪 to see which stores have a product in stock; tap any store to request a transfer
+- **All 110 products** across 10 categories, in exact sequence with English + Arabic names
 
 ---
 
 ## Security Controls
 
-- **Day Lock** — staff submit each day to lock sales; unlock requires Manager PIN + reason
-- **GRN backdating** — automatically flagged in audit trail if delivery date ≠ entry date
-- **Adjustments** — require Manager PIN approval + mandatory reason code, every time
-- **Opening Stock** — Manager PIN protected
-- **Audit Trail** — every single action logged with timestamp and staff/manager type; cannot be deleted
+- Each store has a unique PIN — cannot log into another store's data
+- Manager PIN `9999` has read access to all stores
+- Day lock prevents edits after submission
+- All actions are per-store and per-day
 
 ---
 
-## Outlets Covered
-21 Dubai retail outlets — Dubai Mall, Mall of the Emirates, Ibn Battuta Mall, Deira City Centre, Gold Souk, Dubai Festival City, BurJuman, Mirdif City Centre, Dragon Mart, Global Village, Al Ghurair Centre, Mercato Mall, The Pointe, Nakheel Mall, Mall of Arabia, Outlet Village, Dubai Hills Mall, Town Centre Jumeirah, Boxpark, Jumeirah Beach Residence, City Walk.
+## Outlets — Stock Register (26 Active Stores)
+Abu Dhabi (10) · Al Ain (6) · Dubai (4) · Ras Al Khaimah (2) · Fujairah (2) · Sharjah (1) · Ajman (1)
+
+## About
+iPad-optimised inventory management system for Emirates Pride retail outlets across the UAE.
+GRN, stock transfers, sales tracking, tester management, weekly stock register & management reporting.
