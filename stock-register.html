@@ -20,6 +20,7 @@
   --c-bal-h:#FEF3D0; --c-bal:#FFFBEE; --c-bal-t:#7A5200;
   --border:#D0D0D0; --border-dark:#A0A0A0;
   --f-body:'IBM Plex Sans',sans-serif;
+  --font-ar:'IBM Plex Sans Arabic','Arial Unicode MS',Tahoma,sans-serif;
   --f-mono:'IBM Plex Mono',monospace;
   --f-ar:'IBM Plex Sans Arabic',sans-serif;
 }
@@ -84,7 +85,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 }
 
 /* ─── APP CHROME ─── */
-#appShell{display:none;flex-direction:column;height:100vh;background:#1A1A1A;}
+#appShell{display:none;flex-direction:column;height:100vh;height:100dvh;background:#1A1A1A;overflow:hidden;}
 
 .app-topbar{
   background:#111;border-bottom:1px solid #2A2A2A;
@@ -233,7 +234,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dcell-val.empty{color:#CCC;}
 
 /* Locked state */
-.row-locked .dcell.open,.row-locked .dcell.inn,.row-locked .dcell.out{
+.row-locked .dcell.open,.row-locked .dcell.wh,.row-locked .dcell.inn,.row-locked .dcell.out{
   cursor:default;pointer-events:none;opacity:0.85;
 }
 
@@ -392,7 +393,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* ─── TOAST ─── */
 #toast{
-  position:fixed;bottom:80px;left:50%;
+  position:fixed;bottom:calc(58px + env(safe-area-inset-bottom,0px));left:50%;
   transform:translateX(-50%) translateY(10px);
   background:#1C1C1E;color:var(--gold2);border:1px solid #333;
   font-family:var(--f-mono);font-size:12px;
@@ -692,6 +693,20 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   </div>
 </div>
 
+<!-- ══════════ LOCK MODAL ══════════ -->
+<div id="lockModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);display:none;align-items:flex-end;justify-content:center;z-index:950;padding-bottom:env(safe-area-inset-bottom,0px);">
+  <div style="background:#1C1C1E;border-radius:20px 20px 0 0;width:100%;max-width:460px;padding:22px 20px 24px;">
+    <div style="font-size:17px;font-weight:700;color:#E8C97A;margin-bottom:8px;">🔒 Lock <span id="lockModalDay"></span>?</div>
+    <div style="font-size:12px;color:#666;margin-bottom:10px;" id="lockModalSummary"></div>
+    <div style="font-size:12px;color:#4A8A4A;background:#1A2A1A;border:1px solid #2A4A2A;border-radius:8px;padding:10px 12px;margin-bottom:10px;">✅ Closing balance becomes tomorrow's Opening Stock automatically</div>
+    <div style="font-size:11px;color:#8B4A4A;background:#2A1A1A;border:1px solid #4A2A2A;border-radius:8px;padding:8px 12px;margin-bottom:18px;">⚠ Cannot be edited after locking</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeLockModal()" style="flex:1;background:#252525;border:1px solid #3A3A3A;color:#888;font-family:var(--f-body);font-size:16px;padding:15px;border-radius:10px;cursor:pointer;">Cancel</button>
+      <button onclick="confirmLock()" style="flex:2;background:linear-gradient(135deg,#1A5A1A,#0D3A0D);color:#6FCF97;font-family:var(--f-body);font-size:16px;font-weight:700;border:none;padding:15px;border-radius:10px;cursor:pointer;">Lock & Carry Forward ✓</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════ NUMPAD ══════════ -->
 <div id="numpad">
   <div class="np-sheet">
@@ -896,8 +911,11 @@ const DAY_FULL=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','S
 let me = null;
 let curDay = 0;
 let pinBuf = '';
-// db[storeCode][dayIdx][productCode] = {open,inn,out,locked}
-const db = {};
+// db[storeCode][dayIdx][productCode] = {open,wh,inn,out,locked}
+const DB_KEY = 'ep_stock_v3';
+let db = {};
+function saveDB(){ try{ localStorage.setItem(DB_KEY,JSON.stringify(db)); }catch(e){} }
+function loadDB(){ try{ const r=localStorage.getItem(DB_KEY); if(r) db=JSON.parse(r); }catch(e){ db={}; } }
 
 function dbGet(store,day,code,field){
   return db[store]?.[day]?.[code]?.[field]??0;
@@ -925,7 +943,14 @@ function lockDay(store,day){
   if(!db[store]||!db[store][day]) return;
   Object.keys(db[store][day]).forEach(code=>{
     db[store][day][code].locked=true;
+    if(day<6){
+      const closing=Math.max(0,bal(store,day,code));
+      if(!db[store][day+1]) db[store][day+1]={};
+      if(!db[store][day+1][code]) db[store][day+1][code]={open:0,wh:0,inn:0,out:0,locked:false};
+      db[store][day+1][code].open=closing;
+    }
   });
+  saveDB();
 }
 function bal(store,day,code){
   return dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'out');
@@ -934,6 +959,7 @@ function bal(store,day,code){
 // ── LOGIN ──
 function buildStoreSelect(){
   const sel=document.getElementById('storeSelect');
+  sel.innerHTML='<option value="">— Choose your store —</option>';
   const cities=[...new Set(STORES.map(s=>s.city))];
   cities.forEach(city=>{
     const og=document.createElement('optgroup');
@@ -970,6 +996,7 @@ function doLogin(){
   if(!store){err.textContent='Store not found.';return;}
   if(pinBuf!==store.pin){err.textContent='Wrong PIN — try again.';pc();return;}
   err.textContent='';
+  try{ localStorage.setItem('ep_last_store',code); }catch(e){}
   me=store;
   const dJS=new Date().getDay();
   curDay=dJS===0?6:dJS-1;
@@ -997,7 +1024,7 @@ function buildDayTabs(){
   DAYS.forEach((d,i)=>{
     const t=document.createElement('div');
     t.className='dtab'+(i===curDay?' active':'');
-    const hasData=me&&Object.values(db[me.code]?.[i]||{}).some(v=>v.inn>0||v.out>0);
+    const hasData=me&&Object.values(db[me.code]?.[i]||{}).some(v=>(v.wh||0)>0||v.inn>0||v.out>0);
     if(hasData&&i!==curDay)t.classList.add('has-data');
     // Calculate date for this week
     const today=new Date();
@@ -1126,10 +1153,17 @@ function buildFooter(){
 
 function toggleLock(){
   if(!me||isLocked(me.code,curDay))return;
-  if(!confirm('Lock '+DAY_FULL[curDay]+'? This cannot be undone.'))return;
+  document.getElementById('lockModal').style.display='flex';
+  document.getElementById('lockModalDay').textContent=DAY_FULL[curDay];
+  let units=0; PRODUCTS.forEach(p=>{units+=dbGet(me.code,curDay,p.code,'out');});
+  document.getElementById('lockModalSummary').textContent=units+' units out — balance will become tomorrow's Opening';
+}
+function closeLockModal(){document.getElementById('lockModal').style.display='none';}
+function confirmLock(){
+  closeLockModal();
   lockDay(me.code,curDay);
-  buildGrid();buildDayTabs();
-  toast('🔒 '+DAY_FULL[curDay]+' locked');
+  buildGrid();buildDayTabs();buildFooter();
+  toast('🔒 '+DAY_FULL[curDay]+' locked — opening carried to tomorrow');
 }
 
 // ── NUMPAD ──
@@ -1151,24 +1185,48 @@ function openNP(code,field){
   const curI=dbGet(me.code,curDay,code,'inn');
   const curX=dbGet(me.code,curDay,code,'out');
   const curW=dbGet(me.code,curDay,code,'wh');
-  document.getElementById('npNote').textContent=`Opening ${curO} + Warehouse ${curW} + Store In ${curI} − Out ${curX} = ${curO+curW+curI-curX}`;
+  document.getElementById('npNote').textContent=`Current: Open ${curO} + WH ${curW} + In ${curI} − Out ${curX} = ${curO+curW+curI-curX}`;
   document.getElementById('numpad').classList.add('show');
 }
 function closeNP(){document.getElementById('numpad').classList.remove('show');npCtx=null;npBuf='';}
+function updateNpProj(){
+  if(!npCtx) return;
+  const v=parseInt(npBuf)||0;
+  const c=npCtx.code; const f=npCtx.field;
+  const o=f==='open'?v:dbGet(me.code,curDay,c,'open');
+  const w=f==='wh'?v:dbGet(me.code,curDay,c,'wh');
+  const i=f==='inn'?v:dbGet(me.code,curDay,c,'inn');
+  const x=f==='out'?v:dbGet(me.code,curDay,c,'out');
+  const avail=dbGet(me.code,curDay,c,'open')+dbGet(me.code,curDay,c,'wh')+dbGet(me.code,curDay,c,'inn');
+  const warn=(f==='out'&&v>avail)?' ⚠ EXCEEDS STOCK':'';
+  document.getElementById('npNote').textContent='→ Balance will be: '+(o+w+i-x)+warn;
+}
 function nk(k){
   if(npBuf==='0')npBuf=k;
   else npBuf+=k;
   if(parseInt(npBuf)>9999)npBuf='9999';
   document.getElementById('npVal').textContent=npBuf||'0';
+  updateNpProj();
 }
-function nd(){npBuf=npBuf.slice(0,-1);document.getElementById('npVal').textContent=npBuf||'0';}
-function nc(){npBuf='';document.getElementById('npVal').textContent='0';}
+function nd(){npBuf=npBuf.slice(0,-1);document.getElementById('npVal').textContent=npBuf||'0';updateNpProj();}
+function nc(){npBuf='';document.getElementById('npVal').textContent='0';updateNpProj();}
 function confirmNP(){
   if(!npCtx)return;
   const val=parseInt(npBuf)||0;
+  if(npCtx.field==='out'){
+    const avail=dbGet(me.code,curDay,npCtx.code,'open')+dbGet(me.code,curDay,npCtx.code,'wh')+dbGet(me.code,curDay,npCtx.code,'inn');
+    if(val>avail){
+      toast('⚠ Cannot enter '+val+' — only '+avail+' available');
+      closeNP(); return;
+    }
+  }
+  const scrollEl=document.getElementById('scrollArea');
+  const st=scrollEl?scrollEl.scrollTop:0;
   dbSet(me.code,curDay,npCtx.code,npCtx.field,val);
+  saveDB();
   closeNP();
   buildGrid();buildFooter();buildDayTabs();
+  if(scrollEl) scrollEl.scrollTop=st;
   toast('✓ Saved');
 }
 
@@ -1445,10 +1503,15 @@ function openReq(prod,store,avail){
 function closeReq(){document.getElementById('reqModal').classList.remove('show');}
 function confirmReq(){
   if(!reqCtx||!selectedQty) return;
-  const note=document.getElementById('reqNote').value.trim();
-  const msg=`✅ Request sent — ${selectedQty}× ${reqCtx.prod.en} from ${reqCtx.store.name}${note?' · Note: '+note:''}`;
+  const scrollEl=document.getElementById('scrollArea');
+  const st=scrollEl?scrollEl.scrollTop:0;
+  dbSet(me.code,curDay,reqCtx.prod.code,'inn',
+    dbGet(me.code,curDay,reqCtx.prod.code,'inn')+selectedQty);
+  saveDB();
+  buildGrid();buildFooter();buildDayTabs();
+  if(scrollEl) scrollEl.scrollTop=st;
   closeReq();
-  toast(msg);
+  toast('✅ '+selectedQty+'× '+reqCtx.prod.en+' added as Store IN from '+reqCtx.store.name);
 }
 
 // ── TOAST ──
@@ -1459,7 +1522,21 @@ function toast(msg){
 }
 
 // ── BOOT ──
+loadDB();
 buildStoreSelect();
+try{
+  const last=localStorage.getItem('ep_last_store');
+  if(last){
+    const sel=document.getElementById('storeSelect');
+    if(sel) sel.value=last;
+    const store=STORES.find(s=>s.code===last);
+    if(store){
+      const err=document.getElementById('loginErr');
+      err.style.color='#6FCF97';
+      err.textContent='Welcome back — '+store.name;
+    }
+  }
+}catch(e){}
 </script>
 </body>
 </html>
