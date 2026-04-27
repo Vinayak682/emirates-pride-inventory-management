@@ -1156,7 +1156,7 @@ function toggleLock(){
   document.getElementById('lockModal').style.display='flex';
   document.getElementById('lockModalDay').textContent=DAY_FULL[curDay];
   let units=0; PRODUCTS.forEach(p=>{units+=dbGet(me.code,curDay,p.code,'out');});
-  document.getElementById('lockModalSummary').textContent=units+' units out — balance will become tomorrow's Opening';
+  document.getElementById('lockModalSummary').textContent=units+' units out — balance will become tomorrow\'s Opening';
 }
 function closeLockModal(){document.getElementById('lockModal').style.display='none';}
 function confirmLock(){
