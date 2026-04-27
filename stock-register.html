@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Emirates Pride — Stock Register</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#B8892A; --gold2:#D4A84B; --gold-pale:#FDF8EE; --gold-border:#E8C97A;
+  --ink:#0A0A0A; --ink2:#2C2C2C; --muted:#767676; --muted2:#A0A0A0;
+  --white:#FFFFFF; --sheet:#FAFAFA; --row-alt:#F5F5F5;
+  /* Column colours — match physical form */
+  --c-open-h:#E8F0F8; --c-open:#F0F6FF; --c-open-t:#1A4A7A;
+  --c-wh-h:#D4ECC4; --c-wh:#EDF7E0;  --c-wh-t:#2A5C14;
+  --c-in-h:#E0F2E8; --c-in:#EDFAF3;  --c-in-t:#1A6640;
+  --c-out-h:#FDE8E8; --c-out:#FFF2F2; --c-out-t:#8B1A1A;
+  --c-bal-h:#FEF3D0; --c-bal:#FFFBEE; --c-bal-t:#7A5200;
+  --border:#D0D0D0; --border-dark:#A0A0A0;
+  --f-body:'IBM Plex Sans',sans-serif;
+  --f-mono:'IBM Plex Mono',monospace;
+  --f-ar:'IBM Plex Sans Arabic',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:#1A1A1A;}
+body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
+
+/* ─── LOGIN ─── */
+#loginScreen{
+  position:fixed;inset:0;background:#111;
+  display:flex;align-items:center;justify-content:center;
+  z-index:9999;flex-direction:column;gap:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(184,137,42,0.15) 0%,#0D0D0D 65%);
+}
+.login-box{
+  background:#1A1A1A;border:1px solid #333;border-radius:16px;
+  padding:32px 28px;width:340px;max-width:94vw;
+}
+.login-logo{text-align:center;margin-bottom:20px;}
+.login-rose{font-size:40px;display:block;margin-bottom:8px;}
+.login-brand{font-family:var(--f-body);font-size:19px;font-weight:600;
+  color:var(--gold2);letter-spacing:1.5px;}
+.login-ar{font-family:var(--f-ar);font-size:13px;color:#666;margin-top:2px;}
+.login-hr{border:none;border-top:1px solid #333;margin:18px 0 20px;}
+.login-label{font-size:10px;font-weight:600;color:#888;
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;}
+.login-select{
+  width:100%;background:#252525;border:1px solid #3A3A3A;border-radius:8px;
+  padding:12px 14px;font-family:var(--f-body);font-size:15px;color:#E8E0D0;
+  outline:none;appearance:none;-webkit-appearance:none;margin-bottom:18px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23B8892A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;
+}
+.login-select option,.login-select optgroup{background:#1A1A1A;color:#E8E0D0;}
+.pin-label{font-size:10px;font-weight:600;color:#888;
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.pin-dots{display:flex;gap:8px;margin-bottom:14px;justify-content:center;}
+.pin-dot{width:44px;height:44px;border:1.5px solid #3A3A3A;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;color:var(--gold2);transition:all 0.15s;background:#252525;}
+.pin-dot.filled{border-color:var(--gold);background:#2A2000;}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
+.pkey{
+  background:#252525;border:1px solid #3A3A3A;border-radius:8px;
+  padding:13px 4px;font-family:var(--f-mono);font-size:19px;
+  color:#E8E0D0;cursor:pointer;text-align:center;
+  transition:background 0.1s,border-color 0.1s;user-select:none;
+}
+.pkey:active,.pkey.pressed{background:#2A2000;border-color:var(--gold);}
+.pkey.del{font-size:14px;color:#888;}
+.pkey.clr{font-size:12px;color:#8B1A1A;background:#1E0A0A;border-color:#3A1A1A;}
+.login-go{
+  width:100%;background:linear-gradient(135deg,var(--gold2),var(--gold));
+  color:#0D0D0D;font-family:var(--f-body);font-size:15px;font-weight:600;
+  border:none;padding:13px;border-radius:8px;cursor:pointer;
+  letter-spacing:0.3px;transition:opacity 0.2s;
+}
+.login-go:active{opacity:0.85;}
+.login-err{
+  text-align:center;font-size:12px;color:#E87070;
+  margin-top:10px;min-height:18px;font-family:var(--f-mono);
+}
+
+/* ─── APP CHROME ─── */
+#appShell{display:none;flex-direction:column;height:100vh;background:#1A1A1A;}
+
+.app-topbar{
+  background:#111;border-bottom:1px solid #2A2A2A;
+  height:48px;display:flex;align-items:center;padding:0 12px;gap:12px;
+  flex-shrink:0;
+}
+.top-rose{font-size:18px;}
+.top-store{font-family:var(--f-body);font-size:14px;font-weight:600;color:var(--gold2);}
+.top-day{
+  font-family:var(--f-mono);font-size:11px;color:#555;
+  background:#1A1A1A;border:1px solid #2A2A2A;border-radius:4px;
+  padding:3px 8px;cursor:pointer;
+}
+.top-spacer{flex:1;}
+.top-btn{
+  background:transparent;border:1px solid #333;color:#888;
+  font-family:var(--f-body);font-size:11px;padding:5px 10px;
+  border-radius:5px;cursor:pointer;white-space:nowrap;
+}
+.top-btn.stores-btn{border-color:#333;color:var(--gold2);}
+.top-btn.logout{border-color:#3A1A1A;color:#E87070;}
+
+/* ─── DAY TABS ─── */
+.day-tabs{
+  background:#111;border-bottom:1px solid #2A2A2A;
+  display:flex;gap:0;flex-shrink:0;overflow-x:auto;scrollbar-width:none;
+}
+.day-tabs::-webkit-scrollbar{display:none;}
+.dtab{
+  padding:9px 16px;font-family:var(--f-mono);font-size:12px;color:#555;
+  border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;
+  flex-shrink:0;transition:color 0.15s;border-right:1px solid #1E1E1E;
+}
+.dtab.active{color:var(--gold2);border-bottom-color:var(--gold);}
+.dtab.has-data{color:#888;}
+.dtab .day-abbr{display:block;font-weight:500;}
+.dtab .day-date{display:block;font-size:9px;color:#444;margin-top:1px;}
+.dtab.active .day-date{color:#666;}
+
+/* ─── GRID WRAPPER ─── */
+.grid-outer{
+  flex:1;overflow:hidden;display:flex;flex-direction:column;background:var(--sheet);
+}
+
+/* ─── FIXED COLUMN HEADER (the Opening/In/Out/Balance group row) ─── */
+.col-header-wrap{
+  overflow:hidden;flex-shrink:0;
+  border-bottom:2px solid var(--border-dark);
+  background:var(--white);
+}
+
+/* ─── SCROLLABLE AREA ─── */
+.scroll-area{
+  flex:1;overflow:auto;-webkit-overflow-scrolling:touch;
+}
+
+/* ─── ACTUAL TABLE ─── */
+.sgrid{
+  border-collapse:collapse;width:100%;
+  table-layout:fixed;
+}
+
+/* Product name column */
+.sgrid th.prod-th,.sgrid td.prod-td{
+  position:sticky;left:0;z-index:10;
+  background:var(--white);
+  border-right:2px solid var(--border-dark);
+  width:190px;min-width:190px;max-width:190px;
+}
+.sgrid thead th.prod-th{z-index:20;}
+
+/* HEADER rows */
+.sgrid thead tr.hdr-group th{
+  font-family:var(--f-mono);font-size:10px;font-weight:600;
+  letter-spacing:0.6px;text-transform:uppercase;
+  padding:7px 4px 6px;text-align:center;
+  border:1px solid var(--border);border-bottom:1px solid var(--border-dark);
+}
+.sgrid thead tr.hdr-sub th{
+  font-family:var(--f-mono);font-size:9px;font-weight:400;
+  color:var(--muted);padding:4px 2px 5px;text-align:center;
+  border:1px solid var(--border);border-top:none;
+  border-bottom:2px solid var(--border-dark);
+}
+
+/* Column group colours */
+.gh-open{background:var(--c-open-h);color:var(--c-open-t);}
+.gh-in{background:var(--c-in-h);color:var(--c-in-t);}
+.gh-wh{background:var(--c-wh-h);color:var(--c-wh-t);}
+.gh-out{background:var(--c-out-h);color:var(--c-out-t);}
+.gh-bal{background:var(--c-bal-h);color:var(--c-bal-t);}
+.gs-open{background:var(--c-open-h);}
+.gs-wh{background:var(--c-wh-h);}
+.gs-in{background:var(--c-in-h);}
+.gs-out{background:var(--c-out-h);}
+.gs-bal{background:var(--c-bal-h);}
+
+/* Category separator row */
+.sgrid tr.cat-sep td{
+  background:#EFEFEF;border-top:2px solid var(--border-dark);
+  border-bottom:1px solid var(--border);
+  padding:5px 10px;
+  font-size:10px;font-weight:600;color:#555;
+  letter-spacing:1.2px;text-transform:uppercase;
+}
+.sgrid tr.cat-sep td:first-child{
+  background:#E8E8E8;color:#333;
+}
+
+/* Product rows */
+.sgrid tr.prow{border-bottom:1px solid var(--border);}
+.sgrid tr.prow:hover td{background-color:#F8F4E8!important;}
+.sgrid tr.prow:nth-child(even) td.prod-td{background:#FAFAFA;}
+
+/* Product name cell */
+.prod-td{padding:0!important;}
+.prod-inner{padding:7px 10px;line-height:1.3;}
+.pname{font-size:13px;font-weight:500;color:var(--ink2);display:block;}
+.pname-ar{font-family:var(--f-ar);font-size:11px;color:var(--muted);display:block;
+  direction:rtl;text-align:left;}
+.pcode{font-family:var(--f-mono);font-size:9px;color:var(--muted2);display:block;margin-top:2px;}
+
+/* Data cells */
+.sgrid td.dcell{
+  padding:0;text-align:center;border:1px solid var(--border);
+  cursor:pointer;transition:background 0.1s;min-width:62px;width:62px;
+}
+.sgrid td.dcell.open{background:var(--c-open);}
+.sgrid td.dcell.inn{background:var(--c-in);}
+.sgrid td.dcell.wh{background:var(--c-wh);}
+.sgrid td.dcell.out{background:var(--c-out);}
+.sgrid td.dcell.bal{background:var(--c-bal);cursor:default;}
+.sgrid td.dcell:active:not(.bal){background:var(--gold-pale)!important;}
+
+.dcell-val{
+  display:block;width:100%;padding:11px 4px;
+  font-family:var(--f-mono);font-size:15px;font-weight:500;
+  color:var(--ink2);line-height:1;
+}
+.dcell.open .dcell-val{color:var(--c-open-t);}
+.dcell.wh .dcell-val{color:var(--c-wh-t);}
+.dcell.inn .dcell-val{color:var(--c-in-t);}
+.dcell.out .dcell-val{color:var(--c-out-t);}
+.dcell.bal .dcell-val{color:var(--c-bal-t);font-weight:600;}
+.dcell.bal .dcell-val.negative{color:#8B1A1A;font-weight:700;}
+.dcell-val.empty{color:#CCC;}
+
+/* Locked state */
+.row-locked .dcell.open,.row-locked .dcell.inn,.row-locked .dcell.out{
+  cursor:default;pointer-events:none;opacity:0.85;
+}
+
+/* ─── TOTALS ROW ─── */
+.sgrid tr.totals-row td{
+  font-family:var(--f-mono);font-size:13px;font-weight:600;
+  padding:8px 4px;text-align:center;border-top:2px solid var(--border-dark);
+  border:1px solid var(--border-dark);
+}
+.totals-row td.prod-td{
+  font-size:11px;font-weight:600;color:#333;letter-spacing:0.5px;
+  background:#F0F0F0!important;
+}
+.totals-row td.open{background:#D8E8F8;color:var(--c-open-t);}
+.totals-row td.wh{background:#C4E8B0;color:var(--c-wh-t);}
+.totals-row td.inn{background:#C8EDDA;color:var(--c-in-t);}
+.totals-row td.out{background:#F5CECE;color:var(--c-out-t);}
+.totals-row td.bal{background:#F5E8A8;color:var(--c-bal-t);}
+
+/* ─── FOOTER BAR ─── */
+.footer-bar{
+  background:#111;border-top:1px solid #2A2A2A;
+  padding:6px 14px;display:flex;align-items:center;gap:16px;
+  flex-shrink:0;overflow-x:auto;scrollbar-width:none;
+}
+.footer-bar::-webkit-scrollbar{display:none;}
+.fstat{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.fstat-label{font-family:var(--f-mono);font-size:8px;color:#444;
+  text-transform:uppercase;letter-spacing:0.8px;}
+.fstat-val{font-family:var(--f-mono);font-size:14px;font-weight:500;margin-top:1px;}
+.fstat-val.fo{color:#6FA8DC;}
+.fstat-val.fi{color:#6FCF97;}
+.fstat-val.fx{color:#E87070;}
+.fstat-val.fb{color:var(--gold2);}
+.fdiv{width:1px;height:28px;background:#2A2A2A;flex-shrink:0;}
+.lock-btn{
+  margin-left:auto;background:#1A2A1A;border:1px solid #2A4A2A;color:#6FCF97;
+  font-family:var(--f-body);font-size:11px;padding:6px 12px;border-radius:5px;
+  cursor:pointer;flex-shrink:0;
+}
+.lock-btn.locked{background:#2A1A1A;border-color:#4A2A2A;color:#E87070;cursor:default;}
+.lock-btn:active:not(.locked){background:#254A25;}
+
+/* ─── ALL-STORES PANEL ─── */
+#storesPanel{
+  position:fixed;inset:0;background:#111;z-index:800;
+  display:none;flex-direction:column;
+}
+.sp-header{
+  background:#0D0D0D;border-bottom:1px solid #2A2A2A;
+  padding:12px 14px;display:flex;align-items:center;gap:10px;
+}
+.sp-title{font-size:15px;font-weight:600;color:var(--gold2);}
+.sp-close{background:#1A1A1A;border:1px solid #333;color:#888;
+  border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px;margin-left:auto;}
+.sp-search{
+  background:#1A1A1A;border-bottom:1px solid #2A2A2A;
+  padding:10px 12px;display:flex;gap:8px;
+}
+.sp-input{
+  flex:1;background:#252525;border:1px solid #3A3A3A;border-radius:7px;
+  padding:9px 12px;font-family:var(--f-body);font-size:14px;color:#E0E0E0;outline:none;
+}
+.sp-input:focus{border-color:var(--gold);}
+.sp-sku-sel{
+  background:#252525;border:1px solid #3A3A3A;border-radius:7px;
+  padding:9px 10px;font-family:var(--f-body);font-size:13px;color:#E0E0E0;
+  outline:none;appearance:none;cursor:pointer;min-width:130px;
+}
+.sp-body{flex:1;overflow-y:auto;padding:10px 12px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
+.store-card{
+  background:#1A1A1A;border:1px solid #2A2A2A;border-radius:10px;overflow:hidden;
+}
+.sc-head{
+  background:#141414;padding:10px 12px;border-bottom:1px solid #2A2A2A;
+  display:flex;align-items:center;gap:8px;
+}
+.sc-name{font-size:13px;font-weight:600;color:var(--gold2);}
+.sc-city{font-size:10px;color:#555;margin-top:1px;}
+.sc-mine{
+  margin-left:auto;background:#2A2000;border:1px solid var(--gold3);
+  color:var(--gold2);font-size:9px;padding:2px 6px;border-radius:3px;font-weight:600;
+}
+.sc-body{padding:8px 12px;}
+.sc-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 0;border-bottom:1px solid #222;
+}
+.sc-row:last-child{border-bottom:none;}
+.sc-prod{font-size:12px;color:#AAA;}
+.sc-prod code{font-family:var(--f-mono);font-size:9px;color:#555;margin-left:4px;}
+.sc-bal{font-family:var(--f-mono);font-size:13px;font-weight:600;}
+.sc-bal.ok{color:#6FCF97;}.sc-bal.low{color:var(--gold2);}.sc-bal.zero{color:#555;}
+.sc-empty{color:#444;font-size:12px;text-align:center;padding:16px 0;}
+
+/* ─── NUMPAD OVERLAY ─── */
+#numpad{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);
+  display:none;align-items:flex-end;justify-content:center;
+  z-index:900;padding-bottom:env(safe-area-inset-bottom,0px);
+}
+#numpad.show{display:flex;}
+.np-sheet{
+  background:#1C1C1E;border-radius:20px 20px 0 0;
+  width:100%;max-width:460px;padding:16px 16px 20px;
+}
+.np-top{
+  display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;
+}
+.np-info{}
+.np-product{font-size:15px;font-weight:600;color:#E8E0D0;margin-bottom:2px;}
+.np-field{font-size:11px;padding:3px 8px;border-radius:4px;
+  font-family:var(--f-mono);font-weight:600;letter-spacing:0.5px;}
+.np-field.open{background:#1A3A6A;color:#6FA8DC;}
+.np-field.inn{background:#1A3A1A;color:#6FCF97;}
+.np-field.wh{background:#1E3A0A;color:#7FC860;}
+.np-field.out{background:#3A1A1A;color:#E87070;}
+.np-x{
+  background:#2A2A2A;border:none;color:#888;border-radius:50%;
+  width:30px;height:30px;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.np-display{
+  background:#252525;border-radius:10px;padding:14px;
+  text-align:right;margin-bottom:12px;
+}
+.np-cur-label{font-family:var(--f-mono);font-size:9px;color:#555;
+  text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:4px;}
+.np-value{
+  font-family:var(--f-mono);font-size:44px;font-weight:400;
+  color:#E8E0D0;letter-spacing:-2px;line-height:1;
+}
+.np-note{font-size:10px;color:#444;font-family:var(--f-mono);margin-top:4px;display:block;}
+.np-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;
+}
+.nk{
+  background:#2A2A2A;border:none;border-radius:10px;
+  font-family:var(--f-mono);font-size:22px;font-weight:400;
+  color:#E8E0D0;padding:16px 4px;cursor:pointer;text-align:center;
+  transition:background 0.1s;user-select:none;
+}
+.nk:active{background:#3A3A2A;}
+.nk.del{font-size:16px;color:#888;background:#222;}
+.nk.del:active{background:#333;}
+.nk.clr{font-size:12px;font-weight:600;color:#E87070;background:#2A1A1A;}
+.nk.clr:active{background:#3A2A2A;}
+.np-confirm{
+  width:100%;background:linear-gradient(135deg,var(--gold2),var(--gold));
+  color:#0D0D0D;font-family:var(--f-body);font-size:16px;font-weight:600;
+  border:none;padding:15px;border-radius:12px;cursor:pointer;
+  transition:opacity 0.15s;
+}
+.np-confirm:active{opacity:0.85;}
+
+/* ─── TOAST ─── */
+#toast{
+  position:fixed;bottom:80px;left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:#1C1C1E;color:var(--gold2);border:1px solid #333;
+  font-family:var(--f-mono);font-size:12px;
+  padding:8px 18px;border-radius:20px;z-index:1000;
+  opacity:0;pointer-events:none;transition:all 0.25s;white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── PRODUCT-FIRST AVAILABILITY VIEW ── */
+.sp-mode-bar{
+  background:#111;border-bottom:1px solid #2A2A2A;
+  display:flex;gap:0;flex-shrink:0;
+}
+.sp-mode-btn{
+  flex:1;padding:10px 6px;text-align:center;
+  font-family:var(--f-mono);font-size:11px;font-weight:600;
+  color:#555;border-bottom:2px solid transparent;
+  cursor:pointer;transition:all 0.15s;letter-spacing:0.5px;
+  text-transform:uppercase;
+}
+.sp-mode-btn.active{color:var(--gold2);border-bottom-color:var(--gold);}
+
+/* Product lookup panel */
+.avail-panel{padding:14px 12px;}
+.avail-empty{
+  text-align:center;padding:48px 16px;
+}
+.avail-empty-icon{font-size:36px;display:block;margin-bottom:10px;}
+.avail-empty-text{font-size:13px;color:#444;line-height:1.6;}
+.avail-empty-hint{font-size:11px;color:#333;margin-top:8px;}
+
+/* Selected product header */
+.avail-product-bar{
+  background:#1A1A1A;border:1px solid #2A2A2A;border-radius:10px;
+  padding:12px 14px;margin-bottom:14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.avail-prod-info{}
+.avail-prod-name{font-size:15px;font-weight:600;color:#E8E0D0;margin-bottom:2px;}
+.avail-prod-ar{font-family:var(--f-ar);font-size:12px;color:#666;direction:rtl;text-align:left;}
+.avail-prod-code{font-family:var(--f-mono);font-size:10px;color:#555;margin-top:3px;}
+.avail-total-badge{
+  text-align:right;flex-shrink:0;
+}
+.avail-total-num{font-family:var(--f-mono);font-size:24px;font-weight:600;color:#6FCF97;display:block;}
+.avail-total-label{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:0.7px;}
+
+/* Store availability list */
+.avail-list{}
+.avail-section-label{
+  font-family:var(--f-mono);font-size:9px;font-weight:600;
+  text-transform:uppercase;letter-spacing:1px;
+  padding:8px 0 5px;color:#555;border-bottom:1px solid #1E1E1E;margin-bottom:4px;
+}
+.avail-section-label.has-stock{color:#4A8A4A;}
+.avail-section-label.no-stock{color:#3A2A2A;}
+
+.avail-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:8px;margin-bottom:4px;
+  cursor:default;transition:background 0.12s;border:1px solid transparent;
+}
+.avail-row.in-stock{
+  background:#111D11;border-color:#1E3A1E;cursor:pointer;
+}
+.avail-row.in-stock:active{background:#162416;}
+.avail-row.low-stock{
+  background:#1A1800;border-color:#2A2600;cursor:pointer;
+}
+.avail-row.low-stock:active{background:#201E00;}
+.avail-row.no-stock{
+  background:#111;border-color:#1A1A1A;opacity:0.5;
+}
+.avail-row.is-mine{border-color:var(--gold3)!important;}
+
+.avail-store-icon{
+  font-size:16px;flex-shrink:0;
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+}
+.avail-store-icon.ok-icon{background:rgba(111,207,151,0.12);}
+.avail-store-icon.low-icon{background:rgba(240,160,48,0.12);}
+.avail-store-icon.zero-icon{background:rgba(60,60,60,0.3);}
+
+.avail-store-info{flex:1;min-width:0;}
+.avail-store-name{
+  font-size:13px;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.avail-store-name.ok{color:#CCC;}
+.avail-store-name.zero{color:#3A3A3A;}
+.avail-city{font-size:10px;color:#444;margin-top:1px;}
+
+.avail-qty-badge{
+  flex-shrink:0;min-width:44px;height:44px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-mono);font-size:20px;font-weight:700;
+  flex-direction:column;
+}
+.avail-qty-badge.ok{background:rgba(111,207,151,0.15);color:#6FCF97;}
+.avail-qty-badge.low{background:rgba(240,160,48,0.15);color:#F0A030;}
+.avail-qty-badge.zero{background:rgba(40,40,40,0.5);color:#2A2A2A;font-size:14px;}
+.avail-qty-units{font-size:8px;font-weight:400;opacity:0.6;letter-spacing:0.5px;}
+
+.avail-mine-tag{
+  display:inline-block;background:#2A2000;border:1px solid #4A3800;
+  color:var(--gold2);font-size:8px;padding:1px 5px;border-radius:3px;
+  margin-left:5px;font-family:var(--f-mono);vertical-align:middle;
+}
+.avail-action-hint{
+  font-size:9px;color:#4A8A4A;margin-top:2px;
+  display:flex;align-items:center;gap:3px;
+}
+.avail-action-hint.low-hint{color:#6A5A00;}
+
+/* REQUEST modal */
+#reqModal{
+  position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  display:none;align-items:flex-end;justify-content:center;
+  z-index:1000;padding-bottom:env(safe-area-inset-bottom,0px);
+}
+#reqModal.show{display:flex;}
+.req-sheet{
+  background:#1C1C1E;border-radius:20px 20px 0 0;
+  width:100%;max-width:480px;padding:20px 18px 24px;
+}
+.req-top{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;
+}
+.req-title{font-size:16px;font-weight:600;color:var(--gold2);}
+.req-x{background:#2A2A2A;border:none;color:#888;border-radius:50%;
+  width:30px;height:30px;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;}
+.req-product{
+  background:#252525;border-radius:10px;padding:12px 14px;margin-bottom:14px;
+  display:flex;align-items:center;gap:10px;
+}
+.req-prod-name{font-size:14px;font-weight:600;color:#E8E0D0;}
+.req-prod-code{font-family:var(--f-mono);font-size:10px;color:#555;margin-top:2px;}
+.req-from-label{font-family:var(--f-mono);font-size:9px;color:#555;
+  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;}
+.req-from-store{
+  background:#1E3A1E;border:1px solid #2A5A2A;border-radius:8px;
+  padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;
+}
+.req-from-name{font-size:14px;font-weight:600;color:#6FCF97;}
+.req-from-qty{font-family:var(--f-mono);font-size:18px;font-weight:700;color:#6FCF97;}
+.req-qty-label{font-family:var(--f-mono);font-size:9px;color:#555;
+  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;}
+.req-qty-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.req-qty-chip{
+  background:#252525;border:1px solid #3A3A3A;border-radius:6px;
+  padding:10px 14px;font-family:var(--f-mono);font-size:15px;color:#CCC;
+  cursor:pointer;transition:all 0.12s;user-select:none;
+}
+.req-qty-chip.selected{background:#1E3A1E;border-color:#3A7A3A;color:#6FCF97;font-weight:700;}
+.req-qty-chip:active{background:#1E2A1E;}
+.req-note-label{font-family:var(--f-mono);font-size:9px;color:#555;
+  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
+.req-note-input{
+  width:100%;background:#252525;border:1px solid #3A3A3A;border-radius:8px;
+  padding:10px 12px;font-family:var(--f-body);font-size:14px;color:#E0E0E0;
+  outline:none;margin-bottom:14px;
+}
+.req-note-input:focus{border-color:var(--gold);}
+.req-confirm{
+  width:100%;background:linear-gradient(135deg,#2A6A2A,#1A4A1A);
+  color:#6FCF97;font-family:var(--f-body);font-size:15px;font-weight:600;
+  border:none;padding:14px;border-radius:10px;cursor:pointer;
+  transition:opacity 0.15s;letter-spacing:0.3px;
+}
+.req-confirm:active{opacity:0.85;}
+.req-confirm:disabled{background:#1A1A1A;color:#333;cursor:not-allowed;}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="login-rose">🌹</span>
+      <div class="login-brand">EMIRATES PRIDE</div>
+      <div class="login-ar">فخـــر الإمارات</div>
+    </div>
+    <hr class="login-hr">
+    <div class="login-label">Your Store</div>
+    <select class="login-select" id="storeSelect"></select>
+    <div class="pin-label">PIN Code</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0">·</div>
+      <div class="pin-dot" id="pd1">·</div>
+      <div class="pin-dot" id="pd2">·</div>
+      <div class="pin-dot" id="pd3">·</div>
+    </div>
+    <div class="pin-pad">
+      <div class="pkey" onclick="pk('1')">1</div>
+      <div class="pkey" onclick="pk('2')">2</div>
+      <div class="pkey" onclick="pk('3')">3</div>
+      <div class="pkey" onclick="pk('4')">4</div>
+      <div class="pkey" onclick="pk('5')">5</div>
+      <div class="pkey" onclick="pk('6')">6</div>
+      <div class="pkey" onclick="pk('7')">7</div>
+      <div class="pkey" onclick="pk('8')">8</div>
+      <div class="pkey" onclick="pk('9')">9</div>
+      <div class="pkey clr" onclick="pc()">CLR</div>
+      <div class="pkey" onclick="pk('0')">0</div>
+      <div class="pkey del" onclick="pd()">⌫</div>
+    </div>
+    <button class="login-go" onclick="doLogin()">ENTER →</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="appShell">
+  <!-- Top bar -->
+  <div class="app-topbar">
+    <span class="top-rose">🌹</span>
+    <span class="top-store" id="topStore">—</span>
+    <div class="top-spacer"></div>
+    <button class="top-btn stores-btn" onclick="openStores()">🏪 All Stores</button>
+    <button class="top-btn logout" onclick="doLogout()">Logout</button>
+  </div>
+
+  <!-- Day tabs -->
+  <div class="day-tabs" id="dayTabs"></div>
+
+  <!-- Grid area -->
+  <div class="grid-outer">
+    <div class="scroll-area" id="scrollArea">
+      <table class="sgrid" id="sgrid">
+        <thead id="sgridHead"></thead>
+        <tbody id="sgridBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-bar" id="footerBar">
+    <div class="fstat"><span class="fstat-label">Opening</span><span class="fstat-val fo" id="ftOpen">0</span></div>
+    <div class="fdiv"></div>
+    <div class="fstat"><span class="fstat-label">Warehouse In</span><span class="fstat-val" style="color:#7FC860;" id="ftWh">0</span></div>
+    <div class="fdiv"></div>
+    <div class="fstat"><span class="fstat-label">Store In</span><span class="fstat-val fi" id="ftIn">0</span></div>
+    <div class="fdiv"></div>
+    <div class="fstat"><span class="fstat-label">Stock Out</span><span class="fstat-val fx" id="ftOut">0</span></div>
+    <div class="fdiv"></div>
+    <div class="fstat"><span class="fstat-label">Balance</span><span class="fstat-val fb" id="ftBal">0</span></div>
+    <button class="lock-btn" id="lockBtn" onclick="toggleLock()">🔓 Lock Day</button>
+  </div>
+</div>
+
+<!-- ══════════ ALL STORES ══════════ -->
+<div id="storesPanel">
+  <div class="sp-header">
+    <span style="font-size:18px;">🏪</span>
+    <span class="sp-title">Find Stock at Other Stores</span>
+    <button class="sp-close" onclick="closeStores()">✕ Close</button>
+  </div>
+  <!-- Mode tabs -->
+  <div class="sp-mode-bar">
+    <div class="sp-mode-btn active" id="modeProduct" onclick="setSpMode('product')">🔍 Find a Product</div>
+    <div class="sp-mode-btn" id="modeStore" onclick="setSpMode('store')">🏪 Browse by Store</div>
+  </div>
+  <!-- Search (always shown) -->
+  <div class="sp-search">
+    <input class="sp-input" id="spSearch" placeholder="Type product name or code…" oninput="onSpSearch()">
+  </div>
+  <!-- Product dropdown (grouped, all products) -->
+  <div id="spDropWrap" style="background:#111;border-bottom:1px solid #2A2A2A;padding:0 12px 10px;">
+    <select class="sp-sku-sel" id="spSku" onchange="onSpSkuChange()" style="width:100%;margin-top:8px;">
+      <option value="">— Select a product to check availability —</option>
+    </select>
+  </div>
+  <!-- Body -->
+  <div class="sp-body" id="spBody" style="flex:1;overflow-y:auto;"></div>
+</div>
+
+<!-- REQUEST SHEET -->
+<div id="reqModal">
+  <div class="req-sheet">
+    <div class="req-top">
+      <div class="req-title">📋 Request Stock Transfer</div>
+      <button class="req-x" onclick="closeReq()">✕</button>
+    </div>
+    <div class="req-product" id="reqProduct"></div>
+    <div class="req-from-label">Available at</div>
+    <div class="req-from-store" id="reqFromStore"></div>
+    <div class="req-qty-label">Qty to Request</div>
+    <div class="req-qty-row" id="reqQtyRow"></div>
+    <div class="req-note-label">Note to Store (optional)</div>
+    <input class="req-note-input" id="reqNote" placeholder="e.g. Customer waiting — urgent">
+    <button class="req-confirm" id="reqConfirmBtn" onclick="confirmReq()">Send Request ✓</button>
+  </div>
+</div>
+
+<!-- ══════════ NUMPAD ══════════ -->
+<div id="numpad">
+  <div class="np-sheet">
+    <div class="np-top">
+      <div class="np-info">
+        <div class="np-product" id="npProduct">—</div>
+        <span class="np-field" id="npField">—</span>
+      </div>
+      <button class="np-x" onclick="closeNP()">✕</button>
+    </div>
+    <div class="np-display">
+      <span class="np-cur-label" id="npCurLabel">Current value</span>
+      <div class="np-value" id="npVal">0</div>
+      <span class="np-note" id="npNote"></span>
+    </div>
+    <div class="np-grid">
+      <div class="nk" onclick="nk('1')">1</div><div class="nk" onclick="nk('2')">2</div><div class="nk" onclick="nk('3')">3</div>
+      <div class="nk" onclick="nk('4')">4</div><div class="nk" onclick="nk('5')">5</div><div class="nk" onclick="nk('6')">6</div>
+      <div class="nk" onclick="nk('7')">7</div><div class="nk" onclick="nk('8')">8</div><div class="nk" onclick="nk('9')">9</div>
+      <div class="nk clr" onclick="nc()">CLR</div><div class="nk" onclick="nk('0')">0</div><div class="nk del" onclick="nd()">⌫</div>
+    </div>
+    <button class="np-confirm" onclick="confirmNP()">SAVE ✓</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+const STORES=[
+  {code:'AD001',name:'Bawabat al Sharq Shop 1',city:'Abu Dhabi',pin:'1101'},
+  {code:'AD002',name:'Bawabat al Sharq Shop 2',city:'Abu Dhabi',pin:'1102'},
+  {code:'AD003',name:'Bawabat Kiosk EPP',city:'Abu Dhabi',pin:'1103'},
+  {code:'AD004',name:'Bawabat Kiosk ASL',city:'Abu Dhabi',pin:'1104'},
+  {code:'AD005',name:'Dalma Mall',city:'Abu Dhabi',pin:'1105'},
+  {code:'AD006',name:'Deerfield Mall',city:'Abu Dhabi',pin:'1106'},
+  {code:'AD007',name:'Yas Mall Podium',city:'Abu Dhabi',pin:'1107'},
+  {code:'AD008',name:'Yas Mall Kiosk 2',city:'Abu Dhabi',pin:'1108'},
+  {code:'AD009',name:'Yas Mall Kiosk 3',city:'Abu Dhabi',pin:'1109'},
+  {code:'AD010',name:'Yas Mall ASL',city:'Abu Dhabi',pin:'1110'},
+  {code:'AA001',name:'Al Ain Mall',city:'Al Ain',pin:'2201'},
+  {code:'AA002',name:'Bawadi Mall Kiosk 1',city:'Al Ain',pin:'2202'},
+  {code:'AA003',name:'Bawadi Mall Kiosk 2',city:'Al Ain',pin:'2203'},
+  {code:'AA004',name:'Bawadi Mall ASL',city:'Al Ain',pin:'2204'},
+  {code:'AA005',name:'Jimi Mall',city:'Al Ain',pin:'2205'},
+  {code:'AA006',name:'Makhani Zakhar Mall',city:'Al Ain',pin:'2206'},
+  {code:'DX001',name:'Dubai Mall',city:'Dubai',pin:'3301'},
+  {code:'DX002',name:'Mall of Emirates',city:'Dubai',pin:'3302'},
+  {code:'DX003',name:'Mirdif City Centre',city:'Dubai',pin:'3303'},
+  {code:'DX004',name:'Dubai Hills Mall',city:'Dubai',pin:'3304'},
+  {code:'RK001',name:'Manar Mall Shop',city:'Ras Al Khaimah',pin:'4401'},
+  {code:'RK002',name:'Manar Mall Kiosk',city:'Ras Al Khaimah',pin:'4402'},
+  {code:'FJ001',name:'Fujairah CC EPP',city:'Fujairah',pin:'5501'},
+  {code:'FJ002',name:'Fujairah CC ASL',city:'Fujairah',pin:'5502'},
+  {code:'SH001',name:'Zahia City Centre',city:'Sharjah',pin:'6601'},
+  {code:'AJ001',name:'Ajman City Centre',city:'Ajman',pin:'7701'},
+  {code:'MGR', name:'Manager',city:'Head Office',pin:'9999'},
+];
+
+const CATS=[
+  {cat:'Caballo Collection', products:[
+    {code:'C00002',en:'White 100ml Perfume',ar:'وايت 100 مل'},
+    {code:'C00004',en:'Maroon 100ml Perfume',ar:'مارون 100 مل'},
+    {code:'C00012',en:'Navy Perfume 100ml',ar:'عطر نيفي 100 مل'},
+    {code:'C00011',en:'Violet 100ml Perfume',ar:'فيوليت 100 مل'},
+    {code:'C00010',en:'Maroon Intense',ar:'مارون انتنس'},
+    {code:'C00013',en:'White Overdose',ar:''},
+    {code:'C00006',en:'Caballo Green',ar:'كبالو غرتن'},
+    {code:'SP0005',en:'No.4',ar:'رقم 4'},
+    {code:'C00014',en:'Black Perfume 100ml',ar:''},
+  ]},
+  {cat:'Bel Collection', products:[
+    {code:'B00001',en:'Bergamot bel Amber',ar:'برغموت بالعنبر'},
+    {code:'B00002',en:'Jasmine bel Musk',ar:'جاسمين بالمسك'},
+    {code:'B00003',en:'Amber Bel Oud',ar:'عنبر بالعود'},
+    {code:'B00007',en:'Peaceful Life',ar:'بيسفول لايف'},
+    {code:'B00008',en:'Midnight Glow',ar:'ميدنايت غلو'},
+    {code:'B00021',en:'Midnight Bloom 100ml',ar:''},
+    {code:'B00009',en:'Golden Chance',ar:'غولدن تشانس'},
+    {code:'B00004',en:'Meydan',ar:'ميدان'},
+    {code:'B00005',en:'Mystery',ar:'ميستري'},
+    {code:'B00006',en:'Mersal',ar:'مرسال'},
+    {code:'B00010',en:'Sakura',ar:''},
+    {code:'B00011',en:'Vetiveria',ar:''},
+    {code:'B00012',en:'Ambergris',ar:''},
+    {code:'B00013',en:'Arabica',ar:''},
+    {code:'B00014',en:'Firewood',ar:''},
+    {code:'B00015',en:'Hidden Leather',ar:'هيدن ليذر'},
+    {code:'B00016',en:'Mysterious Rose',ar:'ميستيريوس روز'},
+    {code:'B00017',en:'Thekrayat',ar:'ذكريات'},
+    {code:'B00018',en:'Hidden Tobacco',ar:'هيدن توباكو'},
+    {code:'B00019',en:'Masters Perfume 100ml',ar:'ماسترز برفيوم'},
+    {code:'B00020',en:'Master Signature',ar:'ماستر سيجنتشر'},
+  ]},
+  {cat:'Sets & Specials', products:[
+    {code:'SP0001',en:'White Oud Set Box (NEW)',ar:''},
+    {code:'SP0006',en:'More of Oud',ar:''},
+    {code:'SP0012',en:'White Set Box',ar:''},
+    {code:'SP0013',en:'Maroon Set Box',ar:''},
+    {code:'SP0037',en:'Future Bakhoor 100ml',ar:'بخور المستقبل'},
+    {code:'SP0038',en:'Future Oud 100ml',ar:'عود المستقبل'},
+    {code:'SP0022',en:'Reflection',ar:''},
+    {code:'SP0023',en:'Master Signature Box',ar:''},
+    {code:'SP0029',en:'Midnight Glow Set Box',ar:''},
+    {code:'DIF-001',en:'Future Oud Reed Diffuser',ar:''},
+    {code:'SP0039',en:'Future Traditional Set 2×100ml',ar:'مجموعة المستقبل'},
+  ]},
+  {cat:'Oud', products:[
+    {code:'O00001',en:'Oud Amiri',ar:'عود أميري'},
+    {code:'O00002',en:'Oud Meydan',ar:'عود ميدان'},
+    {code:'O00003',en:'Oud Al Emarat',ar:'عود الإمارات'},
+    {code:'O00006',en:'Oud Al Fakhamah',ar:'عود الفخامة'},
+    {code:'O00008',en:'Oud Hindi Malaki — White Box',ar:'عود هندي ملكي'},
+    {code:'O0007', en:'Oud Hindi Khas — Black Box',ar:'عود هندي خاص'},
+  ]},
+  {cat:'Dakhoon', products:[
+    {code:'D00001',en:'Dakhoon Al Emarat',ar:'دخون الإمارات'},
+    {code:'D00003',en:'Dakhoon Badia',ar:'دخون بادية'},
+    {code:'D00002',en:'Dakhoon Al Marasim',ar:'دخون المراسيم'},
+    {code:'D00004',en:'Dakhoon Al Dar',ar:'دخون الدار'},
+    {code:'D00005',en:'Dakhoon Al Barzah',ar:'دخون البرزة'},
+    {code:'D00008',en:'Dakhoon Retaj',ar:'دخون رتاج'},
+  ]},
+  {cat:'Oils & Gifts', products:[
+    {code:'I00001',en:'Hindi Special',ar:'هندي سبيشل'},
+    {code:'I00002',en:'Seufi Special',ar:'سيوفي سبيشل'},
+    {code:'I00003',en:'White Oil 8ml',ar:'زيت وايت'},
+    {code:'I00004',en:'Maroon Oil 8ml',ar:'زيت مارون'},
+    {code:'I00005',en:'No.4 Oil 8ml',ar:'زيت رقم 4'},
+    {code:'I00006',en:'Musk Oil 8ml',ar:'زيت مسك'},
+    {code:'G00007',en:'Masters 10ml',ar:''},
+    {code:'G00001',en:'Peaceful Life 10ml + Bag',ar:'بيسفول لايف 10مل'},
+    {code:'G00002',en:'Mysterious Rose 10ml',ar:''},
+    {code:'G00003',en:'White Oud 10ml + Bag',ar:'وايت عود 10مل'},
+    {code:'SP0019',en:'Hidden Tobacco 30ml',ar:''},
+    {code:'SP0031',en:'Summer Collection Set',ar:''},
+    {code:'SP0021',en:'Dakhoon Sampler',ar:'عينات دخون'},
+    {code:'BG0001',en:'Masters Signature 1.5ml Vial',ar:''},
+    {code:'G00008',en:'Master Signature 10ml',ar:''},
+    {code:'SP0035',en:'Midnight Bloom Set 2×10ml',ar:''},
+    {code:'SP0033',en:'White Kit',ar:''},
+    {code:'SP0008',en:'Discovery Set',ar:'طقم الاستكشاف'},
+    {code:'SPG002',en:'Future Oud 1.5ml Sampler',ar:''},
+    {code:'SPG001',en:'Future Bakhoor 1.5ml Sampler',ar:''},
+  ]},
+  {cat:'Accessories', products:[
+    {code:'AC0001',en:'Medkhan (Small)',ar:'مدخن صغير'},
+    {code:'AC0002',en:'Charcoal',ar:'فحم'},
+    {code:'AC0003',en:'Lighter',ar:'ولاعة'},
+    {code:'AC0004',en:'Picker',ar:'بيكر'},
+    {code:'CDL0001',en:'MS Candle',ar:''},
+  ]},
+  {cat:'Gift Boxes', products:[
+    {code:'BX0002',en:'3 Bel Black Box With 2 Oil',ar:''},
+    {code:'BX0014',en:'BOD Gift Box',ar:''},
+    {code:'BX0011',en:'Dekoon Gift Set',ar:'طقم هدية دخون'},
+    {code:'BX0012',en:'VIP Combo Box',ar:'صندوق VIP'},
+    {code:'BX0015',en:'Luxury Gift Box',ar:'صندوق فاخر'},
+  ]},
+  {cat:'Heritage Collection', products:[
+    {code:'HR0001',en:'Qalah — Heritage',ar:'قلعة'},
+    {code:'HR0002',en:'Danah — Heritage',ar:'دانة'},
+    {code:'HR0003',en:'Al Emarat — Heritage',ar:'الإمارات'},
+    {code:'HR0004',en:'Barjeel — Heritage',ar:'البرجيل'},
+    {code:'HR0005',en:'Khaimah — Heritage',ar:'الخيمة'},
+    {code:'HR0006',en:'Safeena — Heritage',ar:'سفينة'},
+    {code:'HR0007',en:'Dallah — Heritage',ar:'دلة'},
+  ]},
+  {cat:'Bel Paper Box (Gift Sets)', products:[
+    {code:'B0001-PB',en:'Bergamot bel Amber — Paper Box',ar:''},
+    {code:'B0002-PB',en:'Jasmine bel Musk — Paper Box',ar:''},
+    {code:'B0003-PB',en:'Amber Bel Oud — Paper Box',ar:''},
+    {code:'B0004-PB',en:'Meydan — Paper Box',ar:''},
+    {code:'B0005-PB',en:'Mystery — Paper Box',ar:''},
+    {code:'B0006-PB',en:'Mersal — Paper Box',ar:''},
+    {code:'B0007-PB',en:'Peaceful Life — Paper Box',ar:''},
+    {code:'B0008-PB',en:'Midnight Glow — Paper Box',ar:''},
+    {code:'B00021-PB',en:'Midnight Bloom — Paper Box',ar:''},
+    {code:'B0009-PB',en:'Golden Chance — Paper Box',ar:''},
+    {code:'B0010-PB',en:'Sakura — Paper Box',ar:''},
+    {code:'B0011-PB',en:'Ambergris — Paper Box',ar:''},
+    {code:'B0012-PB',en:'Arabica — Paper Box',ar:''},
+    {code:'B0013-PB',en:'Firewood — Paper Box',ar:''},
+    {code:'B0014-PB',en:'Hidden Leather — Paper Box',ar:''},
+    {code:'B0015-PB',en:'Mysterious Rose — Paper Box',ar:''},
+    {code:'B0016-PB',en:'Thekrayat — Paper Box',ar:''},
+    {code:'B0017-PB',en:'Hidden Tobacco — Paper Box',ar:''},
+    {code:'B0018-PB',en:'Masters — Paper Box',ar:''},
+    {code:'B00020-PB',en:'Masters Signature — Paper Box',ar:''},
+  ]},
+];
+
+// All products flat
+const PRODUCTS = CATS.flatMap(c=>c.products.map(p=>({...p,cat:c.cat})));
+
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DAY_FULL=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+// ── STATE ──
+let me = null;
+let curDay = 0;
+let pinBuf = '';
+// db[storeCode][dayIdx][productCode] = {open,inn,out,locked}
+const db = {};
+
+function dbGet(store,day,code,field){
+  return db[store]?.[day]?.[code]?.[field]??0;
+}
+function dbSet(store,day,code,field,val){
+  if(!db[store]) db[store]={};
+  if(!db[store][day]) db[store][day]={};
+  if(!db[store][day][code]) db[store][day][code]={open:0,wh:0,inn:0,out:0,locked:false};
+  db[store][day][code][field]=val;
+  // auto-carry closing to next day opening
+  if(day<6){
+    const bal=dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'out');
+    const next=Math.max(0,bal);
+    if(!db[store][day+1]) db[store][day+1]={};
+    if(!db[store][day+1][code]) db[store][day+1][code]={open:0,inn:0,out:0,locked:false};
+    db[store][day+1][code].open=next;
+  }
+}
+function isLocked(store,day){
+  const d=db[store]?.[day];
+  if(!d) return false;
+  return Object.values(d).some(v=>v.locked);
+}
+function lockDay(store,day){
+  if(!db[store]||!db[store][day]) return;
+  Object.keys(db[store][day]).forEach(code=>{
+    db[store][day][code].locked=true;
+  });
+}
+function bal(store,day,code){
+  return dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'out');
+}
+
+// ── LOGIN ──
+function buildStoreSelect(){
+  const sel=document.getElementById('storeSelect');
+  const cities=[...new Set(STORES.map(s=>s.city))];
+  cities.forEach(city=>{
+    const og=document.createElement('optgroup');
+    og.label=city;
+    STORES.filter(s=>s.city===city).forEach(s=>{
+      const o=document.createElement('option');
+      o.value=s.code; o.textContent=s.name;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+}
+
+function pk(k){
+  if(pinBuf.length>=4)return;
+  pinBuf+=k; updPin();
+  if(pinBuf.length===4) setTimeout(doLogin,150);
+}
+function pd(){pinBuf=pinBuf.slice(0,-1);updPin();}
+function pc(){pinBuf='';updPin();}
+function updPin(){
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('pd'+i);
+    d.textContent=i<pinBuf.length?'●':'·';
+    d.classList.toggle('filled',i<pinBuf.length);
+  }
+}
+
+function doLogin(){
+  const code=document.getElementById('storeSelect').value;
+  const err=document.getElementById('loginErr');
+  if(!code){err.textContent='Please select your store.';return;}
+  const store=STORES.find(s=>s.code===code);
+  if(!store){err.textContent='Store not found.';return;}
+  if(pinBuf!==store.pin){err.textContent='Wrong PIN — try again.';pc();return;}
+  err.textContent='';
+  me=store;
+  const dJS=new Date().getDay();
+  curDay=dJS===0?6:dJS-1;
+  document.getElementById('loginScreen').style.display='none';
+  const app=document.getElementById('appShell');
+  app.style.display='flex';
+  document.getElementById('topStore').textContent=store.name;
+  buildDayTabs();
+  buildGrid();
+  buildFooter();
+  buildSpSkuSel();
+}
+function doLogout(){
+  me=null;pinBuf='';pc();
+  document.getElementById('storeSelect').value='';
+  document.getElementById('loginErr').textContent='';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('appShell').style.display='none';
+}
+
+// ── DAY TABS ──
+function buildDayTabs(){
+  const bar=document.getElementById('dayTabs');
+  bar.innerHTML='';
+  DAYS.forEach((d,i)=>{
+    const t=document.createElement('div');
+    t.className='dtab'+(i===curDay?' active':'');
+    const hasData=me&&Object.values(db[me.code]?.[i]||{}).some(v=>v.inn>0||v.out>0);
+    if(hasData&&i!==curDay)t.classList.add('has-data');
+    // Calculate date for this week
+    const today=new Date();
+    const jsDay=today.getDay()===0?6:today.getDay()-1;
+    const diff=i-jsDay;
+    const dt=new Date(today);dt.setDate(today.getDate()+diff);
+    const dateStr=dt.getDate()+'/'+(dt.getMonth()+1);
+    t.innerHTML=`<span class="day-abbr">${DAY_FULL[i]}</span><span class="day-date">${dateStr}</span>`;
+    t.onclick=()=>{curDay=i;buildDayTabs();buildGrid();buildFooter();};
+    bar.appendChild(t);
+  });
+}
+
+// ── GRID ──
+function buildGrid(){
+  const locked=me&&isLocked(me.code,curDay);
+  // Header
+  const head=document.getElementById('sgridHead');
+  head.innerHTML=`
+    <tr class="hdr-group">
+      <th class="prod-th" rowspan="2" style="text-align:left;padding:8px 10px;font-size:10px;color:#999;font-weight:600;letter-spacing:1px;">PRODUCT / CODE</th>
+      <th class="gh-open" colspan="1">OPENING<br><span style="font-size:8px;font-weight:400;">Stock (A)</span></th>
+      <th class="gh-wh"   colspan="1">WAREHOUSE IN<br><span style="font-size:8px;font-weight:400;">From Warehouse (B)</span></th>
+      <th class="gh-in"   colspan="1">STORE IN<br><span style="font-size:8px;font-weight:400;">From Another Store (C)</span></th>
+      <th class="gh-out"  colspan="1">STOCK OUT<br><span style="font-size:8px;font-weight:400;">Sold/Sent (D)</span></th>
+      <th class="gh-bal"  colspan="1">BALANCE<br><span style="font-size:8px;font-weight:400;">A+B+C−D</span></th>
+    </tr>
+    <tr class="hdr-sub">
+      <th class="gs-open">${DAY_FULL[curDay]}</th>
+      <th class="gs-wh" style="color:var(--c-wh-t);font-weight:600;">Warehouse</th>
+      <th class="gs-in">${DAY_FULL[curDay]}</th>
+      <th class="gs-out">${DAY_FULL[curDay]}</th>
+      <th class="gs-bal" style="color:var(--c-bal-t);font-weight:600;">Auto</th>
+    </tr>`;
+
+  // Body
+  const tbody=document.getElementById('sgridBody');
+  tbody.innerHTML='';
+  let totO=0,totW=0,totI=0,totX=0,totB=0;
+
+  CATS.forEach(cat=>{
+    // Category row
+    const cr=document.createElement('tr');
+    cr.className='cat-sep';
+    cr.innerHTML=`<td colspan="6">${cat.cat}</td>`;
+    tbody.appendChild(cr);
+
+    cat.products.forEach((p,ri)=>{
+      const o=dbGet(me.code,curDay,p.code,'open');
+      const i=dbGet(me.code,curDay,p.code,'inn');
+      const x=dbGet(me.code,curDay,p.code,'out');
+      const w=dbGet(me.code,curDay,p.code,'wh');
+      const b=bal(me.code,curDay,p.code);
+      totO+=o;totW+=w;totI+=i;totX+=x;totB+=b;
+      const isNeg=b<0;
+
+      const tr=document.createElement('tr');
+      tr.className='prow'+(locked?' row-locked':'');
+      tr.style.background=ri%2===0?'#fff':'#FAFAFA';
+
+      const showO=o>0?o:'';
+      const showW=w>0?w:'';
+      const showI=i>0?i:'';
+      const showX=x>0?x:'';
+
+      tr.innerHTML=`
+        <td class="prod-td">
+          <div class="prod-inner">
+            <span class="pname">${p.en}${p.ar?`<span class="pname-ar">${p.ar}</span>`:''}</span>
+            <span class="pcode">${p.code}</span>
+          </div>
+        </td>
+        <td class="dcell open${locked?'':''}" onclick="${locked?'':'openNP(\''+p.code+'\',\'open\')'}" data-code="${p.code}" data-field="open">
+          <span class="dcell-val${showO===''?' empty':''}">${showO===''?'—':showO}</span>
+        </td>
+        <td class="dcell wh" onclick="${locked?'':'openNP(\''+p.code+'\',\'wh\')'}" data-code="${p.code}" data-field="wh">
+          <span class="dcell-val${showW===''?' empty':''}">${showW===''?'—':showW}</span>
+        </td>
+        <td class="dcell inn" onclick="${locked?'':'openNP(\''+p.code+'\',\'inn\')'}" data-code="${p.code}" data-field="inn">
+          <span class="dcell-val${showI===''?' empty':''}">${showI===''?'—':showI}</span>
+        </td>
+        <td class="dcell out" onclick="${locked?'':'openNP(\''+p.code+'\',\'out\')'}" data-code="${p.code}" data-field="out">
+          <span class="dcell-val${showX===''?' empty':''}">${showX===''?'—':showX}</span>
+        </td>
+        <td class="dcell bal">
+          <span class="dcell-val${isNeg?' negative':''}">${b}</span>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  });
+
+  // Totals row
+  const tot=document.createElement('tr');
+  tot.className='totals-row';
+  tot.innerHTML=`
+    <td class="prod-td">TOTALS — ${DAY_FULL[curDay]}</td>
+    <td class="open">${totO}</td>
+    <td class="wh">${totW}</td>
+    <td class="inn">${totI}</td>
+    <td class="out">${totX}</td>
+    <td class="bal">${totB}</td>`;
+  tbody.appendChild(tot);
+
+  // Lock button state
+  const lb=document.getElementById('lockBtn');
+  lb.textContent=locked?'🔒 Locked':'🔓 Lock Day';
+  lb.className='lock-btn'+(locked?' locked':'');
+}
+
+// ── FOOTER ──
+function buildFooter(){
+  let totO=0,totW=0,totI=0,totX=0,totB=0;
+  PRODUCTS.forEach(p=>{
+    totO+=dbGet(me.code,curDay,p.code,'open');
+    totW+=dbGet(me.code,curDay,p.code,'wh');
+    totI+=dbGet(me.code,curDay,p.code,'inn');
+    totX+=dbGet(me.code,curDay,p.code,'out');
+    totB+=bal(me.code,curDay,p.code);
+  });
+  document.getElementById('ftOpen').textContent=totO;
+  document.getElementById('ftWh').textContent=totW;
+  document.getElementById('ftIn').textContent=totI;
+  document.getElementById('ftOut').textContent=totX;
+  document.getElementById('ftBal').textContent=totB;
+}
+
+function toggleLock(){
+  if(!me||isLocked(me.code,curDay))return;
+  if(!confirm('Lock '+DAY_FULL[curDay]+'? This cannot be undone.'))return;
+  lockDay(me.code,curDay);
+  buildGrid();buildDayTabs();
+  toast('🔒 '+DAY_FULL[curDay]+' locked');
+}
+
+// ── NUMPAD ──
+let npCtx=null,npBuf='';
+function openNP(code,field){
+  if(!me||isLocked(me.code,curDay))return;
+  const p=PRODUCTS.find(x=>x.code===code);
+  npCtx={code,field};
+  npBuf=String(dbGet(me.code,curDay,code,field)||'');
+  const labels={open:'Opening Stock  (A)',wh:'Warehouse IN — From Warehouse  (B)',inn:'Store IN — From Another Store  (C)',out:'Stock OUT — Sold / Sent  (D)'};
+  const cls={open:'open',wh:'wh',inn:'inn',out:'out'};
+  document.getElementById('npProduct').textContent=p?p.en:code;
+  const fEl=document.getElementById('npField');
+  fEl.textContent=labels[field]||field;
+  fEl.className='np-field '+cls[field];
+  document.getElementById('npVal').textContent=npBuf||'0';
+  // Show current balance note
+  const curO=dbGet(me.code,curDay,code,'open');
+  const curI=dbGet(me.code,curDay,code,'inn');
+  const curX=dbGet(me.code,curDay,code,'out');
+  const curW=dbGet(me.code,curDay,code,'wh');
+  document.getElementById('npNote').textContent=`Opening ${curO} + Warehouse ${curW} + Store In ${curI} − Out ${curX} = ${curO+curW+curI-curX}`;
+  document.getElementById('numpad').classList.add('show');
+}
+function closeNP(){document.getElementById('numpad').classList.remove('show');npCtx=null;npBuf='';}
+function nk(k){
+  if(npBuf==='0')npBuf=k;
+  else npBuf+=k;
+  if(parseInt(npBuf)>9999)npBuf='9999';
+  document.getElementById('npVal').textContent=npBuf||'0';
+}
+function nd(){npBuf=npBuf.slice(0,-1);document.getElementById('npVal').textContent=npBuf||'0';}
+function nc(){npBuf='';document.getElementById('npVal').textContent='0';}
+function confirmNP(){
+  if(!npCtx)return;
+  const val=parseInt(npBuf)||0;
+  dbSet(me.code,curDay,npCtx.code,npCtx.field,val);
+  closeNP();
+  buildGrid();buildFooter();buildDayTabs();
+  toast('✓ Saved');
+}
+
+// ── ALL STORES PANEL ──
+// ─── ALL STORES PANEL ───
+let spMode='product'; // 'product' | 'store'
+let reqCtx=null;
+let selectedQty=0;
+
+function buildSpSkuSel(){
+  const sel=document.getElementById('spSku');
+  sel.innerHTML='<option value="">— Select a product to check availability —</option>';
+  CATS.forEach(cat=>{
+    const og=document.createElement('optgroup');
+    og.label='── '+cat.cat+' ──';
+    cat.products.forEach(p=>{
+      const o=document.createElement('option');
+      o.value=p.code;
+      o.textContent=p.code+' — '+p.en+(p.ar?' | '+p.ar:'');
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+}
+
+function setSpMode(mode){
+  spMode=mode;
+  document.getElementById('modeProduct').classList.toggle('active',mode==='product');
+  document.getElementById('modeStore').classList.toggle('active',mode==='store');
+  const dropWrap=document.getElementById('spDropWrap');
+  dropWrap.style.display=mode==='product'?'block':'none';
+  renderStores();
+}
+
+function onSpSearch(){
+  const q=document.getElementById('spSearch').value.toLowerCase();
+  // If in product mode and typing, try to match a product and auto-select
+  if(spMode==='product'&&q.length>=2){
+    const match=PRODUCTS.find(p=>
+      p.en.toLowerCase().includes(q)||
+      p.code.toLowerCase().includes(q)||
+      (p.ar&&p.ar.toLowerCase().includes(q))
+    );
+    if(match){
+      document.getElementById('spSku').value=match.code;
+    }
+  }
+  renderStores();
+}
+
+function onSpSkuChange(){
+  document.getElementById('spSearch').value='';
+  renderStores();
+}
+
+function openStores(){
+  document.getElementById('storesPanel').style.display='flex';
+  setSpMode('product');
+}
+function closeStores(){
+  document.getElementById('storesPanel').style.display='none';
+}
+
+function renderStores(){
+  const body=document.getElementById('spBody');
+  body.innerHTML='';
+  if(spMode==='product') renderProductMode(body);
+  else renderStoreMode(body);
+}
+
+// ─── PRODUCT MODE: one list, all stores ranked by availability ───
+function renderProductMode(body){
+  const skuF=document.getElementById('spSku').value;
+  const q=(document.getElementById('spSearch').value||'').toLowerCase();
+
+  if(!skuF&&!q){
+    body.innerHTML=`<div class="avail-empty">
+      <span class="avail-empty-icon">🔍</span>
+      <div class="avail-empty-text">Select a product above<br>to see which stores have it in stock</div>
+      <div class="avail-empty-hint">Tap any store with stock to request a transfer</div>
+    </div>`;
+    return;
+  }
+
+  // Determine product
+  let prod=null;
+  if(skuF){
+    prod=PRODUCTS.find(p=>p.code===skuF);
+  } else if(q){
+    prod=PRODUCTS.find(p=>
+      p.en.toLowerCase().includes(q)||
+      p.code.toLowerCase().includes(q)||
+      (p.ar&&p.ar.toLowerCase().includes(q))
+    );
+    if(prod) document.getElementById('spSku').value=prod.code;
+  }
+  if(!prod){
+    body.innerHTML=`<div class="avail-empty"><span class="avail-empty-icon">❓</span><div class="avail-empty-text">No product matched.<br>Try a different search.</div></div>`;
+    return;
+  }
+
+  const allStores=STORES.filter(s=>s.code!=='MGR');
+  // Build rows with balances
+  const rows=allStores.map(store=>{
+    const b=bal(store.code,curDay,prod.code);
+    const isMine=me&&store.code===me.code;
+    return {store,b,isMine};
+  });
+  // Sort: in stock first (desc qty), then zero
+  rows.sort((a,b2)=>{
+    if(a.b>0&&b2.b<=0) return -1;
+    if(a.b<=0&&b2.b>0) return 1;
+    return b2.b-a.b;
+  });
+
+  const totalStock=rows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
+  const myBal=rows.find(r=>r.isMine)?.b||0;
+
+  const wrap=document.createElement('div');
+  wrap.className='avail-panel';
+
+  // Product header bar
+  const myStatus=myBal>0
+    ?`<span style="color:#6FCF97;font-weight:600;">${myBal} in your store</span>`
+    :`<span style="color:#E87070;">Not in your store</span>`;
+  wrap.innerHTML=`
+    <div class="avail-product-bar">
+      <div class="avail-prod-info">
+        <div class="avail-prod-name">${prod.en}</div>
+        ${prod.ar?`<div class="avail-prod-ar">${prod.ar}</div>`:''}
+        <div class="avail-prod-code">${prod.code} · ${myStatus}</div>
+      </div>
+      <div class="avail-total-badge">
+        <span class="avail-total-num">${totalStock}</span>
+        <span class="avail-total-label">Network Total</span>
+      </div>
+    </div>
+    <div class="avail-section-label has-stock">✅ Stores with stock — tap to request transfer</div>
+  `;
+
+  const list=document.createElement('div');
+  list.className='avail-list';
+
+  let shownNoStock=false;
+  rows.forEach(({store,b,isMine})=>{
+    if(b<=0&&!shownNoStock){
+      const sep=document.createElement('div');
+      sep.className='avail-section-label no-stock';
+      sep.style.cssText='margin-top:12px;';
+      sep.textContent='⛔ No stock recorded';
+      list.appendChild(sep);
+      shownNoStock=true;
+    }
+    const cls=b>3?'in-stock':b>0?'low-stock':'no-stock';
+    const iconCls=b>3?'ok-icon':b>0?'low-icon':'zero-icon';
+    const qCls=b>3?'ok':b>0?'low':'zero';
+    const icon=b>3?'🟢':b>0?'🟡':'⚪';
+    const row=document.createElement('div');
+    row.className='avail-row '+cls+(isMine?' is-mine':'');
+    row.innerHTML=`
+      <div class="avail-store-icon ${iconCls}">${icon}</div>
+      <div class="avail-store-info">
+        <div class="avail-store-name ${b>0?'ok':'zero'}">
+          ${store.name}${isMine?'<span class="avail-mine-tag">YOUR STORE</span>':''}
+        </div>
+        <div class="avail-city">${store.city} · ${store.code}</div>
+        ${b>0&&!isMine?`<div class="avail-action-hint ${b<=3?'low-hint':''}">
+          ${b<=3?'⚠ Low stock —':''}Tap to request transfer
+        </div>`:''}
+      </div>
+      <div class="avail-qty-badge ${qCls}">
+        <span>${b>0?b:'—'}</span>
+        ${b>0?'<span class="avail-qty-units">UNITS</span>':''}
+      </div>`;
+
+    if(b>0&&!isMine){
+      row.onclick=()=>openReq(prod,store,b);
+    }
+    list.appendChild(row);
+  });
+
+  wrap.appendChild(list);
+
+  if(totalStock===0){
+    const alert=document.createElement('div');
+    alert.style.cssText='text-align:center;padding:20px;color:#444;font-size:13px;margin-top:8px;';
+    alert.innerHTML='No stock found at any store today.<br><span style="font-size:11px;color:#333;">Check if deliveries are expected in the Shipments tab.</span>';
+    wrap.appendChild(alert);
+  }
+
+  body.appendChild(wrap);
+}
+
+// ─── STORE MODE: cards per store ───
+function renderStoreMode(body){
+  const q=(document.getElementById('spSearch').value||'').toLowerCase();
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;padding:10px 12px;';
+  const showStores=STORES.filter(s=>s.code!=='MGR');
+  showStores.forEach(store=>{
+    let prods=PRODUCTS.filter(p=>{
+      if(q&&!p.en.toLowerCase().includes(q)&&!p.code.toLowerCase().includes(q)&&!(p.ar&&p.ar.toLowerCase().includes(q))) return false;
+      return true;
+    });
+    prods=prods.filter(p=>bal(store.code,curDay,p.code)>0);
+    const isMine=me&&store.code===me.code;
+    const card=document.createElement('div');
+    card.className='store-card';
+    card.innerHTML=`
+      <div class="sc-head" style="${isMine?'border-left:3px solid var(--gold);':''}">
+        <div>
+          <div class="sc-name">${store.name}${isMine?'<span class="sc-mine">YOU</span>':''}</div>
+          <div class="sc-city">${store.city} · <span style="font-family:var(--f-mono);font-size:9px;">${store.code}</span></div>
+        </div>
+        <span style="font-family:var(--f-mono);font-size:11px;color:#4A8A4A;margin-left:auto;">${prods.length} SKUs</span>
+      </div>
+      <div class="sc-body">
+        ${prods.length===0
+          ?`<div class="sc-empty">${q?'No match':'No stock recorded'}</div>`
+          :prods.slice(0,8).map(p=>{
+            const b=bal(store.code,curDay,p.code);
+            const cls=b<=3?'low':'ok';
+            return `<div class="sc-row">
+              <div>
+                <span class="sc-prod">${p.en}</span>
+                ${p.ar?`<span style="font-family:var(--f-ar);font-size:10px;color:#555;display:block;direction:rtl;text-align:left;">${p.ar}</span>`:''}
+                <code style="font-family:var(--f-mono);font-size:9px;color:#444;">${p.code}</code>
+              </div>
+              <span class="sc-bal ${cls}" style="font-size:15px;">${b}</span>
+            </div>`;
+          }).join('')}
+        ${prods.length>8?`<div class="sc-empty" style="color:#444;font-size:11px;">+${prods.length-8} more…</div>`:''}
+      </div>`;
+    grid.appendChild(card);
+  });
+  body.appendChild(grid);
+}
+
+// ─── REQUEST TRANSFER SHEET ───
+function openReq(prod,store,avail){
+  reqCtx={prod,store,avail};
+  selectedQty=0;
+  document.getElementById('reqProduct').innerHTML=`
+    <div>
+      <div class="req-prod-name">${prod.en}${prod.ar?` <span style="font-family:var(--f-ar);font-size:12px;color:#888;">${prod.ar}</span>`:''}</div>
+      <div class="req-prod-code">${prod.code}</div>
+    </div>`;
+  document.getElementById('reqFromStore').innerHTML=`
+    <div>
+      <div class="req-from-name">${store.name}</div>
+      <div style="font-size:10px;color:#555;">${store.city}</div>
+    </div>
+    <div class="req-from-qty">${avail} available</div>`;
+  // Build qty chips
+  const qtyRow=document.getElementById('reqQtyRow');
+  qtyRow.innerHTML='';
+  const qtys=[1,2,3,5,10,avail];
+  [...new Set(qtys)].filter(q=>q<=avail&&q>0).forEach(q=>{
+    const chip=document.createElement('div');
+    chip.className='req-qty-chip';
+    chip.textContent=q===avail?`All (${q})`:q;
+    chip.onclick=()=>{
+      document.querySelectorAll('.req-qty-chip').forEach(c=>c.classList.remove('selected'));
+      chip.classList.add('selected');
+      selectedQty=q;
+      document.getElementById('reqConfirmBtn').disabled=false;
+    };
+    qtyRow.appendChild(chip);
+  });
+  document.getElementById('reqNote').value='';
+  document.getElementById('reqConfirmBtn').disabled=true;
+  document.getElementById('reqModal').classList.add('show');
+}
+function closeReq(){document.getElementById('reqModal').classList.remove('show');}
+function confirmReq(){
+  if(!reqCtx||!selectedQty) return;
+  const note=document.getElementById('reqNote').value.trim();
+  const msg=`✅ Request sent — ${selectedQty}× ${reqCtx.prod.en} from ${reqCtx.store.name}${note?' · Note: '+note:''}`;
+  closeReq();
+  toast(msg);
+}
+
+// ── TOAST ──
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+// ── BOOT ──
+buildStoreSelect();
+</script>
+</body>
+</html>
