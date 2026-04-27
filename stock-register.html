@@ -696,6 +696,35 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dash-empty{text-align:center;padding:40px 20px;color:#333;}
 .dash-empty-icon{font-size:32px;display:block;margin-bottom:10px;}
 
+
+/* ── LOCKED DAY VISUAL HARDENING ── */
+.day-locked-banner{background:#0A1A0A;border-bottom:1px solid #1A3A1A;padding:7px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.dlb-icon{font-size:13px;}
+.dlb-text{font-family:var(--f-mono);font-size:11px;color:#4A8A4A;flex:1;}
+.dlb-override-btn{background:transparent;border:1px solid #2A3A2A;color:#3A6A3A;font-family:var(--f-body);font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;}
+.dlb-override-btn:active{background:#1A2A1A;}
+.dcell.open-locked{background:#0D1A0D!important;cursor:not-allowed!important;pointer-events:none!important;opacity:0.55;}
+.dcell.open-locked .dcell-val{color:#2A5A2A!important;}
+.mgr-override-banner{background:#1A0A2A;border-bottom:2px solid #4A1A7A;padding:7px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.mob-text{font-family:var(--f-mono);font-size:11px;color:#9A6ADA;flex:1;}
+.mob-close{background:#2A1A3A;border:1px solid #4A2A6A;color:#9A6ADA;font-family:var(--f-body);font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;}
+#mgrPinModal{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;z-index:980;padding:24px;}
+#mgrPinModal.show{display:flex;}
+.mgr-pin-sheet{background:#1C1C1E;border:1px solid #3A2A5A;border-radius:20px;padding:24px 20px;width:100%;max-width:380px;}
+.mgr-pin-title{font-size:16px;font-weight:700;color:#9A6ADA;margin-bottom:4px;}
+.mgr-pin-sub{font-size:12px;color:#555;margin-bottom:18px;line-height:1.5;}
+.mgr-pin-dots{display:flex;gap:8px;justify-content:center;margin-bottom:14px;}
+.mgr-pin-dot{width:44px;height:44px;border:1.5px solid #3A3A3A;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#9A6ADA;background:#252525;transition:all 0.15s;}
+.mgr-pin-dot.filled{border-color:#6A3AAA;background:#1A0A2A;}
+.mgr-pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
+.mgr-pkey{background:#252525;border:1px solid #2A2A2A;border-radius:8px;padding:13px 4px;font-family:var(--f-mono);font-size:19px;color:#DDD;cursor:pointer;text-align:center;transition:all 0.12s;user-select:none;}
+.mgr-pkey:active{background:#2A1A3A;border-color:#6A3AAA;}
+.mgr-pkey.clr{font-size:12px;color:#8B1A1A;background:#1E0A0A;}
+.mgr-pkey.del{font-size:14px;color:#555;}
+.mgr-pin-err{text-align:center;font-size:12px;color:#E87070;font-family:var(--f-mono);min-height:18px;margin-bottom:10px;}
+.mgr-pin-confirm{width:100%;background:linear-gradient(135deg,#5A2AAA,#3A1A7A);color:#DDD;font-family:var(--f-body);font-size:15px;font-weight:600;border:none;padding:14px;border-radius:10px;cursor:pointer;}
+.mgr-pin-confirm:active{opacity:0.85;}
+.mgr-pin-cancel{width:100%;background:transparent;border:1px solid #333;color:#555;font-family:var(--f-body);font-size:14px;padding:10px;border-radius:10px;cursor:pointer;margin-top:8px;}
 </style>
 </head>
 <body>
@@ -898,12 +927,35 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   </div>
 </div>
 
+<!-- ══════════ MANAGER PIN OVERRIDE MODAL ══════════ -->
+<div id="mgrPinModal">
+  <div class="mgr-pin-sheet">
+    <div class="mgr-pin-title">🔐 Manager Override</div>
+    <div class="mgr-pin-sub" id="mgrPinSub">Enter Manager PIN to unlock this day for editing.</div>
+    <div class="mgr-pin-dots">
+      <div class="mgr-pin-dot" id="mpd0">·</div>
+      <div class="mgr-pin-dot" id="mpd1">·</div>
+      <div class="mgr-pin-dot" id="mpd2">·</div>
+      <div class="mgr-pin-dot" id="mpd3">·</div>
+    </div>
+    <div class="mgr-pin-pad">
+      <div class="mgr-pkey" onclick="mpk('1')">1</div><div class="mgr-pkey" onclick="mpk('2')">2</div><div class="mgr-pkey" onclick="mpk('3')">3</div>
+      <div class="mgr-pkey" onclick="mpk('4')">4</div><div class="mgr-pkey" onclick="mpk('5')">5</div><div class="mgr-pkey" onclick="mpk('6')">6</div>
+      <div class="mgr-pkey" onclick="mpk('7')">7</div><div class="mgr-pkey" onclick="mpk('8')">8</div><div class="mgr-pkey" onclick="mpk('9')">9</div>
+      <div class="mgr-pkey clr" onclick="mpc()">CLR</div><div class="mgr-pkey" onclick="mpk('0')">0</div><div class="mgr-pkey del" onclick="mpd_fn()">⌫</div>
+    </div>
+    <div class="mgr-pin-err" id="mgrPinErr"></div>
+    <button class="mgr-pin-confirm" onclick="submitMgrPin()">Unlock for Editing</button>
+    <button class="mgr-pin-cancel" onclick="closeMgrPin()">Cancel</button>
+  </div>
+</div>
+
 <!-- ══════════ LOCK MODAL ══════════ -->
 <div id="lockModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);display:none;align-items:flex-end;justify-content:center;z-index:950;padding-bottom:env(safe-area-inset-bottom,0px);">
   <div style="background:#1C1C1E;border-radius:20px 20px 0 0;width:100%;max-width:460px;padding:22px 20px 24px;">
     <div style="font-size:17px;font-weight:700;color:#E8C97A;margin-bottom:8px;">🔒 Lock <span id="lockModalDay"></span>?</div>
     <div style="font-size:12px;color:#666;margin-bottom:10px;" id="lockModalSummary"></div>
-    <div style="font-size:12px;color:#4A8A4A;background:#1A2A1A;border:1px solid #2A4A2A;border-radius:8px;padding:10px 12px;margin-bottom:10px;">✅ Closing balance becomes tomorrow's Opening Stock automatically</div>
+    <div style="font-size:12px;color:#4A8A4A;background:#1A2A1A;border:1px solid #2A4A2A;border-radius:8px;padding:10px 12px;margin-bottom:10px;">✅ Closing balance becomes tomorrow's Opening Stock automatically<br><span style="color:#3A6A3A;font-size:11px;">Tomorrow's Opening will be permanently locked (Manager override required to edit)</span></div>
     <div style="font-size:11px;color:#8B4A4A;background:#2A1A1A;border:1px solid #4A2A2A;border-radius:8px;padding:8px 12px;margin-bottom:18px;">⚠ Cannot be edited after locking</div>
     <div style="display:flex;gap:10px;">
       <button onclick="closeLockModal()" style="flex:1;background:#252525;border:1px solid #3A3A3A;color:#888;font-family:var(--f-body);font-size:16px;padding:15px;border-radius:10px;cursor:pointer;">Cancel</button>
@@ -1125,7 +1177,14 @@ function loadDB(){ try{ const r=localStorage.getItem(DB_KEY); if(r) db=JSON.pars
 function dbGet(store,day,code,field){
   return db[store]?.[day]?.[code]?.[field]??0;
 }
-function dbSet(store,day,code,field,val){
+function dbSet(store,day,code,field,val,force){
+  if(!force){
+    if(db[store]?.[day]?.[code]?.locked && field!=='locked'){
+      const ok=mgrOverrideActive&&mgrOverrideDay===day&&mgrOverrideStore===store;
+      if(!ok) return;
+    }
+    if(field==='open' && day>0) return; // opening on day>0 only set by carry-forward
+  }
   if(!db[store]) db[store]={};
   if(!db[store][day]) db[store][day]={};
   if(!db[store][day][code]) db[store][day][code]={open:0,wh:0,inn:0,out:0,locked:false};
@@ -1152,7 +1211,7 @@ function lockDay(store,day){
       const closing=Math.max(0,bal(store,day,code));
       if(!db[store][day+1]) db[store][day+1]={};
       if(!db[store][day+1][code]) db[store][day+1][code]={open:0,wh:0,inn:0,out:0,locked:false};
-      db[store][day+1][code].open=closing;
+      dbSet(store,day+1,code,'open',closing,true);
     }
   });
   saveDB();
@@ -1215,6 +1274,7 @@ function doLogin(){
   buildSpSkuSel();
 }
 function doLogout(){
+  mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;
   me=null;pinBuf='';pc();
   document.getElementById('storeSelect').value='';
   document.getElementById('loginErr').textContent='';
@@ -1248,12 +1308,30 @@ function buildDayTabs(){
 // ── GRID ──
 function buildGrid(){
   const locked=me&&isLocked(me.code,curDay);
+  const mgrActive=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
+  // Render locked/override banner
+  let existBanner=document.getElementById('gridLockedBanner');
+  if(!existBanner){
+    existBanner=document.createElement('div');
+    existBanner.id='gridLockedBanner';
+    const sa=document.getElementById('scrollArea');
+    if(sa&&sa.parentNode) sa.parentNode.insertBefore(existBanner,sa);
+  }
+  if(locked&&!mgrActive){
+    existBanner.className='day-locked-banner';
+    existBanner.innerHTML='<span class="dlb-icon">🔒</span><span class="dlb-text">'+DAY_FULL[curDay]+' is locked — Closing carried to next day Opening</span><button class="dlb-override-btn" onclick="requestMgrOverride()">🔐 Manager Override</button>';
+  } else if(locked&&mgrActive){
+    existBanner.className='mgr-override-banner';
+    existBanner.innerHTML='<span class="dlb-icon">🔐</span><span class="mob-text">Manager Override Active — '+DAY_FULL[curDay]+' editable (Opening still locked)</span><button class="mob-close" onclick="cancelMgrOverride()">End Override</button>';
+  } else {
+    existBanner.className='';existBanner.innerHTML='';
+  }
   // Header
   const head=document.getElementById('sgridHead');
   head.innerHTML=`
     <tr class="hdr-group">
       <th class="prod-th" rowspan="2" style="text-align:left;padding:8px 10px;font-size:10px;color:#999;font-weight:600;letter-spacing:1px;">PRODUCT / CODE</th>
-      <th class="gh-open" colspan="1">OPENING<br><span style="font-size:8px;font-weight:400;">Stock (A)</span></th>
+      <th class="gh-open" colspan="1">OPENING<br><span style="font-size:8px;font-weight:400;">Stock (A) ${curDay>0?'🔒':''}</span></th>
       <th class="gh-wh"   colspan="1">WAREHOUSE IN<br><span style="font-size:8px;font-weight:400;">From Warehouse (B)</span></th>
       <th class="gh-in"   colspan="1">STORE IN<br><span style="font-size:8px;font-weight:400;">From Another Store (C)</span></th>
       <th class="gh-out"  colspan="1">STOCK OUT<br><span style="font-size:8px;font-weight:400;">Sold/Sent (D)</span></th>
@@ -1297,6 +1375,9 @@ function buildGrid(){
       const showI=i>0?i:'';
       const showX=x>0?x:'';
 
+      const openLocked=curDay>0||locked;
+      const mgrActive=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
+      const canEdit=!locked||mgrActive;
       tr.innerHTML=`
         <td class="prod-td">
           <div class="prod-inner">
@@ -1304,16 +1385,18 @@ function buildGrid(){
             <span class="pcode">${p.code}</span>
           </div>
         </td>
-        <td class="dcell open${locked?'':''}" onclick="${locked?'':'openNP(\''+p.code+'\',\'open\')'}" data-code="${p.code}" data-field="open">
-          <span class="dcell-val${showO===''?' empty':''}">${showO===''?'—':showO}</span>
+        <td class="dcell ${openLocked?'open-locked':'open'}"
+            onclick="${openLocked?'toast(\'🔒 Opening is auto-set from yesterday\'s closing\')':'openNP(\''+p.code+'\',\'open\')'}"
+            data-code="${p.code}" data-field="open">
+          <span class="dcell-val">${showO===''?'—':showO}</span>
         </td>
-        <td class="dcell wh" onclick="${locked?'':'openNP(\''+p.code+'\',\'wh\')'}" data-code="${p.code}" data-field="wh">
+        <td class="dcell wh" onclick="${canEdit?'openNP(\''+p.code+'\',\'wh\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showW===''?' empty':''}">${showW===''?'—':showW}</span>
         </td>
-        <td class="dcell inn" onclick="${locked?'':'openNP(\''+p.code+'\',\'inn\')'}" data-code="${p.code}" data-field="inn">
+        <td class="dcell inn" onclick="${canEdit?'openNP(\''+p.code+'\',\'inn\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showI===''?' empty':''}">${showI===''?'—':showI}</span>
         </td>
-        <td class="dcell out" onclick="${locked?'':'openNP(\''+p.code+'\',\'out\')'}" data-code="${p.code}" data-field="out">
+        <td class="dcell out" onclick="${canEdit?'openNP(\''+p.code+'\',\'out\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showX===''?' empty':''}">${showX===''?'—':showX}</span>
         </td>
         <td class="dcell bal">
@@ -1381,7 +1464,18 @@ function confirmLock(){
 // ── NUMPAD ──
 let npCtx=null,npBuf='';
 function openNP(code,field){
-  if(!me||isLocked(me.code,curDay))return;
+  if(!me) return;
+  // RULE: Opening Stock on day>0 is always read-only
+  if(field==='open' && curDay>0){
+    toast('🔒 Opening Stock is auto-set from yesterday\'s closing');
+    return;
+  }
+  // RULE: Locked day blocks editing unless manager override active
+  if(isLocked(me.code,curDay)){
+    const ok=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
+    if(!ok){ toast('🔒 Day locked — tap 🔐 Manager Override to edit'); return; }
+    if(field==='open'){ toast('🔒 Opening Stock cannot be edited even with override'); return; }
+  }
   const p=PRODUCTS.find(x=>x.code===code);
   npCtx={code,field};
   npBuf=String(dbGet(me.code,curDay,code,field)||'');
@@ -1447,6 +1541,9 @@ function confirmNP(){
 let spMode='product'; // 'product' | 'store'
 let reqCtx=null;
 let selectedQty=0;
+let mgrOverrideActive=false;
+let mgrOverrideDay=null;
+let mgrOverrideStore=null;
 // Transfer movement log: {id, ts, fromStore, toStore, prodCode, qty, note, day}
 // Stored in db.transferLog array
 function getTransferLog(){
@@ -1800,6 +1897,47 @@ function confirmReq(){
 
 // ── TRANSFER LOG ──
 let movLogOpen=true;
+
+// ─── MANAGER OVERRIDE ───
+let mgrPinBuf='';
+const MGR_PIN='9999';
+function requestMgrOverride(){
+  mgrPinBuf='';updateMgrPinDots();
+  document.getElementById('mgrPinErr').textContent='';
+  document.getElementById('mgrPinSub').textContent='Enter Manager PIN to unlock '+DAY_FULL[curDay]+' for editing. Opening Stock will remain locked.';
+  document.getElementById('mgrPinModal').classList.add('show');
+}
+function closeMgrPin(){document.getElementById('mgrPinModal').classList.remove('show');mgrPinBuf='';updateMgrPinDots();}
+function mpk(k){
+  if(mgrPinBuf.length>=4)return;
+  mgrPinBuf+=k;updateMgrPinDots();
+  if(mgrPinBuf.length===4)setTimeout(submitMgrPin,150);
+}
+function mpd_fn(){mgrPinBuf=mgrPinBuf.slice(0,-1);updateMgrPinDots();}
+function mpc(){mgrPinBuf='';updateMgrPinDots();}
+function updateMgrPinDots(){
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('mpd'+i);
+    if(!d)return;
+    d.textContent=i<mgrPinBuf.length?'●':'·';
+    d.classList.toggle('filled',i<mgrPinBuf.length);
+  }
+}
+function submitMgrPin(){
+  if(mgrPinBuf!==MGR_PIN){
+    document.getElementById('mgrPinErr').textContent='Incorrect PIN — try again';
+    mgrPinBuf='';updateMgrPinDots();return;
+  }
+  mgrOverrideActive=true;mgrOverrideDay=curDay;mgrOverrideStore=me.code;
+  closeMgrPin();buildGrid();buildFooter();
+  toast('🔐 Manager Override active — '+DAY_FULL[curDay]+' unlocked (Opening locked)');
+}
+function cancelMgrOverride(){
+  mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;
+  buildGrid();buildFooter();
+  toast('Override ended — '+DAY_FULL[curDay]+' locked again');
+}
+
 function toggleMovLog(){
   movLogOpen=!movLogOpen;
   document.getElementById('movLogBody').style.display=movLogOpen?'block':'none';
