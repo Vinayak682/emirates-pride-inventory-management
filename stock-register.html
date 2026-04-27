@@ -1169,7 +1169,7 @@ let me = null;
 let curDay = 0;
 let pinBuf = '';
 // db[storeCode][dayIdx][productCode] = {open,wh,inn,out,locked}
-const DB_KEY = 'ep_stock_v4_clean';
+const DB_KEY = 'ep_stock_v5';
 let db = {};
 function saveDB(){ try{ localStorage.setItem(DB_KEY,JSON.stringify(db)); }catch(e){} }
 function loadDB(){ try{ const r=localStorage.getItem(DB_KEY); if(r) db=JSON.parse(r); }catch(e){ db={}; } }
@@ -1260,7 +1260,7 @@ function doLogin(){
   if(!store){err.textContent='Store not found.';return;}
   if(pinBuf!==store.pin){err.textContent='Wrong PIN — try again.';pc();return;}
   err.textContent='';
-  try{ localStorage.setItem('ep_last_store_v4',code); }catch(e){}
+  try{ localStorage.setItem('ep_last_store_v5',code); }catch(e){}
   me=store;
   const dJS=new Date().getDay();
   curDay=dJS===0?6:dJS-1;
@@ -2378,7 +2378,7 @@ function toast(msg){
 loadDB();
 buildStoreSelect();
 try{
-  const last=localStorage.getItem('ep_last_store_v4');
+  const last=localStorage.getItem('ep_last_store_v5');
   if(last){
     const sel=document.getElementById('storeSelect');
     if(sel) sel.value=last;
