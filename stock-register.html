@@ -673,23 +673,68 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   </div>
   <!-- Body -->
   <div class="sp-body" id="spBody" style="flex:1;overflow-y:auto;"></div>
+
+  <!-- Transfer Movement Log -->
+  <div id="spMovLog" style="border-top:1px solid #2A2A2A;flex-shrink:0;">
+    <div onclick="toggleMovLog()" style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:#0D0D0D;">
+      <span style="font-family:var(--f-mono);font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.8px;">🔄 Transfer Log</span>
+      <span id="movLogCount" style="font-family:var(--f-mono);font-size:10px;color:#444;"></span>
+      <span id="movLogArrow" style="color:#444;font-size:12px;">▲</span>
+    </div>
+    <div id="movLogBody" style="max-height:240px;overflow-y:auto;display:none;"></div>
+  </div>
 </div>
 
 <!-- REQUEST SHEET -->
 <div id="reqModal">
   <div class="req-sheet">
     <div class="req-top">
-      <div class="req-title">📋 Request Stock Transfer</div>
+      <div class="req-title">🔄 Request Stock Transfer</div>
       <button class="req-x" onclick="closeReq()">✕</button>
     </div>
+
+    <!-- Flow diagram -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid #2A2A2A;">
+      <div style="flex:1;text-align:center;">
+        <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">From</div>
+        <div id="reqFromLabel" style="font-size:12px;font-weight:600;color:#E87070;">—</div>
+        <div id="reqFromQtyLabel" style="font-family:var(--f-mono);font-size:11px;color:#555;margin-top:2px;"></div>
+      </div>
+      <div style="font-size:20px;color:#555;">→</div>
+      <div style="flex:1;text-align:center;">
+        <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">To (Your Store)</div>
+        <div id="reqToLabel" style="font-size:12px;font-weight:600;color:#6FCF97;">—</div>
+      </div>
+    </div>
+
     <div class="req-product" id="reqProduct"></div>
-    <div class="req-from-label">Available at</div>
+
+    <div class="req-from-label">Stock available at source</div>
     <div class="req-from-store" id="reqFromStore"></div>
-    <div class="req-qty-label">Qty to Request</div>
+
+    <div class="req-qty-label">Qty to Transfer</div>
     <div class="req-qty-row" id="reqQtyRow"></div>
-    <div class="req-note-label">Note to Store (optional)</div>
+
+    <!-- Impact preview -->
+    <div id="reqImpact" style="display:none;background:#111;border:1px solid #2A2A2A;border-radius:8px;padding:10px 12px;margin-bottom:14px;">
+      <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Transfer Impact</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:12px;color:#AAA;">Source store stock after:</span>
+        <span id="reqImpactFrom" style="font-family:var(--f-mono);font-size:14px;font-weight:600;color:#E87070;">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;color:#AAA;">Your store (Store IN) after:</span>
+        <span id="reqImpactTo" style="font-family:var(--f-mono);font-size:14px;font-weight:600;color:#6FCF97;">—</span>
+      </div>
+    </div>
+
+    <div class="req-note-label">Note (optional)</div>
     <input class="req-note-input" id="reqNote" placeholder="e.g. Customer waiting — urgent">
-    <button class="req-confirm" id="reqConfirmBtn" onclick="confirmReq()">Send Request ✓</button>
+
+    <button class="req-confirm" id="reqConfirmBtn" onclick="confirmReq()" disabled
+      style="background:linear-gradient(135deg,#1A5A1A,#0D3A0D);color:#6FCF97;">
+      Confirm Transfer ✓
+    </button>
   </div>
 </div>
 
@@ -1235,6 +1280,12 @@ function confirmNP(){
 let spMode='product'; // 'product' | 'store'
 let reqCtx=null;
 let selectedQty=0;
+// Transfer movement log: {id, ts, fromStore, toStore, prodCode, qty, note, day}
+// Stored in db.transferLog array
+function getTransferLog(){
+  if(!db.transferLog) db.transferLog=[];
+  return db.transferLog;
+}
 
 function buildSpSkuSel(){
   const sel=document.getElementById('spSku');
@@ -1285,6 +1336,9 @@ function onSpSkuChange(){
 function openStores(){
   document.getElementById('storesPanel').style.display='flex';
   setSpMode('product');
+  renderMovLog();
+  const movBody=document.getElementById('movLogBody');
+  if(movBody) movBody.style.display=movLogOpen?'block':'none';
 }
 function closeStores(){
   document.getElementById('storesPanel').style.display='none';
@@ -1469,49 +1523,149 @@ function renderStoreMode(body){
 function openReq(prod,store,avail){
   reqCtx={prod,store,avail};
   selectedQty=0;
+
+  // Flow labels
+  document.getElementById('reqFromLabel').textContent=store.name;
+  document.getElementById('reqFromQtyLabel').textContent=avail+' units available';
+  document.getElementById('reqToLabel').textContent=me.name;
+
+  // Product info
   document.getElementById('reqProduct').innerHTML=`
-    <div>
+    <div style="margin-bottom:10px;">
       <div class="req-prod-name">${prod.en}${prod.ar?` <span style="font-family:var(--f-ar);font-size:12px;color:#888;">${prod.ar}</span>`:''}</div>
       <div class="req-prod-code">${prod.code}</div>
     </div>`;
+
+  // Source store availability
   document.getElementById('reqFromStore').innerHTML=`
     <div>
       <div class="req-from-name">${store.name}</div>
-      <div style="font-size:10px;color:#555;">${store.city}</div>
+      <div style="font-size:10px;color:#555;">${store.city} · ${store.code}</div>
     </div>
-    <div class="req-from-qty">${avail} available</div>`;
-  // Build qty chips
+    <div class="req-from-qty">${avail} units</div>`;
+
+  // Qty chips
   const qtyRow=document.getElementById('reqQtyRow');
   qtyRow.innerHTML='';
   const qtys=[1,2,3,5,10,avail];
   [...new Set(qtys)].filter(q=>q<=avail&&q>0).forEach(q=>{
     const chip=document.createElement('div');
     chip.className='req-qty-chip';
-    chip.textContent=q===avail?`All (${q})`:q;
+    chip.textContent=q===avail?'All ('+q+')':q;
     chip.onclick=()=>{
       document.querySelectorAll('.req-qty-chip').forEach(c=>c.classList.remove('selected'));
       chip.classList.add('selected');
       selectedQty=q;
+      // Show impact preview
+      const fromAfter=avail-q;
+      const myCurrentInn=dbGet(me.code,curDay,prod.code,'inn');
+      const myCurrentOpen=dbGet(me.code,curDay,prod.code,'open');
+      const myCurrentWh=dbGet(me.code,curDay,prod.code,'wh');
+      const myCurrentOut=dbGet(me.code,curDay,prod.code,'out');
+      const toAfterBal=myCurrentOpen+myCurrentWh+(myCurrentInn+q)-myCurrentOut;
+      document.getElementById('reqImpactFrom').textContent=fromAfter+' units';
+      document.getElementById('reqImpactFrom').style.color=fromAfter<=3?'#E87070':'#E8C97A';
+      document.getElementById('reqImpactTo').textContent=toAfterBal+' units';
+      document.getElementById('reqImpact').style.display='block';
       document.getElementById('reqConfirmBtn').disabled=false;
     };
     qtyRow.appendChild(chip);
   });
+
   document.getElementById('reqNote').value='';
+  document.getElementById('reqImpact').style.display='none';
   document.getElementById('reqConfirmBtn').disabled=true;
   document.getElementById('reqModal').classList.add('show');
 }
 function closeReq(){document.getElementById('reqModal').classList.remove('show');}
 function confirmReq(){
   if(!reqCtx||!selectedQty) return;
+  const {prod,store,avail}=reqCtx;
+  const note=document.getElementById('reqNote').value.trim();
+
+  // ── GUARD: source must still have enough stock ──
+  const sourceNow=bal(store.code,curDay,prod.code);
+  if(selectedQty>sourceNow){
+    toast('⚠ Source only has '+sourceNow+' now — refresh and try again');
+    closeReq(); return;
+  }
+
+  // ── DEDUCT from source store (Stock OUT) ──
+  const srcOut=dbGet(store.code,curDay,prod.code,'out');
+  dbSet(store.code,curDay,prod.code,'out',srcOut+selectedQty);
+
+  // ── ADD to requesting store (Store IN) ──
+  const myInn=dbGet(me.code,curDay,prod.code,'inn');
+  dbSet(me.code,curDay,prod.code,'inn',myInn+selectedQty);
+
+  // ── Log the movement ──
+  const now=new Date();
+  const ts=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+
+    ' '+now.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const logEntry={
+    id: Date.now(),
+    ts,
+    day: curDay,
+    fromStore: store.code,
+    fromName:  store.name,
+    toStore:   me.code,
+    toName:    me.name,
+    prodCode:  prod.code,
+    prodName:  prod.en,
+    prodAr:    prod.ar||'',
+    qty:       selectedQty,
+    note
+  };
+  if(!db.transferLog) db.transferLog=[];
+  db.transferLog.unshift(logEntry); // newest first
+
+  saveDB();
+
+  // ── Rebuild grid (preserve scroll) ──
   const scrollEl=document.getElementById('scrollArea');
   const st=scrollEl?scrollEl.scrollTop:0;
-  dbSet(me.code,curDay,reqCtx.prod.code,'inn',
-    dbGet(me.code,curDay,reqCtx.prod.code,'inn')+selectedQty);
-  saveDB();
   buildGrid();buildFooter();buildDayTabs();
   if(scrollEl) scrollEl.scrollTop=st;
+
   closeReq();
-  toast('✅ '+selectedQty+'× '+reqCtx.prod.en+' added as Store IN from '+reqCtx.store.name);
+  toast('✅ '+selectedQty+'× '+prod.en+' transferred — deducted from '+store.name);
+}
+
+// ── TRANSFER LOG ──
+let movLogOpen=true;
+function toggleMovLog(){
+  movLogOpen=!movLogOpen;
+  document.getElementById('movLogBody').style.display=movLogOpen?'block':'none';
+  document.getElementById('movLogArrow').textContent=movLogOpen?'▼':'▲';
+  if(movLogOpen) renderMovLog();
+}
+function renderMovLog(){
+  const log=getTransferLog();
+  const el=document.getElementById('movLogBody');
+  const count=document.getElementById('movLogCount');
+  if(!el) return;
+  count.textContent=log.length+' movement'+(log.length!==1?'s':'');
+  if(!log.length){
+    el.innerHTML='<div style="text-align:center;padding:16px;color:#333;font-size:12px;">No transfers recorded yet</div>';
+    return;
+  }
+  el.innerHTML=log.slice(0,50).map(e=>`
+    <div style="padding:9px 14px;border-bottom:1px solid #1A1A1A;display:flex;align-items:flex-start;gap:10px;">
+      <div style="font-size:16px;flex-shrink:0;">🔄</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:600;color:#CCC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.qty}× ${e.prodName}${e.prodAr?' | <span style="font-family:var(--f-ar);">'+e.prodAr+'</span>':''}</div>
+        <div style="font-size:11px;color:#555;margin-top:2px;">
+          <span style="color:#E87070;">${e.fromName}</span>
+          <span style="color:#444;"> → </span>
+          <span style="color:#6FCF97;">${e.toName}</span>
+        </div>
+        ${e.note?'<div style="font-size:10px;color:#444;margin-top:1px;">'+e.note+'</div>':''}
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:var(--f-mono);font-size:10px;color:#333;">${e.ts}</div>
+        <div style="font-family:var(--f-mono);font-size:10px;color:#555;margin-top:2px;">${e.prodCode}</div>
+      </div>
+    </div>`).join('');
 }
 
 // ── TOAST ──
