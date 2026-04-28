@@ -971,7 +971,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   <div style="background:#1C1C1E;border-radius:20px 20px 0 0;width:100%;max-width:460px;padding:22px 20px 24px;">
     <div style="font-size:17px;font-weight:700;color:#E8C97A;margin-bottom:8px;">🔒 Lock <span id="lockModalDay"></span>?</div>
     <div style="font-size:12px;color:#666;margin-bottom:10px;" id="lockModalSummary"></div>
-    <div style="font-size:12px;color:#4A8A4A;background:#1A2A1A;border:1px solid #2A4A2A;border-radius:8px;padding:10px 12px;margin-bottom:10px;">✅ Closing balance becomes tomorrow's Opening Stock automatically<br><span style="color:#3A6A3A;font-size:11px;">Tomorrow's Opening will be permanently locked (Manager override required to edit)</span></div>
+    <div style="font-size:12px;color:#4A8A4A;background:#1A2A1A;border:1px solid #2A4A2A;border-radius:8px;padding:10px 12px;margin-bottom:10px;">✅ Closing balance becomes tomorrow's Opening Stock automatically</div>
     <div style="font-size:11px;color:#8B4A4A;background:#2A1A1A;border:1px solid #4A2A2A;border-radius:8px;padding:8px 12px;margin-bottom:18px;">⚠ Cannot be edited after locking</div>
     <div style="display:flex;gap:10px;">
       <button onclick="closeLockModal()" style="flex:1;background:#252525;border:1px solid #3A3A3A;color:#888;font-family:var(--f-body);font-size:16px;padding:15px;border-radius:10px;cursor:pointer;">Cancel</button>
@@ -1200,7 +1200,7 @@ function dbSet(store,day,code,field,val,force){
       const ok=mgrOverrideActive&&mgrOverrideDay===day&&mgrOverrideStore===store;
       if(!ok) return;
     }
-    if(field==='open' && day>0) return; // opening on day>0 only set by carry-forward
+    // opening allowed on all days
   }
   if(!db[store]) db[store]={};
   if(!db[store][day]) db[store][day]={};
@@ -1348,7 +1348,7 @@ function buildGrid(){
   head.innerHTML=`
     <tr class="hdr-group">
       <th class="prod-th" rowspan="2" style="text-align:left;padding:8px 10px;font-size:10px;color:#999;font-weight:600;letter-spacing:1px;">PRODUCT / CODE</th>
-      <th class="gh-open" colspan="1">OPENING<br><span style="font-size:8px;font-weight:400;">Stock (A) ${curDay>0?'🔒':''}</span></th>
+      <th class="gh-open" colspan="1">OPENING<br><span style="font-size:8px;font-weight:400;">Stock (A)</th>
       <th class="gh-wh"   colspan="1">WAREHOUSE IN<br><span style="font-size:8px;font-weight:400;">From Warehouse (B)</span></th>
       <th class="gh-in"   colspan="1">STORE IN<br><span style="font-size:8px;font-weight:400;">From Another Store (C)</span></th>
       <th class="gh-sold" colspan="1">SOLD<br><span style="font-size:8px;font-weight:400;">To Customer (D)</span></th>
@@ -1396,7 +1396,6 @@ function buildGrid(){
       const showS=s>0?s:'';
       const showT=t>0?t:'';
 
-      const openLocked=curDay>0||locked;
       const mgrActive=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
       const canEdit=!locked||mgrActive;
       tr.innerHTML=`
@@ -1406,10 +1405,10 @@ function buildGrid(){
             <span class="pcode">${p.code}</span>
           </div>
         </td>
-        <td class="dcell ${openLocked?'open-locked':'open'}"
-            onclick="${openLocked?'toast(\'🔒 Opening is auto-set from yesterday\'s closing\')':'openNP(\''+p.code+'\',\'open\')'}"
+        <td class="dcell open"
+            onclick="${canEdit?'openNP(\''+p.code+'\',\'open\')':'toast(\'🔒 Day locked\')}"
             data-code="${p.code}" data-field="open">
-          <span class="dcell-val">${showO===''?'—':showO}</span>
+          <span class="dcell-val${showO===''?' empty':''}">${showO===''?'—':showO}</span>
         </td>
         <td class="dcell wh" onclick="${canEdit?'openNP(\''+p.code+'\',\'wh\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showW===''?' empty':''}">${showW===''?'—':showW}</span>
@@ -1492,16 +1491,12 @@ function confirmLock(){
 let npCtx=null,npBuf='';
 function openNP(code,field){
   if(!me) return;
-  // RULE: Opening Stock on day>0 is always read-only
-  if(field==='open' && curDay>0){
-    toast('🔒 Opening Stock is auto-set from yesterday\'s closing');
-    return;
-  }
+  // Opening editable on all days
   // RULE: Locked day blocks editing unless manager override active
   if(isLocked(me.code,curDay)){
     const ok=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
     if(!ok){ toast('🔒 Day locked — tap 🔐 Manager Override to edit'); return; }
-    if(field==='open'){ toast('🔒 Opening Stock cannot be edited even with override'); return; }
+    // opening editable with override
   }
   const p=PRODUCTS.find(x=>x.code===code);
   npCtx={code,field};
