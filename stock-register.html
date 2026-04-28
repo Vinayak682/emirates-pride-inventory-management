@@ -2952,7 +2952,7 @@ function downloadDaySales(){
   if(!isLocked(me.code,dashDay)){ toast('⚠ Lock the day first before downloading'); return; }
   const rows = [];
   rows.push(['Emirates Pride Perfumes — Daily Sales Report']);
-  rows.push([me.name + ' · ' + DAY_FULL[dashDay]]);
+  rows.push([me.name + ' · ' + (getDayLabels()[dashDay]?.full||'') + ' ' + (getDayLabels()[dashDay]?.date||'')]);
   rows.push(['Generated: ' + new Date().toLocaleString('en-GB')]);
   rows.push([]);
   rows.push(['ERP Code','Product (English)','Product (Arabic)','Category',
@@ -3006,7 +3006,7 @@ function downloadDayFull(){
   if(!isLocked(me.code,dashDay)){ toast('⚠ Lock the day first before downloading'); return; }
   const rows = [];
   rows.push(['Emirates Pride — Full Day Stock Report']);
-  rows.push([me.name + ' · ' + DAY_FULL[dashDay] + ' — All Products']);
+  rows.push([me.name + ' · ' + (getDayLabels()[dashDay]?.full||'') + ' ' + (getDayLabels()[dashDay]?.date||'') + ' — All Products']);
   rows.push(['Generated: ' + new Date().toLocaleString('en-GB')]);
   rows.push([]);
   rows.push(['ERP Code','Product (English)','Product (Arabic)','Category',
