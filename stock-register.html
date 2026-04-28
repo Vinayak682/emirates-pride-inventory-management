@@ -771,7 +771,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* ── TOTALS SUB-HEADER ROW ── */
 .hdr-totals-row th{
-  padding:6px 4px!important;
+  padding:5px 4px!important;
   border-top:1px solid rgba(255,255,255,0.06)!important;
   border-bottom:2px solid var(--border-dark)!important;
 }
@@ -789,13 +789,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .tot-num.bal {color:var(--gold2);}
 .tot-num.neg {color:#E87070;font-size:14px;}
 .tot-num.zero{color:#444;}
-.tot-label{
-  display:block;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:8px;font-weight:500;
-  color:#444;text-transform:uppercase;
-  letter-spacing:0.6px;margin-top:2px;
-}
+.tot-label{display:none;}
 
 /* ── EXPORT PANEL ── */
 #exportPanel{
@@ -910,22 +904,16 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   <!-- Day tabs -->
   <div class="day-tabs" id="dayTabs"></div>
 
-  <!-- Frozen Summary Bar — always visible -->
-  <div class="summary-frozen" id="summaryFrozen">
-    <div class="sf-item"><span class="sf-label">Opening<br><span class="sf-label-ar">الافتتاح</span></span><span class="sf-val fo" id="sfOpen">0</span></div>
-    <div class="sf-div"></div>
-    <div class="sf-item"><span class="sf-label">WH In<br><span class="sf-label-ar">مستودع</span></span><span class="sf-val wh" id="sfWh">0</span></div>
-    <div class="sf-div"></div>
-    <div class="sf-item"><span class="sf-label">Store In<br><span class="sf-label-ar">نقل داخل</span></span><span class="sf-val inn" id="sfIn">0</span></div>
-    <div class="sf-div"></div>
-    <div class="sf-item"><span class="sf-label">Sales<br><span class="sf-label-ar">المبيعات</span></span><span class="sf-val sold" id="sfSold">0</span></div>
-    <div class="sf-div"></div>
-    <div class="sf-item"><span class="sf-label">Sent Out<br><span class="sf-label-ar">نقل خارج</span></span><span class="sf-val trf" id="sfTrf">0</span></div>
-    <div class="sf-div"></div>
-    <div class="sf-item"><span class="sf-label">Balance<br><span class="sf-label-ar">الرصيد</span></span><span class="sf-val bal" id="sfBal">0</span></div>
-    <div style="margin-left:auto;flex-shrink:0;">
-      <button class="lock-btn" id="lockBtn" onclick="toggleLock()">🔓 Lock Day</button>
-    </div>
+  <!-- Lock button only (summary bar removed) -->
+  <div style="background:#0D0D0D;border-bottom:1px solid #1E1E1E;padding:5px 14px;display:flex;justify-content:flex-end;flex-shrink:0;">
+    <!-- hidden sf elements for JS compat -->
+    <span id="sfOpen" style="display:none;"></span>
+    <span id="sfWh" style="display:none;"></span>
+    <span id="sfIn" style="display:none;"></span>
+    <span id="sfSold" style="display:none;"></span>
+    <span id="sfTrf" style="display:none;"></span>
+    <span id="sfBal" style="display:none;"></span>
+    <button class="lock-btn" id="lockBtn" onclick="toggleLock()">🔓 Lock Day</button>
   </div>
 
   <!-- Grid area -->
@@ -1698,19 +1686,14 @@ function updateTotalsRow(){
     tT+=dbGet(me.code,curDay,p.code,'trf');
     tB+=bal(me.code,curDay,p.code);
   });
-  const dlh=getDayLabels()[curDay];
-  const fmt=(v,cls)=>`<span class="tot-num ${cls}">${v>0?v:v<0?v:'—'}</span><span class="tot-label">${dlh.abbr} ${dlh.date}</span>`;
-  const fmtWh=(v)=>`<span class="tot-num wh">${v>0?v:'—'}</span><span class="tot-label">Warehouse</span>`;
-  const fmtS=(v)=>`<span class="tot-num sold">${v>0?v:'—'}</span><span class="tot-label">Sales</span>`;
-  const fmtT=(v)=>`<span class="tot-num trf">${v>0?v:'—'}</span><span class="tot-label">Transfer</span>`;
-  const fmtB=(v)=>`<span class="tot-num ${v<0?'neg':v>0?'bal':'zero'}">${v}</span><span class="tot-label">Balance</span>`;
+  // Numbers only — no text labels
   const set=(id,html)=>{const el=document.getElementById(id);if(el)el.innerHTML=html;};
-  set('tot-open-th',`<span class="tot-num open">${tO>0?tO:'—'}</span><span class="tot-label">${dlh.abbr} ${dlh.date}</span>`);
-  set('tot-wh-th',  `<span class="tot-num wh">${tW>0?tW:'—'}</span><span class="tot-label">Warehouse</span>`);
-  set('tot-in-th',  `<span class="tot-num inn">${tI>0?tI:'—'}</span><span class="tot-label">Store In</span>`);
-  set('tot-sold-th',`<span class="tot-num sold">${tS>0?tS:'—'}</span><span class="tot-label">Sales</span>`);
-  set('tot-trf-th', `<span class="tot-num trf">${tT>0?tT:'—'}</span><span class="tot-label">Transfer</span>`);
-  set('tot-bal-th', `<span class="tot-num ${tB<0?'neg':tB>0?'bal':'zero'}">${tB}</span><span class="tot-label">Auto</span>`);
+  set('tot-open-th',`<span class="tot-num open">${tO||'—'}</span>`);
+  set('tot-wh-th',  `<span class="tot-num wh">${tW||'—'}</span>`);
+  set('tot-in-th',  `<span class="tot-num inn">${tI||'—'}</span>`);
+  set('tot-sold-th',`<span class="tot-num sold">${tS||'—'}</span>`);
+  set('tot-trf-th', `<span class="tot-num trf">${tT||'—'}</span>`);
+  set('tot-bal-th', `<span class="tot-num ${tB<0?'neg':tB>0?'bal':'zero'}">${tB||'—'}</span>`);
 }
 
 function toggleLock(){
