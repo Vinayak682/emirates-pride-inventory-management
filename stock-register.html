@@ -851,6 +851,8 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .exp-period-sub{font-size:9px;color:#444;font-family:var(--f-mono);display:block;margin-top:2px;}
 .exp-period-btn.sel .exp-period-label{color:var(--gold2);}
 
+.dd-chip-date{display:block;font-size:9px;color:#555;margin-top:1px;}
+.dd-chip{min-width:52px;text-align:center;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -910,17 +912,17 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
   <!-- Frozen Summary Bar — always visible -->
   <div class="summary-frozen" id="summaryFrozen">
-    <div class="sf-item"><span class="sf-label">Opening</span><span class="sf-label-ar">الافتتاح</span><span class="sf-val fo" id="sfOpen">0</span></div>
+    <div class="sf-item"><span class="sf-label">Opening<br><span class="sf-label-ar">الافتتاح</span></span><span class="sf-val fo" id="sfOpen">0</span></div>
     <div class="sf-div"></div>
-    <div class="sf-item"><span class="sf-label">WH Transfer</span><span class="sf-label-ar">مستودع</span><span class="sf-val wh" id="sfWh">0</span></div>
+    <div class="sf-item"><span class="sf-label">WH In<br><span class="sf-label-ar">مستودع</span></span><span class="sf-val wh" id="sfWh">0</span></div>
     <div class="sf-div"></div>
-    <div class="sf-item"><span class="sf-label">Store In</span><span class="sf-label-ar">نقل داخل</span><span class="sf-val inn" id="sfIn">0</span></div>
+    <div class="sf-item"><span class="sf-label">Store In<br><span class="sf-label-ar">نقل داخل</span></span><span class="sf-val inn" id="sfIn">0</span></div>
     <div class="sf-div"></div>
-    <div class="sf-item"><span class="sf-label">Sales</span><span class="sf-label-ar">المبيعات</span><span class="sf-val sold" id="sfSold">0</span></div>
+    <div class="sf-item"><span class="sf-label">Sales<br><span class="sf-label-ar">المبيعات</span></span><span class="sf-val sold" id="sfSold">0</span></div>
     <div class="sf-div"></div>
-    <div class="sf-item"><span class="sf-label">Transfer Out</span><span class="sf-label-ar">نقل خارج</span><span class="sf-val trf" id="sfTrf">0</span></div>
+    <div class="sf-item"><span class="sf-label">Sent Out<br><span class="sf-label-ar">نقل خارج</span></span><span class="sf-val trf" id="sfTrf">0</span></div>
     <div class="sf-div"></div>
-    <div class="sf-item"><span class="sf-label">Balance</span><span class="sf-label-ar">الرصيد</span><span class="sf-val bal" id="sfBal">0</span></div>
+    <div class="sf-item"><span class="sf-label">Balance<br><span class="sf-label-ar">الرصيد</span></span><span class="sf-val bal" id="sfBal">0</span></div>
     <div style="margin-left:auto;flex-shrink:0;">
       <button class="lock-btn" id="lockBtn" onclick="toggleLock()">🔓 Lock Day</button>
     </div>
@@ -960,7 +962,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   <div class="dash-topbar">
     <span style="font-size:18px;">📊</span>
     <div class="dash-title">
-      Daily Logbook — <span id="dashStoreName">—</span>
+      Daily Summary View — <span id="dashStoreName">—</span>
     </div>
     <button class="dash-close" onclick="closeDash()">✕ Close</button>
   </div>
@@ -1174,6 +1176,12 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
         <span class="np-field" id="npField">—</span>
       </div>
       <button class="np-x" onclick="closeNP()">✕</button>
+    </div>
+    <div id="npStoreRow" style="display:none;margin-bottom:10px;">
+      <div style="font-family:var(--f-mono);font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;" id="npStoreLabel">From Store</div>
+      <select id="npStoreSelect" style="width:100%;background:#252525;border:1px solid #3A3A3A;border-radius:8px;padding:9px 12px;font-family:var(--f-body);font-size:13px;color:#E0E0E0;outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;">
+        <option value="">— Select store —</option>
+      </select>
     </div>
     <div class="np-display">
       <span class="np-cur-label" id="npCurLabel">Current value</span>
@@ -1747,7 +1755,40 @@ function openNP(code,field){
   fEl.textContent=labels[field]||field;
   fEl.className='np-field '+cls[field];
   document.getElementById('npVal').textContent=npBuf||'0';
-  // Show current balance note
+
+  // Show store selector for Store IN and Transfer TO STORE
+  const storeRow=document.getElementById('npStoreRow');
+  const storeSel=document.getElementById('npStoreSelect');
+  const storeLbl=document.getElementById('npStoreLabel');
+  if(storeRow&&storeSel){
+    if(field==='inn'||field==='trf'){
+      storeRow.style.display='block';
+      storeLbl.textContent=field==='inn'?'📥 Transfer FROM which store?':'📤 Transfer TO which store?';
+      storeSel.innerHTML='<option value="">— Select store —</option>';
+      // Group by manager
+      const mgrs=[...new Set(STORES.filter(s=>s.code!==me.code&&s.code!=='MGR').map(s=>s.mgr||''))];
+      mgrs.forEach(mgr=>{
+        const og=document.createElement('optgroup');
+        og.label=mgr||'Other';
+        STORES.filter(s=>s.code!==me.code&&s.code!=='MGR'&&(s.mgr||'')===mgr).forEach(s=>{
+          const o=document.createElement('option');
+          o.value=s.code;
+          const sb=bal(s.code,curDay,code);
+          o.textContent=s.name+' ['+s.code+']'+(sb>0?' · '+sb+' units':'');
+          og.appendChild(o);
+        });
+        storeSel.appendChild(og);
+      });
+      // Pre-select from existing transfer log
+      const prev=getTransferLog().find(t=>t.day===curDay&&t.prodCode===code&&
+        (field==='inn'?t.toStore===me.code:t.fromStore===me.code));
+      if(prev) storeSel.value=field==='inn'?prev.fromStore:prev.toStore;
+    } else {
+      storeRow.style.display='none';
+    }
+  }
+
+  // Balance note
   const curO=dbGet(me.code,curDay,code,'open');
   const curI=dbGet(me.code,curDay,code,'inn');
   const curS=dbGet(me.code,curDay,code,'sold');
@@ -1803,6 +1844,31 @@ function confirmNP(){
   const scrollEl=document.getElementById('scrollArea');
   const st=scrollEl?scrollEl.scrollTop:0;
   dbSet(me.code,curDay,npCtx.code,npCtx.field,val);
+  // Log store selection for inn/trf fields
+  if((npCtx.field==='inn'||npCtx.field==='trf')&&val>0){
+    const sel=document.getElementById('npStoreSelect');
+    const sc=sel?sel.value:'';
+    if(sc){
+      const ss=STORES.find(s=>s.code===sc);
+      if(ss){
+        const now2=new Date();
+        const ts2=now2.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' '+now2.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+        const pp=PRODUCTS.find(x=>x.code===npCtx.code);
+        if(!db.transferLog) db.transferLog=[];
+        db.transferLog=db.transferLog.filter(t=>!(t.day===curDay&&t.prodCode===npCtx.code&&
+          (npCtx.field==='inn'?t.toStore===me.code:t.fromStore===me.code)));
+        db.transferLog.unshift({
+          id:Date.now(),ts:ts2,day:curDay,
+          fromStore:npCtx.field==='inn'?sc:me.code,
+          fromName:npCtx.field==='inn'?ss.name:me.name,
+          toStore:npCtx.field==='trf'?sc:me.code,
+          toName:npCtx.field==='trf'?ss.name:me.name,
+          prodCode:npCtx.code,prodName:pp?pp.en:npCtx.code,
+          prodAr:pp?pp.ar||'':'',qty:val,note:'via numpad'
+        });
+      }
+    }
+  }
   saveDB();
   closeNP();
   buildGrid();buildFooter();buildDayTabs();updateTotalsRow();
@@ -1962,40 +2028,44 @@ function renderProductMode(body){
   const list=document.createElement('div');
   list.className='avail-list';
 
-  let shownNoStock=false;
-  rows.forEach(({store,b,isMine})=>{
-    if(b<=0&&!shownNoStock){
-      const sep=document.createElement('div');
-      sep.className='avail-section-label no-stock';
-      sep.style.cssText='margin-top:12px;';
-      sep.textContent='⛔ No stock recorded';
-      list.appendChild(sep);
-      shownNoStock=true;
-    }
-    const cls=b>3?'in-stock':b>0?'low-stock':'no-stock';
-    const iconCls=b>3?'ok-icon':b>0?'low-icon':'zero-icon';
-    const qCls=b>3?'ok':b>0?'low':'zero';
-    const icon=b>3?'🟢':b>0?'🟡':'⚪';
-    const row=document.createElement('div');
-    row.className='avail-row '+cls+(isMine?' is-mine':'');
-    row.innerHTML=`
-      <div class="avail-store-icon ${iconCls}">${icon}</div>
-      <div class="avail-store-info">
-        <div class="avail-store-name ${b>0?'ok':'zero'}">
-          ${store.name}${isMine?'<span class="avail-mine-tag">YOUR STORE</span>':''}
-        </div>
-        <div class="avail-city">${store.city} · ${store.code}</div>
-        ${b>0&&!isMine?`<div class="avail-action-hint ${b<=3?'low-hint':''}">
-          ${b<=3?'⚠ Low stock —':''}Tap to request transfer
-        </div>`:''}
-      </div>
-      <div class="avail-qty-badge ${qCls}">
-        <span>${b>0?b:'—'}</span>
-        ${b>0?'<span class="avail-qty-units">UNITS</span>':''}
-      </div>`;
-
-    // Stock visibility only — transfer tap removed
-    list.appendChild(row);
+  // Group by Area Manager → Region
+  const mgrs=[...new Set(rows.map(r=>r.store.mgr||''))];
+  mgrs.forEach(mgr=>{
+    const mgrRows=rows.filter(r=>(r.store.mgr||'')===mgr);
+    const mgrTotal=mgrRows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
+    const mgrHdr=document.createElement('div');
+    mgrHdr.style.cssText='padding:8px 12px 4px;font-family:var(--f-mono);font-size:9px;font-weight:700;color:var(--gold2);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #1E1E1E;display:flex;align-items:center;justify-content:space-between;margin-top:6px;';
+    mgrHdr.innerHTML=`<span>👤 ${mgr||'Unknown'}</span><span style="color:#444;font-size:8px;">${mgrTotal} units across region</span>`;
+    list.appendChild(mgrHdr);
+    const regions=[...new Set(mgrRows.map(r=>r.store.region||''))];
+    regions.forEach(region=>{
+      const regRows=mgrRows.filter(r=>(r.store.region||'')===region);
+      const regTotal=regRows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
+      const regHdr=document.createElement('div');
+      regHdr.style.cssText='padding:4px 12px 2px;font-size:9px;color:#444;font-family:var(--f-mono);';
+      regHdr.innerHTML=`▸ ${region} <span style="color:#333;">(${regTotal} units)</span>`;
+      list.appendChild(regHdr);
+      regRows.forEach(({store,b,isMine})=>{
+        const cls=b>3?'in-stock':b>0?'low-stock':'no-stock';
+        const iconCls=b>3?'ok-icon':b>0?'low-icon':'zero-icon';
+        const qCls=b>3?'ok':b>0?'low':'zero';
+        const icon=b>3?'🟢':b>0?'🟡':'⚪';
+        const row=document.createElement('div');
+        row.className='avail-row '+cls+(isMine?' is-mine':'');
+        row.innerHTML=`
+          <div class="avail-store-icon ${iconCls}">${icon}</div>
+          <div class="avail-store-info">
+            <div class="avail-store-name ${b>0?'ok':'zero'}">${store.name}${isMine?'<span class="avail-mine-tag">YOUR STORE</span>':''}</div>
+            <div class="avail-city">${store.city} · ${store.code}</div>
+            ${b<=3&&b>0?`<div class="avail-action-hint low-hint">⚠ Low stock</div>`:''}
+          </div>
+          <div class="avail-qty-badge ${qCls}">
+            <span>${b>0?b:'—'}</span>
+            ${b>0?'<span class="avail-qty-units">UNITS</span>':''}
+          </div>`;
+        list.appendChild(row);
+      });
+    });
   });
 
   wrap.appendChild(list);
@@ -2270,7 +2340,7 @@ let dashDay = 0;
 
 function openDash(){
   if(!me) return;
-  dashDay = curDay;
+  dashDay = typeof curDay!=='undefined'?curDay:DAY_PAST;
   document.getElementById('dashStoreName').textContent = me.name;
   document.getElementById('dashPanel').style.display = 'flex';
   buildDashDayRow();
@@ -2283,31 +2353,31 @@ function closeDash(){
 function buildDashDayRow(){
   const bar = document.getElementById('dashDayRow');
   bar.innerHTML = '';
-  DAYS.forEach((d,i) => {
+  const labels = getDayLabels();
+  labels.forEach((dl, i) => {
     const chip = document.createElement('div');
     const locked = isLocked(me.code, i);
     const hasData = PRODUCTS.some(p =>
-      dbGet(me.code,i,p.code,'out')>0 ||
-      dbGet(me.code,i,p.code,'wh')>0 ||
-      dbGet(me.code,i,p.code,'inn')>0
+      (dbGet(me.code,i,p.code,'sold')||0)>0 ||
+      (dbGet(me.code,i,p.code,'wh')||0)>0 ||
+      (dbGet(me.code,i,p.code,'inn')||0)>0 ||
+      (dbGet(me.code,i,p.code,'trf')||0)>0
     );
+    const isToday = (i === DAY_PAST);
     chip.className = 'dd-chip' +
       (i===dashDay?' active':'') +
       (locked?' locked':'') +
       (!locked&&hasData?' has-data':'');
-    const jsDay=new Date().getDay();
-    const todayIdx=jsDay===0?6:jsDay-1;
-    const isToday=(i===todayIdx);
-    chip.innerHTML = DAY_FULL[i].slice(0,3) +
-      (isToday?' <span style="font-size:8px;background:var(--gold);color:#000;padding:1px 4px;border-radius:3px;margin-left:2px;">TODAY</span>':'') +
-      (locked?' <span style="font-size:9px;">🔒</span>':'');
-    chip.onclick = () => {
-      dashDay = i;
-      buildDashDayRow();
-      renderDash();
-    };
+    chip.innerHTML =
+      `<span style="${isToday?'font-weight:800;color:var(--gold);':''}">${dl.abbr}</span>` +
+      `<span class="dd-chip-date">${dl.date}</span>` +
+      (isToday?`<span style="display:block;font-size:7px;background:var(--gold);color:#000;border-radius:3px;padding:0 3px;margin-top:1px;font-weight:700;">TODAY</span>`:'') +
+      (locked?` <span style="font-size:9px;">🔒</span>`:'') +
+      (hasData&&!locked?`<span class="data-dot" style="margin:1px auto 0;"></span>`:'');
+    chip.onclick = () => { dashDay = i; buildDashDayRow(); renderDash(); };
     bar.appendChild(chip);
   });
+  setTimeout(()=>{const a=bar.querySelector('.dd-chip.active');if(a)a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});},60);
 }
 
 function renderDash(){
@@ -2359,30 +2429,7 @@ function renderDash(){
   body.innerHTML = '';
 
   // KPI row
-  const kpiDiv = document.createElement('div');
-  kpiDiv.className = 'dash-kpi-row';
-  kpiDiv.innerHTML = `
-    <div class="kpi-card">
-      <span class="kpi-val kv-out">${totSold}</span>
-      <span class="kpi-label">Sold to Customer</span>
-    </div>
-    <div class="kpi-card">
-      <span class="kpi-val" style="color:#BB88DD;">${totTrf}</span>
-      <span class="kpi-label">Sent to Store</span>
-    </div>
-    <div class="kpi-card">
-      <span class="kpi-val kv-wh">${totWh}</span>
-      <span class="kpi-label">WH Received</span>
-    </div>
-    <div class="kpi-card">
-      <span class="kpi-val kv-in">${totIn}</span>
-      <span class="kpi-label">Store In</span>
-    </div>
-    <div class="kpi-card">
-      <span class="kpi-val kv-bal">${totBal}</span>
-      <span class="kpi-label">Balance</span>
-    </div>`;
-  body.appendChild(kpiDiv);
+  // KPI cards removed per request
 
   // Day status badge
   const statusDiv = document.createElement('div');
