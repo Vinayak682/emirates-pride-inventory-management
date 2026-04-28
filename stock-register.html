@@ -847,6 +847,90 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 .dd-chip-date{display:block;font-size:9px;color:#555;margin-top:1px;}
 .dd-chip{min-width:52px;text-align:center;flex-shrink:0;}
+
+/* ── DASHBOARD TABS ── */
+.dash-tab-bar{
+  display:flex;flex-shrink:0;
+  border-bottom:1px solid #1E1E1E;background:#111;
+}
+.dash-tab{
+  flex:1;text-align:center;padding:10px 8px;
+  font-family:var(--f-mono);font-size:11px;font-weight:600;
+  color:#444;cursor:pointer;letter-spacing:0.5px;
+  border-bottom:2px solid transparent;transition:all 0.15s;
+  text-transform:uppercase;
+}
+.dash-tab:active{background:#1A1A1A;}
+.dash-tab.active{color:var(--gold2);border-bottom:2px solid var(--gold);}
+
+/* ── TRACKER ── */
+.tracker-sku-header{
+  background:#111;border:1px solid #1E1E1E;border-radius:10px;
+  padding:12px 14px;margin:12px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.tracker-sku-name{font-size:14px;font-weight:700;color:#E8E0D0;}
+.tracker-sku-ar{font-family:var(--f-ar);font-size:11px;color:#555;direction:rtl;}
+.tracker-sku-code{font-family:var(--f-mono);font-size:10px;color:#444;margin-top:2px;}
+.tracker-net-badge{text-align:right;flex-shrink:0;}
+.tracker-net-val{font-family:var(--f-mono);font-size:20px;font-weight:800;}
+.tracker-net-label{font-size:8px;color:#444;font-family:var(--f-mono);text-transform:uppercase;}
+
+.tracker-day-block{margin:0 14px 16px;}
+.tracker-day-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 10px;background:#161616;border-radius:6px 6px 0 0;
+  border:1px solid #222;border-bottom:none;
+}
+.tracker-day-date{font-family:var(--f-mono);font-size:10px;font-weight:700;color:#CCC;}
+.tracker-day-lock{font-size:9px;color:#4A8A4A;}
+.tracker-day-bal{font-family:var(--f-mono);font-size:11px;font-weight:700;}
+.tracker-events{
+  border:1px solid #1E1E1E;border-radius:0 0 6px 6px;overflow:hidden;
+}
+.tracker-event{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-bottom:1px solid #111;
+}
+.tracker-event:last-child{border-bottom:none;}
+.tracker-event.ev-received{background:#0A1A0A;}
+.tracker-event.ev-wh{background:#0A160A;}
+.tracker-event.ev-sold{background:#1A0A0A;}
+.tracker-event.ev-sent{background:#100A1A;}
+.tracker-event.ev-opening{background:#0A0A1A;}
+.tracker-ev-icon{font-size:14px;flex-shrink:0;width:22px;text-align:center;}
+.tracker-ev-body{flex:1;}
+.tracker-ev-type{font-size:11px;font-weight:700;color:#CCC;}
+.tracker-ev-detail{font-size:9px;color:#444;font-family:var(--f-mono);margin-top:1px;}
+.tracker-ev-qty{font-family:var(--f-mono);font-size:14px;font-weight:800;flex-shrink:0;}
+.tracker-ev-qty.pos{color:#6FCF97;}
+.tracker-ev-qty.neg{color:#E87070;}
+.tracker-ev-qty.neu{color:var(--gold2);}
+.tracker-no-activity{
+  padding:8px 10px;font-size:10px;color:#2A2A2A;
+  font-family:var(--f-mono);font-style:italic;
+}
+.tracker-summary-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
+  margin:12px 14px;padding:10px;
+  background:#0D0D0D;border:1px solid #1E1E1E;border-radius:8px;
+}
+.tracker-sum-item{text-align:center;}
+.tracker-sum-val{font-family:var(--f-mono);font-size:16px;font-weight:800;display:block;}
+.tracker-sum-label{font-size:8px;color:#444;text-transform:uppercase;letter-spacing:0.6px;margin-top:2px;}
+
+/* ── DAILY VIEW improvements ── */
+.dash-day-kpi{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  padding:10px 14px;background:#0D0D0D;border-bottom:1px solid #1A1A1A;flex-shrink:0;
+}
+.dkpi{text-align:center;padding:6px 4px;background:#111;border-radius:6px;border:1px solid #1E1E1E;}
+.dkpi-val{font-family:var(--f-mono);font-size:18px;font-weight:800;display:block;}
+.dkpi-val.sold{color:#E87070;} .dkpi-val.inn{color:#5DBEA3;}
+.dkpi-val.wh{color:#7FC860;} .dkpi-val.trf{color:#BB88DD;}
+.dkpi-val.bal{color:var(--gold2);} .dkpi-val.open{color:#6FA8DC;}
+.dkpi-label{font-size:8px;color:#444;text-transform:uppercase;font-family:var(--f-mono);margin-top:2px;letter-spacing:0.5px;}
+
 </style>
 </head>
 <body>
@@ -955,23 +1039,47 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
     <button class="dash-close" onclick="closeDash()">✕ Close</button>
   </div>
 
-  <!-- Day selector -->
-  <div class="dash-day-row" id="dashDayRow"></div>
+  <!-- Tab bar -->
+  <div class="dash-tab-bar" id="dashTabBar">
+    <div class="dash-tab active" id="dtab-daily" onclick="switchDashTab('daily')">📅 Daily View</div>
+    <div class="dash-tab" id="dtab-tracker" onclick="switchDashTab('tracker')">🔍 SKU Tracker</div>
+  </div>
 
-  <!-- Scrollable body -->
-  <div class="dash-body" id="dashBody"></div>
+  <!-- DAILY VIEW panel -->
+  <div id="dashDailyPanel" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+    <!-- Day selector -->
+    <div class="dash-day-row" id="dashDayRow"></div>
+    <!-- Scrollable body -->
+    <div class="dash-body" id="dashBody"></div>
+    <!-- Download bar -->
+    <div class="dash-dl-bar">
+      <button class="dl-btn" id="dlDaySales" onclick="openExportDay()">📥 Day Report</button>
+      <button class="dl-btn primary" id="dlDayFull" onclick="openExportWeek()">📥 Week Report</button>
+      <button class="dl-btn mgr" id="dlWeek" onclick="openExport()">📥 All Exports</button>
+    </div>
+  </div>
 
-  <!-- Download bar -->
-  <div class="dash-dl-bar">
-    <button class="dl-btn" id="dlDaySales" onclick="openExportDay()">
-      📥 Day Report
-    </button>
-    <button class="dl-btn primary" id="dlDayFull" onclick="openExportWeek()">
-      📥 Week Report
-    </button>
-    <button class="dl-btn mgr" id="dlWeek" onclick="openExport()">
-      📥 All Exports
-    </button>
+  <!-- SKU TRACKER panel -->
+  <div id="dashTrackerPanel" style="display:none;flex-direction:column;flex:1;min-height:0;">
+    <div style="padding:12px 14px;border-bottom:1px solid #1E1E1E;flex-shrink:0;">
+      <div style="font-family:var(--f-mono);font-size:9px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+        SKU Movement Tracker — Past 15 Days
+      </div>
+      <select id="trackerSkuSelect" onchange="renderTracker()"
+        style="width:100%;background:#1A1A1A;border:1px solid #2A2A2A;border-radius:8px;
+        padding:10px 12px;font-family:var(--f-body);font-size:13px;color:#E0E0E0;
+        outline:none;appearance:none;-webkit-appearance:none;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23C9A44E' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+        background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;">
+        <option value="">— Select a SKU to track —</option>
+      </select>
+    </div>
+    <div class="dash-body" id="trackerBody">
+      <div class="dash-empty" style="margin-top:40px;">
+        <span class="dash-empty-icon">🔍</span>
+        <div style="color:#333;font-size:13px;">Select a SKU above to see its full movement history</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2365,111 +2473,116 @@ function buildDashDayRow(){
 
 function renderDash(){
   const body = document.getElementById('dashBody');
+  if(!body||!me) return;
+  const dl = getDayLabels()[dashDay];
   const locked = isLocked(me.code, dashDay);
 
-  // Enable/disable download buttons
-  document.getElementById('dlDaySales').disabled = !locked;
-  document.getElementById('dlDayFull').disabled = !locked;
+  // Enable/disable download buttons based on lock
+  ['dlDaySales','dlDayFull'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=!locked;});
 
-  // ── KPI STRIP ──
-  let totSold=0, totTrf=0, totIn=0, totWh=0;
-  PRODUCTS.forEach(p => {
-    totSold += dbGet(me.code,dashDay,p.code,'sold');
-    totTrf  += dbGet(me.code,dashDay,p.code,'trf');
-    totIn   += dbGet(me.code,dashDay,p.code,'inn');
-    totWh   += dbGet(me.code,dashDay,p.code,'wh');
+  // ── TOTALS FOR THIS DAY ──
+  let totO=0,totSold=0,totTrf=0,totIn=0,totWh=0,totBal=0;
+  PRODUCTS.forEach(p=>{
+    totO    +=dbGet(me.code,dashDay,p.code,'open');
+    totWh   +=dbGet(me.code,dashDay,p.code,'wh');
+    totIn   +=dbGet(me.code,dashDay,p.code,'inn');
+    totSold +=dbGet(me.code,dashDay,p.code,'sold');
+    totTrf  +=dbGet(me.code,dashDay,p.code,'trf');
+    totBal  +=bal(me.code,dashDay,p.code);
   });
-  const totBal = PRODUCTS.reduce((s,p)=>s+bal(me.code,dashDay,p.code),0);
 
-  // ── BUILD ACTIVITY LOG ──
-  // Collect all movements for this day
+  // ── ACTIVITIES for THIS day only (not leaking to other days) ──
   const activities = [];
-
-  // Products with OUT (sold/transferred)
-  PRODUCTS.forEach(p => {
-    const o = dbGet(me.code,dashDay,p.code,'open');
-    const w = dbGet(me.code,dashDay,p.code,'wh');
-    const i = dbGet(me.code,dashDay,p.code,'inn');
-    const s = dbGet(me.code,dashDay,p.code,'sold');
-    const t = dbGet(me.code,dashDay,p.code,'trf');
-    const b = bal(me.code,dashDay,p.code);
+  PRODUCTS.forEach(p=>{
+    const o=dbGet(me.code,dashDay,p.code,'open');
+    const w=dbGet(me.code,dashDay,p.code,'wh');
+    const i=dbGet(me.code,dashDay,p.code,'inn');
+    const s=dbGet(me.code,dashDay,p.code,'sold');
+    const t=dbGet(me.code,dashDay,p.code,'trf');
+    const b=bal(me.code,dashDay,p.code);
+    // Include if ANY movement on THIS day
     if(s>0) activities.push({type:'sold',p,o,w,i,s,t,b});
     else if(t>0) activities.push({type:'trf',p,o,w,i,s,t,b});
     else if(w>0) activities.push({type:'wh',p,o,w,i,s,t,b});
-    else if(i>0) activities.push({type:'in',p,o,w,i,s,t,b});
+    else if(i>0) activities.push({type:'inn',p,o,w,i,s,t,b});
   });
-  // Sort: out first (highest qty), then wh, then in
-  activities.sort((a,b2) => {
-    const order={sold:0,trf:1,wh:2,in:3};
+  activities.sort((a,b2)=>{
+    const order={sold:0,trf:1,wh:2,inn:3};
     if(order[a.type]!==order[b2.type]) return order[a.type]-order[b2.type];
     return (b2.s||0)-(a.s||0);
   });
 
-  // Transfer log for this day
-  const dayTransfers = getTransferLog().filter(t => t.day===dashDay);
+  const dayTransfers = getTransferLog().filter(t=>t.day===dashDay);
 
-  // ── RENDER HTML ──
+  // ── CLEAR + BUILD ──
   body.innerHTML = '';
 
-  // KPI row
-  // KPI cards removed per request
+  // ── KPI STRIP ──
+  const kpiEl = document.createElement('div');
+  kpiEl.className = 'dash-day-kpi';
+  kpiEl.innerHTML = `
+    <div class="dkpi"><span class="dkpi-val open">${totO||'—'}</span><div class="dkpi-label">Opening</div></div>
+    <div class="dkpi"><span class="dkpi-val wh">${totWh||'—'}</span><div class="dkpi-label">WH In</div></div>
+    <div class="dkpi"><span class="dkpi-val inn">${totIn||'—'}</span><div class="dkpi-label">Store In</div></div>
+    <div class="dkpi"><span class="dkpi-val sold">${totSold||'—'}</span><div class="dkpi-label">Sales</div></div>
+    <div class="dkpi"><span class="dkpi-val trf">${totTrf||'—'}</span><div class="dkpi-label">Sent Out</div></div>
+    <div class="dkpi"><span class="dkpi-val bal">${totBal}</span><div class="dkpi-label">Balance</div></div>`;
+  body.appendChild(kpiEl);
 
-  // Day status badge
+  // ── STATUS BADGE ──
   const statusDiv = document.createElement('div');
-  statusDiv.style.cssText = 'display:flex;align-items:center;gap:8px;';
+  statusDiv.style.cssText = 'padding:8px 14px;display:flex;align-items:center;gap:8px;';
   statusDiv.innerHTML = locked
-    ? `<span style="background:#1A3A1A;border:1px solid #2A4A2A;color:#6FCF97;font-size:11px;font-family:var(--f-mono);padding:5px 12px;border-radius:6px;">🔒 ${DAY_FULL[dashDay]} — Locked & Saved</span>`
-    : `<span style="background:#2A1A00;border:1px solid #3A2A00;color:#E8C97A;font-size:11px;font-family:var(--f-mono);padding:5px 12px;border-radius:6px;">⚠ ${DAY_FULL[dashDay]} — Not yet locked</span>`;
+    ? `<span style="background:#1A3A1A;border:1px solid #2A4A2A;color:#6FCF97;font-size:11px;font-family:var(--f-mono);padding:5px 12px;border-radius:6px;">🔒 ${dl.full} ${dl.date} — Locked & Saved</span>`
+    : `<span style="background:#2A1A00;border:1px solid #3A2A00;color:#E8C97A;font-size:11px;font-family:var(--f-mono);padding:5px 12px;border-radius:6px;">⚠ ${dl.full} ${dl.date} — Not yet locked</span>`;
   body.appendChild(statusDiv);
 
   // ── ACTIVITY LOG ──
   const logSection = document.createElement('div');
   const logTitle = document.createElement('div');
   logTitle.className = 'dash-section-title';
-  logTitle.textContent = '📋 Activity Log — ' + DAY_FULL[dashDay];
+  logTitle.innerHTML = `📋 Activity Log — ${dl.full} ${dl.date} <span style="color:#444;font-size:9px;font-weight:400;">${activities.length+dayTransfers.length} events</span>`;
   logSection.appendChild(logTitle);
 
   if(!activities.length && !dayTransfers.length){
-    logSection.innerHTML += '<div class="dash-empty"><span class="dash-empty-icon">📭</span><div style="color:#333;font-size:13px;">No activity recorded for '+DAY_FULL[dashDay]+'</div></div>';
+    logSection.innerHTML += `<div class="dash-empty"><span class="dash-empty-icon">📭</span><div style="color:#333;font-size:13px;">No activity recorded for ${dl.full} ${dl.date}</div></div>`;
   } else {
     const logDiv = document.createElement('div');
     logDiv.className = 'dash-log';
 
-    // Transfer movements first
-    dayTransfers.forEach(t => {
+    // Transfer movements
+    dayTransfers.forEach(tr=>{
       const row = document.createElement('div');
       row.className = 'dl-row';
-      const isOut = t.fromStore===me.code;
+      const isOut = tr.fromStore===me.code;
       row.innerHTML = `
         <div class="dl-icon tr">${isOut?'📤':'📥'}</div>
         <div class="dl-body">
-          <div class="dl-name">${t.prodName}</div>
-          ${t.prodAr?`<div class="dl-name-ar">${t.prodAr}</div>`:''}
-          <div class="dl-meta">${isOut?'→ Sent to '+t.toName:'← Received from '+t.fromName} · ${t.ts}</div>
-          ${t.note?`<div class="dl-meta" style="color:#4A4A3A;font-style:italic;">${t.note}</div>`:''}
+          <div class="dl-name">${tr.prodName}${tr.prodAr?` <span class="dl-name-ar">${tr.prodAr}</span>`:''}</div>
+          <div class="dl-meta">${isOut?'→ Sent to <strong>'+tr.toName+'</strong>':'← Received from <strong>'+tr.fromName+'</strong>'} · ${tr.ts}</div>
         </div>
         <div class="dl-right">
-          <div class="dl-qty ${isOut?'neg':'pos'}">${isOut?'-':'+'}${t.qty}</div>
-          <div class="dl-bal">${t.prodCode}</div>
+          <div class="dl-qty ${isOut?'neg':'pos'}">${isOut?'-':'+'}${tr.qty}</div>
+          <div class="dl-bal">${tr.prodCode}</div>
         </div>`;
       logDiv.appendChild(row);
     });
 
-    // Product activities
-    activities.forEach(({type,p,o,w,i,x,b}) => {
+    // Product movements — FIXED: use correct field names from destructuring
+    activities.forEach(({type,p,o,w,i,s,t,b})=>{
       const row = document.createElement('div');
       row.className = 'dl-row';
-      const icons = {sold:'💰',trf:'📤',wh:'🏭',in:'🔄'};
-      const labels = {sold:'Sold to Customer',trf:'Sent to Another Store',wh:'Warehouse Received',in:'Store Transfer In'};
-      const qty = type==='sold'?a.s : type==='trf'?a.t : type==='wh'?a.w : a.i;
+      const icons = {sold:'💰',trf:'📤',wh:'🏭',inn:'🔄'};
+      const labels = {sold:'Sold to Customer',trf:'Sent to Another Store',wh:'Warehouse Transfer Received',inn:'Store Transfer Received'};
+      // FIXED: correct qty lookup per type
+      const qty = type==='sold'?s : type==='trf'?t : type==='wh'?w : i;
       const sign = (type==='sold'||type==='trf')?'-':'+';
       const qcls = (type==='sold'||type==='trf')?'neg':'pos';
       row.innerHTML = `
         <div class="dl-icon ${type}">${icons[type]}</div>
         <div class="dl-body">
-          <div class="dl-name">${p.en}</div>
-          ${p.ar?`<div class="dl-name-ar">${p.ar}</div>`:''}
-          <div class="dl-meta">${labels[type]} · Opening was ${o}</div>
+          <div class="dl-name">${p.en}${p.ar?` <span class="dl-name-ar">${p.ar}</span>`:''}</div>
+          <div class="dl-meta">${labels[type]} · Open: ${o}${type==='wh'?' · WH+'+w:type==='inn'?' · In+'+i:''}</div>
         </div>
         <div class="dl-right">
           <div class="dl-qty ${qcls}">${sign}${qty}</div>
@@ -2478,15 +2591,15 @@ function renderDash(){
       logDiv.appendChild(row);
     });
 
-    // Lock event
     if(locked){
+      const nextDl = getDayLabels()[dashDay+1];
       const lockRow = document.createElement('div');
       lockRow.className = 'dl-row';
       lockRow.innerHTML = `
         <div class="dl-icon lock">🔒</div>
         <div class="dl-body">
-          <div class="dl-name" style="color:#4A8A4A;">${DAY_FULL[dashDay]} locked & saved</div>
-          <div class="dl-meta">Closing balance carried to ${DAYS[(dashDay+1)%7]} opening</div>
+          <div class="dl-name" style="color:#4A8A4A;">${dl.full} ${dl.date} locked & saved</div>
+          <div class="dl-meta">Closing balance ${totBal} carried to ${nextDl?nextDl.full+' '+nextDl.date:'next day'} opening</div>
         </div>
         <div class="dl-right"><div class="dl-qty neu">${totBal}</div><div class="dl-bal">Closing</div></div>`;
       logDiv.appendChild(lockRow);
@@ -2496,9 +2609,15 @@ function renderDash(){
   }
   body.appendChild(logSection);
 
-  // ── SKU SNAPSHOT ──
-  // Only show products with any movement that day
-  const activeProds = PRODUCTS.filter(p =>
+  // ── SKU SNAPSHOT — only products with movement ON THIS DAY ──
+  const activeProds = PRODUCTS.filter(p=>
+    dbGet(me.code,dashDay,p.code,'wh')>0 ||
+    dbGet(me.code,dashDay,p.code,'inn')>0 ||
+    dbGet(me.code,dashDay,p.code,'sold')>0 ||
+    dbGet(me.code,dashDay,p.code,'trf')>0
+  );
+  // Also include products with opening stock (for complete picture)
+  const snapshotProds = PRODUCTS.filter(p=>
     dbGet(me.code,dashDay,p.code,'open')>0 ||
     dbGet(me.code,dashDay,p.code,'wh')>0 ||
     dbGet(me.code,dashDay,p.code,'inn')>0 ||
@@ -2506,49 +2625,302 @@ function renderDash(){
     dbGet(me.code,dashDay,p.code,'trf')>0
   );
 
-  if(activeProds.length > 0){
+  if(snapshotProds.length>0){
     const snapSection = document.createElement('div');
-    const snapTitle = document.createElement('div');
-    snapTitle.className = 'dash-section-title';
-    snapTitle.textContent = '📦 SKU Snapshot — ' + activeProds.length + ' products';
-    snapSection.appendChild(snapTitle);
+    const activeCount = activeProds.length;
+    snapSection.innerHTML = `<div class="dash-section-title">📦 SKU Snapshot — ${snapshotProds.length} products <span style="color:#444;font-size:9px;font-weight:400;">${activeCount} with movement today</span></div>`;
 
     const table = document.createElement('table');
     table.className = 'dash-sku-table';
     table.innerHTML = `<thead><tr>
-      <th style="text-align:left;min-width:140px;">Product</th>
-      <th>Open</th><th>WH</th><th>In</th><th>Sold</th><th>Sent</th><th>Balance</th>
+      <th style="text-align:left;min-width:160px;">Product</th>
+      <th style="color:#6FA8DC;">OPEN</th>
+      <th style="color:#7FC860;">WH</th>
+      <th style="color:#5DBEA3;">IN</th>
+      <th style="color:#E87070;">SOLD</th>
+      <th style="color:#BB88DD;">SENT</th>
+      <th style="color:var(--gold2);">BAL</th>
     </tr></thead>`;
     const tbody = document.createElement('tbody');
 
-    activeProds.forEach(p => {
+    snapshotProds.forEach(p=>{
       const o=dbGet(me.code,dashDay,p.code,'open');
       const w=dbGet(me.code,dashDay,p.code,'wh');
       const i=dbGet(me.code,dashDay,p.code,'inn');
-      const s2=dbGet(me.code,dashDay,p.code,'sold');
-      const t2=dbGet(me.code,dashDay,p.code,'trf');
+      const s=dbGet(me.code,dashDay,p.code,'sold');
+      const t=dbGet(me.code,dashDay,p.code,'trf');
       const b=bal(me.code,dashDay,p.code);
       const bCls=b<0?'bal-neg':b===0?'zero':b<=3?'low':'ok';
+      const hasMove=(w>0||i>0||s>0||t>0);
       const tr=document.createElement('tr');
+      if(hasMove) tr.style.borderLeft='2px solid #2A4A2A';
       tr.innerHTML=`
         <td class="dst-name">
           <div class="dst-name-en">${p.en}</div>
           ${p.ar?`<div class="dst-name-ar">${p.ar}</div>`:''}
-          <div class="dst-code">${p.code}</div>
+          <div class="dst-code">${p.code}${hasMove?' <span style="color:#4A8A4A;font-size:7px;">● MOVED</span>':''}</div>
         </td>
-        <td class="dst-num" style="color:#555;">${o||'—'}</td>
+        <td class="dst-num" style="color:#6FA8DC;">${o||'—'}</td>
         <td class="dst-num wh">${w||'—'}</td>
         <td class="dst-num inn">${i||'—'}</td>
-        <td class="dst-num moved">${s2||'—'}</td>
-        <td class="dst-num" style="color:var(--c-trf-t);">${t2||'—'}</td>
+        <td class="dst-num moved">${s||'—'}</td>
+        <td class="dst-num" style="color:var(--c-trf-t);">${t||'—'}</td>
         <td class="dst-num ${bCls}">${b}</td>`;
       tbody.appendChild(tr);
     });
+
+    // Totals row
+    const totRow=document.createElement('tr');
+    totRow.style.cssText='background:#1A1A1A;font-weight:700;border-top:2px solid #333;';
+    const tO2=snapshotProds.reduce((a,p)=>a+dbGet(me.code,dashDay,p.code,'open'),0);
+    const tW2=snapshotProds.reduce((a,p)=>a+dbGet(me.code,dashDay,p.code,'wh'),0);
+    const tI2=snapshotProds.reduce((a,p)=>a+dbGet(me.code,dashDay,p.code,'inn'),0);
+    const tS2=snapshotProds.reduce((a,p)=>a+dbGet(me.code,dashDay,p.code,'sold'),0);
+    const tT2=snapshotProds.reduce((a,p)=>a+dbGet(me.code,dashDay,p.code,'trf'),0);
+    const tB2=snapshotProds.reduce((a,p)=>a+bal(me.code,dashDay,p.code),0);
+    totRow.innerHTML=`
+      <td class="dst-name" style="color:#666;font-family:var(--f-mono);font-size:9px;">TOTALS</td>
+      <td class="dst-num" style="color:#6FA8DC;font-weight:800;">${tO2}</td>
+      <td class="dst-num wh" style="font-weight:800;">${tW2||'—'}</td>
+      <td class="dst-num inn" style="font-weight:800;">${tI2||'—'}</td>
+      <td class="dst-num moved" style="font-weight:800;">${tS2||'—'}</td>
+      <td class="dst-num" style="color:var(--c-trf-t);font-weight:800;">${tT2||'—'}</td>
+      <td class="dst-num ok" style="font-weight:800;">${tB2}</td>`;
+    tbody.appendChild(totRow);
     table.appendChild(tbody);
     snapSection.appendChild(table);
     body.appendChild(snapSection);
   }
 }
+
+// ── SWITCH DASHBOARD TABS ──
+function switchDashTab(tab){
+  document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('dtab-'+tab).classList.add('active');
+  document.getElementById('dashDailyPanel').style.display=tab==='daily'?'flex':'none';
+  document.getElementById('dashTrackerPanel').style.display=tab==='tracker'?'flex':'none';
+  if(tab==='tracker') populateTrackerDropdown();
+}
+
+// ── POPULATE TRACKER DROPDOWN with active SKUs from last 15 days ──
+function populateTrackerDropdown(){
+  const sel=document.getElementById('trackerSkuSelect');
+  if(!sel||!me) return;
+  const prev=sel.value;
+  sel.innerHTML='<option value="">— Select a SKU to track —</option>';
+
+  // Find all SKUs with any movement in the 15-day window
+  const activeCodes=new Set();
+  for(let di=0;di<DAY_WINDOW;di++){
+    PRODUCTS.forEach(p=>{
+      if(dbGet(me.code,di,p.code,'open')>0||
+         dbGet(me.code,di,p.code,'wh')>0||
+         dbGet(me.code,di,p.code,'inn')>0||
+         dbGet(me.code,di,p.code,'sold')>0||
+         dbGet(me.code,di,p.code,'trf')>0){
+        activeCodes.add(p.code);
+      }
+    });
+  }
+
+  if(!activeCodes.size){
+    sel.innerHTML='<option value="">No SKU movements in the last 15 days</option>';
+    return;
+  }
+
+  // Group by category
+  const catMap={};
+  PRODUCTS.filter(p=>activeCodes.has(p.code)).forEach(p=>{
+    if(!catMap[p.cat]) catMap[p.cat]=[];
+    // Calculate total sold across all days for ranking
+    const totalSold=Array.from({length:DAY_WINDOW},(_,di)=>dbGet(me.code,di,p.code,'sold')).reduce((a,b)=>a+b,0);
+    catMap[p.cat].push({p,totalSold});
+  });
+
+  Object.entries(catMap).sort(([a],[b])=>a.localeCompare(b)).forEach(([cat,items])=>{
+    const og=document.createElement('optgroup');
+    og.label=cat;
+    items.sort((a,b2)=>b2.totalSold-a.totalSold).forEach(({p,totalSold})=>{
+      const o=document.createElement('option');
+      o.value=p.code;
+      o.textContent=p.en+(p.ar?' | '+p.ar:'')+' ['+p.code+']'+(totalSold>0?' · '+totalSold+' sold':'');
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+
+  if(prev&&activeCodes.has(prev)) sel.value=prev;
+}
+
+// ── RENDER TRACKER for selected SKU ──
+function renderTracker(){
+  const sel=document.getElementById('trackerSkuSelect');
+  const body=document.getElementById('trackerBody');
+  if(!sel||!body||!me) return;
+  const code=sel.value;
+  if(!code){
+    body.innerHTML='<div class="dash-empty" style="margin-top:40px;"><span class="dash-empty-icon">🔍</span><div style="color:#333;font-size:13px;">Select a SKU above to see its full movement history</div></div>';
+    return;
+  }
+  const prod=PRODUCTS.find(p=>p.code===code);
+  if(!prod) return;
+
+  body.innerHTML='';
+
+  // ── SKU HEADER ──
+  const labels=getDayLabels();
+  let totalSold=0,totalWh=0,totalIn=0,totalTrf=0;
+  for(let di=0;di<DAY_WINDOW;di++){
+    totalSold+=dbGet(me.code,di,code,'sold');
+    totalWh  +=dbGet(me.code,di,code,'wh');
+    totalIn  +=dbGet(me.code,di,code,'inn');
+    totalTrf +=dbGet(me.code,di,code,'trf');
+  }
+  const currentBal=bal(me.code,DAY_PAST,code);
+
+  const skuHdr=document.createElement('div');
+  skuHdr.className='tracker-sku-header';
+  skuHdr.innerHTML=`
+    <div>
+      <div class="tracker-sku-name">${prod.en}</div>
+      ${prod.ar?`<div class="tracker-sku-ar">${prod.ar}</div>`:''}
+      <div class="tracker-sku-code">${prod.code} · ${prod.cat}</div>
+    </div>
+    <div class="tracker-net-badge">
+      <div class="tracker-net-val" style="color:${currentBal>0?'var(--gold2)':currentBal<0?'#E87070':'#444'}">${currentBal}</div>
+      <div class="tracker-net-label">Current Balance</div>
+    </div>`;
+  body.appendChild(skuHdr);
+
+  // ── 15-DAY SUMMARY STRIP ──
+  const strip=document.createElement('div');
+  strip.className='tracker-summary-strip';
+  strip.innerHTML=`
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#7FC860;">${totalWh||'—'}</span><div class="tracker-sum-label">Total WH In</div></div>
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#5DBEA3;">${totalIn||'—'}</span><div class="tracker-sum-label">Total Received</div></div>
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#E87070;">${totalSold||'—'}</span><div class="tracker-sum-label">Total Sold</div></div>
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#BB88DD;">${totalTrf||'—'}</span><div class="tracker-sum-label">Total Sent Out</div></div>`;
+  body.appendChild(strip);
+
+  // ── PER-DAY MOVEMENT BLOCKS ──
+  // Only render days that have any data
+  let hasAnyData=false;
+  for(let di=0;di<DAY_WINDOW;di++){
+    const dl=labels[di];
+    const o=dbGet(me.code,di,code,'open');
+    const w=dbGet(me.code,di,code,'wh');
+    const i=dbGet(me.code,di,code,'inn');
+    const s=dbGet(me.code,di,code,'sold');
+    const t=dbGet(me.code,di,code,'trf');
+    const b=bal(me.code,di,code);
+    const locked=isLocked(me.code,di);
+    const isToday=di===DAY_PAST;
+    const hasData=o>0||w>0||i>0||s>0||t>0;
+    if(!hasData) continue;
+    hasAnyData=true;
+
+    const block=document.createElement('div');
+    block.className='tracker-day-block';
+
+    // Day header
+    const hdr=document.createElement('div');
+    hdr.className='tracker-day-hdr';
+    const bCls=b>3?'#6FCF97':b>0?'#C9A44E':b===0?'#444':'#E87070';
+    hdr.innerHTML=`
+      <span class="tracker-day-date" style="${isToday?'color:var(--gold);font-weight:800;':''}">${dl.full} ${dl.date}${isToday?' ★ TODAY':''}</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${locked?'<span class="tracker-day-lock">🔒 Locked</span>':'<span style="font-size:9px;color:#3A2A00;">Open</span>'}
+        <span class="tracker-day-bal" style="color:${bCls}">Bal: ${b}</span>
+      </div>`;
+    block.appendChild(hdr);
+
+    // Events for this day
+    const eventsDiv=document.createElement('div');
+    eventsDiv.className='tracker-events';
+
+    // Opening stock
+    if(o>0){
+      const ev=document.createElement('div');
+      ev.className='tracker-event ev-opening';
+      ev.innerHTML=`
+        <div class="tracker-ev-icon">📂</div>
+        <div class="tracker-ev-body">
+          <div class="tracker-ev-type">Opening Stock</div>
+          <div class="tracker-ev-detail">Starting balance for ${dl.full}</div>
+        </div>
+        <div class="tracker-ev-qty neu">${o}</div>`;
+      eventsDiv.appendChild(ev);
+    }
+
+    // WH received
+    if(w>0){
+      const ev=document.createElement('div');
+      ev.className='tracker-event ev-wh';
+      ev.innerHTML=`
+        <div class="tracker-ev-icon">🏭</div>
+        <div class="tracker-ev-body">
+          <div class="tracker-ev-type">Warehouse Transfer Received</div>
+          <div class="tracker-ev-detail">GRN — From Jafza Warehouse</div>
+        </div>
+        <div class="tracker-ev-qty pos">+${w}</div>`;
+      eventsDiv.appendChild(ev);
+    }
+
+    // Store IN received — with source store from transfer log
+    if(i>0){
+      const trLog=getTransferLog().find(tr=>tr.day===di&&tr.prodCode===code&&tr.toStore===me.code);
+      const fromName=trLog?trLog.fromName:'Another Store';
+      const ev=document.createElement('div');
+      ev.className='tracker-event ev-received';
+      ev.innerHTML=`
+        <div class="tracker-ev-icon">📥</div>
+        <div class="tracker-ev-body">
+          <div class="tracker-ev-type">Received from Store</div>
+          <div class="tracker-ev-detail">← From: ${fromName}${trLog?' · '+trLog.ts:''}</div>
+        </div>
+        <div class="tracker-ev-qty pos">+${i}</div>`;
+      eventsDiv.appendChild(ev);
+    }
+
+    // Sold
+    if(s>0){
+      const ev=document.createElement('div');
+      ev.className='tracker-event ev-sold';
+      ev.innerHTML=`
+        <div class="tracker-ev-icon">💰</div>
+        <div class="tracker-ev-body">
+          <div class="tracker-ev-type">Sold to Customer</div>
+          <div class="tracker-ev-detail">Retail sale · ${dl.full} ${dl.date}${locked?' · ✓ Verified':''}</div>
+        </div>
+        <div class="tracker-ev-qty neg">−${s}</div>`;
+      eventsDiv.appendChild(ev);
+    }
+
+    // Sent out — with destination store from transfer log
+    if(t>0){
+      const trLog=getTransferLog().find(tr=>tr.day===di&&tr.prodCode===code&&tr.fromStore===me.code);
+      const toName=trLog?trLog.toName:'Another Store';
+      const ev=document.createElement('div');
+      ev.className='tracker-event ev-sent';
+      ev.innerHTML=`
+        <div class="tracker-ev-icon">📤</div>
+        <div class="tracker-ev-body">
+          <div class="tracker-ev-type">Sent to Store</div>
+          <div class="tracker-ev-detail">→ To: ${toName}${trLog?' · '+trLog.ts:''}</div>
+        </div>
+        <div class="tracker-ev-qty neg">−${t}</div>`;
+      eventsDiv.appendChild(ev);
+    }
+
+    block.appendChild(eventsDiv);
+    body.appendChild(block);
+  }
+
+  if(!hasAnyData){
+    body.innerHTML+='<div class="dash-empty" style="margin-top:30px;"><span class="dash-empty-icon">📭</span><div style="color:#333;font-size:13px;">No movement recorded for this SKU in the past 15 days</div></div>';
+  }
+}
+
 
 // ═══════════════════════════════════════════════════════════
 // EXCEL / CSV EXPORT
