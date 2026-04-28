@@ -934,122 +934,156 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* ── FINANCE TAB ── */
 .fin-topbar{display:flex;align-items:center;justify-content:space-between;
-  padding:8px 14px;border-bottom:1px solid #1E1E1E;flex-shrink:0;background:#0D0D0D;}
+  padding:7px 14px;border-bottom:1px solid #1E1E1E;flex-shrink:0;background:#0D0D0D;}
 .fin-store-name{font-family:var(--f-mono);font-size:10px;color:#6FA8DC;font-weight:700;}
-.fin-date-val{font-family:var(--f-mono);font-size:10px;color:#444;margin-left:8px;}
+.fin-date-val{font-family:var(--f-mono);font-size:9px;color:#444;margin-top:1px;}
 .fin-period-tabs{display:flex;gap:4px;}
 .fin-ptab{padding:4px 12px;border-radius:5px;font-family:var(--f-mono);font-size:10px;
   font-weight:600;cursor:pointer;border:1px solid #2A2A2A;color:#444;background:#111;}
 .fin-ptab.active{background:#2A1A00;border-color:var(--gold3);color:var(--gold2);}
 
-.fin-scroll-body{flex:1;overflow-y:auto;padding:0 0 20px;}
-
-/* Sheet Header */
-.fin-sheet-header{display:flex;align-items:stretch;justify-content:space-between;
-  padding:10px 14px;background:#111;border-bottom:2px solid #C9A44E;gap:8px;}
-.fin-sh-brand{flex-shrink:0;}
-.fin-sh-logo{font-size:13px;font-weight:900;color:#C9A44E;letter-spacing:0.5px;}
-.fin-sh-logo-ar{font-family:var(--f-ar);font-size:11px;color:#8B6914;direction:rtl;margin-top:1px;}
-.fin-sh-title{flex:1;text-align:center;display:flex;flex-direction:column;justify-content:center;}
-.fin-sh-title-ar{font-family:var(--f-ar);font-size:13px;font-weight:700;color:#CCC;direction:rtl;}
-.fin-sh-title-en{font-size:11px;font-weight:800;color:#CCC;letter-spacing:0.8px;margin-top:2px;}
-.fin-sh-meta{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+/* Sheet header */
+.fin-sheet-header{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 14px;background:#111;border-bottom:2px solid #C9A44E;gap:8px;flex-shrink:0;}
+.fin-sh-logo{font-size:12px;font-weight:900;color:#C9A44E;letter-spacing:0.5px;}
+.fin-sh-logo-ar{font-family:var(--f-ar);font-size:10px;color:#8B6914;direction:rtl;}
+.fin-sh-title{flex:1;text-align:center;}
+.fin-sh-title-ar{font-family:var(--f-ar);font-size:12px;font-weight:700;color:#CCC;direction:rtl;}
+.fin-sh-title-en{font-size:10px;font-weight:800;color:#CCC;letter-spacing:1px;margin-top:1px;}
+.fin-sh-meta{display:flex;flex-direction:column;gap:5px;}
 .fin-meta-box{border:1px solid #3A3A2A;border-radius:4px;padding:3px 8px;text-align:right;}
 .fin-meta-label{font-family:var(--f-mono);font-size:7px;color:#555;text-transform:uppercase;}
 .fin-meta-val{font-family:var(--f-mono);font-size:11px;font-weight:700;color:#C9A44E;}
 
-/* Main Tables */
-.fin-table{width:100%;border-collapse:collapse;margin:0;font-size:12px;}
-.fin-th-hash{width:32px;background:#1A1A1A;color:#888;font-family:var(--f-mono);
-  font-size:9px;padding:6px 6px;border:1px solid #2A2A2A;text-align:center;}
-.fin-th-details{background:#1A1A1A;color:#888;font-family:var(--f-mono);
-  font-size:9px;padding:6px 10px;border:1px solid #2A2A2A;text-align:left;}
-.fin-th-amount{background:#1A1A1A;color:#888;font-family:var(--f-mono);
-  font-size:9px;padding:6px 10px;border:1px solid #2A2A2A;text-align:right;width:130px;}
-.fin-tr:nth-child(even){background:#0D0D0D;}
-.fin-tr:nth-child(odd){background:#111;}
-.fin-tr-total{background:#1A1000!important;}
-.fin-tr-subtotal{background:#0D1A0D!important;}
-.fin-tr-closing{background:#1A1000!important;}
-.fin-td-hash{border:1px solid #1E1E1E;padding:8px 6px;text-align:center;
-  font-family:var(--f-mono);font-size:11px;font-weight:700;color:#888;vertical-align:top;}
-.fin-td-label{border:1px solid #1E1E1E;padding:7px 10px;vertical-align:middle;}
-.fin-td-amt{border:1px solid #1E1E1E;padding:0;text-align:right;vertical-align:middle;}
-.fin-en{display:block;font-size:12px;color:#CCC;font-weight:500;}
-.fin-ar{display:block;font-family:var(--f-ar);font-size:10px;color:#555;direction:rtl;margin-top:2px;}
-.fin-cell-input{width:100%;background:transparent;border:none;outline:none;
-  font-family:var(--f-mono);font-size:14px;font-weight:700;color:#E8C97A;
-  text-align:right;padding:8px 10px;display:block;}
-.fin-cell-input:focus{background:#1A1000;}
-.fin-cell-input::placeholder{color:#2A2A2A;font-weight:400;}
-.fin-auto-cell{font-family:var(--f-mono);font-size:14px;font-weight:700;
-  color:#6FA8DC;padding:8px 10px;background:#0A0A1A;}
-.fin-total-cell{font-family:var(--f-mono);font-size:16px;font-weight:800;
-  color:#C9A44E;padding:8px 10px;background:#1A1000;}
-.fin-subtotal-cell{font-family:var(--f-mono);font-size:14px;font-weight:800;
-  color:#6FCF97;padding:8px 10px;background:#0A1A0A;}
-.fin-closing-cell{font-family:var(--f-mono);font-size:18px;font-weight:900;
-  color:#C9A44E;padding:8px 10px;background:#2A1800;}
-.fin-inline-text{background:#1A1A1A;border:1px solid #2A2A2A;border-radius:4px;
-  padding:3px 7px;color:#DDD;font-family:var(--f-body);font-size:11px;
-  outline:none;margin-left:4px;width:120px;}
+/* Section title bar */
+.fin-grid-section-title{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 14px;background:#0D0D0D;
+  border-top:1px solid #1E1E1E;border-bottom:1px solid #1E1E1E;
+  font-family:var(--f-mono);font-size:9px;font-weight:700;
+  color:var(--gold2);letter-spacing:1px;text-transform:uppercase;
+}
+.fin-grid-ar{font-family:var(--f-ar);font-size:10px;color:#555;font-weight:400;
+  direction:rtl;text-transform:none;letter-spacing:0;}
+.fin-add-row-btn{margin-left:auto;background:#1A1A1A;border:1px solid #2A2A2A;
+  color:#6FCF97;font-family:var(--f-body);font-size:11px;
+  padding:3px 10px;border-radius:4px;cursor:pointer;}
+.fin-add-row-btn:active{background:#1A2A1A;}
 
-/* CC Section */
-.fin-cc-section{background:#0D0D0D;border-top:1px solid #1E1E1E;border-bottom:1px solid #1E1E1E;}
-.fin-cc-header{padding:6px 14px;font-family:var(--f-mono);font-size:9px;font-weight:700;
-  color:#888;text-transform:uppercase;letter-spacing:0.8px;
-  background:#161616;border-bottom:1px solid #1E1E1E;}
-.fin-cc-grid{padding:0 14px 0;}
-.fin-cc-table{width:100%;border-collapse:collapse;font-size:11px;}
-.fin-cch-num{width:28px;padding:5px 4px;background:#1A1A1A;color:#555;
-  font-family:var(--f-mono);font-size:8px;border:1px solid #222;text-align:center;}
-.fin-cch-code{padding:5px 8px;background:#1A1A1A;color:#555;
-  font-family:var(--f-mono);font-size:8px;border:1px solid #222;}
-.fin-cch-amt{width:80px;padding:5px 8px;background:#1A1A1A;color:#555;
-  font-family:var(--f-mono);font-size:8px;border:1px solid #222;text-align:right;}
-.fin-cch-del{width:20px;padding:0;background:#1A1A1A;border:1px solid #222;}
-.fin-cc-num-cell{border:1px solid #1E1E1E;padding:0;text-align:center;
-  font-family:var(--f-mono);font-size:10px;color:#555;background:#111;}
-.fin-cc-code-cell,.fin-cc-amt-cell{border:1px solid #1E1E1E;padding:0;}
-.fin-cc-del-cell{border:1px solid #1E1E1E;padding:0;width:24px;background:#111;}
-.fin-cc-input{width:100%;background:transparent;border:none;outline:none;
-  font-family:var(--f-mono);font-size:12px;color:#DDD;padding:7px 8px;display:block;}
-.fin-cc-input.amt-input{text-align:right;color:#E8C97A;font-weight:700;}
-.fin-cc-input:focus{background:#1A1A1A;}
+/* Main grid table */
+.fin-grid-table{width:100%;border-collapse:collapse;font-size:12px;}
+.fgh-hash{
+  width:36px;padding:6px 4px;
+  background:#161616;color:#555;
+  font-family:var(--f-mono);font-size:9px;font-weight:700;
+  border:1px solid #1E1E1E;text-align:center;
+}
+.fgh-detail{
+  padding:6px 12px;
+  background:#161616;color:#777;
+  font-family:var(--f-mono);font-size:9px;font-weight:600;
+  border:1px solid #1E1E1E;text-align:left;
+  text-transform:uppercase;letter-spacing:0.5px;
+}
+.fgh-detail span{display:block;font-family:var(--f-ar);font-size:8px;color:#3A3A3A;direction:rtl;margin-top:1px;}
+.fgh-amt{
+  padding:6px 8px;
+  font-family:var(--f-mono);font-size:9px;font-weight:600;
+  border:1px solid #1E1E1E;text-align:center;
+  text-transform:uppercase;letter-spacing:0.5px;min-width:80px;
+}
+.fgh-amt span{display:block;font-family:var(--f-ar);font-size:8px;margin-top:1px;}
+.fgh-cash{background:#EFF9EE;color:#1A6040;}
+.fgh-card{background:#EEF4FF;color:#1A3A7A;}
+.fgh-credit{background:#FFF5EE;color:#7A3A1A;}
+.fgh-total{background:#FFF8E8;color:#7A5200;}
+
+/* Totals row in thead */
+.fin-totals-row .fgh-hash,
+.fin-totals-row .fgh-detail{background:#111;border:1px solid #1E1E1E;}
+.fin-totals-row .fgh-amt{font-size:14px;font-weight:800;padding:5px 8px;}
+.fin-totals-row .fgh-cash{background:#E8F5E8;color:#1A6040;}
+.fin-totals-row .fgh-card{background:#E8EEF8;color:#1A3A7A;}
+.fin-totals-row .fgh-credit{background:#F8EEE8;color:#7A3A1A;}
+.fin-totals-row .fgh-total{background:#F8F0D8;color:#7A5200;}
+
+/* Body rows */
+.fin-grid-row{background:#111;}
+.fin-grid-row:nth-child(even){background:#0D0D0D;}
+.fin-grid-row.fin-subtotal{background:#0A1A0A;}
+.fin-grid-row.fin-closing{background:#1A1000;}
+.fgt-hash{
+  border:1px solid #1E1E1E;padding:0;text-align:center;
+  font-family:var(--f-mono);font-size:11px;font-weight:700;color:#666;
+  vertical-align:middle;
+}
+.fgt-detail{
+  border:1px solid #1E1E1E;padding:8px 12px;vertical-align:middle;
+}
+.fgt-detail .fd-en{font-size:12px;color:#CCC;display:block;font-weight:500;}
+.fgt-detail .fd-ar{font-family:var(--f-ar);font-size:10px;color:#444;direction:rtl;display:block;margin-top:2px;}
+.fgt-detail .fd-sub{font-family:var(--f-mono);font-size:10px;color:#555;display:block;margin-top:2px;}
+.fgt-detail input.fin-inline-text{
+  background:#1A1A1A;border:1px solid #2A2A2A;border-radius:4px;
+  padding:3px 7px;color:#DDD;font-family:var(--f-body);font-size:11px;
+  outline:none;margin-left:4px;width:120px;margin-top:3px;
+}
+
+/* Tappable amount cells */
+.fgt-cell{
+  border:1px solid #1E1E1E;padding:0;
+  text-align:center;vertical-align:middle;
+  cursor:pointer;transition:background 0.1s;
+  min-width:80px;
+}
+.fgt-cell:active{opacity:0.7;}
+.fgt-cell-inner{
+  display:block;padding:10px 8px;
+  font-family:var(--f-mono);font-size:16px;font-weight:700;
+}
+.fgt-cell-inner.empty{font-size:13px;color:#2A2A2A;}
+.fgt-cell.cash-cell{background:#EFF9EE;}.fgt-cell.cash-cell .fgt-cell-inner{color:#1A6040;}
+.fgt-cell.card-cell{background:#EEF4FF;}.fgt-cell.card-cell .fgt-cell-inner{color:#1A3A7A;}
+.fgt-cell.credit-cell{background:#FFF5EE;}.fgt-cell.credit-cell .fgt-cell-inner{color:#7A3A1A;}
+.fgt-cell.auto-cell{cursor:default;background:#F8F8F0;}
+.fgt-cell.auto-cell .fgt-cell-inner{color:#7A5200;font-size:15px;}
+.fgt-cell.closing-cell{background:#FFF8E0;cursor:default;}
+.fgt-cell.closing-cell .fgt-cell-inner{color:#7A5200;font-size:18px;font-weight:900;}
+.fgt-cell.neg-close .fgt-cell-inner{color:#8B1A1A;}
+
+/* Empty row */
+.fin-empty-row{
+  padding:12px;text-align:center;
+  font-family:var(--f-mono);font-size:10px;color:#2A2A2A;
+  font-style:italic;border:1px solid #1E1E1E;
+}
+
+/* CC delete button */
+.fin-cc-del-cell{border:1px solid #1E1E1E;padding:0;width:32px;vertical-align:middle;}
 .fin-cc-del-btn{background:none;border:none;color:#333;cursor:pointer;
-  font-size:12px;padding:4px 5px;display:block;width:100%;}
+  font-size:13px;padding:4px 6px;display:block;width:100%;}
 .fin-cc-del-btn:hover{color:#E87070;}
-.fin-cc-add-row{display:flex;align-items:center;justify-content:space-between;
-  padding:8px 14px;border-top:1px solid #1A1A1A;}
-.fin-add-btn{background:#1A1A1A;border:1px solid #2A2A2A;color:#6FCF97;
-  font-family:var(--f-body);font-size:11px;padding:6px 12px;border-radius:5px;cursor:pointer;}
-.fin-add-btn:active{background:#1A2A1A;}
-.fin-cc-total-row{display:flex;align-items:center;gap:10px;
-  font-family:var(--f-mono);font-size:11px;color:#666;}
-.fin-cc-total-val{font-size:15px;font-weight:800;color:#6FA8DC;}
 
 /* Signatures */
-.fin-sig-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;
-  border-top:2px solid #C9A44E;margin-top:0;}
-.fin-sig-box{padding:12px 14px;background:#111;border-right:1px solid #1E1E1E;}
+.fin-sig-row{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid #C9A44E;}
+.fin-sig-box{padding:10px 14px;background:#111;border-right:1px solid #1E1E1E;}
 .fin-sig-box:last-child{border-right:none;}
+.fin-sig-label-top{display:flex;justify-content:space-between;margin-bottom:5px;
+  font-family:var(--f-mono);font-size:8px;color:#555;text-transform:uppercase;}
+.fin-sig-label-top .fin-ar{font-family:var(--f-ar);font-size:9px;color:#555;direction:rtl;text-transform:none;}
 .fin-sig-input{width:100%;background:transparent;border:none;border-bottom:1px solid #2A2A2A;
-  outline:none;font-family:var(--f-body);font-size:13px;color:#DDD;
-  padding:4px 2px 8px;margin-bottom:4px;}
-.fin-sig-label{display:flex;justify-content:space-between;align-items:center;}
-.fin-sig-label .fin-en{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:0.8px;display:inline;}
-.fin-sig-label .fin-ar{font-size:9px;color:#555;font-family:var(--f-ar);direction:rtl;display:inline;}
+  outline:none;font-family:var(--f-body);font-size:13px;color:#DDD;padding:4px 0;}
 
-/* Action buttons */
+/* Actions */
 .fin-actions{display:flex;gap:8px;padding:12px 14px;
-  border-top:1px solid #1E1E1E;background:#0D0D0D;flex-shrink:0;}
+  border-top:1px solid #1E1E1E;background:#0D0D0D;}
 .fin-act-btn{flex:1;font-family:var(--f-body);font-size:13px;font-weight:600;
-  padding:12px 8px;border-radius:8px;cursor:pointer;border:none;}
+  padding:12px 8px;border-radius:8px;cursor:pointer;}
 .fin-act-btn.save{background:#1A2A1A;border:1px solid #2A4A2A;color:#6FCF97;}
 .fin-act-btn.pdf{background:#1A1A2A;border:1px solid #2A3A5A;color:#6FA8DC;}
 .fin-act-btn:active{opacity:0.85;}
 
-/* Week/Month summary */
+/* Period summary */
 .fin-period-summary{padding:12px 14px;}
 .fin-period-day-row{display:flex;align-items:center;justify-content:space-between;
   padding:8px 12px;border:1px solid #1E1E1E;border-radius:6px;margin-bottom:6px;background:#111;}
@@ -1191,11 +1225,11 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   <!-- FINANCE PANEL -->
   <div id="dashFinancePanel" style="display:none;flex-direction:column;flex:1;min-height:0;">
 
-    <!-- Period selector + store/date bar -->
+    <!-- Period tabs + store info -->
     <div class="fin-topbar">
-      <div class="fin-store-date">
-        <span class="fin-store-name" id="finStoreName">—</span>
-        <span class="fin-date-val" id="finDateVal">—</span>
+      <div>
+        <div class="fin-store-name" id="finStoreName">—</div>
+        <div class="fin-date-val" id="finDateVal">—</div>
       </div>
       <div class="fin-period-tabs">
         <div class="fin-ptab active" id="fpt-day"   onclick="finSelectPeriod('day')">Today</div>
@@ -1204,10 +1238,10 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
       </div>
     </div>
 
-    <!-- DAY view -->
-    <div id="fin-day-view" class="fin-scroll-body">
+    <!-- ══ DAY VIEW — Excel-style grid ══ -->
+    <div id="fin-day-view" style="flex:1;overflow-y:auto;">
 
-      <!-- ── HEADER ROW ── -->
+      <!-- Sheet header matching physical form -->
       <div class="fin-sheet-header">
         <div class="fin-sh-brand">
           <div class="fin-sh-logo">🌹 EMIRATES PRIDE</div>
@@ -1218,194 +1252,91 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
           <div class="fin-sh-title-en">DAILY SALES REPORT</div>
         </div>
         <div class="fin-sh-meta">
-          <div class="fin-meta-box">
-            <div class="fin-meta-label">التاريخ · DATE</div>
-            <div class="fin-meta-val" id="fin-hdr-date">—</div>
-          </div>
-          <div class="fin-meta-box">
-            <div class="fin-meta-label">الفرع · OUTLET</div>
-            <div class="fin-meta-val" id="fin-hdr-outlet">—</div>
-          </div>
+          <div class="fin-meta-box"><div class="fin-meta-label">DATE · التاريخ</div><div class="fin-meta-val" id="fin-hdr-date">—</div></div>
+          <div class="fin-meta-box"><div class="fin-meta-label">OUTLET · الفرع</div><div class="fin-meta-val" id="fin-hdr-outlet">—</div></div>
         </div>
       </div>
 
-      <!-- ── TABLE 1: SALES SUMMARY ── -->
-      <table class="fin-table">
+      <!-- ── SECTION 1: SALES SUMMARY ── -->
+      <div class="fin-grid-section-title">
+        <span>SALES SUMMARY</span><span class="fin-grid-ar">ملخص المبيعات</span>
+      </div>
+      <table class="fin-grid-table">
         <thead>
           <tr>
-            <th class="fin-th-hash">#</th>
-            <th class="fin-th-details">التفاصيل · DETAILS</th>
-            <th class="fin-th-amount">المبلغ · AMOUNT (AED)</th>
+            <th class="fgh-hash">#</th>
+            <th class="fgh-detail">التفاصيل · Details</th>
+            <th class="fgh-amt fgh-cash">CASH<br><span>نقدي</span></th>
+            <th class="fgh-amt fgh-card">CARD<br><span>بطاقة</span></th>
+            <th class="fgh-amt fgh-credit">CREDIT<br><span>آجل</span></th>
+            <th class="fgh-amt fgh-total">TOTAL<br><span>المجموع</span></th>
+          </tr>
+          <!-- Totals row — always visible -->
+          <tr class="fin-totals-row">
+            <th class="fgh-hash"></th>
+            <th class="fgh-detail" style="text-align:left;font-weight:700;font-size:9px;color:#888;">TOTALS</th>
+            <th class="fgh-amt fgh-cash" id="fgt-cash">—</th>
+            <th class="fgh-amt fgh-card" id="fgt-card">—</th>
+            <th class="fgh-amt fgh-credit" id="fgt-credit">—</th>
+            <th class="fgh-amt fgh-total" id="fgt-total">—</th>
           </tr>
         </thead>
-        <tbody>
-          <tr class="fin-tr">
-            <td class="fin-td-hash">A</td>
-            <td class="fin-td-label">
-              <span class="fin-en">Cash Sales</span>
-              <span class="fin-ar">المبيعات النقدية</span>
-            </td>
-            <td class="fin-td-amt"><input class="fin-cell-input" id="fin-cash" type="number" min="0" placeholder="0.00" inputmode="decimal" oninput="finCalc()"></td>
-          </tr>
-          <tr class="fin-tr">
-            <td class="fin-td-hash">B</td>
-            <td class="fin-td-label">
-              <span class="fin-en">Credit Card Sales</span>
-              <span class="fin-ar">المبيعات بالبطاقة</span>
-            </td>
-            <td class="fin-td-amt fin-auto-cell" id="fin-card-auto">0.00</td>
-          </tr>
-          <tr class="fin-tr">
-            <td class="fin-td-hash">C</td>
-            <td class="fin-td-label">
-              <span class="fin-en">Credit Sales</span>
-              <span class="fin-ar">المبيعات غير المدفوعة</span>
-            </td>
-            <td class="fin-td-amt"><input class="fin-cell-input" id="fin-credit" type="number" min="0" placeholder="0.00" inputmode="decimal" oninput="finCalc()"></td>
-          </tr>
-          <tr class="fin-tr-total">
-            <td class="fin-td-hash" colspan="2">
-              <span class="fin-en">TOTAL (A+B+C)</span>
-              <span class="fin-ar">المجموع (آ · ب · ج)</span>
-            </td>
-            <td class="fin-td-amt fin-total-cell" id="fin-total-abc">0.00</td>
-          </tr>
+        <tbody id="fin-sales-tbody">
+          <!-- rows built by JS -->
         </tbody>
       </table>
 
-      <!-- ── TABLE 2: CREDIT CARD DETAILS ── -->
-      <div class="fin-cc-section">
-        <div class="fin-cc-header">
-          <span class="fin-en">تفاصيل البطاقة · CREDIT CARD DETAILS</span>
-        </div>
-        <div class="fin-cc-grid">
-          <table class="fin-cc-table" id="fin-cc-table-left">
-            <thead><tr>
-              <th class="fin-cch-num">#</th>
-              <th class="fin-cch-code">APPROVAL CODE</th>
-              <th class="fin-cch-amt">AMOUNT</th>
-              <th class="fin-cch-del"></th>
-            </tr></thead>
-            <tbody id="fin-cc-tbody"></tbody>
-          </table>
-        </div>
-        <div class="fin-cc-add-row">
-          <button class="fin-add-btn" onclick="addCCRow()">＋ Add Transaction</button>
-          <div class="fin-cc-total-row">
-            <span class="fin-en">CC TOTAL</span>
-            <span class="fin-cc-total-val" id="fin-cc-total">0.00</span>
-          </div>
-        </div>
+      <!-- ── SECTION 2: CREDIT CARD TRANSACTIONS ── -->
+      <div class="fin-grid-section-title" style="margin-top:0;">
+        <span>CREDIT CARD DETAILS</span><span class="fin-grid-ar">تفاصيل البطاقة</span>
+        <button class="fin-add-row-btn" onclick="addCCRow()">＋ Add</button>
       </div>
-
-      <!-- ── TABLE 3: CASH RECONCILIATION ── -->
-      <table class="fin-table" style="margin-top:0;">
+      <table class="fin-grid-table" id="fin-cc-grid-table">
         <thead>
           <tr>
-            <th class="fin-th-hash">#</th>
-            <th class="fin-th-details">التفاصيل · DETAILS</th>
-            <th class="fin-th-amount">المبلغ · AMOUNT (AED)</th>
+            <th class="fgh-hash">#</th>
+            <th class="fgh-detail">Approval Code / رقم الموافقة</th>
+            <th class="fgh-amt fgh-card" style="width:120px;">Amount / المبلغ</th>
+            <th class="fgh-hash" style="width:32px;"></th>
           </tr>
         </thead>
-        <tbody>
-          <tr class="fin-tr">
-            <td class="fin-td-hash">E</td>
-            <td class="fin-td-label">
-              <span class="fin-en">Opening Cash Balance</span>
-              <span class="fin-ar">المبلغ الافتتاحي</span>
-            </td>
-            <td class="fin-td-amt"><input class="fin-cell-input" id="fin-open-cash" type="number" min="0" placeholder="0.00" inputmode="decimal" oninput="finCalc()"></td>
-          </tr>
-          <tr class="fin-tr">
-            <td class="fin-td-hash"></td>
-            <td class="fin-td-label">
-              <span class="fin-en">Cash Sales for the Day</span>
-              <span class="fin-ar">المبيعات اليومية النقدية</span>
-            </td>
-            <td class="fin-td-amt fin-auto-cell" id="fin-cash-sales-display">0.00</td>
-          </tr>
-          <tr class="fin-tr">
-            <td class="fin-td-hash"></td>
-            <td class="fin-td-label">
-              <span class="fin-en">Cash Received from Debtors</span>
-              <span class="fin-ar">المبالغ النقدية الواردة من المدينين</span>
-            </td>
-            <td class="fin-td-amt"><input class="fin-cell-input" id="fin-debtors" type="number" min="0" placeholder="0.00" inputmode="decimal" oninput="finCalc()"></td>
-          </tr>
-          <tr class="fin-tr-subtotal">
-            <td class="fin-td-hash">E</td>
-            <td class="fin-td-label">
-              <span class="fin-en">Total Cash</span>
-              <span class="fin-ar">المجموع نقداً</span>
-            </td>
-            <td class="fin-td-amt fin-subtotal-cell" id="fin-total-cash">0.00</td>
-          </tr>
-          <tr class="fin-tr">
-            <td class="fin-td-hash">F</td>
-            <td class="fin-td-label">
-              <span class="fin-en">Cash Given to Directors · Name:</span>
-              <input class="fin-inline-text" id="fin-director-name" placeholder="Director name" type="text">
-              <span class="fin-ar">المبلغ المدفوع للمدير · اسم المدير</span>
-            </td>
-            <td class="fin-td-amt"><input class="fin-cell-input" id="fin-director-amt" type="number" min="0" placeholder="0.00" inputmode="decimal" oninput="finCalc()"></td>
-          </tr>
-          <tr class="fin-tr">
-            <td class="fin-td-hash">G</td>
-            <td class="fin-td-label">
-              <span class="fin-en">Deposit into Bank · Slip No:</span>
-              <input class="fin-inline-text" id="fin-bank-slip" placeholder="Slip number" type="text">
-              <span class="fin-ar">إيداع في البنك رقم القسيمة</span>
-            </td>
-            <td class="fin-td-amt"><input class="fin-cell-input" id="fin-bank-amt" type="number" min="0" placeholder="0.00" inputmode="decimal" oninput="finCalc()"></td>
-          </tr>
-          <tr class="fin-tr">
-            <td class="fin-td-hash">H</td>
-            <td class="fin-td-label">
-              <span class="fin-en">Expenses (Attach Bills)</span>
-              <span class="fin-ar">المصاريف (مع إرفاق الفاتورة)</span>
-            </td>
-            <td class="fin-td-amt"><input class="fin-cell-input" id="fin-expenses" type="number" min="0" placeholder="0.00" inputmode="decimal" oninput="finCalc()"></td>
-          </tr>
-          <tr class="fin-tr-closing">
-            <td class="fin-td-hash" colspan="2">
-              <span class="fin-en">CLOSING CASH BALANCE (E−F−G−H)</span>
-              <span class="fin-ar">الرصيد النقدي الختامي في الفرع (ي−ف−غ−ح)</span>
-            </td>
-            <td class="fin-td-amt fin-closing-cell" id="fin-closing-bal">0.00</td>
-          </tr>
+        <tbody id="fin-cc-tbody">
+          <tr><td colspan="4" class="fin-empty-row">Tap ＋ Add to enter credit card transactions</td></tr>
+        </tbody>
+      </table>
+
+      <!-- ── SECTION 3: CASH RECONCILIATION ── -->
+      <div class="fin-grid-section-title" style="margin-top:0;">
+        <span>CASH RECONCILIATION</span><span class="fin-grid-ar">تسوية النقدية</span>
+      </div>
+      <table class="fin-grid-table">
+        <tbody id="fin-cash-tbody">
+          <!-- Built by JS -->
         </tbody>
       </table>
 
       <!-- ── SIGNATURES ── -->
       <div class="fin-sig-row">
         <div class="fin-sig-box">
-          <input class="fin-sig-input" id="fin-prepared-by" placeholder="Signature / Name" type="text">
-          <div class="fin-sig-label">
-            <span class="fin-en">Prepared By</span>
-            <span class="fin-ar">كاتب التقرير</span>
-          </div>
+          <div class="fin-sig-label-top"><span>Prepared By</span><span class="fin-ar">كاتب التقرير</span></div>
+          <input class="fin-sig-input" id="fin-prepared-by" placeholder="Name / الاسم" type="text">
         </div>
         <div class="fin-sig-box">
-          <input class="fin-sig-input" id="fin-checked-by" placeholder="Signature / Name" type="text">
-          <div class="fin-sig-label">
-            <span class="fin-en">Checked By</span>
-            <span class="fin-ar">المدقق</span>
-          </div>
+          <div class="fin-sig-label-top"><span>Checked By</span><span class="fin-ar">المدقق</span></div>
+          <input class="fin-sig-input" id="fin-checked-by" placeholder="Name / الاسم" type="text">
         </div>
       </div>
 
-      <!-- ── BOTTOM ACTIONS ── -->
+      <!-- Actions -->
       <div class="fin-actions">
         <button class="fin-act-btn save" onclick="saveFinanceData()">💾 Save</button>
-        <button class="fin-act-btn pdf" onclick="exportFinancePDF()">📋 Export PDF</button>
+        <button class="fin-act-btn pdf"  onclick="exportFinancePDF('day')">📋 Export PDF</button>
       </div>
+    </div>
 
-    </div><!-- end fin-day-view -->
-
-    <!-- WEEK / MONTH views — summary tables -->
-    <div id="fin-week-view" class="fin-scroll-body" style="display:none;"></div>
-    <div id="fin-month-view" class="fin-scroll-body" style="display:none;"></div>
-
+    <!-- Week / Month views -->
+    <div id="fin-week-view"  style="display:none;flex:1;overflow-y:auto;"></div>
+    <div id="fin-month-view" style="display:none;flex:1;overflow-y:auto;"></div>
   </div>
 
   <!-- SKU TRACKER panel -->
@@ -2261,60 +2192,6 @@ function nk(k){
 }
 function nd(){npBuf=npBuf.slice(0,-1);document.getElementById('npVal').textContent=npBuf||'0';updateNpProj();}
 function nc(){npBuf='';document.getElementById('npVal').textContent='0';updateNpProj();}
-function confirmNP(){
-  if(!npCtx)return;
-  const val=parseInt(npBuf)||0;
-  if(npCtx.field==='sold'||npCtx.field==='trf'){
-    const avail=dbGet(me.code,curDay,npCtx.code,'open')+dbGet(me.code,curDay,npCtx.code,'wh')+dbGet(me.code,curDay,npCtx.code,'inn');
-    const other=npCtx.field==='sold'?dbGet(me.code,curDay,npCtx.code,'trf'):dbGet(me.code,curDay,npCtx.code,'sold');
-    if(val+other>avail){
-      toast('⚠ Sold+Sent ('+(val+other)+') exceeds available ('+avail+')');
-      closeNP(); return;
-    }
-  }
-  // B7: warn if setting Opening=0 when other fields have data
-  if(npCtx.field==='open' && val===0){
-    const hasData=dbGet(me.code,curDay,npCtx.code,'wh')>0||
-                  dbGet(me.code,curDay,npCtx.code,'sold')>0||
-                  dbGet(me.code,curDay,npCtx.code,'trf')>0;
-    if(hasData){
-      toast('⚠ Opening set to 0 — balance may go negative');
-    }
-  }
-  const scrollEl=document.getElementById('scrollArea');
-  const st=scrollEl?scrollEl.scrollTop:0;
-  dbSet(me.code,curDay,npCtx.code,npCtx.field,val);
-  // Log store selection for inn/trf fields
-  if((npCtx.field==='inn'||npCtx.field==='trf')&&val>0){
-    const sel=document.getElementById('npStoreSelect');
-    const sc=sel?sel.value:'';
-    if(sc){
-      const ss=STORES.find(s=>s.code===sc);
-      if(ss){
-        const now2=new Date();
-        const ts2=now2.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' '+now2.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-        const pp=PRODUCTS.find(x=>x.code===npCtx.code);
-        if(!db.transferLog) db.transferLog=[];
-        db.transferLog=db.transferLog.filter(t=>!(t.day===curDay&&t.prodCode===npCtx.code&&
-          (npCtx.field==='inn'?t.toStore===me.code:t.fromStore===me.code)));
-        db.transferLog.unshift({
-          id:Date.now(),ts:ts2,day:curDay,
-          fromStore:npCtx.field==='inn'?sc:me.code,
-          fromName:npCtx.field==='inn'?ss.name:me.name,
-          toStore:npCtx.field==='trf'?sc:me.code,
-          toName:npCtx.field==='trf'?ss.name:me.name,
-          prodCode:npCtx.code,prodName:pp?pp.en:npCtx.code,
-          prodAr:pp?pp.ar||'':'',qty:val,note:'via numpad'
-        });
-      }
-    }
-  }
-  saveDB();
-  closeNP();
-  buildGrid();buildFooter();buildDayTabs();updateTotalsRow();
-  if(scrollEl) scrollEl.scrollTop=st;
-  toast('✓ Saved');
-}
 
 // ── ALL STORES PANEL ──
 // ─── ALL STORES PANEL ───
@@ -3043,185 +2920,499 @@ function renderDash(){
 }
 
 // ── FINANCE DATA ──
-let finCC = []; // [{code, amt}]
+let finCC = [];      // [{code, amt}]
 let finPeriod = 'day';
+let finNPCtx = null; // {field} for numpad in finance mode
+let finNPBuf = '';
 
-function finSelectPeriod(p){
-  finPeriod = p;
-  ['day','week','month'].forEach(x=>{
-    const t=document.getElementById('fpt-'+x);
-    const v=document.getElementById('fin-'+x+'-view');
-    if(t) t.classList.toggle('active', x===p);
-    if(v) v.style.display = x===p ? 'block' : 'none';
-  });
-  if(p==='week') renderFinWeek();
-  if(p==='month') renderFinMonth();
+// Finance field definitions for the numpad
+const FIN_FIELDS = {
+  cash:        {label:'Cash Sales (A)',        ar:'المبيعات النقدية',       col:'cash'},
+  credit:      {label:'Credit Sales (C)',      ar:'المبيعات غير المدفوعة', col:'credit'},
+  openCash:    {label:'Opening Cash Balance (E)', ar:'المبلغ الافتتاحي',   col:'cash'},
+  debtors:     {label:'Cash from Debtors',     ar:'من المدينين',            col:'cash'},
+  directorAmt: {label:'Cash to Directors (F)', ar:'المبلغ للمدير',          col:'credit'},
+  bankAmt:     {label:'Deposit to Bank (G)',   ar:'إيداع البنك',            col:'credit'},
+  expenses:    {label:'Expenses (H)',          ar:'المصاريف',               col:'credit'},
+};
+
+// In-memory finance data for current day
+let finData = {
+  cash:0, credit:0, openCash:0, debtors:0,
+  directorAmt:0, bankAmt:0, expenses:0,
+  directorName:'', bankSlip:'',
+  preparedBy:'', checkedBy:'',
+  ccRows:[]
+};
+
+function openFinNP(field){
+  // Reuse the stock numpad for finance fields
+  finNPCtx = field;
+  finNPBuf = String(finData[field]||'');
+  const info = FIN_FIELDS[field];
+  document.getElementById('npProduct').textContent = info ? info.ar : field;
+  const fEl = document.getElementById('npField');
+  fEl.textContent = info ? info.label : field;
+  fEl.className = 'np-field open';
+  document.getElementById('npCurLabel').textContent = 'CURRENT VALUE';
+  document.getElementById('npVal').textContent = finNPBuf||'0';
+  document.getElementById('npNote').textContent = '→ Tap numbers, then SAVE ✓';
+  // Hide store selector
+  const sr=document.getElementById('npStoreRow');if(sr)sr.style.display='none';
+  // Set a flag so confirmNP knows we're in finance mode
+  npCtx = null; // clear stock context
+  document.getElementById('numpad').classList.add('show');
+}
+
+// Override confirmNP to handle finance cells
+const _origConfirmNP = window.confirmNP || null;
+
+function confirmNP(){
+  // Finance numpad?
+  if(finNPCtx && !npCtx){
+    const val = parseFloat(finNPBuf)||0;
+    if(val > 0 || finNPBuf==='0'){
+      finData[finNPCtx] = val;
+      finCalc();
+      buildFinSalesTbody();
+      buildFinCashTbody();
+      updateFinTotalsRow();
+    }
+    document.getElementById('numpad').classList.remove('show');
+    finNPCtx=null; finNPBuf='';
+    return;
+  }
+  // Stock numpad — original logic below
+  if(!npCtx){closeNP();return;}
+  const val=parseInt(npBuf)||0;
+  // B7 warning
+  if(npCtx.field==='open' && val===0){
+    const hasData=dbGet(me.code,curDay,npCtx.code,'wh')>0||
+                  dbGet(me.code,curDay,npCtx.code,'sold')>0||
+                  dbGet(me.code,curDay,npCtx.code,'trf')>0;
+    if(hasData) toast('⚠ Opening set to 0 — balance may go negative');
+  }
+  if(npCtx.field==='sold'||npCtx.field==='trf'){
+    const avail=dbGet(me.code,curDay,npCtx.code,'open')+dbGet(me.code,curDay,npCtx.code,'wh')+dbGet(me.code,curDay,npCtx.code,'inn');
+    const other=npCtx.field==='sold'?dbGet(me.code,curDay,npCtx.code,'trf'):dbGet(me.code,curDay,npCtx.code,'sold');
+    if(val+other>avail){
+      toast('⚠ Sold+Sent ('+(val+other)+') exceeds available ('+avail+')');
+      closeNP(); return;
+    }
+  }
+  // Log store selection for inn/trf fields
+  if((npCtx.field==='inn'||npCtx.field==='trf')&&val>0){
+    const sel=document.getElementById('npStoreSelect');
+    const sc=sel?sel.value:'';
+    if(sc){
+      const ss=STORES.find(s=>s.code===sc);
+      if(ss){
+        const now2=new Date();
+        const ts2=now2.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' '+now2.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+        const pp=PRODUCTS.find(x=>x.code===npCtx.code);
+        if(!db.transferLog) db.transferLog=[];
+        db.transferLog=db.transferLog.filter(t=>!(t.day===curDay&&t.prodCode===npCtx.code&&
+          (npCtx.field==='inn'?t.toStore===me.code:t.fromStore===me.code)));
+        db.transferLog.unshift({
+          id:Date.now(),ts:ts2,day:curDay,
+          fromStore:npCtx.field==='inn'?sc:me.code,
+          fromName:npCtx.field==='inn'?ss.name:me.name,
+          toStore:npCtx.field==='trf'?sc:me.code,
+          toName:npCtx.field==='trf'?ss.name:me.name,
+          prodCode:npCtx.code,prodName:pp?pp.en:npCtx.code,
+          prodAr:pp?pp.ar||'':'',qty:val,note:'via numpad'
+        });
+      }
+    }
+  }
+  const scrollEl=document.getElementById('scrollArea');
+  const st=scrollEl?scrollEl.scrollTop:0;
+  dbSet(me.code,curDay,npCtx.code,npCtx.field,val);
+  saveDB();
+  closeNP();
+  buildGrid();buildFooter();buildDayTabs();updateTotalsRow();
+  if(scrollEl) scrollEl.scrollTop=st;
+  toast('✓ Saved');
+}
+
+// Also override nk/nc/nd to handle finNPBuf
+const _orig_nk = window.nk;
+function nk(k){
+  if(finNPCtx && !npCtx){
+    if(finNPBuf==='0') finNPBuf=k;
+    else finNPBuf+=k;
+    if(parseFloat(finNPBuf)>999999) finNPBuf='999999';
+    document.getElementById('npVal').textContent=finNPBuf||'0';
+    return;
+  }
+  if(npBuf==='0')npBuf=k;
+  else npBuf+=k;
+  if(parseInt(npBuf)>9999)npBuf='9999';
+  document.getElementById('npVal').textContent=npBuf||'0';
+  updateNpProj();
+}
+function nc(){
+  if(finNPCtx&&!npCtx){finNPBuf='0';document.getElementById('npVal').textContent='0';return;}
+  npBuf='';document.getElementById('npVal').textContent='0';updateNpProj();
+}
+function nd(){
+  if(finNPCtx&&!npCtx){
+    finNPBuf=finNPBuf.slice(0,-1)||'0';
+    document.getElementById('npVal').textContent=finNPBuf||'0';return;
+  }
+  npBuf=npBuf.slice(0,-1);
+  document.getElementById('npVal').textContent=npBuf||'0';updateNpProj();
 }
 
 function finCalc(){
-  const v=id=>{ const el=document.getElementById(id); return parseFloat(el?.value||0)||0; };
-  const cash=v('fin-cash'), cred=v('fin-credit');
-  // Credit card total from CC rows
-  const ccTotal = finCC.reduce((s,r)=>s+(parseFloat(r.amt)||0), 0);
-  const card = ccTotal;
-  const total = cash + card + cred;
-  const fmt = n => n.toFixed(2);
-  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=fmt(val); };
-  set('fin-card-auto', card);
-  set('fin-total-abc', total);
-  set('fin-cc-total', ccTotal);
-  set('fin-cash-sales-display', cash);
-  const openCash=v('fin-open-cash'), debtors=v('fin-debtors');
-  const totalCash = openCash + cash + debtors;
-  set('fin-total-cash', totalCash);
-  const dirAmt=v('fin-director-amt'), bankAmt=v('fin-bank-amt'), exp=v('fin-expenses');
-  const closing = totalCash - dirAmt - bankAmt - exp;
-  set('fin-closing-bal', closing);
-  // Colour closing balance
-  const cb=document.getElementById('fin-closing-bal');
-  if(cb) cb.style.color = closing<0?'#E87070':closing>0?'#C9A44E':'#666';
+  const cc = finCC.reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+  finData._ccTotal = cc;
+  finData._total   = (finData.cash||0) + cc + (finData.credit||0);
+  finData._totalCash = (finData.openCash||0) + (finData.cash||0) + (finData.debtors||0);
+  finData._closing = finData._totalCash - (finData.directorAmt||0) - (finData.bankAmt||0) - (finData.expenses||0);
 }
 
-function addCCRow(){
-  finCC.push({code:'', amt:''});
-  renderCCRows();
+function fmt2(n){ const v=parseFloat(n)||0; return v===0?'—':v.toFixed(0); }
+
+function updateFinTotalsRow(){
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('fgt-cash',   fmt2(finData.cash));
+  set('fgt-card',   fmt2(finData._ccTotal||0));
+  set('fgt-credit', fmt2(finData.credit));
+  set('fgt-total',  fmt2(finData._total||0));
 }
 
-function delCCRow(i){
-  finCC.splice(i,1);
-  renderCCRows();
+function buildFinSalesTbody(){
   finCalc();
+  const tbody=document.getElementById('fin-sales-tbody');
+  if(!tbody) return;
+  const ccTotal = finData._ccTotal||0;
+  const total   = finData._total||0;
+  tbody.innerHTML='';
+  const rows = [
+    {hash:'A', en:'Cash Sales', ar:'المبيعات النقدية', field:'cash', cls:'cash-cell'},
+    {hash:'B', en:'Credit Card Sales', ar:'المبيعات بالبطاقة', field:null, cls:'card-cell', auto:true, val:ccTotal},
+    {hash:'C', en:'Credit Sales', ar:'المبيعات غير المدفوعة', field:'credit', cls:'credit-cell'},
+  ];
+  rows.forEach(row=>{
+    const tr=document.createElement('tr');
+    tr.className='fin-grid-row';
+    const val = row.auto ? row.val : (finData[row.field]||0);
+    const isEmpty = val===0;
+    const autoNote = row.auto ? `<span class="fd-sub">Auto from CC rows below</span>` : '';
+    tr.innerHTML=`
+      <td class="fgt-hash">${row.hash}</td>
+      <td class="fgt-detail">
+        <span class="fd-en">${row.en}</span>
+        <span class="fd-ar">${row.ar}</span>
+        ${autoNote}
+      </td>
+      <td class="fgt-cell ${row.cls}${row.auto?' auto-cell':''}"
+          ${row.field&&!row.auto?'onclick="openFinNP(this.dataset.finfield)"':''} data-finfield="${row.field||''}">
+        <span class="fgt-cell-inner${isEmpty?' empty':''}">${isEmpty?'—':val.toFixed(0)}</span>
+      </td>
+      <td class="fgt-cell auto-cell fgh-total">
+        <span class="fgt-cell-inner ${isEmpty?'empty':''}">${isEmpty?'—':val.toFixed(0)}</span>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  // Total row
+  const totTr=document.createElement('tr');
+  totTr.className='fin-grid-row fin-closing';
+  totTr.innerHTML=`
+    <td class="fgt-hash" colspan="2" style="border:1px solid #1E1E1E;padding:8px 12px;
+      font-family:var(--f-mono);font-size:10px;font-weight:700;color:#C9A44E;">
+      TOTAL (A+B+C) — المجموع
+    </td>
+    <td class="fgt-cell auto-cell fgh-card" style="cursor:default;">
+      <span class="fgt-cell-inner" style="color:#1A3A7A;">${fmt2(finData._ccTotal||0)}</span>
+    </td>
+    <td class="fgt-cell auto-cell" style="background:#FFF8E0;cursor:default;">
+      <span class="fgt-cell-inner" style="color:#7A5200;font-size:18px;font-weight:900;">${total>0?total.toFixed(0):'—'}</span>
+    </td>`;
+  tbody.appendChild(totTr);
+  updateFinTotalsRow();
+}
+
+function buildFinCashTbody(){
+  finCalc();
+  const tbody=document.getElementById('fin-cash-tbody');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  const totalCash = finData._totalCash||0;
+  const closing   = finData._closing||0;
+
+  const cashRows=[
+    {hash:'E',  en:'Opening Cash Balance',        ar:'المبلغ الافتتاحي',           field:'openCash',    cls:'cash-cell'},
+    {hash:'',   en:'Cash Sales for the Day',       ar:'المبيعات اليومية النقدية',   field:null, auto:true, val:finData.cash||0, cls:'cash-cell'},
+    {hash:'',   en:'Cash Received from Debtors',   ar:'من المدينين',                field:'debtors',     cls:'cash-cell'},
+  ];
+  cashRows.forEach(row=>{
+    const tr=document.createElement('tr');
+    tr.className='fin-grid-row';
+    const val = row.auto ? row.val : (finData[row.field]||0);
+    const empty = val===0;
+    tr.innerHTML=`
+      <td class="fgt-hash">${row.hash}</td>
+      <td class="fgt-detail">
+        <span class="fd-en">${row.en}</span>
+        <span class="fd-ar">${row.ar}</span>
+        ${row.auto?'<span class="fd-sub">Auto from Cash Sales (A)</span>':''}
+      </td>
+      <td class="fgt-cell ${row.cls}${row.auto?' auto-cell':''}" colspan="2"
+          ${row.auto?'':'onclick="openFinNP(this.dataset.finfield)"'} data-finfield="${row.field||''}">
+        <span class="fgt-cell-inner${empty?' empty':''}">${empty?'—':val.toFixed(0)}</span>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  // Total Cash subtotal
+  const tcTr=document.createElement('tr');
+  tcTr.className='fin-grid-row fin-subtotal';
+  tcTr.innerHTML=`
+    <td class="fgt-hash">E</td>
+    <td class="fgt-detail">
+      <span class="fd-en" style="font-weight:700;color:#6FCF97;">Total Cash / المجموع نقداً</span>
+    </td>
+    <td class="fgt-cell auto-cell" colspan="2" style="background:#E8F5E8;cursor:default;">
+      <span class="fgt-cell-inner" style="color:#1A6040;font-size:17px;">${totalCash>0?totalCash.toFixed(0):'—'}</span>
+    </td>`;
+  tbody.appendChild(tcTr);
+
+  // Director name row (text input inline)
+  const dirTr=document.createElement('tr');
+  dirTr.className='fin-grid-row';
+  dirTr.innerHTML=`
+    <td class="fgt-hash">F</td>
+    <td class="fgt-detail">
+      <span class="fd-en">Cash Given to Directors</span>
+      <span class="fd-ar">المبلغ المدفوع للمدير</span>
+      <input class="fin-inline-text" id="fin-director-name" placeholder="Director name"
+        value="${finData.directorName||''}"
+        oninput="finData.directorName=this.value">
+    </td>
+    <td class="fgt-cell credit-cell" colspan="2" onclick="openFinNP('directorAmt')">
+      <span class="fgt-cell-inner${(finData.directorAmt||0)===0?' empty':''}">${(finData.directorAmt||0)>0?finData.directorAmt.toFixed(0):'—'}</span>
+    </td>`;
+  tbody.appendChild(dirTr);
+
+  // Bank deposit row
+  const bankTr=document.createElement('tr');
+  bankTr.className='fin-grid-row';
+  bankTr.innerHTML=`
+    <td class="fgt-hash">G</td>
+    <td class="fgt-detail">
+      <span class="fd-en">Deposit into Bank</span>
+      <span class="fd-ar">إيداع في البنك رقم القسيمة</span>
+      <input class="fin-inline-text" id="fin-bank-slip" placeholder="Slip number"
+        value="${finData.bankSlip||''}"
+        oninput="finData.bankSlip=this.value">
+    </td>
+    <td class="fgt-cell credit-cell" colspan="2" onclick="openFinNP('bankAmt')">
+      <span class="fgt-cell-inner${(finData.bankAmt||0)===0?' empty':''}">${(finData.bankAmt||0)>0?finData.bankAmt.toFixed(0):'—'}</span>
+    </td>`;
+  tbody.appendChild(bankTr);
+
+  // Expenses
+  const expTr=document.createElement('tr');
+  expTr.className='fin-grid-row';
+  expTr.innerHTML=`
+    <td class="fgt-hash">H</td>
+    <td class="fgt-detail">
+      <span class="fd-en">Expenses (Attach Bills)</span>
+      <span class="fd-ar">المصاريف (مع إرفاق الفاتورة)</span>
+    </td>
+    <td class="fgt-cell credit-cell" colspan="2" onclick="openFinNP('expenses')">
+      <span class="fgt-cell-inner${(finData.expenses||0)===0?' empty':''}">${(finData.expenses||0)>0?finData.expenses.toFixed(0):'—'}</span>
+    </td>`;
+  tbody.appendChild(expTr);
+
+  // Closing balance
+  const clsTr=document.createElement('tr');
+  clsTr.className='fin-grid-row fin-closing';
+  clsTr.innerHTML=`
+    <td class="fgt-hash" colspan="2" style="border:1px solid #1E1E1E;padding:8px 12px;
+      font-family:var(--f-mono);font-size:10px;font-weight:700;color:#C9A44E;">
+      CLOSING CASH BALANCE (E−F−G−H)<br>
+      <span style="font-family:var(--f-ar);font-size:9px;color:#8B6914;direction:rtl;display:block;margin-top:2px;">
+        الرصيد النقدي الختامي في الفرع
+      </span>
+    </td>
+    <td class="fgt-cell closing-cell${closing<0?' neg-close':''}" colspan="2" style="cursor:default;">
+      <span class="fgt-cell-inner">${closing!==0?closing.toFixed(0):'—'}</span>
+    </td>`;
+  tbody.appendChild(clsTr);
 }
 
 function renderCCRows(){
-  const tbody = document.getElementById('fin-cc-tbody');
+  const tbody=document.getElementById('fin-cc-tbody');
   if(!tbody) return;
   tbody.innerHTML='';
   if(!finCC.length){
-    const tr=document.createElement('tr');
-    tr.innerHTML='<td colspan="4" style="padding:10px;text-align:center;font-family:var(--f-mono);font-size:10px;color:#2A2A2A;border:1px solid #1E1E1E;">No transactions — tap + Add</td>';
-    tbody.appendChild(tr);
+    tbody.innerHTML='<tr><td colspan="4" class="fin-empty-row">Tap ＋ Add to enter credit card transactions</td></tr>';
     return;
   }
   finCC.forEach((row,i)=>{
     const tr=document.createElement('tr');
+    tr.className='fin-grid-row';
+    const amtEmpty = (parseFloat(row.amt)||0)===0;
     tr.innerHTML=`
-      <td class="fin-cc-num-cell" style="padding:2px 4px;text-align:center;font-family:var(--f-mono);font-size:10px;color:#555;">${i+1}</td>
-      <td class="fin-cc-code-cell">
-        <input class="fin-cc-input" value="${row.code}" placeholder="Approval Code"
-          oninput="finCC[${i}].code=this.value" style="min-width:0;font-size:12px;letter-spacing:0.5px;">
+      <td class="fgt-hash">${i+1}</td>
+      <td class="fgt-detail" style="padding:0;">
+        <input style="width:100%;background:transparent;border:none;outline:none;
+          font-family:var(--f-mono);font-size:12px;color:#CCC;padding:10px 12px;display:block;"
+          value="${row.code||''}" placeholder="Approval Code"
+          oninput="finCC[${i}].code=this.value">
       </td>
-      <td class="fin-cc-amt-cell">
-        <input class="fin-cc-input amt-input" value="${row.amt||''}" placeholder="0.00" type="number"
-          inputmode="decimal" oninput="finCC[${i}].amt=this.value;finCalc()" style="font-size:13px;">
+      <td class="fgt-cell card-cell" onclick="openFinCCNP(${i})">
+        <span class="fgt-cell-inner${amtEmpty?' empty':''}">${amtEmpty?'—':(parseFloat(row.amt)||0).toFixed(0)}</span>
       </td>
       <td class="fin-cc-del-cell">
         <button class="fin-cc-del-btn" onclick="delCCRow(${i})">✕</button>
       </td>`;
     tbody.appendChild(tr);
   });
+  // CC total row
+  const ccTotal=finCC.reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+  const totTr=document.createElement('tr');
+  totTr.className='fin-grid-row fin-subtotal';
+  totTr.innerHTML=`
+    <td class="fgt-hash" colspan="2" style="border:1px solid #1E1E1E;padding:8px 12px;
+      font-family:var(--f-mono);font-size:10px;font-weight:700;color:#1A3A7A;">
+      CC TOTAL — مجموع البطاقات
+    </td>
+    <td class="fgt-cell auto-cell" style="background:#E8EEF8;cursor:default;" colspan="2">
+      <span class="fgt-cell-inner" style="color:#1A3A7A;font-size:17px;">${ccTotal>0?ccTotal.toFixed(0):'—'}</span>
+    </td>`;
+  tbody.appendChild(totTr);
+}
+
+function openFinCCNP(i){
+  finNPCtx = '__cc__'+i;
+  finNPBuf = String(parseFloat(finCC[i]?.amt)||0);
+  if(finNPBuf==='0') finNPBuf='';
+  document.getElementById('npProduct').textContent = 'CC Transaction #'+(i+1);
+  const fEl=document.getElementById('npField');
+  fEl.textContent='Amount / المبلغ (AED)';
+  fEl.className='np-field inn';
+  document.getElementById('npCurLabel').textContent='CURRENT VALUE';
+  document.getElementById('npVal').textContent=finNPBuf||'0';
+  document.getElementById('npNote').textContent=(finCC[i]?.code?'Code: '+finCC[i].code:'Enter code in the row, amount here');
+  const sr=document.getElementById('npStoreRow');if(sr)sr.style.display='none';
+  npCtx=null;
+  document.getElementById('numpad').classList.add('show');
+}
+
+// Override confirmNP with CC support
+
+
+function addCCRow(){
+  finCC.push({code:'',amt:0});
+  renderCCRows();
+}
+function delCCRow(i){
+  finCC.splice(i,1);
+  finCalc();
+  renderCCRows();
+  buildFinSalesTbody();
+  updateFinTotalsRow();
 }
 
 function saveFinanceData(){
   if(!me) return;
-  const finDay = typeof dashDay!=='undefined' ? dashDay : DAY_PAST;
+  const finDay=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
   if(!db.finance) db.finance={};
   if(!db.finance[me.code]) db.finance[me.code]={};
-  const g = id => document.getElementById(id)?.value||'';
-  const n = id => parseFloat(document.getElementById(id)?.value||0)||0;
-  db.finance[me.code][finDay] = {
-    cash:n('fin-cash'), credit:n('fin-credit'),
-    openCash:n('fin-open-cash'), debtors:n('fin-debtors'),
-    directorName:g('fin-director-name'), directorAmt:n('fin-director-amt'),
-    bankSlip:g('fin-bank-slip'), bankAmt:n('fin-bank-amt'),
-    expenses:n('fin-expenses'),
-    preparedBy:g('fin-prepared-by'), checkedBy:g('fin-checked-by'),
-    ccRows:[...finCC.map(r=>({code:r.code,amt:r.amt}))],
-    savedAt: new Date().toLocaleString('en-GB')
-  };
+  const dn=document.getElementById('fin-director-name');
+  const bs=document.getElementById('fin-bank-slip');
+  const pb=document.getElementById('fin-prepared-by');
+  const cb=document.getElementById('fin-checked-by');
+  if(dn) finData.directorName=dn.value;
+  if(bs) finData.bankSlip=bs.value;
+  if(pb) finData.preparedBy=pb.value;
+  if(cb) finData.checkedBy=cb.value;
+  finData.ccRows=[...finCC.map(r=>({code:r.code||'',amt:r.amt||0}))];
+  db.finance[me.code][finDay]={...finData, savedAt:new Date().toLocaleString('en-GB')};
   saveDB();
-  const dl = getDayLabels()[finDay];
+  const dl=getDayLabels()[finDay];
   toast('💾 Finance saved — '+(dl?dl.full+' '+dl.date:''));
 }
 
 function loadFinanceData(finDay){
-  // Reset
   finCC=[];
-  ['fin-cash','fin-credit','fin-open-cash','fin-debtors',
-   'fin-director-name','fin-director-amt','fin-bank-slip',
-   'fin-bank-amt','fin-expenses','fin-prepared-by','fin-checked-by'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-  if(!me || !db.finance?.[me.code]?.[finDay]) {
-    renderCCRows(); finCalc(); return;
+  finData={cash:0,credit:0,openCash:0,debtors:0,directorAmt:0,bankAmt:0,expenses:0,
+    directorName:'',bankSlip:'',preparedBy:'',checkedBy:'',ccRows:[]};
+  if(me && db.finance?.[me.code]?.[finDay]){
+    const d=db.finance[me.code][finDay];
+    Object.assign(finData,d);
+    finCC=(d.ccRows||[]).map(r=>({code:r.code||'',amt:r.amt||0}));
   }
-  const d = db.finance[me.code][finDay];
-  const set = (id,v) => { const el=document.getElementById(id); if(el) el.value=v||''; };
-  set('fin-cash',d.cash||''); set('fin-credit',d.credit||'');
-  set('fin-open-cash',d.openCash||''); set('fin-debtors',d.debtors||'');
-  set('fin-director-name',d.directorName||''); set('fin-director-amt',d.directorAmt||'');
-  set('fin-bank-slip',d.bankSlip||''); set('fin-bank-amt',d.bankAmt||'');
-  set('fin-expenses',d.expenses||'');
-  set('fin-prepared-by',d.preparedBy||''); set('fin-checked-by',d.checkedBy||'');
-  finCC = d.ccRows ? d.ccRows.map(r=>({code:r.code||'',amt:r.amt||''})) : [];
-  renderCCRows();
   finCalc();
+  buildFinSalesTbody();
+  buildFinCashTbody();
+  renderCCRows();
+  updateFinTotalsRow();
+  // Restore text inputs
+  const dn=document.getElementById('fin-director-name');if(dn)dn.value=finData.directorName||'';
+  const bs=document.getElementById('fin-bank-slip');if(bs)bs.value=finData.bankSlip||'';
+  const pb=document.getElementById('fin-prepared-by');if(pb)pb.value=finData.preparedBy||'';
+  const cb=document.getElementById('fin-checked-by');if(cb)cb.value=finData.checkedBy||'';
 }
 
 function openFinanceTab(){
-  const finDay = typeof dashDay!=='undefined' ? dashDay : DAY_PAST;
-  const dl = getDayLabels()[finDay];
-  const sn = document.getElementById('finStoreName');
-  const dv = document.getElementById('finDateVal');
-  const hd = document.getElementById('fin-hdr-date');
-  const ho = document.getElementById('fin-hdr-outlet');
-  if(sn) sn.textContent = me ? me.name : '—';
-  if(dv) dv.textContent = dl ? dl.full+' '+dl.date : '—';
-  if(hd) hd.textContent = dl ? dl.date+'/'+new Date().getFullYear() : '—';
-  if(ho) ho.textContent = me ? me.name.split(' ').slice(0,3).join(' ') : '—';
+  const finDay=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  const dl=getDayLabels()[finDay];
+  const sn=document.getElementById('finStoreName');if(sn)sn.textContent=me?me.name:'—';
+  const dv=document.getElementById('finDateVal');if(dv)dv.textContent=dl?dl.full+' '+dl.date:'—';
+  const hd=document.getElementById('fin-hdr-date');if(hd)hd.textContent=dl?dl.date+'/'+new Date().getFullYear():'—';
+  const ho=document.getElementById('fin-hdr-outlet');if(ho)ho.textContent=me?me.name.split(' ').slice(0,3).join(' '):'—';
   loadFinanceData(finDay);
-  // default to day view
   finSelectPeriod('day');
 }
 
+function finSelectPeriod(p){
+  finPeriod=p;
+  ['day','week','month'].forEach(x=>{
+    const t=document.getElementById('fpt-'+x);if(t)t.classList.toggle('active',x===p);
+    const v=document.getElementById('fin-'+x+'-view');if(v)v.style.display=x===p?'block':'none';
+  });
+  if(p==='week') renderFinWeek();
+  if(p==='month') renderFinMonth();
+}
+
 function renderFinWeek(){
-  const body = document.getElementById('fin-week-view');
+  const body=document.getElementById('fin-week-view');
   if(!body||!me) return;
-  const labels = getDayLabels();
-  let rows='', totCash=0,totCard=0,totTotal=0,totClosing=0;
+  const labels=getDayLabels();
+  let rows='',totCash=0,totCard=0,totCred=0,totTotal=0;
   labels.forEach((dl,di)=>{
-    const d = db.finance?.[me.code]?.[di];
-    if(!d) return;
+    const d=db.finance?.[me.code]?.[di]; if(!d) return;
     const cash=parseFloat(d.cash)||0;
     const cc=(d.ccRows||[]).reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
-    const total=cash+cc+(parseFloat(d.credit)||0);
-    const closing=((parseFloat(d.openCash)||0)+cash+(parseFloat(d.debtors)||0))
-      -(parseFloat(d.directorAmt)||0)-(parseFloat(d.bankAmt)||0)-(parseFloat(d.expenses)||0);
-    totCash+=cash; totCard+=cc; totTotal+=total; totClosing+=closing;
+    const cred=parseFloat(d.credit)||0;
+    const total=cash+cc+cred;
+    totCash+=cash;totCard+=cc;totCred+=cred;totTotal+=total;
     const locked=isLocked(me.code,di);
     rows+=`<div class="fin-period-day-row">
-      <div>
-        <div class="fin-period-day-label" style="${di===DAY_PAST?'color:var(--gold);':''}">${dl.full} ${dl.date}${locked?' 🔒':''}</div>
-        ${d.preparedBy?`<div style="font-size:9px;color:#444;font-family:var(--f-mono);">By: ${d.preparedBy}</div>`:''}
+      <div><div class="fin-period-day-label" style="${di===DAY_PAST?'color:var(--gold);':''}">${dl.full} ${dl.date}${locked?' 🔒':''}</div>
+      ${d.preparedBy?`<div style="font-size:9px;color:#444;font-family:var(--f-mono);">By: ${d.preparedBy}</div>`:''}
       </div>
       <div class="fin-period-day-vals">
-        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#7FC860;">${cash.toFixed(0)}</span><span class="fin-period-val-l">Cash</span></div>
-        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#6FA8DC;">${cc.toFixed(0)}</span><span class="fin-period-val-l">Card</span></div>
-        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#C9A44E;">${total.toFixed(0)}</span><span class="fin-period-val-l">Total</span></div>
-        <div class="fin-period-val"><span class="fin-period-val-n" style="color:${closing>=0?'#6FCF97':'#E87070'};">${closing.toFixed(0)}</span><span class="fin-period-val-l">Closing</span></div>
+        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#1A6040;">${cash||'—'}</span><span class="fin-period-val-l">Cash</span></div>
+        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#1A3A7A;">${cc||'—'}</span><span class="fin-period-val-l">Card</span></div>
+        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#C9A44E;">${total||'—'}</span><span class="fin-period-val-l">Total</span></div>
       </div>
     </div>`;
   });
-  if(!rows) rows='<div style="text-align:center;padding:30px;color:#333;font-family:var(--f-mono);font-size:11px;">No finance data recorded this week</div>';
+  if(!rows) rows='<div style="text-align:center;padding:30px;color:#333;font-family:var(--f-mono);font-size:11px;">No finance data this week</div>';
   body.innerHTML=`<div class="fin-period-summary">
-    <div style="font-family:var(--f-mono);font-size:9px;color:var(--gold2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Weekly Finance Summary — ${me.name}</div>
+    <div style="font-family:var(--f-mono);font-size:9px;color:var(--gold2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Weekly Finance — ${me.name}</div>
     ${rows}
     <div class="fin-period-day-row" style="background:#1A1000;border-color:#3A2A00;margin-top:8px;">
       <div class="fin-period-day-label" style="color:var(--gold2);">WEEK TOTALS</div>
       <div class="fin-period-day-vals">
-        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#7FC860;">${totCash.toFixed(0)}</span><span class="fin-period-val-l">Cash</span></div>
-        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#6FA8DC;">${totCard.toFixed(0)}</span><span class="fin-period-val-l">Card</span></div>
-        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#C9A44E;">${totTotal.toFixed(0)}</span><span class="fin-period-val-l">Total</span></div>
+        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#1A6040;">${totCash}</span><span class="fin-period-val-l">Cash</span></div>
+        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#1A3A7A;">${totCard}</span><span class="fin-period-val-l">Card</span></div>
+        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#C9A44E;">${totTotal}</span><span class="fin-period-val-l">Total</span></div>
       </div>
     </div>
     <div class="fin-period-export">
@@ -3231,194 +3422,85 @@ function renderFinWeek(){
 }
 
 function renderFinMonth(){
-  const body = document.getElementById('fin-month-view');
-  if(!body||!me) return;
-  // Month = aggregation of all 15 days in window
-  const labels = getDayLabels();
-  let rows='', totCash=0,totCard=0,totCred=0,totTotal=0;
-  // Group by calendar month
-  const monthMap={};
-  labels.forEach((dl,di)=>{
-    const d=db.finance?.[me.code]?.[di]; if(!d) return;
-    const dateKey=dl.date.split('/').reverse().join('-');
-    const dt=new Date(); dt.setDate(parseInt(dl.date)); // approx
-    const mKey=dl.date.split('/')[1]+'/'+new Date().getFullYear();
-    if(!monthMap[mKey]) monthMap[mKey]={cash:0,card:0,cred:0,total:0,days:[]};
-    const cash=parseFloat(d.cash)||0;
-    const cc=(d.ccRows||[]).reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
-    const cred=parseFloat(d.credit)||0;
-    const total=cash+cc+cred;
-    monthMap[mKey].cash+=cash;monthMap[mKey].card+=cc;
-    monthMap[mKey].cred+=cred;monthMap[mKey].total+=total;
-    monthMap[mKey].days.push({dl,di,cash,cc,cred,total});
-    totCash+=cash;totCard+=cc;totCred+=cred;totTotal+=total;
-  });
-  Object.entries(monthMap).forEach(([month,mv])=>{
-    rows+=`<div style="font-family:var(--f-mono);font-size:9px;color:var(--gold2);text-transform:uppercase;letter-spacing:1px;padding:6px 0 4px;">Month: ${month}</div>`;
-    mv.days.forEach(({dl,di,cash,cc,cred,total})=>{
-      const locked=isLocked(me.code,di);
-      rows+=`<div class="fin-period-day-row">
-        <div class="fin-period-day-label">${dl.full} ${dl.date}${locked?' 🔒':''}</div>
-        <div class="fin-period-day-vals">
-          <div class="fin-period-val"><span class="fin-period-val-n" style="color:#7FC860;">${cash.toFixed(0)}</span><span class="fin-period-val-l">Cash</span></div>
-          <div class="fin-period-val"><span class="fin-period-val-n" style="color:#6FA8DC;">${cc.toFixed(0)}</span><span class="fin-period-val-l">Card</span></div>
-          <div class="fin-period-val"><span class="fin-period-val-n" style="color:#E87070;">${cred.toFixed(0)}</span><span class="fin-period-val-l">Credit</span></div>
-          <div class="fin-period-val"><span class="fin-period-val-n" style="color:#C9A44E;">${total.toFixed(0)}</span><span class="fin-period-val-l">Total</span></div>
-        </div>
-      </div>`;
-    });
-    rows+=`<div class="fin-period-day-row" style="background:#1A1000;margin-bottom:12px;">
-      <div class="fin-period-day-label" style="color:var(--gold2);">Month Total</div>
-      <div class="fin-period-day-vals">
-        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#7FC860;">${mv.cash.toFixed(0)}</span><span class="fin-period-val-l">Cash</span></div>
-        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#6FA8DC;">${mv.card.toFixed(0)}</span><span class="fin-period-val-l">Card</span></div>
-        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#C9A44E;">${mv.total.toFixed(0)}</span><span class="fin-period-val-l">Total</span></div>
-      </div>
-    </div>`;
-  });
-  if(!rows) rows='<div style="text-align:center;padding:30px;color:#333;font-family:var(--f-mono);font-size:11px;">No finance data recorded this month</div>';
-  body.innerHTML=`<div class="fin-period-summary">
-    <div style="font-family:var(--f-mono);font-size:9px;color:var(--gold2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Monthly Finance Summary — ${me.name}</div>
-    ${rows}
-    <div class="fin-period-export">
-      <button class="fin-act-btn save" onclick="exportFinancePDF('month')" style="font-size:12px;padding:10px;">📋 Export Month PDF</button>
-    </div>
-  </div>`;
+  // same as week for 15-day window
+  renderFinWeek();
+  document.getElementById('fin-month-view').innerHTML=document.getElementById('fin-week-view').innerHTML;
 }
 
 function exportFinancePDF(period){
-  if(!me){toast('Please log in first');return;}
-  period = period || 'day';
-  if(period==='week'){ exportFinanceWeekPDF(); return; }
-  if(period==='month'){ exportFinanceMonthPDF(); return; }
-  // ── DAY PDF ──
-  const finDay = typeof dashDay!=='undefined' ? dashDay : DAY_PAST;
-  const dl = getDayLabels()[finDay];
-  const g = id => document.getElementById(id)?.value||'';
-  const n = id => parseFloat(document.getElementById(id)?.value||0)||0;
-  const cash=n('fin-cash'), cred=n('fin-credit');
-  const ccTotal = finCC.reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
-  const card = ccTotal;
-  const total=cash+card+cred;
-  const openCash=n('fin-open-cash'), debtors=n('fin-debtors');
-  const totalCash=openCash+cash+debtors;
-  const dirAmt=n('fin-director-amt'), bankAmt=n('fin-bank-amt'), exp=n('fin-expenses');
-  const closing=totalCash-dirAmt-bankAmt-exp;
-  const dirName=g('fin-director-name'), bankSlip=g('fin-bank-slip');
-  const prepBy=g('fin-prepared-by'), chkBy=g('fin-checked-by');
-  // CC table split into two columns
+  if(!me){toast('Please log in');return;}
+  if(period==='week'||period==='month'){exportFinanceWeekPDF();return;}
+  // Day PDF
+  const finDay=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  const dl=getDayLabels()[finDay];
+  finCalc();
+  const dn=document.getElementById('fin-director-name');if(dn)finData.directorName=dn.value;
+  const bs=document.getElementById('fin-bank-slip');if(bs)finData.bankSlip=bs.value;
+  const pb=document.getElementById('fin-prepared-by');if(pb)finData.preparedBy=pb.value;
+  const cb=document.getElementById('fin-checked-by');if(cb)finData.checkedBy=cb.value;
+  const {cash,credit,directorAmt,bankAmt,expenses,directorName,bankSlip,preparedBy,checkedBy,
+    _ccTotal:ccTotal,_total:total,_totalCash:totalCash,_closing:closing}=finData;
   const mid=Math.ceil(finCC.length/2);
   let ccL='',ccR='';
   finCC.forEach((r,i)=>{
-    const row=`<tr><td style="padding:4px 6px;border:1px solid #DDD;text-align:center;font-size:10px;">${i+1}</td><td style="padding:4px 8px;border:1px solid #DDD;font-family:monospace;font-size:10px;">${r.code||''}</td><td style="padding:4px 8px;border:1px solid #DDD;text-align:right;font-weight:700;font-size:11px;">${parseFloat(r.amt||0).toFixed(2)}</td></tr>`;
-    if(i<mid) ccL+=row; else ccR+=row;
+    const row=`<tr><td style="padding:4px 6px;border:1px solid #DDD;text-align:center;">${i+1}</td><td style="padding:4px 8px;border:1px solid #DDD;font-family:monospace;">${r.code||''}</td><td style="padding:4px 8px;border:1px solid #DDD;text-align:right;font-weight:700;">${(parseFloat(r.amt)||0).toFixed(0)}</td></tr>`;
+    if(i<mid)ccL+=row;else ccR+=row;
   });
-  const ccTotRow=`<tr style="background:#F5F0E8;"><td colspan="2" style="padding:4px 8px;border:1px solid #DDD;font-weight:700;font-size:10px;">TOTAL</td><td style="padding:4px 8px;border:1px solid #DDD;text-align:right;font-weight:800;color:#1A4A8B;">${ccTotal.toFixed(2)}</td></tr>`;
-
-  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-<title>Daily Sales Report — ${me.name} — ${dl?dl.date:''}</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1A1A1A;
-  font-size:11px;padding:14mm 12mm 10mm;}
-@page{size:A4 portrait;margin:0;}
-.page-header{display:flex;align-items:flex-start;justify-content:space-between;
-  padding-bottom:10px;border-bottom:2.5px solid #C9A44E;margin-bottom:10px;}
-.brand-col .logo-en{font-size:16px;font-weight:900;color:#C9A44E;letter-spacing:1px;}
-.brand-col .logo-ar{font-family:Tahoma;font-size:14px;color:#8B6914;direction:rtl;margin-top:3px;}
-.brand-col .logo-sub{font-size:9px;color:#999;margin-top:3px;letter-spacing:0.5px;}
-.title-col{flex:1;text-align:center;padding:0 8px;}
-.title-col .title-ar{font-family:Tahoma;font-size:15px;font-weight:700;direction:rtl;color:#1A1A1A;}
-.title-col .title-en{font-size:13px;font-weight:800;letter-spacing:1px;color:#1A1A1A;margin-top:3px;}
-.meta-col{text-align:right;}
-.meta-box{border:1.5px solid #CCC;border-radius:3px;padding:4px 10px;margin-bottom:5px;text-align:right;}
-.meta-lbl{font-size:7px;color:#999;text-transform:uppercase;letter-spacing:0.5px;}
-.meta-val{font-size:12px;font-weight:700;color:#1A1A1A;font-family:monospace;}
-.section{margin-bottom:10px;}
-.section-title{font-size:9px;font-weight:700;color:#7A5200;text-transform:uppercase;
-  letter-spacing:0.8px;margin-bottom:4px;padding:4px 6px;background:#F8F4E8;border-left:3px solid #C9A44E;}
-table.main-table{width:100%;border-collapse:collapse;}
-table.main-table th{background:#1A1A1A;color:#fff;padding:5px 8px;font-size:9px;
-  text-transform:uppercase;letter-spacing:0.5px;border:1px solid #333;}
-table.main-table th.lh{text-align:left;}
-table.main-table th.rh{text-align:right;width:120px;}
-table.main-table td{border:1px solid #DDD;padding:6px 8px;vertical-align:middle;}
-table.main-table .hash-cell{width:28px;text-align:center;font-weight:700;color:#888;background:#FAFAFA;}
-table.main-table .det-cell .en{font-size:11px;font-weight:500;display:block;}
-table.main-table .det-cell .ar{font-family:Tahoma;font-size:9px;color:#888;direction:rtl;display:block;margin-top:1px;}
-table.main-table .amt-cell{text-align:right;font-family:monospace;font-weight:700;font-size:13px;}
-table.main-table .amt-cell.empty{color:#CCC;font-size:10px;font-style:italic;}
-.total-row td{background:#1A1A1A;color:#fff;font-weight:800;}
-.total-row .amt-cell{color:#C9A44E;font-size:14px;}
-.subtotal-row td{background:#F5F0E8;}
-.subtotal-row .amt-cell{color:#1A6040;font-size:13px;}
-.closing-row td{background:#F8F4E8;border-top:2px solid #C9A44E;}
-.closing-row .amt-cell{color:#7A5200;font-size:16px;}
-.cc-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.cc-table{width:100%;border-collapse:collapse;}
-.cc-table th{background:#2A2A2A;color:#DDD;padding:4px 6px;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;}
-.sig-section{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
-.sig-box{border-top:1.5px solid #1A1A1A;padding-top:6px;}
-.sig-name{font-size:13px;font-weight:700;color:#1A1A1A;min-height:20px;margin-bottom:4px;}
-.sig-label{display:flex;justify-content:space-between;}
-.sig-label .en{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px;}
-.sig-label .ar{font-family:Tahoma;font-size:9px;color:#888;direction:rtl;}
+  const ccTotRow=`<tr style="background:#EEF4FF;"><td colspan="2" style="padding:4px 8px;border:1px solid #DDD;font-weight:700;">TOTAL</td><td style="padding:4px 8px;border:1px solid #DDD;text-align:right;font-weight:900;color:#1A3A7A;">${(ccTotal||0).toFixed(0)}</td></tr>`;
+  const f=n=>n?parseFloat(n).toFixed(0):'—';
+  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Daily Sales Report</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1A1A1A;font-size:11px;padding:14mm 12mm;}@page{size:A4 portrait;margin:0;}
+.hd{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:10px;border-bottom:2.5px solid #C9A44E;margin-bottom:10px;}
+.logo-en{font-size:16px;font-weight:900;color:#C9A44E;}.logo-ar{font-family:Tahoma;font-size:13px;color:#8B6914;direction:rtl;margin-top:2px;}
+.tc{flex:1;text-align:center;}.tar{font-family:Tahoma;font-size:15px;font-weight:700;direction:rtl;}.ten{font-size:13px;font-weight:800;letter-spacing:1px;margin-top:2px;}
+.mb{border:1.5px solid #CCC;border-radius:3px;padding:3px 8px;margin-bottom:4px;text-align:right;}.ml{font-size:7px;color:#999;text-transform:uppercase;}.mv{font-size:12px;font-weight:700;font-family:monospace;}
+table.mt{width:100%;border-collapse:collapse;margin-bottom:8px;}
+table.mt th{background:#1A1A1A;color:#fff;padding:5px 8px;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;border:1px solid #333;}
+table.mt td{border:1px solid #DDD;padding:5px 8px;vertical-align:middle;}
+.hsh{width:28px;text-align:center;font-weight:700;color:#888;background:#FAFAFA;}
+.nen{font-size:11px;font-weight:500;display:block;}.nar{font-family:Tahoma;font-size:9px;color:#888;direction:rtl;display:block;margin-top:1px;}
+.amt{text-align:right;font-family:monospace;font-weight:700;font-size:13px;}
+.tot td{background:#1A1A1A;color:#fff;font-weight:800;}.tot .amt{color:#C9A44E;font-size:14px;}
+.sub td{background:#F5F0E8;}.cls td{background:#F8F4E8;border-top:2px solid #C9A44E;}
+.cls .amt{color:#7A5200;font-size:16px;}
+.ccw{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cc th{background:#2A2A2A;color:#DDD;padding:4px 6px;font-size:9px;text-transform:uppercase;}
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;}
+.sb{border-top:1.5px solid #1A1A1A;padding-top:5px;}
+.sn{font-size:13px;font-weight:700;min-height:18px;margin-bottom:3px;}
+.sl{display:flex;justify-content:space-between;font-size:9px;color:#888;}
 </style></head><body>
-<div class="page-header">
-  <div class="brand-col">
-    <div class="logo-en">EMIRATES PRIDE</div>
-    <div class="logo-ar">فخـر الإمارات</div>
-    <div class="logo-sub">Perfumes & Fragrances</div>
-  </div>
-  <div class="title-col">
-    <div class="title-ar">تقرير المبيعات اليومية</div>
-    <div class="title-en">DAILY SALES REPORT</div>
-  </div>
-  <div class="meta-col">
-    <div class="meta-box"><div class="meta-lbl">التاريخ · Date</div><div class="meta-val">${dl?dl.date+'/'+new Date().getFullYear():''}</div></div>
-    <div class="meta-box"><div class="meta-lbl">الفرع · Outlet</div><div class="meta-val">${me.name.split(' ').slice(0,3).join(' ')}</div></div>
-  </div>
+<div class="hd">
+<div><div class="logo-en">🌹 EMIRATES PRIDE</div><div class="logo-ar">فخر الإمارات</div></div>
+<div class="tc"><div class="tar">تقرير المبيعات اليومية</div><div class="ten">DAILY SALES REPORT</div></div>
+<div><div class="mb"><div class="ml">DATE · التاريخ</div><div class="mv">${dl?dl.date+'/'+new Date().getFullYear():''}</div></div>
+<div class="mb"><div class="ml">OUTLET · الفرع</div><div class="mv">${me.name.split(' ').slice(0,3).join(' ')}</div></div></div>
 </div>
-
-<div class="section">
-<table class="main-table">
-<tr><th class="hash-cell lh">#</th><th class="lh">التفاصيل · Details</th><th class="rh">المبلغ · Amount</th></tr>
-<tr><td class="hash-cell">A</td><td class="det-cell"><span class="en">Cash Sales</span><span class="ar">المبيعات النقدية</span></td><td class="amt-cell ${cash?'':'empty'}">${cash?cash.toFixed(2):'—'}</td></tr>
-<tr><td class="hash-cell">B</td><td class="det-cell"><span class="en">Credit Card Sales</span><span class="ar">المبيعات بالبطاقة</span></td><td class="amt-cell ${card?'':'empty'}">${card?card.toFixed(2):'—'}</td></tr>
-<tr><td class="hash-cell">C</td><td class="det-cell"><span class="en">Credit Sales</span><span class="ar">المبيعات غير المدفوعة</span></td><td class="amt-cell ${cred?'':'empty'}">${cred?cred.toFixed(2):'—'}</td></tr>
-<tr class="total-row"><td class="hash-cell" colspan="2"><span style="font-size:11px;">TOTAL (A+B+C) — المجموع</span></td><td class="amt-cell">${total.toFixed(2)}</td></tr>
-</table></div>
-
-<div class="section">
-<div class="section-title">Credit Card Details / تفاصيل البطاقة</div>
-<div class="cc-wrap">
-<table class="cc-table"><tr><th style="width:28px;">#</th><th>APPROVAL CODE</th><th style="text-align:right;width:80px;">AMOUNT</th></tr>
-${ccL||'<tr><td colspan="3" style="padding:6px;text-align:center;color:#CCC;font-style:italic;">—</td></tr>'}
+<table class="mt"><tr><th class="hsh">#</th><th style="text-align:left;">DETAILS / التفاصيل</th><th style="text-align:right;width:120px;">AMOUNT (AED)</th></tr>
+<tr><td class="hsh">A</td><td><span class="nen">Cash Sales</span><span class="nar">المبيعات النقدية</span></td><td class="amt">${f(cash)}</td></tr>
+<tr><td class="hsh">B</td><td><span class="nen">Credit Card Sales</span><span class="nar">المبيعات بالبطاقة</span></td><td class="amt">${f(ccTotal||0)}</td></tr>
+<tr><td class="hsh">C</td><td><span class="nen">Credit Sales</span><span class="nar">المبيعات غير المدفوعة</span></td><td class="amt">${f(credit)}</td></tr>
+<tr class="tot"><td colspan="2">TOTAL (A+B+C) — المجموع</td><td class="amt">${f(total||0)}</td></tr>
 </table>
-<table class="cc-table"><tr><th style="width:28px;">#</th><th>APPROVAL CODE</th><th style="text-align:right;width:80px;">AMOUNT</th></tr>
-${ccR||'<tr><td colspan="3" style="padding:6px;text-align:center;color:#CCC;font-style:italic;">—</td></tr>'}
-${ccTotRow}
-</table>
-</div></div>
-
-<div class="section">
-<table class="main-table">
-<tr><th class="hash-cell lh">#</th><th class="lh">التفاصيل · Details</th><th class="rh">المبلغ · Amount</th></tr>
-<tr><td class="hash-cell">E</td><td class="det-cell"><span class="en">Opening Cash Balance</span><span class="ar">المبلغ الافتتاحي</span></td><td class="amt-cell ${openCash?'':'empty'}">${openCash?openCash.toFixed(2):'—'}</td></tr>
-<tr><td class="hash-cell"></td><td class="det-cell"><span class="en">Cash Sales for the Day</span><span class="ar">المبيعات اليومية النقدية</span></td><td class="amt-cell ${cash?'':'empty'}">${cash?cash.toFixed(2):'—'}</td></tr>
-<tr><td class="hash-cell"></td><td class="det-cell"><span class="en">Cash Received from Debtors</span><span class="ar">المبالغ النقدية الواردة من المدينين</span></td><td class="amt-cell ${debtors?'':'empty'}">${debtors?debtors.toFixed(2):'—'}</td></tr>
-<tr class="subtotal-row"><td class="hash-cell">E</td><td class="det-cell"><span class="en"><strong>Total Cash</strong></span><span class="ar">المجموع نقداً</span></td><td class="amt-cell">${totalCash.toFixed(2)}</td></tr>
-<tr><td class="hash-cell">F</td><td class="det-cell"><span class="en">Cash Given to Directors${dirName?' — '+dirName:''}</span><span class="ar">المبلغ المدفوع للمدير${dirName?' — اسم المدير: '+dirName:''}</span></td><td class="amt-cell ${dirAmt?'':'empty'}">${dirAmt?'('+dirAmt.toFixed(2)+')':'—'}</td></tr>
-<tr><td class="hash-cell">G</td><td class="det-cell"><span class="en">Deposit into Bank${bankSlip?' — Slip: '+bankSlip:''}</span><span class="ar">إيداع في البنك رقم القسيمة</span></td><td class="amt-cell ${bankAmt?'':'empty'}">${bankAmt?'('+bankAmt.toFixed(2)+')':'—'}</td></tr>
-<tr><td class="hash-cell">H</td><td class="det-cell"><span class="en">Expenses (Attach Bills)</span><span class="ar">المصاريف (مع إرفاق الفاتورة)</span></td><td class="amt-cell ${exp?'':'empty'}">${exp?'('+exp.toFixed(2)+')':'—'}</td></tr>
-<tr class="closing-row"><td class="hash-cell" colspan="2"><span style="font-size:11px;font-weight:700;">CLOSING CASH BALANCE (E−F−G−H)</span><br><span style="font-family:Tahoma;font-size:9px;direction:rtl;color:#8B6914;">الرصيد النقدي الختامي في الفرع</span></td><td class="amt-cell">${closing.toFixed(2)}</td></tr>
-</table></div>
-
-<div class="sig-section">
-<div class="sig-box"><div class="sig-name">${prepBy||''}</div><div class="sig-label"><span class="en">Prepared By</span><span class="ar">كاتب التقرير</span></div></div>
-<div class="sig-box"><div class="sig-name">${chkBy||''}</div><div class="sig-label"><span class="en">Checked By</span><span class="ar">المدقق</span></div></div>
+<div style="font-size:9px;font-weight:700;color:#7A5200;margin-bottom:4px;padding:3px 6px;background:#F8F4E8;border-left:3px solid #C9A44E;">Credit Card Details / تفاصيل البطاقة</div>
+<div class="ccw">
+<table class="cc mt"><tr><th>#</th><th>APPROVAL CODE</th><th style="text-align:right;">AMT</th></tr>${ccL||'<tr><td colspan="3" style="text-align:center;color:#CCC;padding:5px;">—</td></tr>'}</table>
+<table class="cc mt"><tr><th>#</th><th>APPROVAL CODE</th><th style="text-align:right;">AMT</th></tr>${ccR||'<tr><td colspan="3" style="text-align:center;color:#CCC;padding:5px;">—</td></tr>'}${ccTotRow}</table>
 </div>
-</body></html>`;
+<table class="mt"><tr><th class="hsh">#</th><th style="text-align:left;">DETAILS / التفاصيل</th><th style="text-align:right;width:120px;">AMOUNT (AED)</th></tr>
+<tr><td class="hsh">E</td><td><span class="nen">Opening Cash Balance</span><span class="nar">المبلغ الافتتاحي</span></td><td class="amt">${f(finData.openCash)}</td></tr>
+<tr><td class="hsh"></td><td><span class="nen">Cash Sales for the Day</span><span class="nar">المبيعات اليومية النقدية</span></td><td class="amt">${f(cash)}</td></tr>
+<tr><td class="hsh"></td><td><span class="nen">Cash Received from Debtors</span><span class="nar">المبالغ من المدينين</span></td><td class="amt">${f(finData.debtors)}</td></tr>
+<tr class="sub"><td class="hsh">E</td><td><strong>Total Cash / المجموع نقداً</strong></td><td class="amt"><strong>${f(totalCash||0)}</strong></td></tr>
+<tr><td class="hsh">F</td><td><span class="nen">Cash Given to Directors${directorName?' — '+directorName:''}</span><span class="nar">المبلغ المدفوع للمدير</span></td><td class="amt">${directorAmt?'('+f(directorAmt)+')':'—'}</td></tr>
+<tr><td class="hsh">G</td><td><span class="nen">Deposit into Bank${bankSlip?' — Slip: '+bankSlip:''}</span><span class="nar">إيداع في البنك</span></td><td class="amt">${bankAmt?'('+f(bankAmt)+')':'—'}</td></tr>
+<tr><td class="hsh">H</td><td><span class="nen">Expenses (Attach Bills)</span><span class="nar">المصاريف</span></td><td class="amt">${expenses?'('+f(expenses)+')':'—'}</td></tr>
+<tr class="cls"><td colspan="2"><strong>CLOSING CASH BALANCE (E−F−G−H)</strong><br><span style="font-family:Tahoma;font-size:9px;color:#8B6914;direction:rtl;">الرصيد النقدي الختامي في الفرع</span></td><td class="amt"><strong>${f(closing||0)}</strong></td></tr>
+</table>
+<div class="sig">
+<div class="sb"><div class="sn">${preparedBy||''}</div><div class="sl"><span>Prepared By</span><span style="font-family:Tahoma;direction:rtl;">كاتب التقرير</span></div></div>
+<div class="sb"><div class="sn">${checkedBy||''}</div><div class="sl"><span>Checked By</span><span style="font-family:Tahoma;direction:rtl;">المدقق</span></div></div>
+</div></body></html>`;
   openPrintWindow(html);
   toast('📋 Finance PDF ready — Print → Save as PDF');
 }
@@ -3426,50 +3508,36 @@ ${ccTotRow}
 function exportFinanceWeekPDF(){
   if(!me) return;
   const labels=getDayLabels();
-  let dayBlocks='',totCash=0,totCard=0,totCred=0,totTotal=0;
+  let rows='',totC=0,totK=0,totT=0;
   labels.forEach((dl,di)=>{
     const d=db.finance?.[me.code]?.[di]; if(!d) return;
     const cash=parseFloat(d.cash)||0;
     const cc=(d.ccRows||[]).reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
-    const cred=parseFloat(d.credit)||0;
-    const total=cash+cc+cred;
-    totCash+=cash;totCard+=cc;totCred+=cred;totTotal+=total;
-    const locked=isLocked(me.code,di);
-    dayBlocks+=`<tr style="background:${di===DAY_PAST?'#FFFBE8':''}">
-      <td style="padding:5px 8px;border:1px solid #DDD;font-weight:600;">${dl.full} ${dl.date}${locked?' ✓':''}</td>
-      <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;">${cash?cash.toFixed(2):'—'}</td>
-      <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;">${cc?cc.toFixed(2):'—'}</td>
-      <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;">${cred?cred.toFixed(2):'—'}</td>
-      <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;font-weight:700;">${total.toFixed(2)}</td>
-      <td style="padding:5px 8px;border:1px solid #DDD;text-align:center;font-size:9px;color:${locked?'#1A6040':'#8B6914'};">${locked?'LOCKED':'Open'}</td>
+    const total=cash+cc+(parseFloat(d.credit)||0);
+    totC+=cash;totK+=cc;totT+=total;
+    rows+=`<tr style="background:${di===DAY_PAST?'#FFFBE8':''}">
+      <td style="padding:5px 8px;border:1px solid #DDD;font-weight:600;">${dl.full} ${dl.date}${isLocked(me.code,di)?' ✓':''}</td>
+      <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;">${cash||'—'}</td>
+      <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;">${cc||'—'}</td>
+      <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;font-weight:700;">${total||'—'}</td>
     </tr>`;
   });
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Weekly Finance — ${me.name}</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Arial,sans-serif;padding:12mm;font-size:11px;}
-@page{size:A4 landscape;margin:0;}
-h1{font-size:16px;font-weight:800;color:#C9A44E;}
-h2{font-size:12px;color:#666;margin:2px 0 16px;}
-table{width:100%;border-collapse:collapse;}
-th{background:#1A1A1A;color:#fff;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;}
-.total-row td{background:#1A1A1A;color:#C9A44E;font-weight:800;font-size:12px;}</style></head>
-<body>
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Weekly Finance</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Arial,sans-serif;padding:12mm;font-size:11px;}@page{size:A4 landscape;margin:0;}
+table{width:100%;border-collapse:collapse;}th{background:#1A1A1A;color:#fff;padding:6px 8px;font-size:10px;}
+.tot td{background:#1A1A1A;color:#C9A44E;font-weight:800;font-size:13px;}
+</style></head><body>
 <div style="border-bottom:3px solid #C9A44E;margin-bottom:14px;padding-bottom:8px;display:flex;justify-content:space-between;">
-  <div><h1>🌹 EMIRATES PRIDE</h1><h2>${me.name} · Weekly Finance Report</h2></div>
-  <div style="text-align:right;font-size:10px;color:#888;">Generated: ${new Date().toLocaleString('en-GB')}</div>
+<div><h1 style="font-size:16px;font-weight:900;color:#C9A44E;">🌹 EMIRATES PRIDE</h1>
+<h2 style="font-size:12px;color:#666;">${me.name} · Weekly Finance Report</h2></div>
+<div style="font-size:10px;color:#888;">Generated: ${new Date().toLocaleString('en-GB')}</div>
 </div>
-<table>
-<tr><th>Day</th><th style="text-align:right;">Cash Sales</th><th style="text-align:right;">Card Sales</th><th style="text-align:right;">Credit Sales</th><th style="text-align:right;">Total</th><th style="text-align:center;">Status</th></tr>
-${dayBlocks||'<tr><td colspan="6" style="text-align:center;padding:20px;color:#CCC;">No data recorded</td></tr>'}
-<tr class="total-row"><td>WEEK TOTAL</td><td style="text-align:right;">${totCash.toFixed(2)}</td><td style="text-align:right;">${totCard.toFixed(2)}</td><td style="text-align:right;">${totCred.toFixed(2)}</td><td style="text-align:right;">${totTotal.toFixed(2)}</td><td></td></tr>
-</table>
-</body></html>`;
+<table><tr><th style="text-align:left;">Day</th><th style="text-align:right;">Cash</th><th style="text-align:right;">Card</th><th style="text-align:right;">Total</th></tr>
+${rows||'<tr><td colspan="4" style="text-align:center;padding:20px;color:#CCC;">No data</td></tr>'}
+<tr class="tot"><td>WEEK TOTAL</td><td style="text-align:right;">${totC}</td><td style="text-align:right;">${totK}</td><td style="text-align:right;">${totT}</td></tr>
+</table></body></html>`;
   openPrintWindow(html);
-  toast('📋 Week Finance PDF ready');
-}
-
-function exportFinanceMonthPDF(){
-  exportFinanceWeekPDF(); // same structure, 15-day window = month context
-  toast('📋 Month Finance PDF ready');
+  toast('📋 Week PDF ready');
 }
 
 // ── SWITCH DASHBOARD TABS ──
