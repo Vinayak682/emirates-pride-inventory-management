@@ -209,10 +209,10 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 /* Product name cell */
 .prod-td{padding:0!important;}
 .prod-inner{padding:7px 10px;line-height:1.3;}
-.pname{font-size:13px;font-weight:500;color:var(--ink2);display:block;}
-.pname-ar{font-family:var(--f-ar);font-size:11px;color:var(--muted);display:block;
-  direction:rtl;text-align:left;}
-.pcode{font-family:var(--f-mono);font-size:9px;color:var(--muted2);display:block;margin-top:2px;}
+.pname{font-size:14px;font-weight:700;color:var(--ink2);display:block;letter-spacing:-0.1px;}
+.pname-ar{font-family:var(--f-ar);font-size:13px;color:var(--muted);display:block;
+  direction:rtl;text-align:left;font-weight:600;}
+.pcode{font-family:var(--f-mono);font-size:11px;color:var(--muted2);display:block;margin-top:3px;font-weight:600;letter-spacing:0.3px;}
 
 /* Data cells */
 .sgrid td.dcell{
@@ -681,9 +681,9 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dash-sku-table tbody tr:last-child{border-bottom:none;}
 .dash-sku-table tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
 .dst-name{padding:9px 10px;}
-.dst-name-en{font-size:12px;color:#AAA;}
-.dst-name-ar{font-family:var(--f-ar);font-size:10px;color:#555;direction:rtl;text-align:left;}
-.dst-code{font-family:var(--f-mono);font-size:9px;color:#333;margin-top:1px;}
+.dst-name-en{font-size:13px;color:#AAA;font-weight:600;}
+.dst-name-ar{font-family:var(--f-ar);font-size:12px;color:#666;direction:rtl;text-align:left;font-weight:500;}
+.dst-code{font-family:var(--f-mono);font-size:10px;color:#444;margin-top:2px;font-weight:600;letter-spacing:0.3px;}
 .dst-num{font-family:var(--f-mono);font-size:13px;font-weight:600;
   padding:9px 8px;text-align:center;}
 .dst-num.zero{color:#333;}.dst-num.low{color:#E8C97A;}.dst-num.ok{color:#7FC860;}
@@ -931,6 +931,35 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dkpi-val.bal{color:var(--gold2);} .dkpi-val.open{color:#6FA8DC;}
 .dkpi-label{font-size:8px;color:#444;text-transform:uppercase;font-family:var(--f-mono);margin-top:2px;letter-spacing:0.5px;}
 
+
+/* ── FINANCE TAB ── */
+.fin-section{border-bottom:1px solid #1A1A1A;padding-bottom:4px;margin-bottom:0;}
+.fin-sec-title{padding:8px 14px 5px;font-family:var(--f-mono);font-size:9px;font-weight:700;
+  color:var(--gold2);text-transform:uppercase;letter-spacing:1px;
+  background:#0D0D0D;border-bottom:1px solid #1A1A1A;}
+.fin-row{display:flex;align-items:flex-start;justify-content:space-between;
+  gap:10px;padding:9px 14px;border-bottom:1px solid #111;}
+.fin-row:last-child{border-bottom:none;}
+.fin-total-row{background:#111;}
+.fin-label{font-size:12px;color:#AAA;flex:1;line-height:1.4;}
+.fin-label-ar{font-family:var(--f-ar);font-size:11px;color:#555;direction:rtl;display:block;margin-top:2px;}
+.fin-input-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0;min-width:130px;}
+.fin-currency{font-family:var(--f-mono);font-size:10px;color:#444;flex-shrink:0;}
+.fin-input{background:#1A1A1A;border:1px solid #2A2A2A;border-radius:6px;
+  padding:8px 10px;color:#E0E0E0;font-family:var(--f-mono);font-size:15px;
+  width:110px;text-align:right;outline:none;}
+.fin-input:focus{border-color:var(--gold3);}
+.fin-total-val{font-family:var(--f-mono);font-size:17px;font-weight:800;
+  color:var(--gold2);width:110px;text-align:right;padding:2px 0;}
+.fin-add-btn{background:#1A1A1A;border:1px solid #2A2A2A;color:#6FCF97;
+  font-family:var(--f-body);font-size:11px;padding:5px 8px;border-radius:5px;
+  cursor:pointer;margin-top:4px;width:100%;}
+.fin-cc-row{display:flex;gap:6px;margin-bottom:4px;align-items:center;}
+.fin-cc-input{background:#1A1A1A;border:1px solid #222;border-radius:5px;
+  padding:6px 8px;color:#DDD;font-family:var(--f-mono);font-size:11px;outline:none;}
+.fin-cc-code{flex:1;}
+.fin-cc-amt{width:70px;text-align:right;}
+.fin-cc-del{background:none;border:none;color:#444;cursor:pointer;font-size:14px;padding:0 2px;}
 </style>
 </head>
 <body>
@@ -1043,6 +1072,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   <div class="dash-tab-bar" id="dashTabBar">
     <div class="dash-tab active" id="dtab-daily" onclick="switchDashTab('daily')">📅 Daily View</div>
     <div class="dash-tab" id="dtab-tracker" onclick="switchDashTab('tracker')">🔍 SKU Tracker</div>
+    <div class="dash-tab" id="dtab-finance" onclick="switchDashTab('finance')">💰 Finance</div>
   </div>
 
   <!-- DAILY VIEW panel -->
@@ -1056,6 +1086,116 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
       <button class="dl-btn" id="dlDaySales" onclick="openExportDay()">📥 Day Report</button>
       <button class="dl-btn primary" id="dlDayFull" onclick="openExportWeek()">📥 Week Report</button>
       <button class="dl-btn mgr" id="dlWeek" onclick="openExport()">📥 All Exports</button>
+    </div>
+  </div>
+
+  <!-- FINANCE PANEL -->
+  <div id="dashFinancePanel" style="display:none;flex-direction:column;flex:1;min-height:0;overflow-y:auto;">
+    <div style="padding:12px 14px 4px;flex-shrink:0;">
+      <div style="font-family:var(--f-mono);font-size:9px;color:var(--gold2);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">تقرير المبيعات اليومية · Daily Sales Report</div>
+      <div id="finDayLabel" style="font-size:11px;color:#555;font-family:var(--f-mono);"></div>
+    </div>
+
+    <!-- SECTION A: Sales Summary -->
+    <div class="fin-section">
+      <div class="fin-sec-title">A — Sales Summary / ملخص المبيعات</div>
+      <div class="fin-row">
+        <div class="fin-label">Cash Sales<br><span class="fin-label-ar">المبيعات النقدية</span></div>
+        <div class="fin-input-wrap"><span class="fin-currency">AED</span><input class="fin-input" id="fin-cash" type="number" min="0" placeholder="0" oninput="finCalc()"></div>
+      </div>
+      <div class="fin-row">
+        <div class="fin-label">Credit Card Sales<br><span class="fin-label-ar">المبيعات بالبطاقة</span></div>
+        <div class="fin-input-wrap"><span class="fin-currency">AED</span><input class="fin-input" id="fin-card" type="number" min="0" placeholder="0" oninput="finCalc()"></div>
+      </div>
+      <div class="fin-row">
+        <div class="fin-label">Credit Sales<br><span class="fin-label-ar">المبيعات غير المدفوعة</span></div>
+        <div class="fin-input-wrap"><span class="fin-currency">AED</span><input class="fin-input" id="fin-credit" type="number" min="0" placeholder="0" oninput="finCalc()"></div>
+      </div>
+      <div class="fin-row fin-total-row">
+        <div class="fin-label">TOTAL (A+B+C)<br><span class="fin-label-ar">المجموع</span></div>
+        <div class="fin-input-wrap"><span class="fin-currency">AED</span><div class="fin-total-val" id="fin-total-abc">0</div></div>
+      </div>
+    </div>
+
+    <!-- SECTION: Credit Card Details -->
+    <div class="fin-section">
+      <div class="fin-sec-title">Credit Card Details / تفاصيل البطاقة</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 8px;">
+        <div>
+          <div style="font-family:var(--f-mono);font-size:8px;color:#444;margin-bottom:4px;">APPROVAL CODE</div>
+          <div id="fin-cc-left"></div>
+          <button class="fin-add-btn" onclick="addCCRow()">+ Add Transaction</button>
+        </div>
+        <div>
+          <div style="font-family:var(--f-mono);font-size:8px;color:#444;margin-bottom:4px;">APPROVAL CODE</div>
+          <div id="fin-cc-right"></div>
+        </div>
+      </div>
+      <div class="fin-row fin-total-row">
+        <div class="fin-label">CC Total<br><span class="fin-label-ar">مجموع البطاقات</span></div>
+        <div class="fin-input-wrap"><span class="fin-currency">AED</span><div class="fin-total-val" id="fin-cc-total">0</div></div>
+      </div>
+    </div>
+
+    <!-- SECTION: Cash Reconciliation -->
+    <div class="fin-section">
+      <div class="fin-sec-title">Cash Reconciliation / تسوية النقدية</div>
+      <div class="fin-row">
+        <div class="fin-label">E — Opening Cash Balance<br><span class="fin-label-ar">المبلغ الافتتاحي</span></div>
+        <div class="fin-input-wrap"><span class="fin-currency">AED</span><input class="fin-input" id="fin-open-cash" type="number" min="0" placeholder="0" oninput="finCalc()"></div>
+      </div>
+      <div class="fin-row">
+        <div class="fin-label">Cash Sales for the Day<br><span class="fin-label-ar">المبيعات اليومية النقدية</span></div>
+        <div class="fin-input-wrap"><span class="fin-currency">AED</span><div class="fin-total-val" id="fin-cash-sales-display">0</div></div>
+      </div>
+      <div class="fin-row">
+        <div class="fin-label">Cash Received from Debtors<br><span class="fin-label-ar">المبالغ النقدية الواردة من المدينين</span></div>
+        <div class="fin-input-wrap"><span class="fin-currency">AED</span><input class="fin-input" id="fin-debtors" type="number" min="0" placeholder="0" oninput="finCalc()"></div>
+      </div>
+      <div class="fin-row fin-total-row">
+        <div class="fin-label">E — Total Cash<br><span class="fin-label-ar">المجموع نقداً</span></div>
+        <div class="fin-input-wrap"><span class="fin-currency">AED</span><div class="fin-total-val" id="fin-total-cash">0</div></div>
+      </div>
+      <div class="fin-row">
+        <div class="fin-label">F — Cash Given to Directors<br><span class="fin-label-ar">المبلغ المدفوع للمدير</span></div>
+        <div class="fin-input-wrap" style="flex-direction:column;gap:6px;">
+          <input class="fin-input" id="fin-director-name" type="text" placeholder="Name / الاسم" style="font-size:12px;">
+          <div style="display:flex;gap:6px;"><span class="fin-currency">AED</span><input class="fin-input" id="fin-director-amt" type="number" min="0" placeholder="0" oninput="finCalc()"></div>
+        </div>
+      </div>
+      <div class="fin-row">
+        <div class="fin-label">G — Deposit into Bank<br><span class="fin-label-ar">إيداع في البنك رقم القسيمة</span></div>
+        <div class="fin-input-wrap" style="flex-direction:column;gap:6px;">
+          <input class="fin-input" id="fin-bank-slip" type="text" placeholder="Slip Number">
+          <div style="display:flex;gap:6px;"><span class="fin-currency">AED</span><input class="fin-input" id="fin-bank-amt" type="number" min="0" placeholder="0" oninput="finCalc()"></div>
+        </div>
+      </div>
+      <div class="fin-row">
+        <div class="fin-label">H — Expenses (Attach Bills)<br><span class="fin-label-ar">المصاريف</span></div>
+        <div class="fin-input-wrap"><span class="fin-currency">AED</span><input class="fin-input" id="fin-expenses" type="number" min="0" placeholder="0" oninput="finCalc()"></div>
+      </div>
+      <div class="fin-row fin-total-row" style="background:#1A1000;">
+        <div class="fin-label" style="color:var(--gold2);">Closing Cash Balance (E-F-G-H)<br><span class="fin-label-ar" style="color:#8B6914;">الرصيد النقدي الختامي</span></div>
+        <div class="fin-input-wrap"><span class="fin-currency" style="color:var(--gold);">AED</span><div class="fin-total-val" id="fin-closing-bal" style="color:var(--gold2);font-size:20px;">0</div></div>
+      </div>
+    </div>
+
+    <!-- SECTION: Prepared By -->
+    <div class="fin-section">
+      <div class="fin-row">
+        <div class="fin-label">Prepared By / كاتب التقرير</div>
+        <input class="fin-input" id="fin-prepared-by" type="text" placeholder="Name" style="flex:1;margin-left:10px;">
+      </div>
+      <div class="fin-row">
+        <div class="fin-label">Checked By / المدقق</div>
+        <input class="fin-input" id="fin-checked-by" type="text" placeholder="Name" style="flex:1;margin-left:10px;">
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div style="padding:12px 14px;display:flex;gap:8px;flex-shrink:0;border-top:1px solid #1E1E1E;">
+      <button onclick="saveFinanceData()" style="flex:1;background:#1A2A1A;border:1px solid #2A4A2A;color:#6FCF97;font-family:var(--f-body);font-size:13px;padding:12px;border-radius:8px;cursor:pointer;">💾 Save</button>
+      <button onclick="exportFinancePDF()" style="flex:1;background:#1A1A2A;border:1px solid #2A3A4A;color:#6FA8DC;font-family:var(--f-body);font-size:13px;padding:12px;border-radius:8px;cursor:pointer;">📋 Export PDF</button>
     </div>
   </div>
 
@@ -2693,13 +2833,223 @@ function renderDash(){
   }
 }
 
+// ── FINANCE DATA ──
+let finCC = []; // [{code,amt}]
+
+function finCalc(){
+  const v=id=>parseFloat(document.getElementById(id)?.value||0)||0;
+  const cash=v('fin-cash'), card=v('fin-card'), cred=v('fin-credit');
+  const total=cash+card+cred;
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val.toFixed(0);}
+  set('fin-total-abc',total);
+  set('fin-cash-sales-display',cash);
+  // CC total
+  const ccTotal=finCC.reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+  set('fin-cc-total',ccTotal);
+  // Cash reconciliation
+  const openCash=v('fin-open-cash'), debtors=v('fin-debtors');
+  const totalCash=openCash+cash+debtors;
+  set('fin-total-cash',totalCash);
+  const dirAmt=v('fin-director-amt'), bankAmt=v('fin-bank-amt'), exp=v('fin-expenses');
+  const closing=totalCash-dirAmt-bankAmt-exp;
+  set('fin-closing-bal',closing);
+}
+
+let finCCCount=0;
+function addCCRow(){
+  finCCCount++;
+  const idx=finCC.length;
+  finCC.push({code:'',amt:''});
+  renderCCRows();
+}
+function delCCRow(i){
+  finCC.splice(i,1);
+  renderCCRows();
+  finCalc();
+}
+function renderCCRows(){
+  const left=document.getElementById('fin-cc-left');
+  const right=document.getElementById('fin-cc-right');
+  if(!left||!right) return;
+  left.innerHTML=''; right.innerHTML='';
+  finCC.forEach((row,i)=>{
+    const div=document.createElement('div');
+    div.className='fin-cc-row';
+    div.innerHTML=`<input class="fin-cc-input fin-cc-code" placeholder="Approval Code" value="${row.code}"
+      oninput="finCC[${i}].code=this.value">
+      <input class="fin-cc-input fin-cc-amt" placeholder="AED" type="number" value="${row.amt}"
+      oninput="finCC[${i}].amt=this.value;finCalc()">
+      <button class="fin-cc-del" onclick="delCCRow(${i})">✕</button>`;
+    (i%2===0?left:right).appendChild(div);
+  });
+}
+
+function saveFinanceData(){
+  if(!me) return;
+  const finDay=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  if(!db.finance) db.finance={};
+  if(!db.finance[me.code]) db.finance[me.code]={};
+  const g=id=>document.getElementById(id)?.value||'';
+  const n=id=>parseFloat(document.getElementById(id)?.value||0)||0;
+  db.finance[me.code][finDay]={
+    cash:n('fin-cash'),card:n('fin-card'),credit:n('fin-credit'),
+    openCash:n('fin-open-cash'),debtors:n('fin-debtors'),
+    directorName:g('fin-director-name'),directorAmt:n('fin-director-amt'),
+    bankSlip:g('fin-bank-slip'),bankAmt:n('fin-bank-amt'),
+    expenses:n('fin-expenses'),
+    preparedBy:g('fin-prepared-by'),checkedBy:g('fin-checked-by'),
+    ccRows:[...finCC], savedAt:new Date().toLocaleString('en-GB')
+  };
+  saveDB();
+  toast('💾 Finance data saved for '+getDayLabels()[finDay]?.full);
+}
+
+function loadFinanceData(finDay){
+  if(!me||!db.finance?.[me.code]?.[finDay]) return;
+  const d=db.finance[me.code][finDay];
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  set('fin-cash',d.cash||'');set('fin-card',d.card||'');set('fin-credit',d.credit||'');
+  set('fin-open-cash',d.openCash||'');set('fin-debtors',d.debtors||'');
+  set('fin-director-name',d.directorName||'');set('fin-director-amt',d.directorAmt||'');
+  set('fin-bank-slip',d.bankSlip||'');set('fin-bank-amt',d.bankAmt||'');
+  set('fin-expenses',d.expenses||'');
+  set('fin-prepared-by',d.preparedBy||'');set('fin-checked-by',d.checkedBy||'');
+  finCC=d.ccRows?[...d.ccRows]:[];
+  renderCCRows();
+  finCalc();
+}
+
+function openFinanceTab(){
+  const finDay=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  const dl=getDayLabels()[finDay];
+  const lbl=document.getElementById('finDayLabel');
+  if(lbl) lbl.textContent=(me?me.name:'')+' · '+(dl?dl.full+' '+dl.date:'');
+  loadFinanceData(finDay);
+}
+
+function exportFinancePDF(){
+  if(!me){toast('Please log in first');return;}
+  const finDay=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  const dl=getDayLabels()[finDay];
+  const d=db.finance?.[me.code]?.[finDay]||{};
+  const g=id=>document.getElementById(id)?.value||'';
+  const n=id=>parseFloat(document.getElementById(id)?.value||0)||0;
+  const cash=n('fin-cash'),card=n('fin-card'),cred=n('fin-credit');
+  const total=cash+card+cred;
+  const openCash=n('fin-open-cash'),debtors=n('fin-debtors');
+  const totalCash=openCash+cash+debtors;
+  const dirAmt=n('fin-director-amt'),bankAmt=n('fin-bank-amt'),exp=n('fin-expenses');
+  const closing=totalCash-dirAmt-bankAmt-exp;
+  const dirName=g('fin-director-name'), bankSlip=g('fin-bank-slip');
+  const prepBy=g('fin-prepared-by'), chkBy=g('fin-checked-by');
+  // CC rows
+  let ccLeftRows='',ccRightRows='';
+  finCC.forEach((r,i)=>{
+    const row=`<tr><td>${i+1}</td><td>${r.code||''}</td><td style="text-align:right;">${parseFloat(r.amt||0).toFixed(0)}</td></tr>`;
+    if(i<Math.ceil(finCC.length/2)) ccLeftRows+=row; else ccRightRows+=row;
+  });
+
+  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>Daily Sales Report — ${me.name}</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1A1A1A;font-size:11px;padding:16mm 14mm;}
+@page{size:A4 portrait;margin:0;}
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #C9A44E;}
+.brand-logo{font-size:18px;font-weight:900;color:#C9A44E;letter-spacing:1px;}
+.brand-ar{font-family:Tahoma;font-size:15px;color:#8B6914;direction:rtl;margin-top:2px;}
+.brand-sub{font-size:10px;color:#888;margin-top:2px;letter-spacing:0.5px;}
+.center-title{text-align:center;flex:1;padding:0 10px;}
+.center-title .ar{font-family:Tahoma;font-size:16px;font-weight:700;color:#1A1A1A;direction:rtl;}
+.center-title .en{font-size:14px;font-weight:800;color:#1A1A1A;margin-top:2px;letter-spacing:0.5px;}
+.top-right{text-align:right;}
+.box-label{font-size:8px;color:#888;text-transform:uppercase;letter-spacing:0.5px;}
+.box-val{font-size:13px;font-weight:700;color:#1A1A1A;border:1.5px solid #CCC;
+  padding:3px 8px;border-radius:3px;display:inline-block;min-width:80px;text-align:center;}
+.section{margin-bottom:10px;}
+.sec-table{width:100%;border-collapse:collapse;}
+.sec-table td,.sec-table th{border:1px solid #CCC;padding:5px 8px;vertical-align:middle;}
+.sec-table th{background:#F5F0E8;font-size:10px;font-weight:700;color:#7A5200;letter-spacing:0.5px;}
+.ar-text{font-family:Tahoma;direction:rtl;font-size:10px;color:#666;}
+.amount{text-align:right;font-weight:700;font-size:13px;}
+.total-row td{background:#1A1A1A;color:#fff;font-weight:800;font-size:13px;}
+.total-row .amount{color:#C9A44E;}
+.closing-row td{background:#F8F4E8;color:#7A5200;font-weight:800;font-size:14px;}
+.cc-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cc-table{width:100%;border-collapse:collapse;}
+.cc-table td,.cc-table th{border:1px solid #E0E0E0;padding:4px 6px;}
+.cc-table th{background:#F5F5F5;font-size:9px;color:#666;}
+.cc-table td{font-size:10px;}
+.sig-row{display:flex;justify-content:space-between;margin-top:16px;gap:20px;}
+.sig-box{flex:1;border-top:1.5px solid #1A1A1A;padding-top:4px;text-align:center;}
+.sig-label{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px;}
+.sig-ar{font-family:Tahoma;font-size:9px;color:#888;direction:rtl;}
+.empty{color:#CCC;font-style:italic;}
+</style></head><body>
+<div class="header">
+  <div><div class="brand-logo">EMIRATES PRIDE</div><div class="brand-ar">فخـر الإمارات</div><div class="brand-sub">Perfumes & Fragrances</div></div>
+  <div class="center-title"><div class="ar">تقرير المبيعات اليومية</div><div class="en">DAILY SALES REPORT</div></div>
+  <div class="top-right">
+    <div class="box-label">التاريخ · DATE</div>
+    <div class="box-val">${dl?dl.date+'/'+new Date().getFullYear():''}</div>
+    <div style="margin-top:6px;"><div class="box-label">الفرع · OUTLET</div>
+    <div class="box-val" style="min-width:100px;">${me.name.split(' ').slice(0,3).join(' ')}</div></div>
+  </div>
+</div>
+
+<!-- SALES SUMMARY -->
+<div class="section">
+<table class="sec-table">
+  <tr><th>#</th><th style="text-align:left;">DETAILS / التفاصيل</th><th style="width:140px;text-align:right;">AMOUNT / المبلغ</th></tr>
+  <tr><td>A</td><td>Cash Sales<br><span class="ar-text">المبيعات النقدية</span></td><td class="amount">${cash>0?cash.toFixed(0):'—'}</td></tr>
+  <tr><td>B</td><td>Credit Card Sales<br><span class="ar-text">المبيعات بالبطاقة</span></td><td class="amount">${card>0?card.toFixed(0):'—'}</td></tr>
+  <tr><td>C</td><td>Credit Sales<br><span class="ar-text">المبيعات غير المدفوعة</span></td><td class="amount">${cred>0?cred.toFixed(0):'—'}</td></tr>
+  <tr class="total-row"><td colspan="2">TOTAL (A+B+C) — المجموع</td><td class="amount">${total.toFixed(0)}</td></tr>
+</table>
+</div>
+
+<!-- CREDIT CARD DETAILS -->
+<div class="section">
+<div style="font-size:10px;font-weight:700;color:#333;margin-bottom:4px;">Credit Card Details / تفاصيل البطاقة</div>
+<div class="cc-wrap">
+<table class="cc-table"><tr><th>#</th><th>APPROVAL CODE</th><th>AMOUNT</th></tr>${ccLeftRows||'<tr><td colspan="3" class="empty">—</td></tr>'}</table>
+<table class="cc-table"><tr><th>#</th><th>APPROVAL CODE</th><th>AMOUNT</th></tr>${ccRightRows||'<tr><td colspan="3" class="empty">—</td></tr>'}</table>
+</div>
+</div>
+
+<!-- CASH RECONCILIATION -->
+<div class="section">
+<table class="sec-table">
+  <tr><th>#</th><th style="text-align:left;">DETAILS / التفاصيل</th><th style="width:140px;text-align:right;">AMOUNT / المبلغ</th></tr>
+  <tr><td>E</td><td>Opening Cash Balance<br><span class="ar-text">المبلغ الافتتاحي</span></td><td class="amount">${openCash>0?openCash.toFixed(0):'—'}</td></tr>
+  <tr><td></td><td>Cash Sales for the Day<br><span class="ar-text">المبيعات اليومية النقدية</span></td><td class="amount">${cash>0?cash.toFixed(0):'—'}</td></tr>
+  <tr><td></td><td>Cash Received from Debtors<br><span class="ar-text">المبالغ النقدية الواردة من المدينين</span></td><td class="amount">${debtors>0?debtors.toFixed(0):'—'}</td></tr>
+  <tr style="background:#F5F0E8;"><td>E</td><td><strong>Total Cash / المجموع نقداً</strong></td><td class="amount"><strong>${totalCash.toFixed(0)}</strong></td></tr>
+  <tr><td>F</td><td>Cash Given to Directors / المبلغ المدفوع للمدير<br><span class="ar-text">Name: ${dirName||'—'}</span></td><td class="amount">${dirAmt>0?'('+dirAmt.toFixed(0)+')':'—'}</td></tr>
+  <tr><td>G</td><td>Deposit into Bank / إيداع في البنك<br><span class="ar-text">Slip No: ${bankSlip||'—'}</span></td><td class="amount">${bankAmt>0?'('+bankAmt.toFixed(0)+')':'—'}</td></tr>
+  <tr><td>H</td><td>Expenses (Attach Bills) / المصاريف</td><td class="amount">${exp>0?'('+exp.toFixed(0)+')':'—'}</td></tr>
+  <tr class="closing-row"><td colspan="2">CLOSING CASH BALANCE (E−F−G−H) / الرصيد النقدي الختامي</td><td class="amount">${closing.toFixed(0)}</td></tr>
+</table>
+</div>
+
+<div class="sig-row">
+  <div class="sig-box"><div style="font-size:13px;font-weight:700;color:#1A1A1A;">${prepBy||'_________________'}</div><div class="sig-label">Prepared By / كاتب التقرير</div></div>
+  <div class="sig-box"><div style="font-size:13px;font-weight:700;color:#1A1A1A;">${chkBy||'_________________'}</div><div class="sig-label">Checked By / المدقق</div></div>
+</div>
+</body></html>`;
+  openPrintWindow(html);
+  toast('📋 Finance PDF opened — Print → Save as PDF');
+}
+
 // ── SWITCH DASHBOARD TABS ──
 function switchDashTab(tab){
   document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('dtab-'+tab).classList.add('active');
   document.getElementById('dashDailyPanel').style.display=tab==='daily'?'flex':'none';
   document.getElementById('dashTrackerPanel').style.display=tab==='tracker'?'flex':'none';
+  document.getElementById('dashFinancePanel').style.display=tab==='finance'?'flex':'none';
   if(tab==='tracker') populateTrackerDropdown();
+  if(tab==='finance') openFinanceTab();
 }
 
 // ── POPULATE TRACKER DROPDOWN with active SKUs from last 15 days ──
