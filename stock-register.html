@@ -16,6 +16,8 @@
   --c-open-h:#E8F0F8; --c-open:#F0F6FF; --c-open-t:#1A4A7A;
   --c-wh-h:#D4ECC4; --c-wh:#EDF7E0;  --c-wh-t:#2A5C14;
   --c-in-h:#E0F2E8; --c-in:#EDFAF3;  --c-in-t:#1A6640;
+  --c-sold-h:#FDE8E8; --c-sold:#FFF2F2; --c-sold-t:#8B1A1A;
+  --c-trf-h:#F5E8F8;  --c-trf:#FBF0FF;  --c-trf-t:#6A1A8B;
   --c-out-h:#FDE8E8; --c-out:#FFF2F2; --c-out-t:#8B1A1A;
   --c-bal-h:#FEF3D0; --c-bal:#FFFBEE; --c-bal-t:#7A5200;
   --border:#D0D0D0; --border-dark:#A0A0A0;
@@ -175,11 +177,15 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .gh-open{background:var(--c-open-h);color:var(--c-open-t);}
 .gh-in{background:var(--c-in-h);color:var(--c-in-t);}
 .gh-wh{background:var(--c-wh-h);color:var(--c-wh-t);}
+.gh-sold{background:var(--c-sold-h);color:var(--c-sold-t);}
+.gh-trf{background:var(--c-trf-h);color:var(--c-trf-t);}
 .gh-out{background:var(--c-out-h);color:var(--c-out-t);}
 .gh-bal{background:var(--c-bal-h);color:var(--c-bal-t);}
 .gs-open{background:var(--c-open-h);}
 .gs-wh{background:var(--c-wh-h);}
 .gs-in{background:var(--c-in-h);}
+.gs-sold{background:var(--c-sold-h);}
+.gs-trf{background:var(--c-trf-h);}
 .gs-out{background:var(--c-out-h);}
 .gs-bal{background:var(--c-bal-h);}
 
@@ -216,6 +222,8 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sgrid td.dcell.open{background:var(--c-open);}
 .sgrid td.dcell.inn{background:var(--c-in);}
 .sgrid td.dcell.wh{background:var(--c-wh);}
+.sgrid td.dcell.sold{background:var(--c-sold);}
+.sgrid td.dcell.trf{background:var(--c-trf);}
 .sgrid td.dcell.out{background:var(--c-out);}
 .sgrid td.dcell.bal{background:var(--c-bal);cursor:default;}
 .sgrid td.dcell:active:not(.bal){background:var(--gold-pale)!important;}
@@ -228,6 +236,8 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dcell.open .dcell-val{color:var(--c-open-t);}
 .dcell.wh .dcell-val{color:var(--c-wh-t);}
 .dcell.inn .dcell-val{color:var(--c-in-t);}
+.dcell.sold .dcell-val{color:var(--c-sold-t);}
+.dcell.trf .dcell-val{color:var(--c-trf-t);}
 .dcell.out .dcell-val{color:var(--c-out-t);}
 .dcell.bal .dcell-val{color:var(--c-bal-t);font-weight:600;}
 .dcell.bal .dcell-val.negative{color:#8B1A1A;font-weight:700;}
@@ -251,6 +261,8 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .totals-row td.open{background:#D8E8F8;color:var(--c-open-t);}
 .totals-row td.wh{background:#C4E8B0;color:var(--c-wh-t);}
 .totals-row td.inn{background:#C8EDDA;color:var(--c-in-t);}
+.totals-row td.sold{background:#F5CECE;color:var(--c-sold-t);}
+.totals-row td.trf{background:#EDD8F5;color:var(--c-trf-t);}
 .totals-row td.out{background:#F5CECE;color:var(--c-out-t);}
 .totals-row td.bal{background:#F5E8A8;color:var(--c-bal-t);}
 
@@ -352,6 +364,8 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .np-field.open{background:#1A3A6A;color:#6FA8DC;}
 .np-field.inn{background:#1A3A1A;color:#6FCF97;}
 .np-field.wh{background:#1E3A0A;color:#7FC860;}
+.np-field.sold{background:#3A1A1A;color:#E87070;}
+.np-field.trf{background:#2A1A3A;color:#BB88DD;}
 .np-field.out{background:#3A1A1A;color:#E87070;}
 .np-x{
   background:#2A2A2A;border:none;color:#888;border-radius:50%;
@@ -799,7 +813,9 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
     <div class="fdiv"></div>
     <div class="fstat"><span class="fstat-label">Store In</span><span class="fstat-val fi" id="ftIn">0</span></div>
     <div class="fdiv"></div>
-    <div class="fstat"><span class="fstat-label">Stock Out</span><span class="fstat-val fx" id="ftOut">0</span></div>
+    <div class="fstat"><span class="fstat-label">Sold</span><span class="fstat-val" style="color:#E87070;" id="ftSold">0</span></div>
+    <div class="fdiv"></div>
+    <div class="fstat"><span class="fstat-label">Sent Out</span><span class="fstat-val" style="color:#BB88DD;" id="ftTrf">0</span></div>
     <div class="fdiv"></div>
     <div class="fstat"><span class="fstat-label">Balance</span><span class="fstat-val fb" id="ftBal">0</span></div>
     <button class="lock-btn" id="lockBtn" onclick="toggleLock()">🔓 Lock Day</button>
@@ -1170,7 +1186,7 @@ let me = null;
 let curDay = 0;
 let pinBuf = '';
 // db[storeCode][dayIdx][productCode] = {open,wh,inn,out,locked}
-const DB_KEY = 'ep_stock_v5';
+const DB_KEY = 'ep_stock_v6';
 let db = {};
 function saveDB(){ try{ localStorage.setItem(DB_KEY,JSON.stringify(db)); }catch(e){} }
 function loadDB(){ try{ const r=localStorage.getItem(DB_KEY); if(r) db=JSON.parse(r); }catch(e){ db={}; } }
@@ -1188,11 +1204,11 @@ function dbSet(store,day,code,field,val,force){
   }
   if(!db[store]) db[store]={};
   if(!db[store][day]) db[store][day]={};
-  if(!db[store][day][code]) db[store][day][code]={open:0,wh:0,inn:0,out:0,locked:false};
+  if(!db[store][day][code]) db[store][day][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
   db[store][day][code][field]=val;
   // auto-carry closing to next day opening
   if(day<6){
-    const bal=dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'out');
+    const bal=dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'sold')-dbGet(store,day,code,'trf');
     const next=Math.max(0,bal);
     if(!db[store][day+1]) db[store][day+1]={};
     if(!db[store][day+1][code]) db[store][day+1][code]={open:0,inn:0,out:0,locked:false};
@@ -1211,14 +1227,14 @@ function lockDay(store,day){
     if(day<6){
       const closing=Math.max(0,bal(store,day,code));
       if(!db[store][day+1]) db[store][day+1]={};
-      if(!db[store][day+1][code]) db[store][day+1][code]={open:0,wh:0,inn:0,out:0,locked:false};
+      if(!db[store][day+1][code]) db[store][day+1][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
       dbSet(store,day+1,code,'open',closing,true);
     }
   });
   saveDB();
 }
 function bal(store,day,code){
-  return dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'out');
+  return dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'sold')-dbGet(store,day,code,'trf');
 }
 
 // ── LOGIN ──
@@ -1261,7 +1277,7 @@ function doLogin(){
   if(!store){err.textContent='Store not found.';return;}
   if(pinBuf!==store.pin){err.textContent='Wrong PIN — try again.';pc();return;}
   err.textContent='';
-  try{ localStorage.setItem('ep_last_store_v5',code); }catch(e){}
+  try{ localStorage.setItem('ep_last_store_v6',code); }catch(e){}
   me=store;
   const dJS=new Date().getDay();
   curDay=dJS===0?6:dJS-1;
@@ -1335,36 +1351,39 @@ function buildGrid(){
       <th class="gh-open" colspan="1">OPENING<br><span style="font-size:8px;font-weight:400;">Stock (A) ${curDay>0?'🔒':''}</span></th>
       <th class="gh-wh"   colspan="1">WAREHOUSE IN<br><span style="font-size:8px;font-weight:400;">From Warehouse (B)</span></th>
       <th class="gh-in"   colspan="1">STORE IN<br><span style="font-size:8px;font-weight:400;">From Another Store (C)</span></th>
-      <th class="gh-out"  colspan="1">STOCK OUT<br><span style="font-size:8px;font-weight:400;">Sold/Sent (D)</span></th>
-      <th class="gh-bal"  colspan="1">BALANCE<br><span style="font-size:8px;font-weight:400;">A+B+C−D</span></th>
+      <th class="gh-sold" colspan="1">SOLD<br><span style="font-size:8px;font-weight:400;">To Customer (D)</span></th>
+      <th class="gh-trf"  colspan="1">SENT OUT<br><span style="font-size:8px;font-weight:400;">To Another Store (E)</span></th>
+      <th class="gh-bal"  colspan="1">BALANCE<br><span style="font-size:8px;font-weight:400;">A+B+C−D−E</span></th>
     </tr>
     <tr class="hdr-sub">
       <th class="gs-open">${DAY_FULL[curDay]}</th>
       <th class="gs-wh" style="color:var(--c-wh-t);font-weight:600;">Warehouse</th>
       <th class="gs-in">${DAY_FULL[curDay]}</th>
-      <th class="gs-out">${DAY_FULL[curDay]}</th>
+      <th class="gs-sold" style="color:var(--c-sold-t);font-weight:600;">Sales</th>
+      <th class="gs-trf" style="color:var(--c-trf-t);font-weight:600;">Transfer</th>
       <th class="gs-bal" style="color:var(--c-bal-t);font-weight:600;">Auto</th>
     </tr>`;
 
   // Body
   const tbody=document.getElementById('sgridBody');
   tbody.innerHTML='';
-  let totO=0,totW=0,totI=0,totX=0,totB=0;
+  let totO=0,totW=0,totI=0,totS=0,totT=0,totB=0;
 
   CATS.forEach(cat=>{
     // Category row
     const cr=document.createElement('tr');
     cr.className='cat-sep';
-    cr.innerHTML=`<td colspan="6">${cat.cat}</td>`;
+    cr.innerHTML=`<td colspan="7">${cat.cat}</td>`;
     tbody.appendChild(cr);
 
     cat.products.forEach((p,ri)=>{
       const o=dbGet(me.code,curDay,p.code,'open');
       const i=dbGet(me.code,curDay,p.code,'inn');
-      const x=dbGet(me.code,curDay,p.code,'out');
+      const s=dbGet(me.code,curDay,p.code,'sold');
+      const t=dbGet(me.code,curDay,p.code,'trf');
       const w=dbGet(me.code,curDay,p.code,'wh');
       const b=bal(me.code,curDay,p.code);
-      totO+=o;totW+=w;totI+=i;totX+=x;totB+=b;
+      totO+=o;totW+=w;totI+=i;totS+=s;totT+=t;totB+=b;
       const isNeg=b<0;
 
       const tr=document.createElement('tr');
@@ -1374,7 +1393,8 @@ function buildGrid(){
       const showO=o>0?o:'';
       const showW=w>0?w:'';
       const showI=i>0?i:'';
-      const showX=x>0?x:'';
+      const showS=s>0?s:'';
+      const showT=t>0?t:'';
 
       const openLocked=curDay>0||locked;
       const mgrActive=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
@@ -1397,8 +1417,11 @@ function buildGrid(){
         <td class="dcell inn" onclick="${canEdit?'openNP(\''+p.code+'\',\'inn\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showI===''?' empty':''}">${showI===''?'—':showI}</span>
         </td>
-        <td class="dcell out" onclick="${canEdit?'openNP(\''+p.code+'\',\'out\')':'toast(\'🔒 Day locked\')'}">
-          <span class="dcell-val${showX===''?' empty':''}">${showX===''?'—':showX}</span>
+        <td class="dcell sold" onclick="${canEdit?'openNP(\''+p.code+'\',\'sold\')':'toast(\'🔒 Day locked\')'}">
+          <span class="dcell-val${showS===''?' empty':''}">${showS===''?'—':showS}</span>
+        </td>
+        <td class="dcell trf" onclick="${canEdit?'openNP(\''+p.code+'\',\'trf\')':'toast(\'🔒 Day locked\')'}">
+          <span class="dcell-val${showT===''?' empty':''}">${showT===''?'—':showT}</span>
         </td>
         <td class="dcell bal">
           <span class="dcell-val${isNeg?' negative':''}">${b}</span>
@@ -1415,7 +1438,8 @@ function buildGrid(){
     <td class="open">${totO}</td>
     <td class="wh">${totW}</td>
     <td class="inn">${totI}</td>
-    <td class="out">${totX}</td>
+    <td class="sold">${totS}</td>
+    <td class="trf">${totT}</td>
     <td class="bal">${totB}</td>`;
   tbody.appendChild(tot);
 
@@ -1427,18 +1451,20 @@ function buildGrid(){
 
 // ── FOOTER ──
 function buildFooter(){
-  let totO=0,totW=0,totI=0,totX=0,totB=0;
+  let totO=0,totW=0,totI=0,totS=0,totT=0,totB=0;
   PRODUCTS.forEach(p=>{
     totO+=dbGet(me.code,curDay,p.code,'open');
     totW+=dbGet(me.code,curDay,p.code,'wh');
     totI+=dbGet(me.code,curDay,p.code,'inn');
-    totX+=dbGet(me.code,curDay,p.code,'out');
+    totS+=dbGet(me.code,curDay,p.code,'sold');
+    totT+=dbGet(me.code,curDay,p.code,'trf');
     totB+=bal(me.code,curDay,p.code);
   });
   document.getElementById('ftOpen').textContent=totO;
   document.getElementById('ftWh').textContent=totW;
   document.getElementById('ftIn').textContent=totI;
-  document.getElementById('ftOut').textContent=totX;
+  document.getElementById('ftSold').textContent=totS;
+  document.getElementById('ftTrf').textContent=totT;
   document.getElementById('ftBal').textContent=totB;
 }
 
@@ -1446,7 +1472,7 @@ function toggleLock(){
   if(!me||isLocked(me.code,curDay))return;
   document.getElementById('lockModal').style.display='flex';
   document.getElementById('lockModalDay').textContent=DAY_FULL[curDay];
-  let units=0; PRODUCTS.forEach(p=>{units+=dbGet(me.code,curDay,p.code,'out');});
+  let units=0; PRODUCTS.forEach(p=>{units+=dbGet(me.code,curDay,p.code,'sold');});
   document.getElementById('lockModalSummary').textContent=units+' units out — balance will become tomorrow\'s Opening';
 }
 function closeLockModal(){document.getElementById('lockModal').style.display='none';}
@@ -1480,8 +1506,8 @@ function openNP(code,field){
   const p=PRODUCTS.find(x=>x.code===code);
   npCtx={code,field};
   npBuf=String(dbGet(me.code,curDay,code,field)||'');
-  const labels={open:'Opening Stock  (A)',wh:'Warehouse IN — From Warehouse  (B)',inn:'Store IN — From Another Store  (C)',out:'Stock OUT — Sold / Sent  (D)'};
-  const cls={open:'open',wh:'wh',inn:'inn',out:'out'};
+  const labels={open:'Opening Stock  (A)',wh:'Warehouse IN — From Warehouse  (B)',inn:'Store IN — From Another Store  (C)',sold:'SOLD — To Customer  (D)',trf:'SENT OUT — To Another Store  (E)'};
+  const cls={open:'open',wh:'wh',inn:'inn',sold:'sold',trf:'trf'};
   document.getElementById('npProduct').textContent=p?p.en:code;
   const fEl=document.getElementById('npField');
   fEl.textContent=labels[field]||field;
@@ -1490,9 +1516,10 @@ function openNP(code,field){
   // Show current balance note
   const curO=dbGet(me.code,curDay,code,'open');
   const curI=dbGet(me.code,curDay,code,'inn');
-  const curX=dbGet(me.code,curDay,code,'out');
+  const curS=dbGet(me.code,curDay,code,'sold');
+  const curT=dbGet(me.code,curDay,code,'trf');
   const curW=dbGet(me.code,curDay,code,'wh');
-  document.getElementById('npNote').textContent=`Current: Open ${curO} + WH ${curW} + In ${curI} − Out ${curX} = ${curO+curW+curI-curX}`;
+  document.getElementById('npNote').textContent=`Open ${curO} + WH ${curW} + In ${curI} − Sold ${curS} − Sent ${curT} = ${curO+curW+curI-curS-curT}`;
   document.getElementById('numpad').classList.add('show');
 }
 function closeNP(){document.getElementById('numpad').classList.remove('show');npCtx=null;npBuf='';}
@@ -1503,10 +1530,12 @@ function updateNpProj(){
   const o=f==='open'?v:dbGet(me.code,curDay,c,'open');
   const w=f==='wh'?v:dbGet(me.code,curDay,c,'wh');
   const i=f==='inn'?v:dbGet(me.code,curDay,c,'inn');
-  const x=f==='out'?v:dbGet(me.code,curDay,c,'out');
+  const s=f==='sold'?v:dbGet(me.code,curDay,c,'sold');
+  const t=f==='trf'?v:dbGet(me.code,curDay,c,'trf');
   const avail=dbGet(me.code,curDay,c,'open')+dbGet(me.code,curDay,c,'wh')+dbGet(me.code,curDay,c,'inn');
-  const warn=(f==='out'&&v>avail)?' ⚠ EXCEEDS STOCK':'';
-  document.getElementById('npNote').textContent='→ Balance will be: '+(o+w+i-x)+warn;
+  const outTotal=s+t;
+  const warn=((f==='sold'||f==='trf')&&outTotal>avail)?' ⚠ EXCEEDS STOCK':'';
+  document.getElementById('npNote').textContent='→ Balance will be: '+(o+w+i-s-t)+warn;
 }
 function nk(k){
   if(npBuf==='0')npBuf=k;
@@ -1520,10 +1549,11 @@ function nc(){npBuf='';document.getElementById('npVal').textContent='0';updateNp
 function confirmNP(){
   if(!npCtx)return;
   const val=parseInt(npBuf)||0;
-  if(npCtx.field==='out'){
+  if(npCtx.field==='sold'||npCtx.field==='trf'){
     const avail=dbGet(me.code,curDay,npCtx.code,'open')+dbGet(me.code,curDay,npCtx.code,'wh')+dbGet(me.code,curDay,npCtx.code,'inn');
-    if(val>avail){
-      toast('⚠ Cannot enter '+val+' — only '+avail+' available');
+    const other=npCtx.field==='sold'?dbGet(me.code,curDay,npCtx.code,'trf'):dbGet(me.code,curDay,npCtx.code,'sold');
+    if(val+other>avail){
+      toast('⚠ Sold+Sent ('+(val+other)+') exceeds available ('+avail+')');
       closeNP(); return;
     }
   }
@@ -1856,8 +1886,8 @@ function confirmReq(){
   }
 
   // ── DEDUCT from source store (Stock OUT) ──
-  const srcOut=dbGet(store.code,curDay,prod.code,'out');
-  dbSet(store.code,curDay,prod.code,'out',srcOut+selectedQty);
+  const srcTrf=dbGet(store.code,curDay,prod.code,'trf');
+  dbSet(store.code,curDay,prod.code,'trf',srcTrf+selectedQty);
 
   // ── ADD to requesting store (Store IN) ──
   const myInn=dbGet(me.code,curDay,prod.code,'inn');
@@ -2027,11 +2057,12 @@ function renderDash(){
   document.getElementById('dlDayFull').disabled = !locked;
 
   // ── KPI STRIP ──
-  let totOut=0, totIn=0, totWh=0;
+  let totSold=0, totTrf=0, totIn=0, totWh=0;
   PRODUCTS.forEach(p => {
-    totOut += dbGet(me.code,dashDay,p.code,'out');
-    totIn  += dbGet(me.code,dashDay,p.code,'inn');
-    totWh  += dbGet(me.code,dashDay,p.code,'wh');
+    totSold += dbGet(me.code,dashDay,p.code,'sold');
+    totTrf  += dbGet(me.code,dashDay,p.code,'trf');
+    totIn   += dbGet(me.code,dashDay,p.code,'inn');
+    totWh   += dbGet(me.code,dashDay,p.code,'wh');
   });
   const totBal = PRODUCTS.reduce((s,p)=>s+bal(me.code,dashDay,p.code),0);
 
@@ -2044,17 +2075,19 @@ function renderDash(){
     const o = dbGet(me.code,dashDay,p.code,'open');
     const w = dbGet(me.code,dashDay,p.code,'wh');
     const i = dbGet(me.code,dashDay,p.code,'inn');
-    const x = dbGet(me.code,dashDay,p.code,'out');
+    const s = dbGet(me.code,dashDay,p.code,'sold');
+    const t = dbGet(me.code,dashDay,p.code,'trf');
     const b = bal(me.code,dashDay,p.code);
-    if(x>0) activities.push({type:'out',p,o,w,i,x,b});
-    else if(w>0) activities.push({type:'wh',p,o,w,i,x,b});
-    else if(i>0) activities.push({type:'in',p,o,w,i,x,b});
+    if(s>0) activities.push({type:'sold',p,o,w,i,s,t,b});
+    else if(t>0) activities.push({type:'trf',p,o,w,i,s,t,b});
+    else if(w>0) activities.push({type:'wh',p,o,w,i,s,t,b});
+    else if(i>0) activities.push({type:'in',p,o,w,i,s,t,b});
   });
   // Sort: out first (highest qty), then wh, then in
   activities.sort((a,b2) => {
-    const order = {out:0,wh:1,in:2};
+    const order={sold:0,trf:1,wh:2,in:3};
     if(order[a.type]!==order[b2.type]) return order[a.type]-order[b2.type];
-    return b2.x - a.x;
+    return (b2.s||0)-(a.s||0);
   });
 
   // Transfer log for this day
@@ -2068,8 +2101,12 @@ function renderDash(){
   kpiDiv.className = 'dash-kpi-row';
   kpiDiv.innerHTML = `
     <div class="kpi-card">
-      <span class="kpi-val kv-out">${totOut}</span>
-      <span class="kpi-label">Sold / Out</span>
+      <span class="kpi-val kv-out">${totSold}</span>
+      <span class="kpi-label">Sold to Customer</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-val" style="color:#BB88DD;">${totTrf}</span>
+      <span class="kpi-label">Sent to Store</span>
     </div>
     <div class="kpi-card">
       <span class="kpi-val kv-wh">${totWh}</span>
@@ -2130,11 +2167,11 @@ function renderDash(){
     activities.forEach(({type,p,o,w,i,x,b}) => {
       const row = document.createElement('div');
       row.className = 'dl-row';
-      const icons = {out:'📦',wh:'🏭',in:'🔄'};
-      const labels = {out:'Sold / Sent Out',wh:'Warehouse Received',in:'Store Transfer In'};
-      const qty = type==='out'?x : type==='wh'?w : i;
-      const sign = type==='out'?'-':'+';
-      const qcls = type==='out'?'neg':'pos';
+      const icons = {sold:'💰',trf:'📤',wh:'🏭',in:'🔄'};
+      const labels = {sold:'Sold to Customer',trf:'Sent to Another Store',wh:'Warehouse Received',in:'Store Transfer In'};
+      const qty = type==='sold'?a.s : type==='trf'?a.t : type==='wh'?a.w : a.i;
+      const sign = (type==='sold'||type==='trf')?'-':'+';
+      const qcls = (type==='sold'||type==='trf')?'neg':'pos';
       row.innerHTML = `
         <div class="dl-icon ${type}">${icons[type]}</div>
         <div class="dl-body">
@@ -2173,7 +2210,8 @@ function renderDash(){
     dbGet(me.code,dashDay,p.code,'open')>0 ||
     dbGet(me.code,dashDay,p.code,'wh')>0 ||
     dbGet(me.code,dashDay,p.code,'inn')>0 ||
-    dbGet(me.code,dashDay,p.code,'out')>0
+    dbGet(me.code,dashDay,p.code,'sold')>0 ||
+    dbGet(me.code,dashDay,p.code,'trf')>0
   );
 
   if(activeProds.length > 0){
@@ -2187,7 +2225,7 @@ function renderDash(){
     table.className = 'dash-sku-table';
     table.innerHTML = `<thead><tr>
       <th style="text-align:left;min-width:140px;">Product</th>
-      <th>Open</th><th>WH</th><th>In</th><th>Out</th><th>Balance</th>
+      <th>Open</th><th>WH</th><th>In</th><th>Sold</th><th>Sent</th><th>Balance</th>
     </tr></thead>`;
     const tbody = document.createElement('tbody');
 
@@ -2195,7 +2233,8 @@ function renderDash(){
       const o=dbGet(me.code,dashDay,p.code,'open');
       const w=dbGet(me.code,dashDay,p.code,'wh');
       const i=dbGet(me.code,dashDay,p.code,'inn');
-      const x=dbGet(me.code,dashDay,p.code,'out');
+      const s2=dbGet(me.code,dashDay,p.code,'sold');
+      const t2=dbGet(me.code,dashDay,p.code,'trf');
       const b=bal(me.code,dashDay,p.code);
       const bCls=b<0?'bal-neg':b===0?'zero':b<=3?'low':'ok';
       const tr=document.createElement('tr');
@@ -2208,7 +2247,8 @@ function renderDash(){
         <td class="dst-num" style="color:#555;">${o||'—'}</td>
         <td class="dst-num wh">${w||'—'}</td>
         <td class="dst-num inn">${i||'—'}</td>
-        <td class="dst-num moved">${x||'—'}</td>
+        <td class="dst-num moved">${s2||'—'}</td>
+        <td class="dst-num" style="color:var(--c-trf-t);">${t2||'—'}</td>
         <td class="dst-num ${bCls}">${b}</td>`;
       tbody.appendChild(tr);
     });
@@ -2250,7 +2290,7 @@ function downloadDaySales(){
   rows.push(['Generated: ' + new Date().toLocaleString('en-GB')]);
   rows.push([]);
   rows.push(['ERP Code','Product (English)','Product (Arabic)','Category',
-             'Opening','WH In','Store In','Sold / Out','Closing Balance']);
+             'Opening','WH In','Store In','Sold to Customer','Sent to Store','Closing Balance']);
 
   PRODUCTS.forEach(p => {
     const o=dbGet(me.code,dashDay,p.code,'open');
@@ -2258,18 +2298,22 @@ function downloadDaySales(){
     const i=dbGet(me.code,dashDay,p.code,'inn');
     const x=dbGet(me.code,dashDay,p.code,'out');
     const b=bal(me.code,dashDay,p.code);
-    if(o>0||w>0||i>0||x>0||b>0){
-      rows.push([p.code,p.en,p.ar||'',p.cat,o,w,i,x,b]);
-    }
+    const sc=dbGet(me.code,dashDay,p.code,'sold');
+      const tc=dbGet(me.code,dashDay,p.code,'trf');
+      const bc=bal(me.code,dashDay,p.code);
+      if(o>0||w>0||i>0||sc>0||tc>0||bc>0){
+        rows.push([p.code,p.en,p.ar||'',p.cat,o,w,i,sc,tc,bc]);
+      }
   });
 
   rows.push([]);
   rows.push(['TOTALS','','','',
-    rows.slice(5).reduce((s,r)=>s+(+r[4]||0),0),
-    rows.slice(5).reduce((s,r)=>s+(+r[5]||0),0),
-    rows.slice(5).reduce((s,r)=>s+(+r[6]||0),0),
-    rows.slice(5).reduce((s,r)=>s+(+r[7]||0),0),
-    rows.slice(5).reduce((s,r)=>s+(+r[8]||0),0),
+    rows.slice(5).reduce((acc,r)=>acc+(+r[4]||0),0),
+    rows.slice(5).reduce((acc,r)=>acc+(+r[5]||0),0),
+    rows.slice(5).reduce((acc,r)=>acc+(+r[6]||0),0),
+    rows.slice(5).reduce((acc,r)=>acc+(+r[7]||0),0),
+    rows.slice(5).reduce((acc,r)=>acc+(+r[8]||0),0),
+    rows.slice(5).reduce((acc,r)=>acc+(+r[9]||0),0),
   ]);
 
   // Transfer log for this day
@@ -2298,16 +2342,17 @@ function downloadDayFull(){
   rows.push(['Generated: ' + new Date().toLocaleString('en-GB')]);
   rows.push([]);
   rows.push(['ERP Code','Product (English)','Product (Arabic)','Category',
-             'Opening','Warehouse In','Store In','Stock Out','Closing Balance','Status']);
+             'Opening','Warehouse In','Store In','Sold to Customer','Sent to Store','Closing Balance','Status']);
 
   PRODUCTS.forEach(p => {
-    const o=dbGet(me.code,dashDay,p.code,'open');
-    const w=dbGet(me.code,dashDay,p.code,'wh');
-    const i=dbGet(me.code,dashDay,p.code,'inn');
-    const x=dbGet(me.code,dashDay,p.code,'out');
-    const b=bal(me.code,dashDay,p.code);
-    const status=b<0?'NEGATIVE':b===0?'OUT OF STOCK':b<=3?'LOW':x>0?'MOVED':'';
-    rows.push([p.code,p.en,p.ar||'',p.cat,o,w,i,x,b,status]);
+    const of=dbGet(me.code,dashDay,p.code,'open');
+    const wf=dbGet(me.code,dashDay,p.code,'wh');
+    const inf=dbGet(me.code,dashDay,p.code,'inn');
+    const sf=dbGet(me.code,dashDay,p.code,'sold');
+    const tf=dbGet(me.code,dashDay,p.code,'trf');
+    const bf=bal(me.code,dashDay,p.code);
+    const statusf=bf<0?'NEGATIVE':bf===0?'OUT OF STOCK':bf<=3?'LOW':(sf>0||tf>0)?'MOVED':'';
+    rows.push([p.code,p.en,p.ar||'',p.cat,of,wf,inf,sf,tf,bf,statusf]);
   });
 
   const fname = me.code+'_'+DAYS[dashDay]+'_full_stock.csv';
@@ -2328,25 +2373,27 @@ function downloadWeek(){
     const locked = isLocked(me.code,di);
     rows.push([DAY_FULL[di].toUpperCase() + (locked?' (LOCKED)':' (OPEN)')]);
     rows.push(['ERP Code','Product','Arabic','Category',
-               'Opening','WH In','Store In','Stock Out','Balance']);
+               'Opening','WH In','Store In','Sold','Sent Out','Balance']);
     PRODUCTS.forEach(p => {
       const o=dbGet(me.code,di,p.code,'open');
       const w=dbGet(me.code,di,p.code,'wh');
       const i=dbGet(me.code,di,p.code,'inn');
-      const x=dbGet(me.code,di,p.code,'out');
+      const s=dbGet(me.code,di,p.code,'sold');
+      const t=dbGet(me.code,di,p.code,'trf');
       const b=bal(me.code,di,p.code);
-      if(o>0||w>0||i>0||x>0){
-        rows.push([p.code,p.en,p.ar||'',p.cat,o,w,i,x,b]);
+      if(o>0||w>0||i>0||s>0||t>0){
+        rows.push([p.code,p.en,p.ar||'',p.cat,o,w,i,s,t,b]);
       }
     });
     // Day totals
-    const tots=[0,0,0,0,0];
+    const tots=[0,0,0,0,0,0];
     PRODUCTS.forEach(p=>{
       tots[0]+=dbGet(me.code,di,p.code,'open');
       tots[1]+=dbGet(me.code,di,p.code,'wh');
       tots[2]+=dbGet(me.code,di,p.code,'inn');
-      tots[3]+=dbGet(me.code,di,p.code,'out');
-      tots[4]+=bal(me.code,di,p.code);
+      tots[3]+=dbGet(me.code,di,p.code,'sold');
+      tots[4]+=dbGet(me.code,di,p.code,'trf');
+      tots[5]+=bal(me.code,di,p.code);
     });
     rows.push(['','TOTALS','','', ...tots]);
     rows.push([]); // spacer
@@ -2379,7 +2426,7 @@ function toast(msg){
 loadDB();
 buildStoreSelect();
 try{
-  const last=localStorage.getItem('ep_last_store_v5');
+  const last=localStorage.getItem('ep_last_store_v6');
   if(last){
     const sel=document.getElementById('storeSelect');
     if(sel) sel.value=last;
