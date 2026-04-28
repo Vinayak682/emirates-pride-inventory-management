@@ -1406,7 +1406,7 @@ function buildGrid(){
           </div>
         </td>
         <td class="dcell open"
-            onclick="${canEdit?'openNP(\''+p.code+'\',\'open\')':'toast(\'🔒 Day locked\')}"
+            onclick="${canEdit?'openNP(\''+p.code+'\',\'open\')':'toast(\'🔒 Day locked\')'}"
             data-code="${p.code}" data-field="open">
           <span class="dcell-val${showO===''?' empty':''}">${showO===''?'—':showO}</span>
         </td>
