@@ -1552,6 +1552,15 @@ function confirmNP(){
       closeNP(); return;
     }
   }
+  // B7: warn if setting Opening=0 when other fields have data
+  if(npCtx.field==='open' && val===0){
+    const hasData=dbGet(me.code,curDay,npCtx.code,'wh')>0||
+                  dbGet(me.code,curDay,npCtx.code,'sold')>0||
+                  dbGet(me.code,curDay,npCtx.code,'trf')>0;
+    if(hasData){
+      toast('⚠ Opening set to 0 — balance may go negative');
+    }
+  }
   const scrollEl=document.getElementById('scrollArea');
   const st=scrollEl?scrollEl.scrollTop:0;
   dbSet(me.code,curDay,npCtx.code,npCtx.field,val);
@@ -1955,13 +1964,21 @@ function submitMgrPin(){
     mgrPinBuf='';updateMgrPinDots();return;
   }
   mgrOverrideActive=true;mgrOverrideDay=curDay;mgrOverrideStore=me.code;
+  clearTimeout(window._mgrTimer);
+  window._mgrTimer=setTimeout(()=>{
+    if(mgrOverrideActive){
+      cancelMgrOverride();
+      toast('🔒 Manager Override expired — session timed out after 5 minutes');
+    }
+  }, 5*60*1000);
   closeMgrPin();buildGrid();buildFooter();
-  toast('🔐 Manager Override active — '+DAY_FULL[curDay]+' unlocked (Opening locked)');
+  toast('🔐 Override active — '+DAY_FULL[curDay]+' unlocked · Auto-expires in 5 min');
 }
 function cancelMgrOverride(){
+  clearTimeout(window._mgrTimer);
   mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;
-  buildGrid();buildFooter();
-  toast('Override ended — '+DAY_FULL[curDay]+' locked again');
+  if(me){ buildGrid();buildFooter(); }
+  toast('Override ended — day locked again');
 }
 
 function toggleMovLog(){
@@ -2032,7 +2049,11 @@ function buildDashDayRow(){
       (i===dashDay?' active':'') +
       (locked?' locked':'') +
       (!locked&&hasData?' has-data':'');
+    const jsDay=new Date().getDay();
+    const todayIdx=jsDay===0?6:jsDay-1;
+    const isToday=(i===todayIdx);
     chip.innerHTML = DAY_FULL[i].slice(0,3) +
+      (isToday?' <span style="font-size:8px;background:var(--gold);color:#000;padding:1px 4px;border-radius:3px;margin-left:2px;">TODAY</span>':'') +
       (locked?' <span style="font-size:9px;">🔒</span>':'');
     chip.onclick = () => {
       dashDay = i;
@@ -2278,7 +2299,9 @@ function downloadCSV(filename, rows){
 
 // ── Associate download: what THEY sold today (locked only) ──
 function downloadDaySales(){
-  if(!me || !isLocked(me.code,dashDay)) return;
+  if(!me) return;
+  if(typeof dashDay==='undefined'||dashDay===null) dashDay=curDay;
+  if(!isLocked(me.code,dashDay)){ toast('⚠ Lock the day first before downloading'); return; }
   const rows = [];
   rows.push(['Emirates Pride Perfumes — Daily Sales Report']);
   rows.push([me.name + ' · ' + DAY_FULL[dashDay]]);
@@ -2330,7 +2353,9 @@ function downloadDaySales(){
 
 // ── Full day download (all stores visible to manager) ──
 function downloadDayFull(){
-  if(!me || !isLocked(me.code,dashDay)) return;
+  if(!me) return;
+  if(typeof dashDay==='undefined'||dashDay===null) dashDay=curDay;
+  if(!isLocked(me.code,dashDay)){ toast('⚠ Lock the day first before downloading'); return; }
   const rows = [];
   rows.push(['Emirates Pride — Full Day Stock Report']);
   rows.push([me.name + ' · ' + DAY_FULL[dashDay] + ' — All Products']);
