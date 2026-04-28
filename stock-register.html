@@ -739,6 +739,35 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .mgr-pin-confirm{width:100%;background:linear-gradient(135deg,#5A2AAA,#3A1A7A);color:#DDD;font-family:var(--f-body);font-size:15px;font-weight:600;border:none;padding:14px;border-radius:10px;cursor:pointer;}
 .mgr-pin-confirm:active{opacity:0.85;}
 .mgr-pin-cancel{width:100%;background:transparent;border:1px solid #333;color:#555;font-family:var(--f-body);font-size:14px;padding:10px;border-radius:10px;cursor:pointer;margin-top:8px;}
+
+/* ── 15-DAY TABS ── */
+.dtab{min-width:68px;flex-shrink:0;}
+.dtab.past-empty{opacity:0.35;}
+.today-dot{display:block;width:5px;height:5px;border-radius:50%;background:var(--gold);margin:2px auto 0;}
+.data-dot{display:block;width:4px;height:4px;border-radius:50%;background:#6FCF97;margin:2px auto 0;}
+/* ── BILINGUAL HEADERS ── */
+.hdr-en{font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;line-height:1.3;color:inherit;}
+.hdr-ar{font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;font-size:10px;font-weight:600;direction:rtl;margin-top:3px;opacity:0.8;}
+.hdr-sub-lbl{font-size:9px;font-weight:600;opacity:0.65;margin-top:2px;}
+.sgrid thead tr.hdr-group th{padding:9px 6px 7px;vertical-align:middle;}
+.prod-th{min-width:200px!important;background:#111!important;text-align:left!important;padding:8px 12px!important;}
+/* ── FROZEN SUMMARY ── */
+.summary-frozen{background:#0D0D0D;border-bottom:2px solid #2A2A1A;padding:7px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0;overflow-x:auto;scrollbar-width:none;}
+.summary-frozen::-webkit-scrollbar{display:none;}
+.sf-item{display:flex;flex-direction:column;align-items:center;flex-shrink:0;min-width:54px;}
+.sf-label{font-family:var(--f-mono);font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.8px;line-height:1.2;}
+.sf-label-ar{font-family:var(--f-ar);font-size:8px;color:#3A3A3A;direction:rtl;line-height:1.2;}
+.sf-val{font-family:var(--f-mono);font-size:18px;font-weight:800;margin-top:2px;}
+.sf-val.fo{color:#6FA8DC;}.sf-val.wh{color:#7FC860;}.sf-val.inn{color:#5DBEA3;}
+.sf-val.sold{color:#E87070;}.sf-val.trf{color:#BB88DD;}.sf-val.bal{color:var(--gold2);}
+.sf-div{width:1px;height:34px;background:#2A2A2A;flex-shrink:0;}
+/* ── CELL NOTE ── */
+.cell-note{font-size:8px;color:#666;font-family:var(--f-mono);display:block;margin-top:1px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px;}
+/* ── HIDE OLD FOOTER ── */
+.footer-bar{display:none!important;}
+/* ── REGION HEADER ── */
+.region-header{padding:8px 12px;background:#0D0D0D;font-family:var(--f-mono);font-size:10px;font-weight:700;color:var(--gold2);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid #2A2A2A;display:flex;align-items:center;gap:8px;margin-top:8px;}
+.region-mgr{font-size:9px;color:#444;font-weight:400;margin-left:auto;}
 </style>
 </head>
 <body>
@@ -794,6 +823,24 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
   <!-- Day tabs -->
   <div class="day-tabs" id="dayTabs"></div>
+
+  <!-- Frozen Summary Bar — always visible -->
+  <div class="summary-frozen" id="summaryFrozen">
+    <div class="sf-item"><span class="sf-label">Opening</span><span class="sf-label-ar">الافتتاح</span><span class="sf-val fo" id="sfOpen">0</span></div>
+    <div class="sf-div"></div>
+    <div class="sf-item"><span class="sf-label">WH Transfer</span><span class="sf-label-ar">مستودع</span><span class="sf-val wh" id="sfWh">0</span></div>
+    <div class="sf-div"></div>
+    <div class="sf-item"><span class="sf-label">Store In</span><span class="sf-label-ar">نقل داخل</span><span class="sf-val inn" id="sfIn">0</span></div>
+    <div class="sf-div"></div>
+    <div class="sf-item"><span class="sf-label">Sales</span><span class="sf-label-ar">المبيعات</span><span class="sf-val sold" id="sfSold">0</span></div>
+    <div class="sf-div"></div>
+    <div class="sf-item"><span class="sf-label">Transfer Out</span><span class="sf-label-ar">نقل خارج</span><span class="sf-val trf" id="sfTrf">0</span></div>
+    <div class="sf-div"></div>
+    <div class="sf-item"><span class="sf-label">Balance</span><span class="sf-label-ar">الرصيد</span><span class="sf-val bal" id="sfBal">0</span></div>
+    <div style="margin-left:auto;flex-shrink:0;">
+      <button class="lock-btn" id="lockBtn" onclick="toggleLock()">🔓 Lock Day</button>
+    </div>
+  </div>
 
   <!-- Grid area -->
   <div class="grid-outer">
@@ -858,7 +905,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 <div id="storesPanel">
   <div class="sp-header">
     <span style="font-size:18px;">🏪</span>
-    <span class="sp-title">Find Stock at Other Stores</span>
+    <span class="sp-title">Stock Visibility — All Stores</span>
     <button class="sp-close" onclick="closeStores()">✕ Close</button>
   </div>
   <!-- Mode tabs -->
@@ -1012,33 +1059,34 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 // DATA
 // ══════════════════════════════════════════
 const STORES=[
-  {code:'AD001',name:'Bawabat al Sharq Shop 1',city:'Abu Dhabi',pin:'1101'},
-  {code:'AD002',name:'Bawabat al Sharq Shop 2',city:'Abu Dhabi',pin:'1102'},
-  {code:'AD003',name:'Bawabat Kiosk EPP',city:'Abu Dhabi',pin:'1103'},
-  {code:'AD004',name:'Bawabat Kiosk ASL',city:'Abu Dhabi',pin:'1104'},
-  {code:'AD005',name:'Dalma Mall',city:'Abu Dhabi',pin:'1105'},
-  {code:'AD006',name:'Deerfield Mall',city:'Abu Dhabi',pin:'1106'},
-  {code:'AD007',name:'Yas Mall Podium',city:'Abu Dhabi',pin:'1107'},
-  {code:'AD008',name:'Yas Mall Kiosk 2',city:'Abu Dhabi',pin:'1108'},
-  {code:'AD009',name:'Yas Mall Kiosk 3',city:'Abu Dhabi',pin:'1109'},
-  {code:'AD010',name:'Yas Mall ASL',city:'Abu Dhabi',pin:'1110'},
-  {code:'AA001',name:'Al Ain Mall',city:'Al Ain',pin:'2201'},
-  {code:'AA002',name:'Bawadi Mall Kiosk 1',city:'Al Ain',pin:'2202'},
-  {code:'AA003',name:'Bawadi Mall Kiosk 2',city:'Al Ain',pin:'2203'},
-  {code:'AA004',name:'Bawadi Mall ASL',city:'Al Ain',pin:'2204'},
-  {code:'AA005',name:'Jimi Mall',city:'Al Ain',pin:'2205'},
-  {code:'AA006',name:'Makhani Zakhar Mall',city:'Al Ain',pin:'2206'},
-  {code:'DX001',name:'Dubai Mall',city:'Dubai',pin:'3301'},
-  {code:'DX002',name:'Mall of Emirates',city:'Dubai',pin:'3302'},
-  {code:'DX003',name:'Mirdif City Centre',city:'Dubai',pin:'3303'},
-  {code:'DX004',name:'Dubai Hills Mall',city:'Dubai',pin:'3304'},
-  {code:'RK001',name:'Manar Mall Shop',city:'Ras Al Khaimah',pin:'4401'},
-  {code:'RK002',name:'Manar Mall Kiosk',city:'Ras Al Khaimah',pin:'4402'},
-  {code:'FJ001',name:'Fujairah CC EPP',city:'Fujairah',pin:'5501'},
-  {code:'FJ002',name:'Fujairah CC ASL',city:'Fujairah',pin:'5502'},
-  {code:'SH001',name:'Zahia City Centre',city:'Sharjah',pin:'6601'},
-  {code:'AJ001',name:'Ajman City Centre',city:'Ajman',pin:'7701'},
-  {code:'MGR', name:'Manager',city:'Head Office',pin:'9999'},
+  {code:'A0001', name:'Bawabat al Sharq Mall Shop',  city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1101'},
+  {code:'A0002', name:'Bawabat al Sharq Mall Kiosk', city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1102'},
+  {code:'BAS001',name:'Bawabat al Sharq Kiosk ASL',  city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1103'},
+  {code:'A0003', name:'Dalma Mall Shop',              city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1104'},
+  {code:'A0004', name:'Dalma Mall Kiosk',             city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1105'},
+  {code:'A0005', name:'Deerfield Mall Kiosk',         city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1106'},
+  {code:'A0009', name:'Yas Mall Podium',              city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1107'},
+  {code:'A0007', name:'Yas Mall Kiosk 2',             city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1108'},
+  {code:'A0008', name:'Yas Mall Kiosk 3',             city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1109'},
+  {code:'YMK001',name:'Yas Mall ASL',                 city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1110'},
+  {code:'AL001', name:'Al Ain Mall Kiosk',            city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2201'},
+  {code:'AL002', name:'Bawadi Mall Kiosk 1',          city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2202'},
+  {code:'AL003', name:'Bawadi Mall Kiosk 2',          city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2203'},
+  {code:'BAW001',name:'Bawadi Mall ASL',              city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2204'},
+  {code:'AL004', name:'Jimi Mall Shop',               city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2205'},
+  {code:'AL006', name:'Makhani Zakhar Mall Shop',     city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2206'},
+  {code:'MAK001',name:'Makhani Zakhar Mall ASL',      city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2207'},
+  {code:'FJ001A',name:'Fujairah City Centre ASL',     city:'Fujairah',  region:'Fujairah',   mgr:'Mohamed Hessin', pin:'5502'},
+  {code:'DX001', name:'Dubai Mall Shop',              city:'Dubai',     region:'Dubai',      mgr:'Mohammed Elmatloub', pin:'3301'},
+  {code:'DX004', name:'Mall of the Emirates Kiosk',   city:'Dubai',     region:'Dubai',      mgr:'Mohammed Elmatloub', pin:'3302'},
+  {code:'DX005', name:'Mirdif City Centre Kiosk',     city:'Dubai',     region:'Dubai',      mgr:'Mohammed Elmatloub', pin:'3303'},
+  {code:'DX006', name:'Dubai Hills Mall Shop',        city:'Dubai',     region:'Dubai',      mgr:'Mohammed Elmatloub', pin:'3304'},
+  {code:'RK001', name:'Manar Mall Shop',              city:'Ras Al Khaimah', region:'RAK',   mgr:'Mohammed Elmatloub', pin:'4401'},
+  {code:'RK002', name:'Manar Mall Kiosk',             city:'Ras Al Khaimah', region:'RAK',   mgr:'Mohammed Elmatloub', pin:'4402'},
+  {code:'FJ001', name:'Fujairah City Centre Kiosk',   city:'Fujairah',  region:'Fujairah',   mgr:'Mohammed Elmatloub', pin:'5501'},
+  {code:'SH001', name:'Zahia City Centre Kiosk',      city:'Sharjah',   region:'Sharjah',    mgr:'Mohammed Elmatloub', pin:'6601'},
+  {code:'AJ001', name:'Ajman City Centre Kiosk',      city:'Ajman',     region:'Ajman',      mgr:'Mohammed Elmatloub', pin:'7701'},
+  {code:'MGR',   name:'Manager (All Access)',          city:'Head Office',region:'HQ',        mgr:'',                   pin:'9999'},
 ];
 
 const CATS=[
@@ -1178,6 +1226,14 @@ const CATS=[
 // All products flat
 const PRODUCTS = CATS.flatMap(c=>c.products.map(p=>({...p,cat:c.cat})));
 
+const DAY_WINDOW=15; const DAY_PAST=5;
+function getDayLabel(offset){
+  const d=new Date(); d.setDate(d.getDate()+offset);
+  const N=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const F=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  return {abbr:N[d.getDay()],full:F[d.getDay()],date:d.getDate()+'/'+(d.getMonth()+1),offset};
+}
+function getDayLabels(){ const a=[]; for(let i=-DAY_PAST;i<DAY_WINDOW-DAY_PAST;i++) a.push(getDayLabel(i)); return a; }
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const DAY_FULL=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
@@ -1186,7 +1242,7 @@ let me = null;
 let curDay = 0;
 let pinBuf = '';
 // db[storeCode][dayIdx][productCode] = {open,wh,inn,out,locked}
-const DB_KEY = 'ep_stock_v6';
+const DB_KEY = 'ep_stock_v7';
 let db = {};
 function saveDB(){ try{ localStorage.setItem(DB_KEY,JSON.stringify(db)); }catch(e){} }
 function loadDB(){ try{ const r=localStorage.getItem(DB_KEY); if(r) db=JSON.parse(r); }catch(e){ db={}; } }
@@ -1240,18 +1296,24 @@ function bal(store,day,code){
 // ── LOGIN ──
 function buildStoreSelect(){
   const sel=document.getElementById('storeSelect');
-  sel.innerHTML='<option value="">— Choose your store —</option>';
-  const cities=[...new Set(STORES.map(s=>s.city))];
-  cities.forEach(city=>{
-    const og=document.createElement('optgroup');
-    og.label=city;
-    STORES.filter(s=>s.city===city).forEach(s=>{
-      const o=document.createElement('option');
-      o.value=s.code; o.textContent=s.name;
-      og.appendChild(o);
+  sel.innerHTML='<option value="">— Select your store —</option>';
+  const mgrs=[...new Set(STORES.filter(s=>s.code!=='MGR').map(s=>s.mgr))];
+  mgrs.forEach(mgr=>{
+    const regions=[...new Set(STORES.filter(s=>s.mgr===mgr&&s.code!=='MGR').map(s=>s.region))];
+    regions.forEach(region=>{
+      const og=document.createElement('optgroup');
+      og.label='▸ '+region+' ('+mgr.split(' ').pop()+')';
+      STORES.filter(s=>s.mgr===mgr&&s.region===region&&s.code!=='MGR').forEach(s=>{
+        const o=document.createElement('option');
+        o.value=s.code; o.textContent=s.name+' ['+s.code+']';
+        og.appendChild(o);
+      });
+      sel.appendChild(og);
     });
-    sel.appendChild(og);
   });
+  const og2=document.createElement('optgroup'); og2.label='── Head Office ──';
+  const o2=document.createElement('option'); o2.value='MGR'; o2.textContent='Manager (All Access)';
+  og2.appendChild(o2); sel.appendChild(og2);
 }
 
 function pk(k){
@@ -1277,10 +1339,9 @@ function doLogin(){
   if(!store){err.textContent='Store not found.';return;}
   if(pinBuf!==store.pin){err.textContent='Wrong PIN — try again.';pc();return;}
   err.textContent='';
-  try{ localStorage.setItem('ep_last_store_v6',code); }catch(e){}
+  try{ localStorage.setItem('ep_last_store_v7',code); }catch(e){}
   me=store;
-  const dJS=new Date().getDay();
-  curDay=dJS===0?6:dJS-1;
+  curDay=DAY_PAST;
   document.getElementById('loginScreen').style.display='none';
   const app=document.getElementById('appShell');
   app.style.display='flex';
@@ -1305,21 +1366,26 @@ function doLogout(){
 function buildDayTabs(){
   const bar=document.getElementById('dayTabs');
   bar.innerHTML='';
-  DAYS.forEach((d,i)=>{
+  getDayLabels().forEach((dl,i)=>{
     const t=document.createElement('div');
-    t.className='dtab'+(i===curDay?' active':'');
-    const hasData=me&&Object.values(db[me.code]?.[i]||{}).some(v=>(v.wh||0)>0||v.inn>0||v.out>0);
-    if(hasData&&i!==curDay)t.classList.add('has-data');
-    // Calculate date for this week
-    const today=new Date();
-    const jsDay=today.getDay()===0?6:today.getDay()-1;
-    const diff=i-jsDay;
-    const dt=new Date(today);dt.setDate(today.getDate()+diff);
-    const dateStr=dt.getDate()+'/'+(dt.getMonth()+1);
-    t.innerHTML=`<span class="day-abbr">${DAY_FULL[i]}</span><span class="day-date">${dateStr}</span>`;
-    t.onclick=()=>{curDay=i;buildDayTabs();buildGrid();buildFooter();};
+    const isToday=(i===DAY_PAST);
+    const locked=me&&isLocked(me.code,i);
+    const hasData=me&&Object.values(db[me.code]?.[i]||{}).some(v=>(v.wh||0)>0||(v.inn||0)>0||(v.sold||0)>0||(v.trf||0)>0);
+    t.className='dtab'+(i===curDay?' active':'')+(hasData&&i!==curDay?' has-data':'')+(i<DAY_PAST&&!hasData?' past-empty':'');
+    t.onclick=()=>{
+      if(mgrOverrideActive&&mgrOverrideDay!==i){mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;}
+      curDay=i;buildDayTabs();buildGrid();buildFooter();
+      t.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    };
+    t.innerHTML=
+      `<span class="day-abbr" style="${isToday?'color:var(--gold);font-weight:800;':''}">${dl.abbr}</span>`+
+      `<span class="day-date">${dl.date}</span>`+
+      (isToday?`<span class="today-dot"></span>`:'')+
+      (locked?` <span style="font-size:9px;">🔒</span>`:'')+
+      (hasData&&!locked?`<span class="data-dot"></span>`:'');
     bar.appendChild(t);
   });
+  setTimeout(()=>{const a=bar.querySelector('.dtab.active');if(a)a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});},80);
 }
 
 // ── GRID ──
@@ -1345,23 +1411,27 @@ function buildGrid(){
   }
   // Header
   const head=document.getElementById('sgridHead');
+  const dlh=getDayLabels()[curDay];
   head.innerHTML=`
     <tr class="hdr-group">
-      <th class="prod-th" rowspan="2" style="text-align:left;padding:8px 10px;font-size:10px;color:#999;font-weight:600;letter-spacing:1px;">PRODUCT / CODE</th>
-      <th class="gh-open" colspan="1">OPENING<br><span style="font-size:8px;font-weight:400;">Stock (A)</th>
-      <th class="gh-wh"   colspan="1">WAREHOUSE IN<br><span style="font-size:8px;font-weight:400;">From Warehouse (B)</span></th>
-      <th class="gh-in"   colspan="1">STORE IN<br><span style="font-size:8px;font-weight:400;">From Another Store (C)</span></th>
-      <th class="gh-sold" colspan="1">SOLD<br><span style="font-size:8px;font-weight:400;">To Customer (D)</span></th>
-      <th class="gh-trf"  colspan="1">SENT OUT<br><span style="font-size:8px;font-weight:400;">To Another Store (E)</span></th>
-      <th class="gh-bal"  colspan="1">BALANCE<br><span style="font-size:8px;font-weight:400;">A+B+C−D−E</span></th>
+      <th class="prod-th" rowspan="2">
+        <div class="hdr-en">PRODUCT</div>
+        <div class="hdr-ar">المنتج</div>
+      </th>
+      <th class="gh-open"><div class="hdr-en">OPENING STOCK</div><div class="hdr-ar">مخزون الافتتاح</div><div class="hdr-sub-lbl">(A)</div></th>
+      <th class="gh-wh"><div class="hdr-en">TRANSFER FROM WAREHOUSE</div><div class="hdr-ar">نقل من المستودع</div><div class="hdr-sub-lbl">(B)</div></th>
+      <th class="gh-in"><div class="hdr-en">TRANSFER FROM STORE</div><div class="hdr-ar">نقل من المتجر</div><div class="hdr-sub-lbl">(C)</div></th>
+      <th class="gh-sold"><div class="hdr-en">SALES</div><div class="hdr-ar">المبيعات</div><div class="hdr-sub-lbl">(D)</div></th>
+      <th class="gh-trf"><div class="hdr-en">TRANSFER TO STORE</div><div class="hdr-ar">نقل إلى متجر</div><div class="hdr-sub-lbl">(E)</div></th>
+      <th class="gh-bal"><div class="hdr-en">BALANCE</div><div class="hdr-ar">الرصيد</div><div class="hdr-sub-lbl">A+B+C−D−E</div></th>
     </tr>
     <tr class="hdr-sub">
-      <th class="gs-open">${DAY_FULL[curDay]}</th>
-      <th class="gs-wh" style="color:var(--c-wh-t);font-weight:600;">Warehouse</th>
-      <th class="gs-in">${DAY_FULL[curDay]}</th>
-      <th class="gs-sold" style="color:var(--c-sold-t);font-weight:600;">Sales</th>
-      <th class="gs-trf" style="color:var(--c-trf-t);font-weight:600;">Transfer</th>
-      <th class="gs-bal" style="color:var(--c-bal-t);font-weight:600;">Auto</th>
+      <th class="gs-open" style="font-weight:700;">${dlh.full} ${dlh.date}</th>
+      <th class="gs-wh" style="color:var(--c-wh-t);font-weight:700;">Warehouse</th>
+      <th class="gs-in" style="font-weight:700;">${dlh.full}</th>
+      <th class="gs-sold" style="color:var(--c-sold-t);font-weight:700;">Sales</th>
+      <th class="gs-trf" style="color:var(--c-trf-t);font-weight:700;">Transfer</th>
+      <th class="gs-bal" style="color:var(--c-bal-t);font-weight:700;">Auto</th>
     </tr>`;
 
   // Body
@@ -1415,12 +1485,14 @@ function buildGrid(){
         </td>
         <td class="dcell inn" onclick="${canEdit?'openNP(\''+p.code+'\',\'inn\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showI===''?' empty':''}">${showI===''?'—':showI}</span>
+          ${(()=>{const lg=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.toStore===me.code);return lg?`<span class="cell-note">← ${lg.fromName.split(' ').slice(0,2).join(' ')}</span>`:''})()}
         </td>
         <td class="dcell sold" onclick="${canEdit?'openNP(\''+p.code+'\',\'sold\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showS===''?' empty':''}">${showS===''?'—':showS}</span>
         </td>
         <td class="dcell trf" onclick="${canEdit?'openNP(\''+p.code+'\',\'trf\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showT===''?' empty':''}">${showT===''?'—':showT}</span>
+          ${(()=>{const lg=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return lg?`<span class="cell-note">→ ${lg.toName.split(' ').slice(0,2).join(' ')}</span>`:''})()}
         </td>
         <td class="dcell bal">
           <span class="dcell-val${isNeg?' negative':''}">${b}</span>
@@ -1459,20 +1531,21 @@ function buildFooter(){
     totT+=dbGet(me.code,curDay,p.code,'trf');
     totB+=bal(me.code,curDay,p.code);
   });
-  document.getElementById('ftOpen').textContent=totO;
-  document.getElementById('ftWh').textContent=totW;
-  document.getElementById('ftIn').textContent=totI;
-  document.getElementById('ftSold').textContent=totS;
-  document.getElementById('ftTrf').textContent=totT;
-  document.getElementById('ftBal').textContent=totB;
+  const sf=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  sf('ftOpen',totO);sf('ftWh',totW);sf('ftIn',totI);sf('ftSold',totS);sf('ftTrf',totT);sf('ftBal',totB);
+  sf('sfOpen',totO);sf('sfWh',totW);sf('sfIn',totI);sf('sfSold',totS);sf('sfTrf',totT);sf('sfBal',totB);
+  const lb=document.getElementById('lockBtn');
+  if(lb){const lk=me&&isLocked(me.code,curDay);lb.textContent=lk?'🔒 Locked':'🔓 Lock Day';lb.className='lock-btn'+(lk?' locked':'');}
+  if(me) checkUnlockedDays();
 }
 
 function toggleLock(){
   if(!me||isLocked(me.code,curDay))return;
   document.getElementById('lockModal').style.display='flex';
-  document.getElementById('lockModalDay').textContent=DAY_FULL[curDay];
+  const dlt=getDayLabels()[curDay];
+  document.getElementById('lockModalDay').textContent=dlt.full+' '+dlt.date;
   let units=0; PRODUCTS.forEach(p=>{units+=dbGet(me.code,curDay,p.code,'sold');});
-  document.getElementById('lockModalSummary').textContent=units+' units out — balance will become tomorrow\'s Opening';
+  document.getElementById('lockModalSummary').textContent=units+' units sold — closing balance carries forward';
 }
 function closeLockModal(){document.getElementById('lockModal').style.display='none';}
 function confirmLock(){
@@ -1717,7 +1790,7 @@ function renderProductMode(body){
         <span class="avail-total-label">Network Total</span>
       </div>
     </div>
-    <div class="avail-section-label has-stock">✅ Stores with stock — tap to request transfer</div>
+    <div class="avail-section-label has-stock">✅ Stores with stock — tap to view</div>
   `;
 
   const list=document.createElement('div');
@@ -1755,9 +1828,7 @@ function renderProductMode(body){
         ${b>0?'<span class="avail-qty-units">UNITS</span>':''}
       </div>`;
 
-    if(b>0&&!isMine){
-      row.onclick=()=>openReq(prod,store,b);
-    }
+    // Stock visibility only — transfer tap removed
     list.appendChild(row);
   });
 
@@ -1979,6 +2050,15 @@ function cancelMgrOverride(){
   mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;
   if(me){ buildGrid();buildFooter(); }
   toast('Override ended — day locked again');
+}
+function checkUnlockedDays(){
+  if(!me) return;
+  let u=0;
+  for(let i=0;i<DAY_PAST;i++){
+    const hasData=Object.values(db[me.code]?.[i]||{}).some(v=>(v.sold||0)>0);
+    if(hasData&&!isLocked(me.code,i)) u++;
+  }
+  if(u>3) toast('⚠ '+u+' past days with sales are unlocked. Max 3 allowed — please lock older days first.');
 }
 
 function toggleMovLog(){
@@ -2446,7 +2526,7 @@ function toast(msg){
 loadDB();
 buildStoreSelect();
 try{
-  const last=localStorage.getItem('ep_last_store_v6');
+  const last=localStorage.getItem('ep_last_store_v7');
   if(last){
     const sel=document.getElementById('storeSelect');
     if(sel) sel.value=last;
