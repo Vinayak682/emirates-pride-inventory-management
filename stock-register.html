@@ -992,7 +992,39 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .fin-meta-val{font-family:var(--f-mono);font-size:11px;font-weight:700;color:#C9A44E;}
 
 /* Section title bar */
-/* ══════════ BRAND WORDMARK — native CSS, no images ══════════ */
+/* ── BNPL payment rows (Tabby / Tamara) ── */
+.fin-row-bnpl{background:#F8F8FF;}
+.fin-bnpl-tag{font-family:var(--f-mono);font-size:9px;background:#E8E0FF;color:#5A2A8A;
+  border-radius:3px;padding:1px 5px;margin-left:4px;font-weight:700;letter-spacing:0.3px;}
+
+/* ── Receipt upload ── */
+.fin-receipt-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.fin-receipt-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 10px;background:#F0F4FF;border:1px dashed #B0C0E8;border-radius:7px;
+  font-family:var(--f-mono);font-size:11px;color:#4A6AAA;cursor:pointer;
+  white-space:nowrap;
+}
+.fin-receipt-btn:active{background:#E0EAFF;}
+.fin-receipt-thumb{
+  width:38px;height:38px;border-radius:6px;border:2px solid #C9A44E;
+  background-size:cover;background-position:center;cursor:pointer;flex-shrink:0;
+}
+
+/* ── Multi-transfer cell indicator ── */
+.dcell.inn.dcell-has-note .dcell-val,
+.dcell.trf.dcell-has-note .dcell-val{font-weight:700;}
+.mtd-hint{font-family:var(--f-mono);font-size:8px;color:#AAA;display:block;padding-bottom:3px;letter-spacing:0.3px;}
+
+/* ── Adjustment badge on locked cells ── */
+.dcell-adj-badge{
+  display:inline-block;font-size:8px;font-family:var(--f-mono);
+  background:#3A1A00;color:#E87070;border-radius:3px;padding:1px 4px;
+  margin-top:2px;font-weight:700;
+}
+
+/* ════════════════════════════════════════════════════════════════ */
+/* ══ END NEW FEATURE CSS ════════════════════════════════════════ */
 
 /* TOP BAR wordmark — dark background context */
 .brand-wordmark-topbar{
@@ -1440,6 +1472,29 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
         <div class="fin-row-amount fin-amt-cash" id="famt-cash">—</div>
       </div>
 
+      <!-- Row A2: Tabby -->
+      <div class="fin-row fin-row-bnpl" id="finrow-tabby" onclick="finTap('tabby')">
+        <div class="fin-row-left">
+          <div class="fin-row-badge fin-badge-bnpl" style="background:#E8F0FF;color:#2A4A8A;">T</div>
+          <div class="fin-row-info">
+            <div class="fin-row-ar">تابي — الدفع لاحقاً</div>
+            <div class="fin-row-en">Tabby <span class="fin-bnpl-tag">BNPL</span></div>
+          </div>
+        </div>
+        <div class="fin-row-amount" style="color:#2A4A8A;" id="famt-tabby">—</div>
+      </div>
+      <!-- Row A3: Tamara -->
+      <div class="fin-row fin-row-bnpl" id="finrow-tamara" onclick="finTap('tamara')">
+        <div class="fin-row-left">
+          <div class="fin-row-badge fin-badge-bnpl" style="background:#F0E8FF;color:#5A2A8A;">T</div>
+          <div class="fin-row-info">
+            <div class="fin-row-ar">تمارا — الدفع لاحقاً</div>
+            <div class="fin-row-en">Tamara <span class="fin-bnpl-tag" style="background:#EEE8FF;color:#5A2A8A;">BNPL</span></div>
+          </div>
+        </div>
+        <div class="fin-row-amount" style="color:#5A2A8A;" id="famt-tamara">—</div>
+      </div>
+
       <!-- Row B: CC Sales (auto) -->
       <div class="fin-row fin-row-auto">
         <div class="fin-row-left">
@@ -1470,7 +1525,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
           <div class="fin-row-badge fin-badge-tot">∑</div>
           <div class="fin-row-info">
             <div class="fin-row-ar">المجموع (أ + ب + ج)</div>
-            <div class="fin-row-en" style="font-weight:800;">TOTAL (A + B + C)</div>
+            <div class="fin-row-en" style="font-weight:800;">TOTAL (Cash+Card+BNPL+Credit)</div>
           </div>
         </div>
         <div class="fin-row-amount fin-amt-total" id="famt-total">—</div>
@@ -1572,6 +1627,13 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
             <div class="fin-row-en">Deposit into Bank</div>
             <input class="fin-inline-input" id="fin-bank-slip" placeholder="Slip number…" type="text"
               onclick="event.stopPropagation()" oninput="finData.bankSlip=this.value;finMarkUnsaved()">
+            <div class="fin-receipt-row" onclick="event.stopPropagation()">
+              <label class="fin-receipt-btn" id="fin-bank-receipt-label">
+                <input type="file" accept="image/jpeg,image/png" style="display:none" onchange="finUploadReceipt('bank',this)">
+                📎 <span id="fin-bank-receipt-txt">Attach Receipt</span>
+              </label>
+              <div id="fin-bank-receipt-thumb" class="fin-receipt-thumb" onclick="finViewReceipt('bank')" style="display:none;"></div>
+            </div>
           </div>
         </div>
         <div class="fin-row-amount fin-amt-deduct" id="famt-bankAmt">—</div>
@@ -1584,6 +1646,13 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
           <div class="fin-row-info">
             <div class="fin-row-ar">المصاريف (مع إرفاق الفاتورة)</div>
             <div class="fin-row-en">Expenses (Attach Bills)</div>
+            <div class="fin-receipt-row" onclick="event.stopPropagation()">
+              <label class="fin-receipt-btn" id="fin-exp-receipt-label">
+                <input type="file" accept="image/jpeg,image/png" style="display:none" onchange="finUploadReceipt('expense',this)">
+                📎 <span id="fin-exp-receipt-txt">Attach Bill/Receipt</span>
+              </label>
+              <div id="fin-exp-receipt-thumb" class="fin-receipt-thumb" onclick="finViewReceipt('expense')" style="display:none;"></div>
+            </div>
           </div>
         </div>
         <div class="fin-row-amount fin-amt-deduct" id="famt-expenses">—</div>
@@ -1846,6 +1915,100 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
       <button onclick="confirmFinLock()" style="flex:2;background:linear-gradient(135deg,#5A3A00,#3A2000);color:#C9A44E;font-family:var(--f-body);font-size:16px;font-weight:700;border:1px solid #C9A44E;padding:15px;border-radius:10px;cursor:pointer;">Lock Finance ✓</button>
     </div>
   </div>
+</div>
+
+<!-- ══════════ MULTI-TRANSFER DRAWER ══════════ -->
+<div id="multiTrfDrawer" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);display:none;align-items:flex-end;justify-content:center;z-index:970;padding-bottom:env(safe-area-inset-bottom,0px);">
+  <div style="background:#141414;border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:85vh;display:flex;flex-direction:column;">
+    <div style="padding:16px 18px 10px;border-bottom:1px solid #222;">
+      <div style="font-size:9px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">TRANSFER BREAKDOWN</div>
+      <div style="font-size:16px;font-weight:700;color:#E0E0E0;" id="mtd-prod-name">—</div>
+      <div style="font-size:10px;color:#555;font-family:var(--f-mono);" id="mtd-prod-sub">—</div>
+    </div>
+    <!-- Received FROM section -->
+    <div style="flex:1;overflow-y:auto;padding:0 0 8px;">
+      <div id="mtd-inn-section" style="display:none;">
+        <div style="padding:10px 18px 5px;font-size:9px;font-weight:800;color:#2A9060;text-transform:uppercase;letter-spacing:1px;">← Received From</div>
+        <div id="mtd-inn-list"></div>
+      </div>
+      <div id="mtd-trf-section" style="display:none;">
+        <div style="padding:10px 18px 5px;font-size:9px;font-weight:800;color:#8A4AAA;text-transform:uppercase;letter-spacing:1px;">→ Sent To</div>
+        <div id="mtd-trf-list"></div>
+      </div>
+      <!-- Add new transfer split -->
+      <div id="mtd-add-section" style="padding:12px 18px 6px;border-top:1px solid #1E1E1E;display:none;">
+        <div style="font-size:9px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">ADD SPLIT TRANSFER</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+          <select id="mtd-store-sel" style="flex:1;background:#1E1E1E;border:1px solid #333;color:#CCC;border-radius:7px;padding:8px 10px;font-family:var(--f-body);font-size:12px;outline:none;"></select>
+          <div style="background:#1E1E1E;border:1px solid #333;border-radius:7px;padding:8px 12px;font-family:var(--f-mono);font-size:15px;color:#C9A44E;min-width:60px;text-align:center;cursor:pointer;" id="mtd-qty-btn" onclick="openMtdQtyPad()">0</div>
+        </div>
+        <input id="mtd-remark" placeholder="Remark / reason (optional)…" style="width:100%;background:#1E1E1E;border:1px solid #333;border-radius:7px;padding:8px 12px;font-family:var(--f-body);font-size:12px;color:#CCC;outline:none;box-sizing:border-box;" type="text">
+        <button onclick="addMtdSplit()" style="margin-top:8px;width:100%;background:#1A2A1A;border:1px solid #2A5A2A;color:#6FCF97;font-family:var(--f-body);font-size:14px;font-weight:700;padding:12px;border-radius:9px;cursor:pointer;">＋ Add This Split</button>
+      </div>
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid #222;display:flex;gap:10px;">
+      <button onclick="closeMtdDrawer()" style="flex:1;background:#1A1A1A;border:1px solid #333;color:#888;font-family:var(--f-body);font-size:15px;padding:13px;border-radius:10px;cursor:pointer;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ADJUSTMENT MODAL ══════════ -->
+<div id="adjModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);display:none;align-items:flex-end;justify-content:center;z-index:975;padding-bottom:env(safe-area-inset-bottom,0px);">
+  <div style="background:#141414;border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:88vh;display:flex;flex-direction:column;">
+    <div style="padding:16px 18px 10px;border-bottom:1px solid #222;">
+      <div style="font-size:9px;font-weight:700;color:#E87070;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">⚖ STOCK ADJUSTMENT — LOCKED DAY</div>
+      <div style="font-size:15px;font-weight:700;color:#E0E0E0;" id="adj-prod-name">—</div>
+      <div style="font-size:10px;color:#555;font-family:var(--f-mono);" id="adj-prod-sub">—</div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:14px 18px;">
+      <div style="background:#1A0A00;border:1px solid #3A1A00;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-family:var(--f-mono);font-size:11px;color:#C9A44E;">
+        ⚠ This day is locked. Adjustments create a separate audit trail — original data is preserved. Manager Override required.
+      </div>
+      <!-- Current values -->
+      <div id="adj-current-vals" style="background:#111;border:1px solid #222;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-family:var(--f-mono);font-size:12px;color:#888;"></div>
+      <!-- Field to adjust -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Field to Adjust</div>
+        <select id="adj-field-sel" style="width:100%;background:#1E1E1E;border:1px solid #333;color:#CCC;border-radius:7px;padding:10px 12px;font-family:var(--f-body);font-size:13px;outline:none;" onchange="adjFieldChanged()">
+          <option value="open">Opening Stock</option>
+          <option value="wh">WH Transfer In</option>
+          <option value="inn">Store Transfer In</option>
+          <option value="sold">Sales</option>
+          <option value="trf">Transfer Out</option>
+        </select>
+      </div>
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Corrected Value <span id="adj-orig-val" style="color:#C9A44E;"></span></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="flex:1;background:#1E1E1E;border:1px solid #C9A44E;border-radius:7px;padding:12px 16px;font-family:var(--f-mono);font-size:22px;font-weight:700;color:#C9A44E;text-align:center;cursor:pointer;" id="adj-new-val-display" onclick="openAdjPad()">—</div>
+        </div>
+      </div>
+      <!-- Reason code -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Reason for Adjustment</div>
+        <select id="adj-reason" style="width:100%;background:#1E1E1E;border:1px solid #333;color:#CCC;border-radius:7px;padding:10px 12px;font-family:var(--f-body);font-size:13px;outline:none;">
+          <option value="not_received">Item not actually received</option>
+          <option value="not_entered">Sale made but not entered</option>
+          <option value="double_entry">Double entry error</option>
+          <option value="damaged">Damaged / written off</option>
+          <option value="count_error">Physical count discrepancy</option>
+          <option value="transfer_error">Transfer recorded incorrectly</option>
+          <option value="other">Other (specify below)</option>
+        </select>
+      </div>
+      <input id="adj-note" placeholder="Additional notes / authorised by…" style="width:100%;background:#1E1E1E;border:1px solid #333;border-radius:7px;padding:10px 12px;font-family:var(--f-body);font-size:12px;color:#CCC;outline:none;box-sizing:border-box;margin-bottom:4px;" type="text">
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid #222;display:flex;gap:10px;">
+      <button onclick="closeAdjModal()" style="flex:1;background:#1A1A1A;border:1px solid #333;color:#888;font-family:var(--f-body);font-size:15px;padding:13px;border-radius:10px;cursor:pointer;">Cancel</button>
+      <button onclick="confirmAdj()" style="flex:2;background:#3A1A00;border:1px solid #E87070;color:#E87070;font-family:var(--f-body);font-size:15px;font-weight:700;padding:13px;border-radius:10px;cursor:pointer;">Apply Adjustment ⚖</button>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt Lightbox -->
+<div id="receiptLightbox" style="position:fixed;inset:0;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;z-index:990;flex-direction:column;gap:12px;" onclick="closeReceiptLightbox()">
+  <img id="receiptLightboxImg" style="max-width:92vw;max-height:80vh;border-radius:8px;object-fit:contain;" src="" alt="Receipt">
+  <div style="font-family:var(--f-mono);font-size:11px;color:#666;">Tap anywhere to close</div>
 </div>
 
 <!-- ══════════ NUMPAD ══════════ -->
@@ -3241,6 +3404,8 @@ let finDaySaved = {};
 
 const FIN_FIELDS = {
   cash:        { label:'Cash Sales (A)',           ar:'المبيعات النقدية' },
+  tabby:       { label:'Tabby (BNPL)',             ar:'تابي - الدفع لاحقاً' },
+  tamara:      { label:'Tamara (BNPL)',            ar:'تمارا - الدفع لاحقاً' },
   credit:      { label:'Credit Sales (C)',         ar:'المبيعات غير المدفوعة' },
   openCash:    { label:'Opening Cash Balance (E)', ar:'المبلغ الافتتاحي' },
   debtors:     { label:'Cash from Debtors',        ar:'من المدينين' },
@@ -3261,7 +3426,8 @@ let finData = {
 function finCalc(){
   const cc = finCC.reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
   finData._ccTotal    = cc;
-  finData._total      = (finData.cash||0) + cc + (finData.credit||0);
+  finData._bnplTotal  = (finData.tabby||0) + (finData.tamara||0);
+  finData._total      = (finData.cash||0) + cc + (finData.tabby||0) + (finData.tamara||0) + (finData.credit||0);
   finData._totalCash  = (finData.openCash||0) + (finData.cash||0) + (finData.debtors||0);
   finData._closing    = finData._totalCash
                        - (finData.directorAmt||0)
@@ -3285,6 +3451,8 @@ function finRender(){
   const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
 
   set('famt-cash',      fmtAmt(finData.cash));
+  set('famt-tabby',     fmtAmt(finData.tabby));
+  set('famt-tamara',    fmtAmt(finData.tamara));
   set('famt-cc',        fmtAmt(finData._ccTotal));
   set('famt-credit',    fmtAmt(finData.credit));
   set('famt-total',     fmtAmt(finData._total));
@@ -3708,6 +3876,8 @@ function loadFinanceData(finDay){
     finDaySaved[me.code+'_'+finDay] = true;
   }
   finRender();
+  // Restore photo thumbnails
+  finRestoreReceipts();
   // Restore text inputs
   const dn=document.getElementById('fin-director-name'); if(dn) dn.value=finData.directorName||'';
   const bs=document.getElementById('fin-bank-slip');     if(bs) bs.value=finData.bankSlip||'';
@@ -3979,6 +4149,386 @@ function renderCCRows(){}
 function updateFinTotalsRow(){}
 function openFinNP(f){ finTap(f); }
 function openFinCCNP(i){ finTapCC(i); }
+
+// ══════════════════════════════════════════════════════════
+// MULTI-STORE TRANSFER DRAWER
+// ══════════════════════════════════════════════════════════
+let _mtdCtx = null; // {prodCode, prodEn, day, field:'inn'|'trf'}
+let _mtdQty = 0;
+
+function openMultiTrfDrawer(prodCode, field){
+  const p = PRODUCTS.find(x=>x.code===prodCode);
+  if(!p) return;
+  _mtdCtx = {prodCode, prodEn:p.en, prodAr:p.ar||'', day:curDay, field};
+  _mtdQty = 0;
+
+  document.getElementById('mtd-prod-name').textContent = p.en;
+  document.getElementById('mtd-prod-sub').textContent  = (p.ar||'') + ' · ' + p.code + ' · ' + getDayLabels()[curDay]?.full;
+
+  // Populate store dropdown (exclude own store)
+  const sel = document.getElementById('mtd-store-sel');
+  sel.innerHTML = '<option value="">— Select store —</option>';
+  const mgr = STORES.find(s=>s.code===me.code)?.manager||'';
+  STORES.filter(s=>s.code!==me.code&&s.code!=='MGR').forEach(s=>{
+    const opt = document.createElement('option');
+    opt.value = s.code; opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+
+  document.getElementById('mtd-qty-btn').textContent = '0';
+  document.getElementById('mtd-remark').value = '';
+
+  const locked = isLocked(me.code, curDay);
+  document.getElementById('mtd-add-section').style.display = locked ? 'none' : 'block';
+
+  renderMtdList();
+  document.getElementById('multiTrfDrawer').style.display = 'flex';
+}
+
+function renderMtdList(){
+  if(!_mtdCtx) return;
+  const {prodCode, day} = _mtdCtx;
+  const log = getTransferLog();
+
+  // Received FROM (inn)
+  const innEntries = log.filter(t=>t.day===day && t.prodCode===prodCode && t.toStore===me.code);
+  const innSection = document.getElementById('mtd-inn-section');
+  const innList    = document.getElementById('mtd-inn-list');
+  if(innEntries.length){
+    innSection.style.display='block';
+    innList.innerHTML = innEntries.map((t,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid #1A1A1A;background:#0D1A0D;">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:#6FCF97;">${t.fromName}</div>
+          ${t.remark?`<div style="font-size:11px;color:#2A8050;font-style:italic;margin-top:2px;">💬 ${t.remark}</div>`:''}
+          <div style="font-size:10px;color:#2A4A2A;font-family:var(--f-mono);margin-top:2px;">${t.ts}</div>
+        </div>
+        <div style="font-family:var(--f-mono);font-size:20px;font-weight:900;color:#6FCF97;">+${t.qty}</div>
+      </div>`).join('');
+  } else { innSection.style.display='none'; }
+
+  // Sent TO (trf)
+  const trfEntries = log.filter(t=>t.day===day && t.prodCode===prodCode && t.fromStore===me.code);
+  const trfSection = document.getElementById('mtd-trf-section');
+  const trfList    = document.getElementById('mtd-trf-list');
+  if(trfEntries.length){
+    trfSection.style.display='block';
+    trfList.innerHTML = trfEntries.map((t,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid #1A1A1A;background:#1A0D1A;">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:#BB88DD;">${t.toName}</div>
+          ${t.remark?`<div style="font-size:11px;color:#7A4A9A;font-style:italic;margin-top:2px;">💬 ${t.remark}</div>`:''}
+          <div style="font-size:10px;color:#3A2A4A;font-family:var(--f-mono);margin-top:2px;">${t.ts}</div>
+        </div>
+        <div style="font-family:var(--f-mono);font-size:20px;font-weight:900;color:#BB88DD;">−${t.qty}</div>
+      </div>`).join('');
+  } else { trfSection.style.display='none'; }
+
+  if(!innEntries.length && !trfEntries.length){
+    innSection.style.display='block';
+    innList.innerHTML='<div style="padding:16px 18px;font-family:var(--f-mono);font-size:11px;color:#333;text-align:center;">No transfers recorded yet</div>';
+  }
+}
+
+let _mtdPadOpen = false;
+function openMtdQtyPad(){
+  _mtdPadOpen = true;
+  // Reuse existing numpad — set up a temp context
+  finNPCtx = '__mtd__';
+  finNPBuf = '';
+  document.getElementById('npProduct').textContent = _mtdCtx ? _mtdCtx.prodEn : '—';
+  const fEl = document.getElementById('npField');
+  fEl.textContent = 'Qty to transfer';
+  fEl.className = 'np-field trf';
+  document.getElementById('npCurLabel').textContent = 'QUANTITY';
+  document.getElementById('npVal').textContent = '0';
+  document.getElementById('npNote').textContent = 'Enter units then SAVE ✓';
+  const sr = document.getElementById('npStoreRow'); if(sr) sr.style.display='none';
+  npCtx = null;
+  document.getElementById('numpad').classList.add('show');
+}
+
+function addMtdSplit(){
+  const sel = document.getElementById('mtd-store-sel');
+  const sc  = sel.value;
+  const qty = _mtdQty;
+  const remark = document.getElementById('mtd-remark').value.trim();
+  if(!sc){ toast('⚠ Select a store first'); return; }
+  if(qty<=0){ toast('⚠ Enter qty — tap the number'); return; }
+  const ss = STORES.find(s=>s.code===sc);
+  if(!ss) return;
+
+  const {prodCode, prodAr, day} = _mtdCtx;
+  const p = PRODUCTS.find(x=>x.code===prodCode);
+  const now2 = new Date();
+  const ts2  = now2.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + ' ' + now2.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+
+  if(!db.transferLog) db.transferLog=[];
+  db.transferLog.unshift({
+    id:Date.now(), ts:ts2, day,
+    fromStore: me.code, fromName: me.name,
+    toStore:   sc,      toName:   ss.name,
+    prodCode, prodName:p?p.en:prodCode, prodAr:prodAr||'',
+    qty, remark, note:'multi-split via drawer'
+  });
+
+  // Update the cell value: add qty to trf total
+  const cur = dbGet(me.code, day, prodCode, 'trf');
+  dbSet(me.code, day, prodCode, 'trf', cur + qty);
+  saveDB();
+
+  // Reset qty
+  _mtdQty = 0;
+  document.getElementById('mtd-qty-btn').textContent = '0';
+  document.getElementById('mtd-remark').value = '';
+  sel.value = '';
+
+  renderMtdList();
+  buildGrid(); updateTotalsRow(); buildFooter();
+  toast(`✓ Split: ${qty} → ${ss.name}`);
+}
+
+function closeMtdDrawer(){
+  document.getElementById('multiTrfDrawer').style.display='none';
+  _mtdCtx = null; _mtdQty = 0;
+}
+
+// ══════════════════════════════════════════════════════════
+// ADJUSTMENT SYSTEM — Locked Day Corrections
+// ══════════════════════════════════════════════════════════
+let _adjCtx = null; // {prodCode, day}
+let _adjNewVal = null;
+let _adjPadOpen = false;
+
+function openAdjModal(prodCode, day){
+  if(!mgrOverrideActive){ toast('⚠ Manager Override required — enter PIN 9999 first'); return; }
+  const p = PRODUCTS.find(x=>x.code===prodCode);
+  if(!p) return;
+  _adjCtx = {prodCode, day};
+  _adjNewVal = null;
+
+  document.getElementById('adj-prod-name').textContent = p.en;
+  const dl = getDayLabels()[day];
+  document.getElementById('adj-prod-sub').textContent = (p.ar||'') + ' · ' + p.code + ' · ' + (dl?dl.full+' '+dl.date:'');
+
+  adjFieldChanged();
+  document.getElementById('adj-new-val-display').textContent = '—';
+  document.getElementById('adj-note').value = '';
+  document.getElementById('adjModal').style.display = 'flex';
+}
+
+function adjFieldChanged(){
+  if(!_adjCtx) return;
+  const field = document.getElementById('adj-field-sel').value;
+  const orig  = dbGet(me.code, _adjCtx.day, _adjCtx.prodCode, field);
+  document.getElementById('adj-orig-val').textContent = `(original: ${orig})`;
+  _adjNewVal = null;
+  document.getElementById('adj-new-val-display').textContent = '—';
+}
+
+function openAdjPad(){
+  _adjPadOpen = true;
+  finNPCtx = '__adj__';
+  finNPBuf = '';
+  document.getElementById('npProduct').textContent = _adjCtx ? PRODUCTS.find(p=>p.code===_adjCtx.prodCode)?.en||'—' : '—';
+  const fEl = document.getElementById('npField');
+  const field = document.getElementById('adj-field-sel').value;
+  fEl.textContent = 'Corrected value for '+field;
+  fEl.className = 'np-field sold';
+  document.getElementById('npCurLabel').textContent = 'NEW VALUE';
+  document.getElementById('npVal').textContent = '0';
+  document.getElementById('npNote').textContent = 'Enter the CORRECTED quantity then SAVE ✓';
+  const sr = document.getElementById('npStoreRow'); if(sr) sr.style.display='none';
+  npCtx = null;
+  document.getElementById('numpad').classList.add('show');
+}
+
+function closeAdjModal(){
+  document.getElementById('adjModal').style.display='none';
+  _adjCtx = null; _adjNewVal = null;
+}
+
+function confirmAdj(){
+  if(!_adjCtx){ toast('No context'); return; }
+  if(_adjNewVal === null){ toast('⚠ Tap the value box and enter corrected quantity'); return; }
+  if(!mgrOverrideActive){ toast('⚠ Manager Override expired — re-enter PIN 9999'); return; }
+
+  const field   = document.getElementById('adj-field-sel').value;
+  const reason  = document.getElementById('adj-reason').value;
+  const note    = document.getElementById('adj-note').value.trim();
+  const origVal = dbGet(me.code, _adjCtx.day, _adjCtx.prodCode, field);
+  const newVal  = _adjNewVal;
+  const {prodCode, day} = _adjCtx;
+  const p = PRODUCTS.find(x=>x.code===prodCode);
+  const dl = getDayLabels()[day];
+
+  // Write to adjustment ledger
+  if(!db.adjustments) db.adjustments = [];
+  db.adjustments.unshift({
+    id: Date.now(),
+    ts: new Date().toLocaleString('en-GB'),
+    store: me.code, storeName: me.name,
+    day, dayLabel: dl?dl.full+' '+dl.date:'',
+    prodCode, prodName: p?p.en:prodCode, prodAr: p?p.ar||'':'',
+    field, origVal, newVal,
+    delta: newVal - origVal,
+    reason, note,
+    approvedBy: 'Manager Override'
+  });
+
+  // Apply correction to actual data (force write even on locked day)
+  dbSet(me.code, day, prodCode, field, newVal, true);
+  saveDB();
+
+  closeAdjModal();
+  buildGrid(); updateTotalsRow(); buildFooter();
+  const delta = newVal - origVal;
+  toast(`⚖ Adjusted ${field}: ${origVal} → ${newVal} (${delta>=0?'+':''}${delta})`);
+}
+
+// ══════════════════════════════════════════════════════════
+// PHOTO RECEIPT UPLOAD (Finance Tab)
+// ══════════════════════════════════════════════════════════
+function finUploadReceipt(type, input){
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 3*1024*1024){ toast('⚠ Image too large — max 3MB'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const b64 = e.target.result;
+    if(type==='bank'){
+      finData.bankReceiptPhoto = b64;
+      const thumb = document.getElementById('fin-bank-receipt-thumb');
+      const txt   = document.getElementById('fin-bank-receipt-txt');
+      if(thumb){ thumb.style.display='block'; thumb.style.backgroundImage=`url(${b64})`; }
+      if(txt)   txt.textContent = '✓ Receipt attached';
+    } else {
+      finData.expenseReceiptPhoto = b64;
+      const thumb = document.getElementById('fin-exp-receipt-thumb');
+      const txt   = document.getElementById('fin-exp-receipt-txt');
+      if(thumb){ thumb.style.display='block'; thumb.style.backgroundImage=`url(${b64})`; }
+      if(txt)   txt.textContent = '✓ Bill attached';
+    }
+    finMarkUnsaved();
+    toast('📎 Receipt saved — will export with Finance PDF');
+  };
+  reader.readAsDataURL(file);
+}
+
+function finRestoreReceipts(){
+  if(finData.bankReceiptPhoto){
+    const thumb = document.getElementById('fin-bank-receipt-thumb');
+    const txt   = document.getElementById('fin-bank-receipt-txt');
+    if(thumb){ thumb.style.display='block'; thumb.style.backgroundImage=`url(${finData.bankReceiptPhoto})`; }
+    if(txt)   txt.textContent = '✓ Receipt attached';
+  } else {
+    const thumb = document.getElementById('fin-bank-receipt-thumb');
+    const txt   = document.getElementById('fin-bank-receipt-txt');
+    if(thumb){ thumb.style.display='none'; thumb.style.backgroundImage='none'; }
+    if(txt)   txt.textContent = 'Attach Receipt';
+  }
+  if(finData.expenseReceiptPhoto){
+    const thumb = document.getElementById('fin-exp-receipt-thumb');
+    const txt   = document.getElementById('fin-exp-receipt-txt');
+    if(thumb){ thumb.style.display='block'; thumb.style.backgroundImage=`url(${finData.expenseReceiptPhoto})`; }
+    if(txt)   txt.textContent = '✓ Bill attached';
+  } else {
+    const thumb = document.getElementById('fin-exp-receipt-thumb');
+    const txt   = document.getElementById('fin-exp-receipt-txt');
+    if(thumb){ thumb.style.display='none'; thumb.style.backgroundImage='none'; }
+    if(txt)   txt.textContent = 'Attach Bill/Receipt';
+  }
+}
+
+function finViewReceipt(type){
+  const src = type==='bank' ? finData.bankReceiptPhoto : finData.expenseReceiptPhoto;
+  if(!src) return;
+  const lb = document.getElementById('receiptLightbox');
+  const img= document.getElementById('receiptLightboxImg');
+  if(lb && img){ img.src=src; lb.style.display='flex'; }
+}
+function closeReceiptLightbox(){
+  const lb = document.getElementById('receiptLightbox');
+  if(lb) lb.style.display='none';
+}
+
+// ── Update confirmNP to handle __mtd__ and __adj__ contexts ──
+// (Patched into the existing nk/nc/nd flow)
+const _origNK = nk;
+window.nk = function(k){
+  if((finNPCtx==='__mtd__' || finNPCtx==='__adj__') && !npCtx){
+    if(finNPBuf===''||finNPBuf==='0') finNPBuf=k; else finNPBuf+=k;
+    if(parseInt(finNPBuf)>9999) finNPBuf='9999';
+    document.getElementById('npVal').textContent=finNPBuf||'0';
+    return;
+  }
+  _origNK(k);
+};
+const _origNC = nc;
+window.nc = function(){
+  if(finNPCtx==='__mtd__'||finNPCtx==='__adj__'){
+    finNPBuf=''; document.getElementById('npVal').textContent='0'; return;
+  }
+  _origNC();
+};
+const _origND = nd;
+window.nd = function(){
+  if(finNPCtx==='__mtd__'||finNPCtx==='__adj__'){
+    finNPBuf=finNPBuf.slice(0,-1)||'';
+    document.getElementById('npVal').textContent=finNPBuf||'0'; return;
+  }
+  _origND();
+};
+
+// Patch confirmNP to handle __mtd__ and __adj__
+const _origConfirmNP = confirmNP;
+window.confirmNP = function(){
+  if(finNPCtx==='__mtd__' && !npCtx){
+    _mtdQty = parseInt(finNPBuf)||0;
+    document.getElementById('mtd-qty-btn').textContent = _mtdQty||'0';
+    finNPCtx=null; finNPBuf='';
+    document.getElementById('numpad').classList.remove('show');
+    toast(`✓ Qty set to ${_mtdQty}`);
+    return;
+  }
+  if(finNPCtx==='__adj__' && !npCtx){
+    _adjNewVal = parseInt(finNPBuf)||0;
+    document.getElementById('adj-new-val-display').textContent = _adjNewVal;
+    finNPCtx=null; finNPBuf='';
+    document.getElementById('numpad').classList.remove('show');
+    return;
+  }
+  _origConfirmNP();
+};
+
+// ── Add long-press on transfer cells to open multi-transfer drawer ──
+// And long-press on any locked-day cell to offer adjustment
+(function patchBuildGrid(){
+  const _origBuild = buildGrid;
+  window.buildGrid = function(){
+    _origBuild();
+    // After grid renders, attach contextual long-press to inn/trf cells
+    document.querySelectorAll('.dcell.inn, .dcell.trf').forEach(cell=>{
+      let pressTimer;
+      cell.addEventListener('touchstart',e=>{
+        pressTimer=setTimeout(()=>{
+          const row=cell.closest('tr');
+          if(!row) return;
+          const code=cell.closest('tr').querySelector('[data-code]')?.dataset.code
+            || [...document.querySelectorAll('.sgrid tbody tr')].indexOf(row).toString();
+          // Find prod code from row
+          const prodTd=row.querySelector('.prod-td .pcode');
+          if(!prodTd) return;
+          const prodCode=prodTd.textContent.trim();
+          const field=cell.classList.contains('inn')?'inn':'trf';
+          openMultiTrfDrawer(prodCode, field);
+        },600);
+      });
+      cell.addEventListener('touchend',()=>clearTimeout(pressTimer));
+      cell.addEventListener('touchmove',()=>clearTimeout(pressTimer));
+    });
+  };
+})();
 
 // ── SWITCH DASHBOARD TABS ──
 function switchDashTab(tab){
@@ -4379,12 +4929,14 @@ function downloadWeek(){
 let expPeriod='day';
 
 function openExport(){
+  // Always sync to current working day before opening export
+  dashDay = curDay;
   expPeriod='day';
   updateExpUI();
   document.getElementById('exportPanel').classList.add('show');
 }
-function openExportDay(){expPeriod='day';updateExpUI();document.getElementById('exportPanel').classList.add('show');}
-function openExportWeek(){expPeriod='week';updateExpUI();document.getElementById('exportPanel').classList.add('show');}
+function openExportDay(){dashDay=curDay;expPeriod='day';updateExpUI();document.getElementById('exportPanel').classList.add('show');}
+function openExportWeek(){dashDay=curDay;expPeriod='week';updateExpUI();document.getElementById('exportPanel').classList.add('show');}
 function closeExport(){document.getElementById('exportPanel').classList.remove('show');}
 
 function selectPeriod(p){
