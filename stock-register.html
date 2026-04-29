@@ -155,15 +155,15 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   position:sticky;left:0;z-index:10;
   background:var(--white);
   border-right:2px solid var(--border-dark);
-  width:190px;min-width:190px;max-width:190px;
+  width:200px;min-width:200px;max-width:200px;
 }
 .sgrid thead th.prod-th{z-index:20;}
 
 /* HEADER rows */
 .sgrid thead tr.hdr-group th{
-  font-family:var(--f-mono);font-size:10px;font-weight:600;
-  letter-spacing:0.6px;text-transform:uppercase;
-  padding:7px 4px 6px;text-align:center;
+  font-family:var(--f-mono);font-size:9.5px;font-weight:700;
+  letter-spacing:0.5px;text-transform:uppercase;
+  padding:8px 5px 6px;text-align:center;
   border:1px solid var(--border);border-bottom:1px solid var(--border-dark);
 }
 .sgrid thead tr.hdr-sub th{
@@ -193,9 +193,9 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sgrid tr.cat-sep td{
   background:#EFEFEF;border-top:2px solid var(--border-dark);
   border-bottom:1px solid var(--border);
-  padding:5px 10px;
-  font-size:10px;font-weight:600;color:#555;
-  letter-spacing:1.2px;text-transform:uppercase;
+  padding:5px 12px;
+  font-size:10px;font-weight:700;color:#444;
+  letter-spacing:1.5px;text-transform:uppercase;
 }
 .sgrid tr.cat-sep td:first-child{
   background:#E8E8E8;color:#333;
@@ -208,17 +208,21 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* Product name cell */
 .prod-td{padding:0!important;}
-.prod-inner{padding:7px 10px;line-height:1.3;}
-.pname{font-size:14px;font-weight:700;color:var(--ink2);display:block;letter-spacing:-0.1px;}
-.pname-ar{font-family:var(--f-ar);font-size:13px;color:var(--muted);display:block;
-  direction:rtl;text-align:left;font-weight:600;}
-.pcode{font-family:var(--f-mono);font-size:11px;color:var(--muted2);display:block;margin-top:3px;font-weight:600;letter-spacing:0.3px;}
+.prod-inner{padding:8px 12px;line-height:1.35;}
+.pname{font-size:13.5px;font-weight:700;color:var(--ink2);display:block;letter-spacing:-0.1px;}
+.pname-ar{font-family:var(--f-ar);font-size:12px;color:var(--muted);display:block;
+  direction:rtl;text-align:left;font-weight:600;margin-top:1px;}
+.pcode{font-family:var(--f-mono);font-size:10px;color:var(--muted2);display:block;margin-top:3px;font-weight:600;letter-spacing:0.3px;}
 
-/* Data cells */
+/* Data cells — wider for transfer store names */
 .sgrid td.dcell{
   padding:0;text-align:center;border:1px solid var(--border);
-  cursor:pointer;transition:background 0.1s;min-width:62px;width:62px;
+  cursor:pointer;transition:background 0.1s;min-width:72px;width:72px;
 }
+/* Transfer columns wider to fit store name */
+.sgrid td.dcell.inn,.sgrid td.dcell.trf{min-width:90px;width:90px;}
+.sgrid thead th.gh-in,.sgrid thead th.gh-trf{min-width:90px;width:90px;}
+
 .sgrid td.dcell.open{background:var(--c-open);}
 .sgrid td.dcell.inn{background:var(--c-in);}
 .sgrid td.dcell.wh{background:var(--c-wh);}
@@ -229,10 +233,13 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sgrid td.dcell:active:not(.bal){background:var(--gold-pale)!important;}
 
 .dcell-val{
-  display:block;width:100%;padding:11px 4px;
+  display:block;width:100%;padding:10px 4px 5px;
   font-family:var(--f-mono);font-size:15px;font-weight:500;
   color:var(--ink2);line-height:1;
 }
+/* When there's a note below, reduce top padding */
+.dcell-has-note .dcell-val{padding-top:7px;padding-bottom:2px;}
+
 .dcell.open .dcell-val{color:var(--c-open-t);}
 .dcell.wh .dcell-val{color:var(--c-wh-t);}
 .dcell.inn .dcell-val{color:var(--c-in-t);}
@@ -242,6 +249,35 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dcell.bal .dcell-val{color:var(--c-bal-t);font-weight:600;}
 .dcell.bal .dcell-val.negative{color:#8B1A1A;font-weight:700;}
 .dcell-val.empty{color:#CCC;}
+
+/* Transfer store-name note — full name, styled properly */
+.cell-note{
+  display:block;
+  font-family:var(--f-mono);font-size:9px;font-weight:600;
+  line-height:1.25;
+  text-align:center;
+  padding:0 4px 6px;
+  white-space:normal;
+  word-break:break-word;
+  overflow:hidden;
+}
+.cell-note-arrow{
+  display:block;
+  font-size:9px;
+  opacity:0.6;
+  margin-bottom:1px;
+}
+.cell-note-name{
+  display:block;
+  font-size:8.5px;
+  line-height:1.3;
+}
+/* Received from — green tint */
+.dcell.inn .cell-note{color:#1A6040;}
+.dcell.inn .cell-note-arrow{color:#2A9060;}
+/* Sent to — purple tint */
+.dcell.trf .cell-note{color:#5A2A7A;}
+.dcell.trf .cell-note-arrow{color:#8A4AAA;}
 
 /* Locked state */
 .row-locked .dcell.open,.row-locked .dcell.wh,.row-locked .dcell.inn,.row-locked .dcell.out{
@@ -761,8 +797,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sf-val.fo{color:#6FA8DC;}.sf-val.wh{color:#7FC860;}.sf-val.inn{color:#5DBEA3;}
 .sf-val.sold{color:#E87070;}.sf-val.trf{color:#BB88DD;}.sf-val.bal{color:var(--gold2);}
 .sf-div{width:1px;height:34px;background:#2A2A2A;flex-shrink:0;}
-/* ── CELL NOTE ── */
-.cell-note{font-size:8px;color:#666;font-family:var(--f-mono);display:block;margin-top:1px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px;}
+/* ── CELL NOTE — see grid CSS section above for full definition ── */
 /* ── HIDE OLD FOOTER ── */
 .footer-bar{display:none!important;}
 /* ── REGION HEADER ── */
@@ -2074,16 +2109,16 @@ function buildGrid(){
         <td class="dcell wh" onclick="${canEdit?'openNP(\''+p.code+'\',\'wh\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showW===''?' empty':''}">${showW===''?'—':showW}</span>
         </td>
-        <td class="dcell inn" onclick="${canEdit?'openNP(\''+p.code+'\',\'inn\')':'toast(\'🔒 Day locked\')'}">
+        <td class="dcell inn${(()=>{const lg2=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.toStore===me.code);return lg2?' dcell-has-note':''})()}" onclick="${canEdit?'openNP(\''+p.code+'\',\'inn\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showI===''?' empty':''}">${showI===''?'—':showI}</span>
-          ${(()=>{const lg=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.toStore===me.code);return lg?`<span class="cell-note">← ${lg.fromName.split(' ').slice(0,2).join(' ')}</span>`:''})()}
+          ${(()=>{const lg=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.toStore===me.code);return lg?`<span class="cell-note"><span class="cell-note-arrow">← Received from</span><span class="cell-note-name">${lg.fromName}</span></span>`:''})()}
         </td>
         <td class="dcell sold" onclick="${canEdit?'openNP(\''+p.code+'\',\'sold\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showS===''?' empty':''}">${showS===''?'—':showS}</span>
         </td>
-        <td class="dcell trf" onclick="${canEdit?'openNP(\''+p.code+'\',\'trf\')':'toast(\'🔒 Day locked\')'}">
+        <td class="dcell trf${(()=>{const lg2=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return lg2?' dcell-has-note':''})()}" onclick="${canEdit?'openNP(\''+p.code+'\',\'trf\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showT===''?' empty':''}">${showT===''?'—':showT}</span>
-          ${(()=>{const lg=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return lg?`<span class="cell-note">→ ${lg.toName.split(' ').slice(0,2).join(' ')}</span>`:''})()}
+          ${(()=>{const lg=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return lg?`<span class="cell-note"><span class="cell-note-arrow">→ Sent to</span><span class="cell-note-name">${lg.toName}</span></span>`:''})()}
         </td>
         <td class="dcell bal">
           <span class="dcell-val${isNeg?' negative':''}">${b}</span>
