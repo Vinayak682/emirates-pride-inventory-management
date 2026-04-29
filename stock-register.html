@@ -4395,8 +4395,10 @@ function selectPeriod(p){
 }
 
 function updateExpUI(){
+  // Always reference curDay for the export UI (the day user has been working on)
   const dl=getDayLabels()[curDay];
-  document.getElementById('ep-day-date').textContent=dl.full+' '+dl.date;
+  const locked=isLocked(me.code,curDay);
+  document.getElementById('ep-day-date').textContent=dl.full+' '+dl.date+(locked?' 🔒':'');
   const now=new Date();
   document.getElementById('ep-month-date').textContent=now.toLocaleString('en-GB',{month:'long',year:'numeric'});
   const sub={day:'Export data for '+dl.full+' '+dl.date,
@@ -4414,31 +4416,33 @@ function doExport(fmt){
 
 // ── CSV EXPORTS ──
 function exportDayCSV(){
-  if(typeof dashDay==='undefined'||dashDay===null) dashDay=curDay;
-  if(!isLocked(me.code,dashDay)){toast('⚠ Lock the day first before downloading');return;}
-  const dl=getDayLabels()[dashDay];
+  // Use curDay if export opened from main grid; dashDay if from dashboard
+  const exportDay = (typeof dashDay!=='undefined'&&dashDay!==null) ? dashDay : curDay;
+  const dl=getDayLabels()[exportDay];
+  const locked=isLocked(me.code,exportDay);
+  if(!locked){toast('⚠ Lock the day first before exporting');return;}
   const rows=[];
   rows.push(['EMIRATES PRIDE PERFUMES','','','Daily Stock Report']);
-  rows.push([me.name,'','',dl.full+' '+dl.date]);
+  rows.push([me.name,'','',dl.full+' '+dl.date+(locked?' [LOCKED]':'')]);
   rows.push(['Generated:',new Date().toLocaleString('en-GB')]);
   rows.push([]);
   rows.push(['ERP Code','Product (English)','Product (Arabic)','Category',
              'Opening','WH Transfer','Store In','Sales','Transfer Out','Balance']);
   PRODUCTS.forEach(p=>{
-    const o=dbGet(me.code,dashDay,p.code,'open');
-    const w=dbGet(me.code,dashDay,p.code,'wh');
-    const i=dbGet(me.code,dashDay,p.code,'inn');
-    const s=dbGet(me.code,dashDay,p.code,'sold');
-    const t=dbGet(me.code,dashDay,p.code,'trf');
-    const b=bal(me.code,dashDay,p.code);
+    const o=dbGet(me.code,exportDay,p.code,'open');
+    const w=dbGet(me.code,exportDay,p.code,'wh');
+    const i=dbGet(me.code,exportDay,p.code,'inn');
+    const s=dbGet(me.code,exportDay,p.code,'sold');
+    const t=dbGet(me.code,exportDay,p.code,'trf');
+    const b=bal(me.code,exportDay,p.code);
     if(o>0||w>0||i>0||s>0||t>0||b>0) rows.push([p.code,p.en,p.ar||'',p.cat,o,w,i,s,t,b]);
   });
   const totRow=['','TOTALS','',''];
-  ['open','wh','inn','sold','trf'].forEach(f=>totRow.push(PRODUCTS.reduce((a,p)=>a+dbGet(me.code,dashDay,p.code,f),0)));
-  totRow.push(PRODUCTS.reduce((a,p)=>a+bal(me.code,dashDay,p.code),0));
+  ['open','wh','inn','sold','trf'].forEach(f=>totRow.push(PRODUCTS.reduce((a,p)=>a+dbGet(me.code,exportDay,p.code,f),0)));
+  totRow.push(PRODUCTS.reduce((a,p)=>a+bal(me.code,exportDay,p.code),0));
   rows.push(totRow);
   // Transfers
-  const trLog=getTransferLog().filter(t=>t.day===dashDay);
+  const trLog=getTransferLog().filter(t=>t.day===exportDay);
   if(trLog.length){rows.push([]);rows.push(['TRANSFERS']);rows.push(['Time','Product','Qty','From','To','Note']);
     trLog.forEach(t=>rows.push([t.ts,t.prodName,t.qty,t.fromName,t.toName,t.note||'']));}
   downloadCSV(me.code+'_'+dl.abbr+'_'+dl.date.replace('/','.')+'.csv',rows);
@@ -4453,7 +4457,7 @@ function exportWeekCSV(){
   rows.push([]);
   getDayLabels().forEach((dl,di)=>{
     const locked=isLocked(me.code,di);
-    const anyData=PRODUCTS.some(p=>dbGet(me.code,di,p.code,'sold')>0||dbGet(me.code,di,p.code,'wh')>0);
+    const anyData=PRODUCTS.some(p=>dbGet(me.code,di,p.code,'open')>0||dbGet(me.code,di,p.code,'sold')>0||dbGet(me.code,di,p.code,'wh')>0||dbGet(me.code,di,p.code,'inn')>0);
     if(!anyData) return;
     rows.push([dl.full.toUpperCase()+' '+dl.date+(locked?' ✓ LOCKED':' (open)')]);
     rows.push(['ERP Code','Product','Arabic','Category','Opening','WH Transfer','Store In','Sales','Transfer Out','Balance']);
@@ -4656,12 +4660,13 @@ function buildProductTableHTML(di){
 }
 
 function exportDayPDF(){
-  if(typeof dashDay==='undefined'||dashDay===null) dashDay=curDay;
-  const dl=getDayLabels()[dashDay];
-  const locked=isLocked(me.code,dashDay);
-  const {html,tO,tW,tI,tS,tT,tB}=buildProductTableHTML(dashDay);
+  const exportDay = (typeof dashDay!=='undefined'&&dashDay!==null) ? dashDay : curDay;
+  const dl=getDayLabels()[exportDay];
+  const locked=isLocked(me.code,exportDay);
+  if(!locked){toast('⚠ Lock the day first before exporting');return;}
+  const {html,tO,tW,tI,tS,tT,tB}=buildProductTableHTML(exportDay);
   // Transfer log for this day
-  const trLog=getTransferLog().filter(t=>t.day===dashDay);
+  const trLog=getTransferLog().filter(t=>t.day===exportDay);
   let trHTML='';
   if(trLog.length){
     trHTML='<div class="transfer-section"><h3>Transfer Movements</h3><table><thead><tr><th>Time</th><th>Product</th><th>Qty</th><th>From</th><th>To</th><th>Note</th></tr></thead><tbody>';
