@@ -971,28 +971,36 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .fin-add-row-btn:active{background:#1A2A1A;}
 
 /* Main grid table */
-.fin-grid-table{width:100%;border-collapse:collapse;font-size:12px;}
+.fin-grid-table{
+  width:100%;border-collapse:collapse;font-size:12px;
+  table-layout:fixed;
+}
+/* Hash column — narrow like stock grid # col */
 .fgh-hash{
   width:36px;padding:6px 4px;
   background:#161616;color:#555;
   font-family:var(--f-mono);font-size:9px;font-weight:700;
   border:1px solid #1E1E1E;text-align:center;
 }
+/* Details column — wide like product name */
 .fgh-detail{
   padding:6px 12px;
   background:#161616;color:#777;
   font-family:var(--f-mono);font-size:9px;font-weight:600;
   border:1px solid #1E1E1E;text-align:left;
   text-transform:uppercase;letter-spacing:0.5px;
+  width:auto;
 }
 .fgh-detail span{display:block;font-family:var(--f-ar);font-size:8px;color:#3A3A3A;direction:rtl;margin-top:1px;}
+/* Amount columns — equal width, like dcell in stock grid */
 .fgh-amt{
+  width:90px;min-width:80px;
   padding:6px 8px;
-  font-family:var(--f-mono);font-size:9px;font-weight:600;
+  font-family:var(--f-mono);font-size:9px;font-weight:700;
   border:1px solid #1E1E1E;text-align:center;
-  text-transform:uppercase;letter-spacing:0.5px;min-width:80px;
+  text-transform:uppercase;letter-spacing:0.5px;
 }
-.fgh-amt span{display:block;font-family:var(--f-ar);font-size:8px;margin-top:1px;}
+.fgh-amt span{display:block;font-family:var(--f-ar);font-size:8px;margin-top:1px;font-weight:400;}
 .fgh-cash{background:#EFF9EE;color:#1A6040;}
 .fgh-card{background:#EEF4FF;color:#1A3A7A;}
 .fgh-credit{background:#FFF5EE;color:#7A3A1A;}
@@ -1019,6 +1027,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 }
 .fgt-detail{
   border:1px solid #1E1E1E;padding:8px 12px;vertical-align:middle;
+  text-align:left;
 }
 .fgt-detail .fd-en{font-size:12px;color:#CCC;display:block;font-weight:500;}
 .fgt-detail .fd-ar{font-family:var(--f-ar);font-size:10px;color:#444;direction:rtl;display:block;margin-top:2px;}
@@ -1034,21 +1043,22 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   border:1px solid #1E1E1E;padding:0;
   text-align:center;vertical-align:middle;
   cursor:pointer;transition:background 0.1s;
-  min-width:80px;
+  width:90px;min-width:80px;
 }
 .fgt-cell:active{opacity:0.7;}
 .fgt-cell-inner{
-  display:block;padding:10px 8px;
+  display:block;width:100%;padding:11px 6px;
   font-family:var(--f-mono);font-size:16px;font-weight:700;
+  line-height:1;
 }
 .fgt-cell-inner.empty{font-size:13px;color:#2A2A2A;}
 .fgt-cell.cash-cell{background:#EFF9EE;}.fgt-cell.cash-cell .fgt-cell-inner{color:#1A6040;}
 .fgt-cell.card-cell{background:#EEF4FF;}.fgt-cell.card-cell .fgt-cell-inner{color:#1A3A7A;}
 .fgt-cell.credit-cell{background:#FFF5EE;}.fgt-cell.credit-cell .fgt-cell-inner{color:#7A3A1A;}
-.fgt-cell.auto-cell{cursor:default;background:#F8F8F0;}
-.fgt-cell.auto-cell .fgt-cell-inner{color:#7A5200;font-size:15px;}
+.fgt-cell.auto-cell{cursor:default;}
+.fgt-cell.auto-cell .fgt-cell-inner{color:#7A5200;font-size:16px;}
 .fgt-cell.closing-cell{background:#FFF8E0;cursor:default;}
-.fgt-cell.closing-cell .fgt-cell-inner{color:#7A5200;font-size:18px;font-weight:900;}
+.fgt-cell.closing-cell .fgt-cell-inner{color:#7A5200;font-size:20px;font-weight:900;}
 .fgt-cell.neg-close .fgt-cell-inner{color:#8B1A1A;}
 
 /* Empty row */
@@ -1093,6 +1103,11 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .fin-period-val-n{font-family:var(--f-mono);font-size:13px;font-weight:800;display:block;}
 .fin-period-val-l{font-size:8px;color:#444;text-transform:uppercase;}
 .fin-period-export{margin-top:12px;display:flex;gap:8px;}
+.fgt-cell.tappable{cursor:pointer;}
+.fgt-cell.tappable:active{opacity:0.7;}
+/* Uniform row height across finance grid */
+.fin-grid-row td{height:50px;}
+.fin-grid-row.fin-subtotal td,.fin-grid-row.fin-closing td{height:54px;}
 </style>
 </head>
 <body>
@@ -1262,6 +1277,14 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
         <span>SALES SUMMARY</span><span class="fin-grid-ar">ملخص المبيعات</span>
       </div>
       <table class="fin-grid-table">
+        <colgroup>
+          <col style="width:36px;">
+          <col>
+          <col style="width:90px;">
+          <col style="width:90px;">
+          <col style="width:90px;">
+          <col style="width:110px;">
+        </colgroup>
         <thead>
           <tr>
             <th class="fgh-hash">#</th>
@@ -1271,19 +1294,16 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
             <th class="fgh-amt fgh-credit">CREDIT<br><span>آجل</span></th>
             <th class="fgh-amt fgh-total">TOTAL<br><span>المجموع</span></th>
           </tr>
-          <!-- Totals row — always visible -->
           <tr class="fin-totals-row">
             <th class="fgh-hash"></th>
-            <th class="fgh-detail" style="text-align:left;font-weight:700;font-size:9px;color:#888;">TOTALS</th>
+            <th class="fgh-detail" style="font-weight:700;font-size:9px;color:#888;">TOTALS</th>
             <th class="fgh-amt fgh-cash" id="fgt-cash">—</th>
             <th class="fgh-amt fgh-card" id="fgt-card">—</th>
             <th class="fgh-amt fgh-credit" id="fgt-credit">—</th>
             <th class="fgh-amt fgh-total" id="fgt-total">—</th>
           </tr>
         </thead>
-        <tbody id="fin-sales-tbody">
-          <!-- rows built by JS -->
-        </tbody>
+        <tbody id="fin-sales-tbody"></tbody>
       </table>
 
       <!-- ── SECTION 2: CREDIT CARD TRANSACTIONS ── -->
@@ -1292,12 +1312,18 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
         <button class="fin-add-row-btn" onclick="addCCRow()">＋ Add</button>
       </div>
       <table class="fin-grid-table" id="fin-cc-grid-table">
+        <colgroup>
+          <col style="width:36px;">
+          <col>
+          <col style="width:360px;">
+          <col style="width:36px;">
+        </colgroup>
         <thead>
           <tr>
             <th class="fgh-hash">#</th>
             <th class="fgh-detail">Approval Code / رقم الموافقة</th>
-            <th class="fgh-amt fgh-card" style="width:120px;">Amount / المبلغ</th>
-            <th class="fgh-hash" style="width:32px;"></th>
+            <th class="fgh-amt fgh-card">Amount (AED) / المبلغ</th>
+            <th class="fgh-hash"></th>
           </tr>
         </thead>
         <tbody id="fin-cc-tbody">
@@ -1310,9 +1336,12 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
         <span>CASH RECONCILIATION</span><span class="fin-grid-ar">تسوية النقدية</span>
       </div>
       <table class="fin-grid-table">
-        <tbody id="fin-cash-tbody">
-          <!-- Built by JS -->
-        </tbody>
+        <colgroup>
+          <col style="width:36px;">
+          <col>
+          <col style="width:360px;">
+        </colgroup>
+        <tbody id="fin-cash-tbody"></tbody>
       </table>
 
       <!-- ── SIGNATURES ── -->
@@ -3100,6 +3129,15 @@ function buildFinSalesTbody(){
     const val = row.auto ? row.val : (finData[row.field]||0);
     const isEmpty = val===0;
     const autoNote = row.auto ? `<span class="fd-sub">Auto from CC rows below</span>` : '';
+    // Each row: hash | detail | cash | card | credit | total
+    // The row's primary field goes in its colour column; others show '—'
+    const cashVal   = row.hash==='A' ? val : (row.hash==='B'?val:0);
+    const cardVal   = row.hash==='B' ? val : 0;
+    const creditVal = row.hash==='C' ? val : 0;
+    const rowTotal  = (row.hash==='A'||row.hash==='B'||row.hash==='C') ? val : 0;
+    const cashEmpty   = cashVal===0;
+    const cardEmpty   = cardVal===0;
+    const creditEmpty = creditVal===0;
     tr.innerHTML=`
       <td class="fgt-hash">${row.hash}</td>
       <td class="fgt-detail">
@@ -3107,28 +3145,42 @@ function buildFinSalesTbody(){
         <span class="fd-ar">${row.ar}</span>
         ${autoNote}
       </td>
-      <td class="fgt-cell ${row.cls}${row.auto?' auto-cell':''}"
-          ${row.field&&!row.auto?'onclick="openFinNP(this.dataset.finfield)"':''} data-finfield="${row.field||''}">
-        <span class="fgt-cell-inner${isEmpty?' empty':''}">${isEmpty?'—':val.toFixed(0)}</span>
+      <td class="fgt-cell cash-cell${row.hash==='A'&&!row.auto?' tappable':''}"
+          ${row.hash==='A'&&!row.auto?'onclick="openFinNP(this.dataset.finfield)"':''} data-finfield="${row.field||''}">
+        <span class="fgt-cell-inner${cashEmpty?' empty':''}">${cashEmpty?'—':cashVal.toFixed(0)}</span>
       </td>
-      <td class="fgt-cell auto-cell fgh-total">
-        <span class="fgt-cell-inner ${isEmpty?'empty':''}">${isEmpty?'—':val.toFixed(0)}</span>
+      <td class="fgt-cell card-cell auto-cell">
+        <span class="fgt-cell-inner${cardEmpty?' empty':''}">${cardEmpty?'—':cardVal.toFixed(0)}</span>
+      </td>
+      <td class="fgt-cell credit-cell${row.hash==='C'&&!row.auto?' tappable':''}"
+          ${row.hash==='C'&&!row.auto?'onclick="openFinNP(this.dataset.finfield)"':''} data-finfield="${row.field||''}">
+        <span class="fgt-cell-inner${creditEmpty?' empty':''}">${creditEmpty?'—':creditVal.toFixed(0)}</span>
+      </td>
+      <td class="fgt-cell auto-cell" style="background:#FFF8E8;">
+        <span class="fgt-cell-inner${isEmpty?' empty':''}" style="color:#7A5200;">${isEmpty?'—':val.toFixed(0)}</span>
       </td>`;
     tbody.appendChild(tr);
   });
   // Total row
   const totTr=document.createElement('tr');
   totTr.className='fin-grid-row fin-closing';
+  const tCash=finData.cash||0, tCard=finData._ccTotal||0, tCred=finData.credit||0;
   totTr.innerHTML=`
-    <td class="fgt-hash" colspan="2" style="border:1px solid #1E1E1E;padding:8px 12px;
-      font-family:var(--f-mono);font-size:10px;font-weight:700;color:#C9A44E;">
+    <td class="fgt-hash" style="border:1px solid #1E1E1E;background:#1A1000;"></td>
+    <td class="fgt-detail" style="background:#1A1000;font-family:var(--f-mono);font-size:10px;font-weight:700;color:#C9A44E;padding:10px 12px;">
       TOTAL (A+B+C) — المجموع
     </td>
-    <td class="fgt-cell auto-cell fgh-card" style="cursor:default;">
-      <span class="fgt-cell-inner" style="color:#1A3A7A;">${fmt2(finData._ccTotal||0)}</span>
+    <td class="fgt-cell" style="background:#C8EEC8;cursor:default;width:90px;">
+      <span class="fgt-cell-inner" style="color:#1A6040;font-weight:900;">${tCash>0?tCash.toFixed(0):'—'}</span>
     </td>
-    <td class="fgt-cell auto-cell" style="background:#FFF8E0;cursor:default;">
-      <span class="fgt-cell-inner" style="color:#7A5200;font-size:18px;font-weight:900;">${total>0?total.toFixed(0):'—'}</span>
+    <td class="fgt-cell" style="background:#C8D8F0;cursor:default;width:90px;">
+      <span class="fgt-cell-inner" style="color:#1A3A7A;font-weight:900;">${tCard>0?tCard.toFixed(0):'—'}</span>
+    </td>
+    <td class="fgt-cell" style="background:#F0DCC8;cursor:default;width:90px;">
+      <span class="fgt-cell-inner" style="color:#7A3A1A;font-weight:900;">${tCred>0?tCred.toFixed(0):'—'}</span>
+    </td>
+    <td class="fgt-cell" style="background:#FFE88A;cursor:default;width:110px;">
+      <span class="fgt-cell-inner" style="color:#5A3A00;font-size:18px;font-weight:900;">${total>0?total.toFixed(0):'—'}</span>
     </td>`;
   tbody.appendChild(totTr);
   updateFinTotalsRow();
@@ -3159,7 +3211,7 @@ function buildFinCashTbody(){
         <span class="fd-ar">${row.ar}</span>
         ${row.auto?'<span class="fd-sub">Auto from Cash Sales (A)</span>':''}
       </td>
-      <td class="fgt-cell ${row.cls}${row.auto?' auto-cell':''}" colspan="2"
+      <td class="fgt-cell ${row.cls}${row.auto?' auto-cell':''}"
           ${row.auto?'':'onclick="openFinNP(this.dataset.finfield)"'} data-finfield="${row.field||''}">
         <span class="fgt-cell-inner${empty?' empty':''}">${empty?'—':val.toFixed(0)}</span>
       </td>`;
@@ -3169,12 +3221,12 @@ function buildFinCashTbody(){
   const tcTr=document.createElement('tr');
   tcTr.className='fin-grid-row fin-subtotal';
   tcTr.innerHTML=`
-    <td class="fgt-hash">E</td>
-    <td class="fgt-detail">
-      <span class="fd-en" style="font-weight:700;color:#6FCF97;">Total Cash / المجموع نقداً</span>
+    <td class="fgt-hash" style="background:#0A1A0A;">E</td>
+    <td class="fgt-detail" style="background:#0A1A0A;">
+      <span class="fd-en" style="font-weight:800;color:#6FCF97;">Total Cash / المجموع نقداً</span>
     </td>
-    <td class="fgt-cell auto-cell" colspan="2" style="background:#E8F5E8;cursor:default;">
-      <span class="fgt-cell-inner" style="color:#1A6040;font-size:17px;">${totalCash>0?totalCash.toFixed(0):'—'}</span>
+    <td class="fgt-cell auto-cell" style="background:#C8EEC8;cursor:default;">
+      <span class="fgt-cell-inner" style="color:#1A6040;font-size:18px;font-weight:900;">${totalCash>0?totalCash.toFixed(0):'—'}</span>
     </td>`;
   tbody.appendChild(tcTr);
 
@@ -3190,7 +3242,7 @@ function buildFinCashTbody(){
         value="${finData.directorName||''}"
         oninput="finData.directorName=this.value">
     </td>
-    <td class="fgt-cell credit-cell" colspan="2" onclick="openFinNP('directorAmt')">
+    <td class="fgt-cell credit-cell" onclick="openFinNP('directorAmt')">
       <span class="fgt-cell-inner${(finData.directorAmt||0)===0?' empty':''}">${(finData.directorAmt||0)>0?finData.directorAmt.toFixed(0):'—'}</span>
     </td>`;
   tbody.appendChild(dirTr);
@@ -3207,7 +3259,7 @@ function buildFinCashTbody(){
         value="${finData.bankSlip||''}"
         oninput="finData.bankSlip=this.value">
     </td>
-    <td class="fgt-cell credit-cell" colspan="2" onclick="openFinNP('bankAmt')">
+    <td class="fgt-cell credit-cell" onclick="openFinNP('bankAmt')">
       <span class="fgt-cell-inner${(finData.bankAmt||0)===0?' empty':''}">${(finData.bankAmt||0)>0?finData.bankAmt.toFixed(0):'—'}</span>
     </td>`;
   tbody.appendChild(bankTr);
@@ -3221,7 +3273,7 @@ function buildFinCashTbody(){
       <span class="fd-en">Expenses (Attach Bills)</span>
       <span class="fd-ar">المصاريف (مع إرفاق الفاتورة)</span>
     </td>
-    <td class="fgt-cell credit-cell" colspan="2" onclick="openFinNP('expenses')">
+    <td class="fgt-cell credit-cell" onclick="openFinNP('expenses')">
       <span class="fgt-cell-inner${(finData.expenses||0)===0?' empty':''}">${(finData.expenses||0)>0?finData.expenses.toFixed(0):'—'}</span>
     </td>`;
   tbody.appendChild(expTr);
@@ -3230,15 +3282,13 @@ function buildFinCashTbody(){
   const clsTr=document.createElement('tr');
   clsTr.className='fin-grid-row fin-closing';
   clsTr.innerHTML=`
-    <td class="fgt-hash" colspan="2" style="border:1px solid #1E1E1E;padding:8px 12px;
-      font-family:var(--f-mono);font-size:10px;font-weight:700;color:#C9A44E;">
-      CLOSING CASH BALANCE (E−F−G−H)<br>
-      <span style="font-family:var(--f-ar);font-size:9px;color:#8B6914;direction:rtl;display:block;margin-top:2px;">
-        الرصيد النقدي الختامي في الفرع
-      </span>
+    <td class="fgt-hash" style="background:#2A1800;border:1px solid #3A2A00;"></td>
+    <td class="fgt-detail" style="background:#2A1800;border:1px solid #3A2A00;">
+      <span class="fd-en" style="font-weight:800;font-size:13px;color:#C9A44E;">CLOSING CASH BALANCE (E−F−G−H)</span>
+      <span class="fd-ar" style="color:#8B6914;">الرصيد النقدي الختامي في الفرع</span>
     </td>
-    <td class="fgt-cell closing-cell${closing<0?' neg-close':''}" colspan="2" style="cursor:default;">
-      <span class="fgt-cell-inner">${closing!==0?closing.toFixed(0):'—'}</span>
+    <td class="fgt-cell closing-cell${closing<0?' neg-close':''}" style="cursor:default;background:${closing<0?'#3A0A0A':'#FFF8D0'};">
+      <span class="fgt-cell-inner" style="font-size:22px;">${closing!==0?closing.toFixed(0):'—'}</span>
     </td>`;
   tbody.appendChild(clsTr);
 }
@@ -3256,17 +3306,18 @@ function renderCCRows(){
     tr.className='fin-grid-row';
     const amtEmpty = (parseFloat(row.amt)||0)===0;
     tr.innerHTML=`
-      <td class="fgt-hash">${i+1}</td>
-      <td class="fgt-detail" style="padding:0;">
+      <td class="fgt-hash" style="background:#0A0A1A;color:#1A3A7A;">${i+1}</td>
+      <td class="fgt-detail" style="padding:0;background:#0A0A1A;">
         <input style="width:100%;background:transparent;border:none;outline:none;
-          font-family:var(--f-mono);font-size:12px;color:#CCC;padding:10px 12px;display:block;"
-          value="${row.code||''}" placeholder="Approval Code"
+          font-family:var(--f-mono);font-size:13px;color:#CCC;padding:11px 12px;display:block;
+          letter-spacing:0.5px;"
+          value="${row.code||''}" placeholder="Enter approval code..."
           oninput="finCC[${i}].code=this.value">
       </td>
-      <td class="fgt-cell card-cell" onclick="openFinCCNP(${i})">
+      <td class="fgt-cell card-cell" onclick="openFinCCNP(${i})" style="width:360px;">
         <span class="fgt-cell-inner${amtEmpty?' empty':''}">${amtEmpty?'—':(parseFloat(row.amt)||0).toFixed(0)}</span>
       </td>
-      <td class="fin-cc-del-cell">
+      <td class="fin-cc-del-cell" style="background:#0A0A1A;">
         <button class="fin-cc-del-btn" onclick="delCCRow(${i})">✕</button>
       </td>`;
     tbody.appendChild(tr);
@@ -3276,12 +3327,12 @@ function renderCCRows(){
   const totTr=document.createElement('tr');
   totTr.className='fin-grid-row fin-subtotal';
   totTr.innerHTML=`
-    <td class="fgt-hash" colspan="2" style="border:1px solid #1E1E1E;padding:8px 12px;
-      font-family:var(--f-mono);font-size:10px;font-weight:700;color:#1A3A7A;">
+    <td class="fgt-hash" style="background:#0A0A2A;border:1px solid #1E1E1E;"></td>
+    <td class="fgt-detail" style="background:#0A0A2A;font-family:var(--f-mono);font-size:10px;font-weight:700;color:#6FA8DC;">
       CC TOTAL — مجموع البطاقات
     </td>
-    <td class="fgt-cell auto-cell" style="background:#E8EEF8;cursor:default;" colspan="2">
-      <span class="fgt-cell-inner" style="color:#1A3A7A;font-size:17px;">${ccTotal>0?ccTotal.toFixed(0):'—'}</span>
+    <td class="fgt-cell auto-cell" style="background:#C8D8F0;cursor:default;" colspan="2">
+      <span class="fgt-cell-inner" style="color:#1A3A7A;font-size:18px;font-weight:900;">${ccTotal>0?ccTotal.toFixed(0):'—'}</span>
     </td>`;
   tbody.appendChild(totTr);
 }
