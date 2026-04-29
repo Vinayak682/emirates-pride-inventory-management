@@ -3786,7 +3786,7 @@ function openFinanceTab(){
   const sn = document.getElementById('finStoreName');  if(sn) sn.textContent = me ? me.name : '—';
   const dv = document.getElementById('finDateVal');    if(dv) dv.textContent = dl ? dl.full+' '+dl.date : '—';
   const hd = document.getElementById('fin-hdr-date');  if(hd) hd.textContent = dl ? dl.date+'/'+new Date().getFullYear() : '—';
-  const ho = document.getElementById('fin-hdr-outlet'); if(ho) ho.textContent = me ? me.name.split(' ').slice(0,3).join(' ') : '—';
+  const ho = document.getElementById('fin-hdr-outlet'); if(ho) ho.textContent = me ? me.name : '—';
   loadFinanceData(finDay);
   finSelectPeriod('day');
 }
@@ -3899,7 +3899,7 @@ td{border:1px solid #DDD;padding:5px 8px;vertical-align:middle;}
   <div class="tc"><div class="tar">تقرير المبيعات اليومية</div><div class="ten">DAILY SALES REPORT</div>${finLockedAt?`<div style="font-size:9px;color:#1A6040;margin-top:3px;">🔒 Locked: ${finLockedAt}</div>`:''}</div>
   <div class="meta">
     <div class="mb"><div class="ml">DATE</div><div class="mv">${dl?dl.date+'/'+new Date().getFullYear():''}</div></div>
-    <div class="mb"><div class="ml">OUTLET</div><div class="mv">${me.name.split(' ').slice(0,3).join(' ')}</div></div>
+    <div class="mb"><div class="ml">OUTLET</div><div class="mv" style="font-size:10px;word-break:break-word;">${me.name}</div></div>
   </div>
 </div>
 <div class="sec">SALES SUMMARY — ملخص المبيعات</div>
