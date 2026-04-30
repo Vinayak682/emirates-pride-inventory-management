@@ -2563,7 +2563,8 @@ function buildTrfNote(entries, type) {
   return html;
 }
 
-
+// ── FOOTER ──
+function buildFooter(){
   let totO=0,totW=0,totI=0,totS=0,totT=0,totB=0;
   PRODUCTS.forEach(p=>{
     totO+=dbGet(me.code,curDay,p.code,'open');
