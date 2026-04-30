@@ -2285,8 +2285,10 @@ function dbGet(store,day,code,field){
 function dbSet(store,day,code,field,val,force){
   if(!force){
     if(db[store]?.[day]?.[code]?.locked && field!=='locked'){
-      const ok=mgrOverrideActive&&mgrOverrideDay===day&&mgrOverrideStore===store;
-      if(!ok) return;
+      if(!isMgrSession){
+        const ok=mgrOverrideActive&&mgrOverrideDay===day&&mgrOverrideStore===store;
+        if(!ok) return;
+      }
     }
     // opening allowed on all days
   }
@@ -2304,6 +2306,7 @@ function dbSet(store,day,code,field,val,force){
   }
 }
 function isLocked(store,day){
+  if(isMgrSession) return false; // MGR has full access — never locked
   const d=db[store]?.[day];
   if(!d) return false;
   return Object.values(d).some(v=>v.locked);
@@ -2420,7 +2423,7 @@ function doLogin(){
   // startSync shows loading overlay, loads server data, then rebuilds grid
   startSync(store.code);
   // If MGR login — show manager dashboard button in top bar
-  if(store.code==='MGR'){
+  if(store.code==='MGR'){ isMgrSession=true;
     setTimeout(()=>{
       const tb=document.querySelector('.app-topbar');
       if(tb&&!document.getElementById('mgrDashBtn')){
@@ -2437,7 +2440,7 @@ function doLogin(){
   }
 }
 function doLogout(){
-  mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;
+  mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;isMgrSession=false;
   me=null;pinBuf='';pc();
   document.getElementById('storeSelect').value='';
   document.getElementById('loginErr').textContent='';
@@ -2903,6 +2906,7 @@ let selectedQty=0;
 let mgrOverrideActive=false;
 let mgrOverrideDay=null;
 let mgrOverrideStore=null;
+let isMgrSession=false; // true when MGR (PIN 9999) is the logged-in session — bypasses ALL locks
 // Transfer movement log: {id, ts, fromStore, toStore, prodCode, qty, note, day}
 // Stored in db.transferLog array
 function getTransferLog(){
@@ -3788,6 +3792,7 @@ function finMarkSaved(){
 }
 // ── Finance lock helpers ─────────────────────────────
 function isFinanceLocked(storeCode, dayIdx){
+  if(isMgrSession) return false; // MGR has full finance access — never locked
   return !!(db.finance?.[storeCode]?.[dayIdx]?.finLocked);
 }
 
@@ -4421,19 +4426,22 @@ function _exportFinancePDFRange(fromDate, toDate, label){
     .sort((a,b)=>a.date-b.date);
 
   const f=n=>(+n||0)>0?(+n||0).toFixed(0):'—';
-  let totCash=0,totCC=0,totBNPL=0,totTotal=0;
+  let totCash=0,totCC=0,totTabby=0,totTamara=0,totTotal=0;
   let tableRows = filtered.map(({label,d})=>{
     const cash=(+d.cash||0), cc=(d.ccRows||[]).reduce((s,r)=>s+(+r.amt||0),0);
-    const bnpl=(+d.tabby||0)+(+d.tamara||0), cred=(+d.credit||0);
-    const total=cash+cc+bnpl+cred;
+    const tabby=(d.bnplRows||[]).filter(r=>r.type==='tabby').reduce((s,r)=>s+(+r.amt||0),0);
+    const tamara=(d.bnplRows||[]).filter(r=>r.type==='tamara').reduce((s,r)=>s+(+r.amt||0),0);
+    const cred=(+d.credit||0);
+    const total=cash+cc+tabby+tamara+cred;
     const tCash=(+d.openCash||0)+cash+(+d.debtors||0);
     const close=tCash-(+d.directorAmt||0)-(+d.bankAmt||0)-(+d.expenses||0);
-    totCash+=cash; totCC+=cc; totBNPL+=bnpl; totTotal+=total;
+    totCash+=cash; totCC+=cc; totTabby+=tabby; totTamara+=tamara; totTotal+=total;
     return `<tr>
       <td style="border:1px solid #DDD;padding:5px 8px;font-weight:600;">${label}</td>
       <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;color:#1A6040;">${f(cash)}</td>
       <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;color:#1A3A7A;">${f(cc)}</td>
-      <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;color:#5A2A8A;">${f(bnpl)}</td>
+      <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;color:#5A2A8A;">${f(tabby)}</td>
+      <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;color:#7A1A5A;">${f(tamara)}</td>
       <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;font-weight:800;color:#7A5200;">${f(total)}</td>
       <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;font-size:11px;color:${close<0?'#8B1A1A':'#1A6040'};">${close}</td>
       <td style="border:1px solid #DDD;padding:5px 8px;font-size:10px;color:#888;">${d.preparedBy||''}</td>
@@ -4446,7 +4454,8 @@ function _exportFinancePDFRange(fromDate, toDate, label){
     <td style="border:1px solid #CCC;padding:6px 8px;color:#7A5200;">TOTALS</td>
     <td style="border:1px solid #CCC;padding:6px 8px;text-align:right;font-family:monospace;color:#1A6040;font-size:14px;">${totCash}</td>
     <td style="border:1px solid #CCC;padding:6px 8px;text-align:right;font-family:monospace;color:#1A3A7A;font-size:14px;">${totCC}</td>
-    <td style="border:1px solid #CCC;padding:6px 8px;text-align:right;font-family:monospace;color:#5A2A8A;font-size:14px;">${totBNPL}</td>
+    <td style="border:1px solid #CCC;padding:6px 8px;text-align:right;font-family:monospace;color:#5A2A8A;font-size:14px;">${totTabby}</td>
+    <td style="border:1px solid #CCC;padding:6px 8px;text-align:right;font-family:monospace;color:#7A1A5A;font-size:14px;">${totTamara}</td>
     <td style="border:1px solid #CCC;padding:6px 8px;text-align:right;font-family:monospace;color:#7A5200;font-size:16px;">${totTotal}</td>
     <td colspan="2" style="border:1px solid #CCC;"></td>
   </tr>`;
@@ -4474,7 +4483,8 @@ function _exportFinancePDFRange(fromDate, toDate, label){
     <th style="padding:7px 8px;text-align:left;border:1px solid #333;">Date</th>
     <th style="padding:7px 8px;text-align:right;border:1px solid #333;">Cash Sales</th>
     <th style="padding:7px 8px;text-align:right;border:1px solid #333;">Card Sales</th>
-    <th style="padding:7px 8px;text-align:right;border:1px solid #333;">BNPL</th>
+    <th style="padding:7px 8px;text-align:right;border:1px solid #333;background:#3A0A6A;">Tabby</th>
+    <th style="padding:7px 8px;text-align:right;border:1px solid #333;background:#5A1A4A;">Tamara</th>
     <th style="padding:7px 8px;text-align:right;border:1px solid #333;">Total Sales</th>
     <th style="padding:7px 8px;text-align:right;border:1px solid #333;">Closing Cash</th>
     <th style="padding:7px 8px;border:1px solid #333;">Prepared By</th>
@@ -4509,6 +4519,35 @@ function exportFinancePDF(period){
     if(i<mid) ccL+=row; else ccR+=row;
   });
   const ccTotRow=`<tr style="background:#EEF4FF;"><td colspan="2" style="border:1px solid #DDD;padding:4px 8px;font-weight:700;">TOTAL</td><td style="border:1px solid #DDD;text-align:right;font-weight:900;color:#1A3A7A;padding:4px 8px;">${(ccTotal||0).toFixed(0)}</td></tr>`;
+  // BNPL rows split into Tabby and Tamara columns
+  const tabbyRows = finBNPL.filter(r=>r.type==='tabby');
+  const tamaraRows = finBNPL.filter(r=>r.type==='tamara');
+  const tabbyTotal = tabbyRows.reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+  const tamaraTotal = tamaraRows.reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+  const bnplTotal = tabbyTotal + tamaraTotal;
+  const maxBnplRows = Math.max(tabbyRows.length, tamaraRows.length, 1);
+  let bnplTableRows = '';
+  for(let i=0;i<maxBnplRows;i++){
+    const t=tabbyRows[i], ta=tamaraRows[i];
+    bnplTableRows += `<tr>
+      <td style="border:1px solid #DDD;text-align:center;width:22px;color:#888;">${i+1}</td>
+      <td style="border:1px solid #DDD;padding:4px 7px;font-family:monospace;color:#5A2A8A;">${t?t.code||'—':'—'}</td>
+      <td style="border:1px solid #DDD;text-align:right;font-weight:700;padding:4px 7px;color:#5A2A8A;">${t&&(parseFloat(t.amt)||0)>0?parseFloat(t.amt).toFixed(0):''}</td>
+      <td style="border:1px solid #DDD;text-align:center;width:22px;color:#888;">${i+1}</td>
+      <td style="border:1px solid #DDD;padding:4px 7px;font-family:monospace;color:#7A1A5A;">${ta?ta.code||'—':'—'}</td>
+      <td style="border:1px solid #DDD;text-align:right;font-weight:700;padding:4px 7px;color:#7A1A5A;">${ta&&(parseFloat(ta.amt)||0)>0?parseFloat(ta.amt).toFixed(0):''}</td>
+    </tr>`;
+  }
+  const bnplTotRow=`<tr style="background:#F4EEFF;">
+    <td colspan="2" style="border:1px solid #DDD;padding:4px 8px;font-weight:700;color:#5A2A8A;">TABBY TOTAL</td>
+    <td style="border:1px solid #DDD;text-align:right;font-weight:900;color:#5A2A8A;padding:4px 8px;">${tabbyTotal>0?tabbyTotal.toFixed(0):'—'}</td>
+    <td colspan="2" style="border:1px solid #DDD;padding:4px 8px;font-weight:700;color:#7A1A5A;">TAMARA TOTAL</td>
+    <td style="border:1px solid #DDD;text-align:right;font-weight:900;color:#7A1A5A;padding:4px 8px;">${tamaraTotal>0?tamaraTotal.toFixed(0):'—'}</td>
+  </tr>
+  <tr style="background:#EDE0FF;">
+    <td colspan="5" style="border:1px solid #DDD;padding:4px 8px;font-weight:800;color:#3A0A6A;">BNPL GRAND TOTAL (Tabby + Tamara)</td>
+    <td style="border:1px solid #DDD;text-align:right;font-weight:900;color:#3A0A6A;font-size:13px;padding:4px 8px;">${bnplTotal>0?bnplTotal.toFixed(0):'—'}</td>
+  </tr>`;
   const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Daily Sales Report</title>
 <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#fff;color:#1A1A1A;font-size:11px;padding:12mm 10mm;}@page{size:A4 portrait;margin:0;}
 .hd{display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:2.5px solid #C9A44E;margin-bottom:10px;}
@@ -4544,14 +4583,24 @@ td{border:1px solid #DDD;padding:5px 8px;vertical-align:middle;}
 <tbody>
 <tr><td class="hsh">A</td><td><span class="nen">Cash Sales</span><span class="nar">المبيعات النقدية</span></td><td class="amt">${f(cash)}</td></tr>
 <tr><td class="hsh">B</td><td><span class="nen">Credit Card Sales</span><span class="nar">المبيعات بالبطاقة</span></td><td class="amt">${f(ccTotal||0)}</td></tr>
+<tr><td class="hsh">B2</td><td><span class="nen">BNPL Sales (Tabby + Tamara)</span><span class="nar">المبيعات الآجلة — تابي وتمارا</span></td><td class="amt" style="color:#5A2A8A;">${f(bnplTotal)}</td></tr>
 <tr><td class="hsh">C</td><td><span class="nen">Credit Sales</span><span class="nar">المبيعات غير المدفوعة</span></td><td class="amt">${f(credit)}</td></tr>
-<tr class="tot"><td colspan="2">TOTAL (A+B+C) — المجموع</td><td class="amt" style="font-size:14px;">${f(total||0)}</td></tr>
+<tr class="tot"><td colspan="2">TOTAL (A+B+B2+C) — المجموع</td><td class="amt" style="font-size:14px;">${f(total||0)}</td></tr>
 </tbody></table>
 <div class="sec">CREDIT CARD DETAILS — تفاصيل البطاقة</div>
 <div class="ccw">
 <table><thead><tr><th>#</th><th>APPROVAL CODE</th><th style="text-align:right;">AMT</th></tr></thead><tbody>${ccL||'<tr><td colspan="3" style="text-align:center;color:#CCC;padding:5px;">—</td></tr>'}</tbody></table>
 <table><thead><tr><th>#</th><th>APPROVAL CODE</th><th style="text-align:right;">AMT</th></tr></thead><tbody>${ccR||'<tr><td colspan="3" style="text-align:center;color:#CCC;padding:5px;">—</td></tr>'}${finCC.length?ccTotRow:''}</tbody></table>
 </div>
+<div class="sec">BNPL DETAILS — TABBY &amp; TAMARA — تفاصيل تابي وتمارا</div>
+<table style="table-layout:fixed;">
+<colgroup><col style="width:28px"><col style="width:auto"><col style="width:80px"><col style="width:28px"><col style="width:auto"><col style="width:80px"></colgroup>
+<thead><tr>
+  <th style="background:#3A0A6A;">#</th><th style="background:#3A0A6A;">TABBY — Transaction Code</th><th style="background:#3A0A6A;text-align:right;">Amount</th>
+  <th style="background:#5A1A4A;">#</th><th style="background:#5A1A4A;">TAMARA — Transaction Code</th><th style="background:#5A1A4A;text-align:right;">Amount</th>
+</tr></thead>
+<tbody>${finBNPL.length?bnplTableRows+''+bnplTotRow:'<tr><td colspan="6" style="text-align:center;color:#CCC;padding:8px;font-style:italic;">No BNPL transactions</td></tr>'}
+</tbody></table>
 <div class="sec">CASH RECONCILIATION — تسوية النقدية</div>
 <table><thead><tr><th class="hsh">#</th><th>Details / التفاصيل</th><th style="text-align:right;width:110px;">Amount AED</th></tr></thead>
 <tbody>
@@ -4575,19 +4624,23 @@ td{border:1px solid #DDD;padding:5px 8px;vertical-align:middle;}
 function exportFinanceWeekPDF(){
   if(!me) return;
   const labels=getDayLabels();
-  let rows='',totC=0,totK=0,totT=0;
+  let rows='',totC=0,totK=0,totTabby=0,totTamara=0,totT=0;
   labels.forEach((dl,di)=>{
     const d=db.finance?.[me.code]?.[di]; if(!d) return;
     const cash=parseFloat(d.cash)||0;
     const cc=(d.ccRows||[]).reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
-    const total=cash+cc+(parseFloat(d.credit)||0);
+    const tabby=(d.bnplRows||[]).filter(r=>r.type==='tabby').reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+    const tamara=(d.bnplRows||[]).filter(r=>r.type==='tamara').reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+    const total=cash+cc+tabby+tamara+(parseFloat(d.credit)||0);
     const tCash=(parseFloat(d.openCash)||0)+cash+(parseFloat(d.debtors)||0);
     const closing=tCash-(parseFloat(d.directorAmt)||0)-(parseFloat(d.bankAmt)||0)-(parseFloat(d.expenses)||0);
-    totC+=cash;totK+=cc;totT+=total;
+    totC+=cash;totK+=cc;totTabby+=tabby;totTamara+=tamara;totT+=total;
     rows+=`<tr style="background:${di===DAY_PAST?'#FFFBE8':''}">
       <td style="padding:5px 8px;border:1px solid #DDD;">${dl.full} ${dl.date}${isLocked(me.code,di)?' ✓':''}</td>
       <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;">${cash||'—'}</td>
       <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;">${cc||'—'}</td>
+      <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;color:#5A2A8A;">${tabby||'—'}</td>
+      <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;color:#7A1A5A;">${tamara||'—'}</td>
       <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;font-weight:700;">${total||'—'}</td>
       <td style="padding:5px 8px;border:1px solid #DDD;text-align:right;font-family:monospace;font-size:10px;color:${closing<0?'#8B1A1A':'#1A6040'};">${closing}</td>
     </tr>`;
@@ -4601,9 +4654,17 @@ table{width:100%;border-collapse:collapse;}th{background:#1A1A1A;color:#fff;padd
 <h2 style="font-size:12px;color:#666;">${me.name} · Weekly Finance Report</h2></div>
 <div style="font-size:10px;color:#888;">Generated: ${new Date().toLocaleString('en-GB')}</div>
 </div>
-<table><tr><th style="text-align:left;">Day</th><th style="text-align:right;">Cash Sales</th><th style="text-align:right;">Card Sales</th><th style="text-align:right;">Total Sales</th><th style="text-align:right;">Closing Cash</th></tr>
-${rows||'<tr><td colspan="5" style="text-align:center;padding:20px;color:#CCC;">No data</td></tr>'}
-<tr class="tot"><td>WEEK TOTAL</td><td style="text-align:right;">${totC}</td><td style="text-align:right;">${totK}</td><td style="text-align:right;">${totT}</td><td></td></tr>
+<table><tr>
+  <th style="text-align:left;">Day</th>
+  <th style="text-align:right;">Cash Sales</th>
+  <th style="text-align:right;">Card Sales</th>
+  <th style="text-align:right;background:#3A0A6A;">Tabby</th>
+  <th style="text-align:right;background:#5A1A4A;">Tamara</th>
+  <th style="text-align:right;">Total Sales</th>
+  <th style="text-align:right;">Closing Cash</th>
+</tr>
+${rows||'<tr><td colspan="7" style="text-align:center;padding:20px;color:#CCC;">No data</td></tr>'}
+<tr class="tot"><td>WEEK TOTAL</td><td style="text-align:right;">${totC}</td><td style="text-align:right;">${totK}</td><td style="text-align:right;">${totTabby}</td><td style="text-align:right;">${totTamara}</td><td style="text-align:right;">${totT}</td><td></td></tr>
 </table></body></html>`;
   openPrintWindow(html);
   toast('📋 Week PDF ready');
@@ -4950,14 +5011,15 @@ function mgrSwitchToStore(){
   if(!sel||!sel.value) return;
   const store=STORES.find(s=>s.code===sel.value);
   if(!store) return;
-  // Switch context to this store
+  // Switch context to this store — isMgrSession=true means ALL days/finance editable
+  isMgrSession=true;
   const prevMe=me; me=store;
   // Reload data for this store
   _sbLoad(store.code).then(()=>{
     buildGrid(); buildDayTabs(); buildFooter();
     closeMgrDashboard();
     document.getElementById('topStore').textContent=store.name+' ← MGR';
-    toast('📋 Viewing: '+store.name+' — All edits allowed');
+    toast('📋 Viewing: '+store.name+' — Full edit access (no lock restrictions)');
   });
 }
 
