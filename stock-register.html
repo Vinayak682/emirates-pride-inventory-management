@@ -6605,7 +6605,7 @@ async function _uploadLocalData(store, setMsg) {
 }
 
 async function startSync(store) {
-  // Show loading overlay
+  // ── Create overlay ──────────────────────────────────────────
   let overlay = document.getElementById('_syncOverlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -6613,73 +6613,104 @@ async function startSync(store) {
     overlay.style.cssText = 'position:fixed;inset:0;background:#080808;z-index:10000;' +
       'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;';
     overlay.innerHTML =
-      '<div style="font-family:\'IBM Plex Sans\',monospace;font-size:15px;font-weight:800;' +
-        'color:#C9A44E;letter-spacing:3px;">EMIRATES PRIDE</div>' +
-      '<div style="font-family:monospace;font-size:12px;color:#666;max-width:280px;text-align:center;" id="_syncMsg">Connecting…</div>' +
+      '<div style="font-family:monospace;font-size:15px;font-weight:800;color:#C9A44E;letter-spacing:3px;">EMIRATES PRIDE</div>' +
+      '<div style="font-family:monospace;font-size:12px;color:#888;max-width:280px;text-align:center;" id="_syncMsg">Starting…</div>' +
       '<div style="width:260px;height:4px;background:#1A1A1A;border-radius:4px;overflow:hidden;">' +
         '<div id="_syncBar" style="height:100%;background:linear-gradient(90deg,#C9A44E,#E8C97A);width:0%;transition:width 0.3s ease;border-radius:4px;"></div>' +
       '</div>' +
-      '<div style="font-family:monospace;font-size:10px;color:#333;" id="_syncSub"></div>';
+      '<div style="font-family:monospace;font-size:10px;color:#555;" id="_syncSub"></div>' +
+      '<button id="_syncSkipBtn" style="margin-top:8px;background:transparent;border:1px solid #333;border-radius:6px;color:#444;font-family:monospace;font-size:10px;padding:5px 14px;cursor:pointer;display:none;">Skip →</button>'
     document.body.appendChild(overlay);
+    const _skipBtn = document.getElementById('_syncSkipBtn');
+    if (_skipBtn) _skipBtn.onclick = () => { overlay.style.display = 'none'; };
   }
   overlay.style.display = 'flex';
+
+  // Show "Skip" button after 5 seconds so user is never truly stuck
+  const skipTimer = setTimeout(() => {
+    const sb = document.getElementById('_syncSkipBtn');
+    if (sb) sb.style.display = 'block';
+  }, 5000);
+
+  const hideOverlay = () => {
+    clearTimeout(skipTimer);
+    if (overlay) overlay.style.display = 'none';
+  };
 
   const setMsg = (msg, pct, sub) => {
     const el  = document.getElementById('_syncMsg');
     const bar = document.getElementById('_syncBar');
-    const sb  = document.getElementById('_syncSub');
+    const sbEl= document.getElementById('_syncSub');
     if (el)  el.textContent  = msg;
     if (bar) bar.style.width = pct + '%';
-    if (sb)  sb.textContent  = sub || '';
+    if (sbEl) sbEl.textContent = sub || '';
   };
 
-  setMsg('Connecting to server…', 10);
+  // ── EVERYTHING inside try/finally so overlay ALWAYS hides ──
+  try {
+    setMsg('Loading…', 20);
 
-  // Check if migration needed: local data exists but not yet uploaded
-  const alreadyMigrated = localStorage.getItem('ep_migrated_v4_' + store);
-  const localCells = _countLocalCells(store);
+    // Load from server with 8s timeout — never block forever
+    const loadPromise = _sbLoad(store);
+    const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(false), 8000));
+    const ok = await Promise.race([loadPromise, timeoutPromise]);
 
-  if (localCells > 0 && !alreadyMigrated) {
-    // This device has local data that hasn't been uploaded yet
-    setMsg('Found ' + localCells + ' local records — uploading to server…', 15,
-      'This ensures your data appears on ALL devices');
-    const uploaded = await _uploadLocalData(store, setMsg);
-    setMsg('Upload complete! (' + uploaded + ' records)', 90,
-      'Your data is now available on all devices');
-    await new Promise(r => setTimeout(r, 800));
+    setMsg(ok ? 'Building grid…' : 'Offline — using local data', 90);
+
+    buildDayTabs();
+    buildGrid();
+    buildFooter();
+    buildSpSkuSel();
+
+    setMsg('✓ Ready', 100, ok ? '● Live' : '⚠ Offline mode');
+
+    // Upload any unsynced local data IN THE BACKGROUND (never blocks login)
+    if (ok) {
+      const alreadyMigrated = localStorage.getItem('ep_migrated_v4_' + store);
+      const localCells = _countLocalCells(store);
+      if (localCells > 0 && !alreadyMigrated) {
+        setTimeout(async () => {
+          try {
+            _sb_badge('saving', '⇅ Uploading local data…');
+            await _uploadLocalData(store, () => {});
+            _sb_badge('ok', '✓ All data uploaded');
+          } catch(e) {
+            console.warn('Background upload failed:', e.message);
+          }
+        }, 2000);
+      }
+    }
+
+  } catch(e) {
+    console.error('startSync error:', e);
+    // Still build the UI from local data
+    try { buildDayTabs(); buildGrid(); buildFooter(); buildSpSkuSel(); } catch(e2){}
+  } finally {
+    // Overlay ALWAYS hides — no matter what
+    setTimeout(hideOverlay, 400);
   }
 
-  setMsg('Loading latest data from server…', 92);
-  const ok = await _sbLoad(store);
-
-  setMsg(ok ? 'Building your dashboard…' : 'Using local data (offline)…', 97);
-  buildDayTabs();
-  buildGrid();
-  buildFooter();
-  buildSpSkuSel();
-
-  setMsg('✓ Ready', 100, ok ? '● Connected to server · All devices synced' : '⚠ Offline');
-  setTimeout(() => { if (overlay) overlay.style.display = 'none'; }, 600);
-
-  // Realtime subscription
+  // Realtime subscription (non-blocking)
   const tryRT = (n) => {
     if (window._SBC) _sbSubscribe(store);
     else if (n > 0) setTimeout(() => tryRT(n-1), 500);
   };
   tryRT(20);
 
-  // Auto-refresh every 60 seconds
+  // Auto-refresh every 60s
   setInterval(async () => {
     if (!document.hidden) {
-      await _sbLoad(store);
-      buildGrid(); updateTotalsRow(); buildFooter();
+      try {
+        await _sbLoad(store);
+        buildGrid(); updateTotalsRow(); buildFooter();
+      } catch(e) {}
     }
   }, 60000);
 
-  // Retry any failed writes every 10 seconds
-  setInterval(() => { if (_syncQ.length) _sbFlush(); }, 10000);
+  // Retry failed writes every 10s
+  setInterval(() => { if (_syncQ && _syncQ.length) _sbFlush(); }, 10000);
 
-  // Show manual sync button in top bar
+  // Manual sync button
   _addManualSyncBtn(store);
 }
 
