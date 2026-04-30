@@ -2348,11 +2348,8 @@ function doLogin(){
   const app=document.getElementById('appShell');
   app.style.display='flex';
   document.getElementById('topStore').textContent=store.name;
-  buildDayTabs();
-  buildGrid();
-  buildFooter();
   buildSpSkuSel();
-  // ── Start real-time sync with Supabase ──
+  // startSync shows loading overlay, loads server data, then rebuilds grid
   startSync(store.code);
 }
 function doLogout(){
@@ -5538,243 +5535,373 @@ try{
 }catch(e){}
 
 
+// EMIRATES PRIDE — SYNC ENGINE v4 (FINAL)
 // ════════════════════════════════════════════════════════════════════
-// EMIRATES PRIDE — SYNC ENGINE v3 (RPC upsert, bulletproof)
-// ════════════════════════════════════════════════════════════════════
-const SB_URL = 'https://ncszurcrkngjcjqsowln.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
-const _SBH   = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+const _SB_URL = 'https://ncszurcrkngjcjqsowln.supabase.co';
+const _SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
+const _SBH = {
+  'apikey': _SB_KEY,
+  'Authorization': 'Bearer ' + _SB_KEY,
+  'Content-Type': 'application/json'
+};
 
-let _online  = false;
-let _queue   = [];
-let _ftimer  = null;
-let _rtCh    = null;
+let _syncQ    = [];   // pending writes
+let _syncTmr  = null;
+let _rtCh     = null;
+let _syncOk   = false;
 
-function _badge(state, msg){
-  let b=document.getElementById('_sb');
-  if(!b){b=document.createElement('div');b.id='_sb';
-    b.style.cssText='position:fixed;bottom:64px;right:10px;z-index:9999;font-size:11px;font-weight:700;font-family:monospace;padding:5px 10px;border-radius:20px;pointer-events:none;transition:opacity 0.6s;white-space:nowrap;';
-    document.body.appendChild(b);}
-  const S={ok:'background:#0A2A0A;border:1px solid #2A6A2A;color:#6FCF97;',
-    saving:'background:#2A1800;border:1px solid #C9A44E;color:#C9A44E;',
-    offline:'background:#2A0A0A;border:1px solid #8A2A2A;color:#E87070;',
-    loading:'background:#0A1A2A;border:1px solid #2A4A8A;color:#6FA8DC;'};
-  b.style.cssText+=S[state]||S.offline;
-  b.textContent=msg;b.style.opacity='1';
-  if(state==='ok')setTimeout(()=>{if(b)b.style.opacity='0.3';},3000);
+// ── Status indicator ─────────────────────────────────────────────
+function _sb_badge(state, msg) {
+  let b = document.getElementById('_sbb');
+  if (!b) {
+    b = document.createElement('div');
+    b.id = '_sbb';
+    b.style.cssText = 'position:fixed;bottom:60px;right:10px;z-index:9999;' +
+      'font-size:11px;font-weight:700;font-family:monospace;' +
+      'padding:5px 11px;border-radius:20px;pointer-events:none;' +
+      'transition:opacity 0.5s;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.5);';
+    document.body.appendChild(b);
+  }
+  const styles = {
+    ok:     'background:#0D2B0D;border:1px solid #2A6A2A;color:#6FCF97;',
+    saving: 'background:#2B1A00;border:1px solid #C9A44E;color:#C9A44E;',
+    error:  'background:#2B0A0A;border:1px solid #8A2A2A;color:#E87070;',
+    load:   'background:#0A1A2B;border:1px solid #2A5A8A;color:#6FA8DC;'
+  };
+  b.style.cssText += styles[state] || styles.error;
+  b.textContent = msg;
+  b.style.opacity = '1';
+  if (state === 'ok') setTimeout(() => { if (b) b.style.opacity = '0.3'; }, 3000);
 }
 
-async function _rpc(fn, params){
-  const r=await fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:_SBH,body:JSON.stringify(params)});
-  if(!r.ok){const t=await r.text();throw new Error(fn+' '+r.status+':'+t.slice(0,200));}
-  return r.status===204?null:r.json();
+// ── FIX: Local date (not UTC) for consistency across timezones ───
+function _localDateStr(d) {
+  // Returns YYYY-MM-DD using LOCAL timezone — not UTC
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
 }
-async function _get(path){
-  const r=await fetch(SB_URL+'/rest/v1/'+path,{headers:_SBH});
-  if(!r.ok)throw new Error('GET '+r.status);
+function _idx2date(idx) {
+  const d = new Date();
+  d.setDate(d.getDate() + idx - DAY_PAST);
+  return _localDateStr(d);
+}
+function _date2idx(dateStr) {
+  // Both sides use local midnight — consistent
+  const todayStr = _localDateStr(new Date());
+  const msPerDay = 86400000;
+  const todayMs = new Date(todayStr + 'T00:00:00').getTime();
+  const dateMs  = new Date(dateStr + 'T00:00:00').getTime();
+  return DAY_PAST + Math.round((dateMs - todayMs) / msPerDay);
+}
+
+// ── API helpers ──────────────────────────────────────────────────
+async function _sbRpc(fn, params) {
+  const r = await fetch(_SB_URL + '/rest/v1/rpc/' + fn, {
+    method: 'POST', headers: _SBH, body: JSON.stringify(params)
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error(fn + ' failed ' + r.status + ': ' + t.slice(0, 200));
+  }
+  return r.status === 204 ? null : r.json();
+}
+async function _sbGet(table, query) {
+  const r = await fetch(_SB_URL + '/rest/v1/' + table + '?' + query, { headers: _SBH });
+  if (!r.ok) throw new Error('GET ' + table + ' ' + r.status);
   return r.json();
 }
 
-function _idx2date(i){
-  const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+i-DAY_PAST);
-  return d.toISOString().split('T')[0];
+// ── Write queue + batch flush ────────────────────────────────────
+function _qWrite(store, dayIdx, prod, field, value) {
+  const date = _idx2date(dayIdx);
+  const by   = me ? me.name : store;
+  // Deduplicate: replace any existing queued write for same cell
+  _syncQ = _syncQ.filter(w => !(w.s===store && w.d===date && w.p===prod && w.f===field));
+  _syncQ.push({ s:store, d:date, p:prod, f:field, v:value, b:by });
+  _sb_badge('saving', '⇅ ' + _syncQ.length + ' pending…');
+  clearTimeout(_syncTmr);
+  _syncTmr = setTimeout(_sbFlush, 600);
 }
-function _date2idx(s){
-  const t=new Date();t.setHours(0,0,0,0);
-  const d=new Date(s+'T12:00:00');
-  return DAY_PAST+Math.round((d-t)/86400000);
-}
-
-function _queueWrite(store,dayIdx,prod,field,value){
-  const by=me?me.name:store;
-  const date=_idx2date(dayIdx);
-  _queue=_queue.filter(w=>!(w.s===store&&w.d===date&&w.p===prod&&w.f===field));
-  _queue.push({s:store,d:date,p:prod,f:field,v:value,b:by});
-  _badge('saving','⇅ '+_queue.length+' pending');
-  clearTimeout(_ftimer);
-  _ftimer=setTimeout(_flush,800);
-}
-
-async function _flush(){
-  if(!_queue.length)return;
-  const batch=_queue.splice(0,50);
-  _badge('saving','⇅ Saving '+batch.length+'…');
-  try{
-    await _rpc('save_stock_batch',{p_rows:batch.map(w=>({store:w.s,date:w.d,prod:w.p,field:w.f,value:w.v,by:w.b}))});
-    _online=true;
-    _badge('ok','✓ Synced · '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
-    if(_queue.length)setTimeout(_flush,200);
-  }catch(e){
-    console.error('flush:',e.message);
-    _queue=batch.concat(_queue);
-    _online=false;
-    _badge('offline','⚠ Offline · '+_queue.length+' queued');
-    setTimeout(_flush,5000);
+async function _sbFlush() {
+  if (!_syncQ.length) return;
+  const batch = _syncQ.splice(0, 50);
+  _sb_badge('saving', '⇅ Writing ' + batch.length + '…');
+  try {
+    await _sbRpc('save_stock_batch', {
+      p_rows: batch.map(w => ({ store:w.s, date:w.d, prod:w.p, field:w.f, value:w.v, by:w.b }))
+    });
+    _syncOk = true;
+    _sb_badge('ok', '✓ ' + new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}));
+    if (_syncQ.length) setTimeout(_sbFlush, 100);
+  } catch(e) {
+    console.error('[Sync] flush:', e.message);
+    _syncQ = batch.concat(_syncQ); // put back
+    _syncOk = false;
+    _sb_badge('error', '⚠ Offline · ' + _syncQ.length + ' queued');
+    setTimeout(_sbFlush, 6000);
   }
 }
 
-async function _loadFromServer(store){
-  _badge('loading','⇅ Loading…');
-  try{
-    const cells=await _get('stock_cells?store_code=eq.'+store+'&select=day_date,prod_code,field,value,locked&limit=10000');
-    cells.forEach(c=>{
-      const di=_date2idx(c.day_date);
-      if(di<0||di>=DAY_WINDOW)return;
-      if(!db[store])db[store]={};
-      if(!db[store][di])db[store][di]={};
-      if(!db[store][di][c.prod_code])db[store][di][c.prod_code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
-      db[store][di][c.prod_code][c.field]=c.value;
-      if(c.locked)db[store][di][c.prod_code].locked=true;
+// ── Load ALL data for store ──────────────────────────────────────
+async function _sbLoad(store) {
+  _sb_badge('load', '⇅ Loading…');
+  try {
+    // Stock cells
+    const cells = await _sbGet('stock_cells',
+      'store_code=eq.' + store + '&select=day_date,prod_code,field,value,locked&limit=10000');
+    if (!db[store]) db[store] = {};
+    cells.forEach(c => {
+      const di = _date2idx(c.day_date);
+      if (di < 0 || di >= DAY_WINDOW) return;
+      if (!db[store][di]) db[store][di] = {};
+      if (!db[store][di][c.prod_code])
+        db[store][di][c.prod_code] = {open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+      db[store][di][c.prod_code][c.field] = c.value;
+      if (c.locked) db[store][di][c.prod_code].locked = true;
     });
 
-    const locks=await _get('day_locks?store_code=eq.'+store+'&locked=eq.true&select=day_date');
-    locks.forEach(l=>{
-      const di=_date2idx(l.day_date);
-      if(di<0||di>=DAY_WINDOW||!db[store]?.[di])return;
-      Object.values(db[store][di]).forEach(x=>{if(x)x.locked=true;});
+    // Lock status
+    const locks = await _sbGet('day_locks',
+      'store_code=eq.' + store + '&locked=eq.true&select=day_date');
+    locks.forEach(l => {
+      const di = _date2idx(l.day_date);
+      if (di < 0 || di >= DAY_WINDOW || !db[store]?.[di]) return;
+      Object.values(db[store][di]).forEach(x => { if(x) x.locked = true; });
     });
 
-    const trfs=await _get('transfers?select=*&order=ts.desc&limit=2000');
-    if(trfs.length) db.transferLog=trfs.map(t=>({
-      id:t.id,ts:new Date(t.ts).toLocaleString('en-GB'),
-      day:_date2idx(t.day_date),dayDate:t.day_date,
-      fromStore:t.from_store,fromName:t.from_name,
-      toStore:t.to_store,toName:t.to_name,
-      prodCode:t.prod_code,prodName:t.prod_name,
-      prodAr:t.prod_ar,qty:t.qty,remark:t.remark,note:t.note
-    }));
+    // Transfers
+    const trfs = await _sbGet('transfers', 'select=*&order=ts.desc&limit=2000');
+    if (trfs.length) {
+      db.transferLog = trfs.map(t => ({
+        id:t.id, ts:new Date(t.ts).toLocaleString('en-GB'),
+        day:_date2idx(t.day_date), dayDate:t.day_date,
+        fromStore:t.from_store, fromName:t.from_name,
+        toStore:t.to_store,     toName:t.to_name,
+        prodCode:t.prod_code,   prodName:t.prod_name,
+        prodAr:t.prod_ar,       qty:t.qty,
+        remark:t.remark,        note:t.note
+      }));
+    }
 
-    const fins=await _get('finance?store_code=eq.'+store+'&select=*&limit=500');
-    if(fins.length){
-      if(!db.finance)db.finance={};
-      if(!db.finance[store])db.finance[store]={};
-      fins.forEach(f=>{
-        const di=_date2idx(f.day_date);
-        const key=(di>=0&&di<DAY_WINDOW)?di:'d_'+f.day_date;
-        db.finance[store][key]={
-          cash:+f.cash||0,tabby:+f.tabby||0,tamara:+f.tamara||0,
-          credit:+f.credit||0,openCash:+f.open_cash||0,debtors:+f.debtors||0,
-          directorAmt:+f.director_amt||0,bankAmt:+f.bank_amt||0,expenses:+f.expenses||0,
-          directorName:f.director_name||'',bankSlip:f.bank_slip||'',
-          preparedBy:f.prepared_by||'',checkedBy:f.checked_by||'',
-          ccRows:typeof f.cc_rows==='string'?JSON.parse(f.cc_rows):(f.cc_rows||[]),
-          finLocked:f.fin_locked||false,finLockedAt:f.fin_locked_at,
-          savedAt:f.saved_at,dayDate:f.day_date
+    // Finance
+    const fins = await _sbGet('finance',
+      'store_code=eq.' + store + '&select=*&limit=500');
+    if (fins.length) {
+      if (!db.finance) db.finance = {};
+      if (!db.finance[store]) db.finance[store] = {};
+      fins.forEach(f => {
+        const di  = _date2idx(f.day_date);
+        const key = (di >= 0 && di < DAY_WINDOW) ? di : 'd_' + f.day_date;
+        db.finance[store][key] = {
+          cash:+f.cash||0, tabby:+f.tabby||0, tamara:+f.tamara||0,
+          credit:+f.credit||0, openCash:+f.open_cash||0, debtors:+f.debtors||0,
+          directorAmt:+f.director_amt||0, bankAmt:+f.bank_amt||0, expenses:+f.expenses||0,
+          directorName:f.director_name||'', bankSlip:f.bank_slip||'',
+          preparedBy:f.prepared_by||'', checkedBy:f.checked_by||'',
+          ccRows: typeof f.cc_rows==='string' ? JSON.parse(f.cc_rows) : (f.cc_rows||[]),
+          finLocked:f.fin_locked||false, finLockedAt:f.fin_locked_at,
+          savedAt:f.saved_at, dayDate:f.day_date
         };
-        if(f.fin_locked)finDaySaved[store+'_'+key]=true;
+        if (f.fin_locked) finDaySaved[store+'_'+key] = true;
       });
     }
+
     saveDB();
-    _online=true;
-    _badge('ok','✓ Live · '+cells.length+' cells loaded');
+    _syncOk = true;
+    _sb_badge('ok', '● Live · ' + cells.length + ' cells');
     return true;
-  }catch(e){
-    console.error('loadFromServer:',e.message);
-    _badge('offline','⚠ Offline — using cached data');
-    _online=false;
+  } catch(e) {
+    console.error('[Sync] load:', e.message);
+    _sb_badge('error', '⚠ Offline · local data only');
+    _syncOk = false;
     return false;
   }
 }
 
-function _subscribeRealtime(store){
-  if(!window._SB)return;
-  if(_rtCh)_rtCh.unsubscribe();
-  _rtCh=window._SB.channel('ep_'+store+'_'+Date.now())
-    .on('postgres_changes',{event:'*',schema:'public',table:'stock_cells',filter:'store_code=eq.'+store},p=>{
-      const c=p.new;if(!c||!c.prod_code)return;
-      if(c.updated_by===(me?me.name:store))return;
-      const di=_date2idx(c.day_date);if(di<0||di>=DAY_WINDOW)return;
-      if(!db[store])db[store]={};if(!db[store][di])db[store][di]={};
-      if(!db[store][di][c.prod_code])db[store][di][c.prod_code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
-      db[store][di][c.prod_code][c.field]=c.value;
-      if(c.locked)db[store][di][c.prod_code].locked=true;
+// ── Real-time subscription ───────────────────────────────────────
+function _sbSubscribe(store) {
+  if (!window._SBC) return;
+  if (_rtCh) { try { _rtCh.unsubscribe(); } catch(e){} }
+  _rtCh = window._SBC
+    .channel('ep4_' + store)
+    .on('postgres_changes', {
+      event:'*', schema:'public', table:'stock_cells',
+      filter:'store_code=eq.' + store
+    }, payload => {
+      const c = payload.new;
+      if (!c || !c.prod_code) return;
+      if (c.updated_by === (me ? me.name : store)) return;
+      const di = _date2idx(c.day_date);
+      if (di < 0 || di >= DAY_WINDOW) return;
+      if (!db[store]) db[store] = {};
+      if (!db[store][di]) db[store][di] = {};
+      if (!db[store][di][c.prod_code])
+        db[store][di][c.prod_code] = {open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+      db[store][di][c.prod_code][c.field] = c.value;
+      if (c.locked) db[store][di][c.prod_code].locked = true;
       saveDB();
-      if(di===curDay){buildGrid();updateTotalsRow();buildFooter();}
-      _badge('ok','⇅ '+( c.updated_by||'?')+' synced');
+      if (di === curDay) { buildGrid(); updateTotalsRow(); buildFooter(); }
+      _sb_badge('ok', '⇅ ' + (c.updated_by||'?') + ' synced');
     })
-    .on('postgres_changes',{event:'*',schema:'public',table:'day_locks',filter:'store_code=eq.'+store},p=>{
-      const l=p.new;if(!l||!l.locked)return;
-      const di=_date2idx(l.day_date);if(di<0||di>=DAY_WINDOW)return;
-      if(db[store]?.[di])Object.values(db[store][di]).forEach(x=>{if(x)x.locked=true;});
+    .on('postgres_changes', {
+      event:'*', schema:'public', table:'day_locks',
+      filter:'store_code=eq.' + store
+    }, payload => {
+      const l = payload.new;
+      if (!l || !l.locked) return;
+      const di = _date2idx(l.day_date);
+      if (di < 0 || di >= DAY_WINDOW) return;
+      if (db[store]?.[di]) Object.values(db[store][di]).forEach(x => { if(x) x.locked = true; });
       saveDB();
-      if(di===curDay){buildGrid();buildDayTabs();buildFooter();}
-      toast('🔒 Day locked by '+(l.locked_by||'manager'));
+      if (di === curDay) { buildGrid(); buildDayTabs(); buildFooter(); }
+      toast('🔒 Day locked by ' + (l.locked_by||'manager'));
+      _sb_badge('ok', '🔒 ' + (l.locked_by||'lock') + ' synced');
     })
-    .on('postgres_changes',{event:'*',schema:'public',table:'finance',filter:'store_code=eq.'+store},p=>{
-      const f=p.new;if(!f)return;
-      const di=_date2idx(f.day_date);
-      const key=(di>=0&&di<DAY_WINDOW)?di:'d_'+f.day_date;
-      if(!db.finance)db.finance={};if(!db.finance[store])db.finance[store]={};
-      db.finance[store][key]={
-        cash:+f.cash||0,tabby:+f.tabby||0,tamara:+f.tamara||0,
-        credit:+f.credit||0,openCash:+f.open_cash||0,debtors:+f.debtors||0,
-        directorAmt:+f.director_amt||0,bankAmt:+f.bank_amt||0,expenses:+f.expenses||0,
-        directorName:f.director_name||'',bankSlip:f.bank_slip||'',
-        preparedBy:f.prepared_by||'',checkedBy:f.checked_by||'',
-        ccRows:typeof f.cc_rows==='string'?JSON.parse(f.cc_rows):(f.cc_rows||[]),
-        finLocked:f.fin_locked||false,dayDate:f.day_date
+    .on('postgres_changes', {
+      event:'*', schema:'public', table:'finance',
+      filter:'store_code=eq.' + store
+    }, payload => {
+      const f = payload.new;
+      if (!f) return;
+      const di  = _date2idx(f.day_date);
+      const key = (di >= 0 && di < DAY_WINDOW) ? di : 'd_' + f.day_date;
+      if (!db.finance) db.finance = {};
+      if (!db.finance[store]) db.finance[store] = {};
+      db.finance[store][key] = {
+        cash:+f.cash||0, tabby:+f.tabby||0, tamara:+f.tamara||0,
+        credit:+f.credit||0, openCash:+f.open_cash||0, debtors:+f.debtors||0,
+        directorAmt:+f.director_amt||0, bankAmt:+f.bank_amt||0, expenses:+f.expenses||0,
+        directorName:f.director_name||'', bankSlip:f.bank_slip||'',
+        preparedBy:f.prepared_by||'', checkedBy:f.checked_by||'',
+        ccRows: typeof f.cc_rows==='string' ? JSON.parse(f.cc_rows) : (f.cc_rows||[]),
+        finLocked:f.fin_locked||false, dayDate:f.day_date
       };
-      saveDB();_badge('ok','⇅ Finance synced');
+      saveDB();
+      _sb_badge('ok', '⇅ Finance synced');
     })
-    .subscribe(s=>{
-      if(s==='SUBSCRIBED')_badge('ok','● Live · All devices synced');
-      else if(s==='CHANNEL_ERROR'){_badge('offline','⚠ Reconnecting…');setTimeout(()=>_subscribeRealtime(store),5000);}
+    .subscribe(status => {
+      if (status === 'SUBSCRIBED') _sb_badge('ok', '● Live · All devices connected');
+      else if (status === 'CHANNEL_ERROR') {
+        _sb_badge('error', '⚠ Reconnecting…');
+        setTimeout(() => _sbSubscribe(store), 5000);
+      }
     });
 }
 
-// ── Patch dbSet ────────────────────────────────────────────────
-const _origDBSet=dbSet;
-window.dbSet=function(store,day,code,field,value,force){
-  _origDBSet(store,day,code,field,value,force);
-  _queueWrite(store,day,code,field,value);
+// ── Patch dbSet ──────────────────────────────────────────────────
+const _ORIG_dbSet = dbSet;
+window.dbSet = function(store, day, code, field, value, force) {
+  _ORIG_dbSet(store, day, code, field, value, force);
+  _qWrite(store, day, code, field, value);
 };
 
-// ── Patch lockDay ──────────────────────────────────────────────
-const _origLockDay=lockDay;
-window.lockDay=function(store,day){
-  _origLockDay(store,day);
-  _rpc('lock_store_day',{p_store:store,p_date:_idx2date(day),p_by:me?me.name:store})
-    .then(()=>_badge('ok','🔒 Locked & synced'))
-    .catch(e=>console.error('lock:',e.message));
+// ── Patch lockDay ────────────────────────────────────────────────
+const _ORIG_lockDay = lockDay;
+window.lockDay = function(store, day) {
+  _ORIG_lockDay(store, day);
+  const date = _idx2date(day);
+  _sbRpc('lock_store_day', {p_store:store, p_date:date, p_by:me?me.name:store})
+    .then(() => _sb_badge('ok', '🔒 Day locked & synced'))
+    .catch(e => console.error('[Sync] lock:', e.message));
 };
 
-// ── Patch saveFinanceData ─────────────────────────────────────
-const _origSaveFin=saveFinanceData;
-window.saveFinanceData=function(){
-  _origSaveFin();
-  if(!me)return;
-  const fd=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
-  const d=db.finance?.[me.code]?.[fd];
-  if(!d)return;
-  _rpc('save_finance',{
-    p_store:me.code,p_date:_idx2date(fd),
-    p_data:{cash:d.cash||0,tabby:d.tabby||0,tamara:d.tamara||0,
-      credit:d.credit||0,open_cash:d.openCash||0,debtors:d.debtors||0,
-      director_amt:d.directorAmt||0,bank_amt:d.bankAmt||0,expenses:d.expenses||0,
-      director_name:d.directorName||'',bank_slip:d.bankSlip||'',
-      prepared_by:d.preparedBy||'',checked_by:d.checkedBy||'',
-      cc_rows:d.ccRows||[],fin_locked:d.finLocked||false}
-  }).catch(e=>console.error('fin sync:',e.message));
+// ── Patch saveFinanceData ────────────────────────────────────────
+const _ORIG_saveFinance = saveFinanceData;
+window.saveFinanceData = function() {
+  _ORIG_saveFinance();
+  if (!me) return;
+  const fd = typeof dashDay !== 'undefined' ? dashDay : DAY_PAST;
+  const d  = db.finance?.[me.code]?.[fd];
+  if (!d) return;
+  _sbRpc('save_finance', {
+    p_store: me.code,
+    p_date:  _idx2date(fd),
+    p_data: {
+      cash:d.cash||0, tabby:d.tabby||0, tamara:d.tamara||0,
+      credit:d.credit||0, open_cash:d.openCash||0, debtors:d.debtors||0,
+      director_amt:d.directorAmt||0, bank_amt:d.bankAmt||0, expenses:d.expenses||0,
+      director_name:d.directorName||'', bank_slip:d.bankSlip||'',
+      prepared_by:d.preparedBy||'', checked_by:d.checkedBy||'',
+      cc_rows:d.ccRows||[], fin_locked:d.finLocked||false
+    }
+  }).catch(e => console.error('[Sync] finance:', e.message));
 };
 
-// ── Load Supabase client ──────────────────────────────────────
-(function loadSB(){
-  const s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-  s.onload=()=>{window._SB=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false},realtime:{params:{eventsPerSecond:10}}});};
+// ── Load Supabase SDK ────────────────────────────────────────────
+(function() {
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  s.onload = () => {
+    window._SBC = window.supabase.createClient(_SB_URL, _SB_KEY, {
+      auth: {persistSession:false},
+      realtime: {params:{eventsPerSecond:10}}
+    });
+  };
   document.head.appendChild(s);
 })();
 
-// ── Start after login ─────────────────────────────────────────
-async function startSync(store){
-  const ok=await _loadFromServer(store);
-  if(ok){buildGrid();buildDayTabs();buildFooter();}
-  const tryRT=(n)=>{if(window._SB)_subscribeRealtime(store);else if(n>0)setTimeout(()=>tryRT(n-1),600);};
+// ── Main entry: called after login ───────────────────────────────
+// Shows loading overlay, loads from server, then shows app
+async function startSync(store) {
+  // Show loading overlay
+  let overlay = document.getElementById('_syncOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = '_syncOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:#0A0A0A;z-index:10000;' +
+      'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+    overlay.innerHTML =
+      '<div style="font-family:monospace;font-size:14px;font-weight:700;color:#C9A44E;letter-spacing:2px;">EMIRATES PRIDE</div>' +
+      '<div style="font-family:monospace;font-size:11px;color:#555;" id="_syncMsg">Connecting to server…</div>' +
+      '<div style="width:200px;height:3px;background:#1A1A1A;border-radius:3px;overflow:hidden;">' +
+        '<div id="_syncBar" style="height:100%;background:#C9A44E;width:0%;transition:width 0.4s;"></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+  }
+  overlay.style.display = 'flex';
+
+  const setMsg = (msg, pct) => {
+    const el = document.getElementById('_syncMsg');
+    const bar = document.getElementById('_syncBar');
+    if (el) el.textContent = msg;
+    if (bar) bar.style.width = pct + '%';
+  };
+
+  setMsg('Loading your store data…', 20);
+  const ok = await _sbLoad(store);
+  setMsg(ok ? 'Building grid…' : 'Using cached data…', 80);
+
+  // Rebuild UI with fresh data
+  buildDayTabs();
+  buildGrid();
+  buildFooter();
+  buildSpSkuSel();
+
+  setMsg('Ready!', 100);
+  setTimeout(() => { if (overlay) overlay.style.display = 'none'; }, 400);
+
+  // Start realtime
+  const tryRT = (n) => {
+    if (window._SBC) _sbSubscribe(store);
+    else if (n > 0) setTimeout(() => tryRT(n-1), 600);
+  };
   tryRT(15);
-  setInterval(()=>{if(_queue.length)_flush();},10000);
+
+  // Periodic refresh every 60s
+  setInterval(async () => {
+    if (!document.hidden) {
+      await _sbLoad(store);
+      buildGrid(); updateTotalsRow(); buildFooter();
+    }
+  }, 60000);
+
+  // Retry pending writes every 10s
+  setInterval(() => { if (_syncQ.length) _sbFlush(); }, 10000);
 }
+// END SYNC ENGINE v4
 // ════════════════════════════════════════════════════════════════════
-// END SYNC ENGINE v3
 // ════════════════════════════════════════════════════════════════════
 
 </script>
