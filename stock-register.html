@@ -4823,6 +4823,7 @@ function closeMgrDashboard(){
 function renderMgrDashboard(){
   const body=document.getElementById('mgrDashBody');
   if(!body) return;
+  try{
   const labels=getDayLabels();
 
   // Build summary per store
@@ -4939,7 +4940,10 @@ function renderMgrDashboard(){
       </button>
     </div>
   </div>`;
-  } catch(e){ console.error("mgrDash:",e); body.innerHTML='<div style="padding:20px;color:#E87070;font-family:monospace;font-size:12px;">Dashboard error: '+e.message+'</div>'; }
+  } catch(e) {
+    console.error('Manager dashboard error:', e);
+    body.innerHTML = '<div style="padding:20px;color:#E87070;font-family:monospace;font-size:12px;">⚠ Dashboard error: ' + e.message + '</div>';
+  }
 }
 function mgrSwitchToStore(){
   const sel=document.getElementById('mgrStoreSelect');
