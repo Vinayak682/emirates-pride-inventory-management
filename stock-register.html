@@ -2322,6 +2322,7 @@ function lockDay(store,day){
     if(!db[store][nextDay]) db[store][nextDay]={};
   }
   // Collect ALL product codes across PRODUCTS (not just what's in db)
+  const carryBatch = [];
   const allCodes = new Set([
     ...Object.keys(db[store][day]||{}),
     ...PRODUCTS.map(p=>p.code)
@@ -2338,15 +2339,17 @@ function lockDay(store,day){
         // Only set if next day opening is 0 (don't overwrite manual entries)
         if((db[store][nextDay][code].open||0) === 0){
           db[store][nextDay][code].open = closing;
-          // Sync to server without triggering recursive queue
-          if(typeof _idx2date === 'function'){
-            const date = _idx2date(nextDay);
-            _sbRpc('save_stock', {p_store:store, p_date:date, p_prod:code, p_field:'open', p_value:closing, p_by:'carry-forward'}).catch(()=>{});
-          }
+          carryBatch.push({store, date: _idx2date(nextDay), prod:code, field:'open', value:closing});
         }
       }
     }
   });
+  // Batch sync carry-forward to server (single RPC call, not one per product)
+  if(carryBatch.length > 0){
+    saveDB();
+    _sbRpc('save_stock_batch', {p_rows: carryBatch.map(w=>({store:w.store,date:w.date,prod:w.prod,field:w.field,value:w.value,by:'carry-forward'}))})
+      .catch(e=>console.warn('carry-forward sync:',e.message));
+  }
   // ── Finance carry-forward: closing balance → next day opening cash ──
   if(day < DAY_WINDOW-1) carryFinanceForward(store, day);
   // ── Auto-lock Finance too if it was saved but not yet finance-locked ──
@@ -2851,9 +2854,29 @@ function npAddSplit(){
   // Reset qty, keep numpad open for next split
   npBuf=''; document.getElementById('npVal').textContent='0';
   if(remarkEl) remarkEl.value='';
-  // Refresh split list
-  openNP(code, field);
+  // Refresh split list inline without reopening numpad
+  const existingSplits2=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===code&&
+    (field==='inn'?t.toStore===me.code:t.fromStore===me.code));
+  const splitList2=document.getElementById('npSplitList');
+  if(splitList2){
+    splitList2.style.display='block';
+    splitList2.innerHTML=existingSplits2.map(t=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;
+        background:#1A2A1A;border:1px solid #2A4A2A;border-radius:6px;
+        padding:6px 10px;margin-bottom:4px;">
+        <div style="font-size:11px;color:#6FCF97;flex:1;min-width:0;">
+          <div style="font-weight:700;">${field==='inn'?t.fromName:t.toName}</div>
+          ${t.remark?'<div style="font-size:10px;color:#3A6A3A;">'+t.remark+'</div>':''}
+        </div>
+        <span style="font-family:var(--f-mono);font-size:14px;font-weight:900;
+          color:#6FCF97;margin-left:8px;">×${t.qty}</span>
+      </div>`).join('');
+  }
+  // Update totals in grid silently
+  const scroll=document.getElementById('scrollArea');
+  const st=scroll?scroll.scrollTop:0;
   buildGrid(); updateTotalsRow(); buildFooter();
+  if(scroll) scroll.scrollTop=st;
   toast('✓ Added: '+val+' → '+ss.name);
 }
 function updateNpProj(){
@@ -3602,9 +3625,7 @@ function renderDash(){
 // FINANCE — CLEAN REWRITE
 // ══════════════════════════════════════════
 let finCC = [];
-let finBNPL = [];
-let finExpenses = [];
-let finPeriod = 'day';
+let finPeriod = 'day';  // finBNPL & finExpenses declared below with their section
 let finNPCtx  = null;  // 'cash' | 'credit' | 'openCash' | 'debtors' | 'directorAmt' | 'bankAmt' | 'expenses' | '__cc__N'
 let finNPBuf  = '';
 let finDaySaved = {};
@@ -4918,8 +4939,8 @@ function renderMgrDashboard(){
       </button>
     </div>
   </div>`;
+  } catch(e){ console.error("mgrDash:",e); body.innerHTML='<div style="padding:20px;color:#E87070;font-family:monospace;font-size:12px;">Dashboard error: '+e.message+'</div>'; }
 }
-
 function mgrSwitchToStore(){
   const sel=document.getElementById('mgrStoreSelect');
   if(!sel||!sel.value) return;
