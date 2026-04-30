@@ -220,9 +220,11 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   padding:0;text-align:center;border:1px solid var(--border);
   cursor:pointer;transition:background 0.1s;min-width:72px;width:72px;
 }
-/* Transfer columns wider to fit store name */
-.sgrid td.dcell.inn,.sgrid td.dcell.trf{min-width:90px;width:90px;}
-.sgrid thead th.gh-in,.sgrid thead th.gh-trf{min-width:90px;width:90px;}
+/* Transfer columns wider + auto height for multi-chip display */
+.sgrid td.dcell.inn,.sgrid td.dcell.trf{min-width:100px;width:100px;}
+.sgrid thead th.gh-in,.sgrid thead th.gh-trf,.sgrid thead th.gs-in,.sgrid thead th.gs-trf{min-width:100px;width:100px;}
+/* Cells auto-height when chips present */
+.sgrid td.dcell.dcell-has-note{height:auto;vertical-align:top;padding-top:4px;}
 
 .sgrid td.dcell.open{background:var(--c-open);}
 .sgrid td.dcell.inn{background:var(--c-in);}
@@ -254,31 +256,42 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 /* Transfer store-name note — full name, styled properly */
 .cell-note{
   display:block;
-  font-family:var(--f-mono);font-size:9px;font-weight:600;
-  line-height:1.25;
+  padding:0 3px 5px;
   text-align:center;
-  padding:0 4px 6px;
-  white-space:normal;
-  word-break:break-word;
-  overflow:hidden;
 }
-.cell-note-arrow{
-  display:block;
-  font-size:9px;
-  opacity:0.6;
-  margin-bottom:1px;
+/* Each individual transfer line */
+.trf-chip{
+  display:flex;align-items:center;justify-content:center;gap:3px;
+  margin:1px 2px;
+  padding:2px 5px;
+  border-radius:3px;
+  font-family:var(--f-mono);font-size:8px;font-weight:700;
+  line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:100%;
 }
-.cell-note-name{
-  display:block;
-  font-size:8.5px;
-  line-height:1.3;
+.trf-chip-arrow{font-size:9px;flex-shrink:0;}
+.trf-chip-name{
+  font-size:8px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;flex:1;min-width:0;
 }
-/* Received from — green tint */
-.dcell.inn .cell-note{color:#1A6040;}
-.dcell.inn .cell-note-arrow{color:#2A9060;}
-/* Sent to — purple tint */
-.dcell.trf .cell-note{color:#5A2A7A;}
-.dcell.trf .cell-note-arrow{color:#8A4AAA;}
+.trf-chip-qty{
+  font-size:9px;font-weight:900;flex-shrink:0;
+  margin-left:2px;padding:0 3px;border-radius:2px;
+}
+/* Received from — green */
+.dcell.inn .trf-chip{background:#E8F5EE;color:#1A6040;}
+.dcell.inn .trf-chip-qty{background:#C8EED8;color:#0A4020;}
+/* Sent to — purple */
+.dcell.trf .trf-chip{background:#F0E8FF;color:#5A2A7A;}
+.dcell.trf .trf-chip-qty{background:#DFC8F8;color:#3A0A5A;}
+/* More indicator */
+.trf-more{
+  display:block;font-family:var(--f-mono);font-size:8px;
+  text-align:center;opacity:0.6;padding-bottom:3px;
+}
+/* Old selectors kept for compat */
+.cell-note-arrow{display:none;}
+.cell-note-name{display:none;}
 
 /* Locked state */
 .row-locked .dcell.open,.row-locked .dcell.wh,.row-locked .dcell.inn,.row-locked .dcell.out{
@@ -2488,16 +2501,16 @@ function buildGrid(){
         <td class="dcell wh" onclick="${canEdit?'openNP(\''+p.code+'\',\'wh\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showW===''?' empty':''}">${showW===''?'—':showW}</span>
         </td>
-        <td class="dcell inn${(()=>{const lg2=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.toStore===me.code);return lg2?' dcell-has-note':''})()}" onclick="${canEdit?'openNP(\''+p.code+'\',\'inn\')':'toast(\'🔒 Day locked\')'}">
+        <td class="dcell inn${(()=>{const lg2=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===p.code&&t.toStore===me.code);return lg2.length?' dcell-has-note':''})()}" onclick="${canEdit?'openNP(\''+p.code+'\',\'inn\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showI===''?' empty':''}">${showI===''?'—':showI}</span>
-          ${(()=>{const lg=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.toStore===me.code);return lg?`<span class="cell-note"><span class="cell-note-arrow">← Received from</span><span class="cell-note-name">${lg.fromName}</span></span>`:''})()}
+          ${(()=>{const lg=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===p.code&&t.toStore===me.code);return buildTrfNote(lg,'inn');})()}
         </td>
         <td class="dcell sold" onclick="${canEdit?'openNP(\''+p.code+'\',\'sold\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showS===''?' empty':''}">${showS===''?'—':showS}</span>
         </td>
-        <td class="dcell trf${(()=>{const lg2=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return lg2?' dcell-has-note':''})()}" onclick="${canEdit?'openNP(\''+p.code+'\',\'trf\')':'toast(\'🔒 Day locked\')'}">
+        <td class="dcell trf${(()=>{const lg2=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return lg2.length?' dcell-has-note':''})()}" onclick="${canEdit?'openNP(\''+p.code+'\',\'trf\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showT===''?' empty':''}">${showT===''?'—':showT}</span>
-          ${(()=>{const lg=getTransferLog().find(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return lg?`<span class="cell-note"><span class="cell-note-arrow">→ Sent to</span><span class="cell-note-name">${lg.toName}</span></span>`:''})()}
+          ${(()=>{const lg=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return buildTrfNote(lg,'trf');})()}
         </td>
         <td class="dcell bal">
           <span class="dcell-val${isNeg?' negative':''}">${b}</span>
@@ -2525,8 +2538,32 @@ function buildGrid(){
   lb.className='lock-btn'+(locked?' locked':'');
 }
 
-// ── FOOTER ──
-function buildFooter(){
+// ── Build compact multi-transfer chips for inn/trf cells ──────────
+function buildTrfNote(entries, type) {
+  // entries: [{fromName/toName, qty, remark}]
+  if (!entries.length) return '';
+  const MAX_SHOW = 4; // show up to 4 chips, then "+N more"
+  const shown = entries.slice(0, MAX_SHOW);
+  const extra = entries.length - MAX_SHOW;
+  const arrow = type === 'inn' ? '←' : '→';
+
+  let html = '<span class="cell-note">';
+  shown.forEach(e => {
+    const storeName = type === 'inn' ? e.fromName : e.toName;
+    // Abbreviate: first 2 words max
+    const abbr = storeName.split(' ').slice(0, 3).join(' ');
+    html += `<span class="trf-chip" title="${storeName}${e.remark?' · '+e.remark:''}">
+      <span class="trf-chip-arrow">${arrow}</span>
+      <span class="trf-chip-name">${abbr}</span>
+      <span class="trf-chip-qty">${e.qty}</span>
+    </span>`;
+  });
+  if (extra > 0) html += `<span class="trf-more">+${extra} more</span>`;
+  html += '</span>';
+  return html;
+}
+
+
   let totO=0,totW=0,totI=0,totS=0,totT=0,totB=0;
   PRODUCTS.forEach(p=>{
     totO+=dbGet(me.code,curDay,p.code,'open');
