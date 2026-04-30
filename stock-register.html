@@ -5844,52 +5844,226 @@ window.saveFinanceData = function() {
 
 // ── Main entry: called after login ───────────────────────────────
 // Shows loading overlay, loads from server, then shows app
+// ── COUNT how many local cells exist for a store ─────────────────
+function _countLocalCells(store) {
+  let count = 0;
+  for (let d = 0; d < DAY_WINDOW; d++) {
+    if (!db[store]?.[d]) continue;
+    Object.keys(db[store][d]).forEach(prod => {
+      const cell = db[store][d][prod];
+      if (!cell) return;
+      ['open','wh','inn','sold','trf'].forEach(f => {
+        if ((cell[f]||0) > 0) count++;
+      });
+    });
+  }
+  return count;
+}
+
+// ── UPLOAD all local data to Supabase ─────────────────────────────
+async function _uploadLocalData(store, setMsg) {
+  setMsg('Scanning local data…', 5);
+
+  const allWrites  = [];
+  const allTrf     = [];
+  const allFin     = [];
+
+  // Stock cells
+  for (let d = 0; d < DAY_WINDOW; d++) {
+    if (!db[store]?.[d]) continue;
+    const dateStr = _localDateStr(new Date(Date.now() + (d - DAY_PAST) * 86400000));
+    // Use proper local date calc
+    const dt = new Date(); dt.setDate(dt.getDate() + d - DAY_PAST);
+    const dayDate = _localDateStr(dt);
+    const by = me ? me.name : store;
+    Object.keys(db[store][d]).forEach(prod => {
+      const cell = db[store][d][prod];
+      if (!cell) return;
+      ['open','wh','inn','sold','trf'].forEach(f => {
+        if ((cell[f]||0) > 0) {
+          allWrites.push({ store:store, date:dayDate, prod:prod, field:f, value:cell[f], by:by });
+        }
+      });
+    });
+  }
+
+  // Transfers
+  (db.transferLog || []).forEach(t => {
+    if (t._uploaded) return;
+    const dt = new Date(); dt.setDate(dt.getDate() + t.day - DAY_PAST);
+    allTrf.push({
+      day_date: _localDateStr(dt),
+      from_store: t.fromStore, from_name: t.fromName,
+      to_store: t.toStore,     to_name:   t.toName,
+      prod_code: t.prodCode,   prod_name: t.prodName, prod_ar: t.prodAr||'',
+      qty: t.qty, remark: t.remark||'', note: t.note||''
+    });
+  });
+
+  // Finance
+  const finStore = db.finance?.[store] || {};
+  Object.keys(finStore).forEach(key => {
+    const d = finStore[key];
+    if (!d || d._uploaded) return;
+    let dayDate = d.dayDate;
+    if (!dayDate) {
+      const idx = parseInt(key);
+      if (!isNaN(idx)) {
+        const dt = new Date(); dt.setDate(dt.getDate() + idx - DAY_PAST);
+        dayDate = _localDateStr(dt);
+      }
+    }
+    if (!dayDate) return;
+    allFin.push({ key, dayDate, d });
+  });
+
+  if (!allWrites.length && !allTrf.length && !allFin.length) {
+    setMsg('No local data found to upload.', 100);
+    return 0;
+  }
+
+  let uploaded = 0;
+  const total = allWrites.length + allTrf.length + allFin.length;
+  setMsg(`Uploading ${total} records…`, 10);
+
+  // Upload stock cells in batches of 50
+  for (let i = 0; i < allWrites.length; i += 50) {
+    const batch = allWrites.slice(i, i+50);
+    try {
+      await _sbRpc('save_stock_batch', { p_rows: batch });
+      uploaded += batch.length;
+      const pct = 10 + Math.floor((uploaded / total) * 75);
+      setMsg(`Uploading stock… ${uploaded}/${total}`, pct);
+    } catch(e) {
+      console.error('Upload batch failed:', e.message);
+    }
+  }
+
+  // Upload transfers
+  for (const t of allTrf) {
+    try {
+      await fetch(_SB_URL + '/rest/v1/transfers', {
+        method: 'POST', headers: {..._SBH, 'Prefer': 'return=minimal'},
+        body: JSON.stringify(t)
+      });
+      uploaded++;
+    } catch(e) { console.error('Trf upload:', e.message); }
+  }
+
+  // Upload finance
+  for (const {dayDate, d} of allFin) {
+    try {
+      await _sbRpc('save_finance', {
+        p_store: store, p_date: dayDate,
+        p_data: {
+          cash:d.cash||0, tabby:d.tabby||0, tamara:d.tamara||0,
+          credit:d.credit||0, open_cash:d.openCash||0, debtors:d.debtors||0,
+          director_amt:d.directorAmt||0, bank_amt:d.bankAmt||0, expenses:d.expenses||0,
+          director_name:d.directorName||'', bank_slip:d.bankSlip||'',
+          prepared_by:d.preparedBy||'', checked_by:d.checkedBy||'',
+          cc_rows:d.ccRows||[], fin_locked:d.finLocked||false
+        }
+      });
+      uploaded++;
+    } catch(e) { console.error('Finance upload:', e.message); }
+  }
+
+  // Also upload lock status
+  for (let d = 0; d < DAY_WINDOW; d++) {
+    if (!db[store]?.[d]) continue;
+    const isLocked = Object.values(db[store][d]).some(c => c && c.locked);
+    if (isLocked) {
+      const dt = new Date(); dt.setDate(dt.getDate() + d - DAY_PAST);
+      const dayDate = _localDateStr(dt);
+      try {
+        await fetch(_SB_URL + '/rest/v1/day_locks', {
+          method: 'POST',
+          headers: {..._SBH, 'Prefer': 'resolution=merge-duplicates,return=minimal'},
+          body: JSON.stringify({
+            store_code: store, day_date: dayDate,
+            locked: true, locked_at: new Date().toISOString(), locked_by: me ? me.name : store
+          })
+        });
+        // Also mark cells as locked in server
+        await fetch(_SB_URL + '/rest/v1/stock_cells?store_code=eq.' + store + '&day_date=eq.' + dayDate, {
+          method: 'PATCH', headers: {..._SBH, 'Prefer': 'return=minimal'},
+          body: JSON.stringify({ locked: true })
+        });
+      } catch(e) { console.error('Lock upload:', e.message); }
+    }
+  }
+
+  setMsg(`✓ Uploaded ${uploaded} records to server!`, 100);
+  // Mark as migrated
+  try { localStorage.setItem('ep_migrated_v4_' + store, '1'); } catch(e) {}
+  return uploaded;
+}
+
 async function startSync(store) {
   // Show loading overlay
   let overlay = document.getElementById('_syncOverlay');
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = '_syncOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:#0A0A0A;z-index:10000;' +
-      'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+    overlay.style.cssText = 'position:fixed;inset:0;background:#080808;z-index:10000;' +
+      'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;';
     overlay.innerHTML =
-      '<div style="font-family:monospace;font-size:14px;font-weight:700;color:#C9A44E;letter-spacing:2px;">EMIRATES PRIDE</div>' +
-      '<div style="font-family:monospace;font-size:11px;color:#555;" id="_syncMsg">Connecting to server…</div>' +
-      '<div style="width:200px;height:3px;background:#1A1A1A;border-radius:3px;overflow:hidden;">' +
-        '<div id="_syncBar" style="height:100%;background:#C9A44E;width:0%;transition:width 0.4s;"></div>' +
-      '</div>';
+      '<div style="font-family:\'IBM Plex Sans\',monospace;font-size:15px;font-weight:800;' +
+        'color:#C9A44E;letter-spacing:3px;">EMIRATES PRIDE</div>' +
+      '<div style="font-family:monospace;font-size:12px;color:#666;max-width:280px;text-align:center;" id="_syncMsg">Connecting…</div>' +
+      '<div style="width:260px;height:4px;background:#1A1A1A;border-radius:4px;overflow:hidden;">' +
+        '<div id="_syncBar" style="height:100%;background:linear-gradient(90deg,#C9A44E,#E8C97A);width:0%;transition:width 0.3s ease;border-radius:4px;"></div>' +
+      '</div>' +
+      '<div style="font-family:monospace;font-size:10px;color:#333;" id="_syncSub"></div>';
     document.body.appendChild(overlay);
   }
   overlay.style.display = 'flex';
 
-  const setMsg = (msg, pct) => {
-    const el = document.getElementById('_syncMsg');
+  const setMsg = (msg, pct, sub) => {
+    const el  = document.getElementById('_syncMsg');
     const bar = document.getElementById('_syncBar');
-    if (el) el.textContent = msg;
+    const sb  = document.getElementById('_syncSub');
+    if (el)  el.textContent  = msg;
     if (bar) bar.style.width = pct + '%';
+    if (sb)  sb.textContent  = sub || '';
   };
 
-  setMsg('Loading your store data…', 20);
-  const ok = await _sbLoad(store);
-  setMsg(ok ? 'Building grid…' : 'Using cached data…', 80);
+  setMsg('Connecting to server…', 10);
 
-  // Rebuild UI with fresh data
+  // Check if migration needed: local data exists but not yet uploaded
+  const alreadyMigrated = localStorage.getItem('ep_migrated_v4_' + store);
+  const localCells = _countLocalCells(store);
+
+  if (localCells > 0 && !alreadyMigrated) {
+    // This device has local data that hasn't been uploaded yet
+    setMsg('Found ' + localCells + ' local records — uploading to server…', 15,
+      'This ensures your data appears on ALL devices');
+    const uploaded = await _uploadLocalData(store, setMsg);
+    setMsg('Upload complete! (' + uploaded + ' records)', 90,
+      'Your data is now available on all devices');
+    await new Promise(r => setTimeout(r, 800));
+  }
+
+  setMsg('Loading latest data from server…', 92);
+  const ok = await _sbLoad(store);
+
+  setMsg(ok ? 'Building your dashboard…' : 'Using local data (offline)…', 97);
   buildDayTabs();
   buildGrid();
   buildFooter();
   buildSpSkuSel();
 
-  setMsg('Ready!', 100);
-  setTimeout(() => { if (overlay) overlay.style.display = 'none'; }, 400);
+  setMsg('✓ Ready', 100, ok ? '● Connected to server · All devices synced' : '⚠ Offline');
+  setTimeout(() => { if (overlay) overlay.style.display = 'none'; }, 600);
 
-  // Start realtime
+  // Realtime subscription
   const tryRT = (n) => {
     if (window._SBC) _sbSubscribe(store);
-    else if (n > 0) setTimeout(() => tryRT(n-1), 600);
+    else if (n > 0) setTimeout(() => tryRT(n-1), 500);
   };
-  tryRT(15);
+  tryRT(20);
 
-  // Periodic refresh every 60s
+  // Auto-refresh every 60 seconds
   setInterval(async () => {
     if (!document.hidden) {
       await _sbLoad(store);
@@ -5897,11 +6071,45 @@ async function startSync(store) {
     }
   }, 60000);
 
-  // Retry pending writes every 10s
+  // Retry any failed writes every 10 seconds
   setInterval(() => { if (_syncQ.length) _sbFlush(); }, 10000);
+
+  // Show manual sync button in top bar
+  _addManualSyncBtn(store);
+}
+
+// ── Manual sync button in top bar ────────────────────────────────
+function _addManualSyncBtn(store) {
+  if (document.getElementById('_manualSyncBtn')) return;
+  const btn = document.createElement('button');
+  btn.id = '_manualSyncBtn';
+  btn.textContent = '⇅ Sync';
+  btn.style.cssText = 'background:transparent;border:1px solid #2A4A2A;color:#6FCF97;' +
+    'font-family:monospace;font-size:10px;padding:4px 9px;border-radius:5px;cursor:pointer;' +
+    'white-space:nowrap;';
+  btn.onclick = async () => {
+    btn.textContent = '⇅ …';
+    btn.disabled = true;
+    // Force re-migrate in case new local data added
+    localStorage.removeItem('ep_migrated_v4_' + store);
+    const localCells = _countLocalCells(store);
+    if (localCells > 0) {
+      toast('⇅ Uploading ' + localCells + ' local records…');
+      await _uploadLocalData(store, (msg) => { btn.textContent = '⇅ ' + msg.slice(0,12); });
+    }
+    await _sbLoad(store);
+    buildGrid(); updateTotalsRow(); buildFooter(); buildDayTabs();
+    btn.textContent = '✓ Synced';
+    btn.disabled = false;
+    setTimeout(() => { btn.textContent = '⇅ Sync'; }, 3000);
+    toast('✓ All data synced to server');
+  };
+  // Insert before logout button
+  const topBar = document.querySelector('.app-topbar');
+  const logoutBtn = topBar?.querySelector('.top-btn.logout');
+  if (topBar && logoutBtn) topBar.insertBefore(btn, logoutBtn);
 }
 // END SYNC ENGINE v4
-// ════════════════════════════════════════════════════════════════════
 // ════════════════════════════════════════════════════════════════════
 
 </script>
