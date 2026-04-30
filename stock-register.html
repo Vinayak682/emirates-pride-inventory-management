@@ -2352,6 +2352,8 @@ function doLogin(){
   buildGrid();
   buildFooter();
   buildSpSkuSel();
+  // ── Start real-time sync with Supabase ──
+  startSync(store.code);
 }
 function doLogout(){
   mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;
@@ -4017,7 +4019,215 @@ function renderFinWeek(){
     </div>
   </div>`;
 }
-function renderFinMonth(){ renderFinWeek(); const mw=document.getElementById('fin-month-view'); const ww=document.getElementById('fin-week-view'); if(mw&&ww) mw.innerHTML=ww.innerHTML; }
+function renderFinMonth(){
+  if(!me) return;
+  const body = document.getElementById('fin-month-view');
+  if(!body) return;
+
+  // Collect ALL finance data from db (day-indexed + date-keyed)
+  const allFinRows = [];
+  const finStore = db.finance?.[me.code] || {};
+
+  // From day-indexed entries
+  const labels = getDayLabels();
+  labels.forEach((dl,di)=>{
+    const d = finStore[di];
+    if(!d) return;
+    const dateStr = dl.date + '/' + new Date().getFullYear();
+    allFinRows.push({di, dateStr, label:dl.full+' '+dl.date, d, locked:isLocked(me.code,di)});
+  });
+  // From date-keyed entries (historical beyond 15-day window)
+  Object.keys(finStore).forEach(k=>{
+    if(!k.startsWith('d_')) return;
+    const dateStr = k.replace('d_','');
+    const d = finStore[k];
+    if(!d) return;
+    allFinRows.push({di:null, dateStr, label:dateStr, d, locked:d.finLocked||false});
+  });
+
+  // Sort by date desc
+  allFinRows.sort((a,b)=> new Date(b.d.dayDate||b.dateStr) - new Date(a.d.dayDate||a.dateStr));
+
+  // Build rows HTML
+  function buildRowsHtml(rows){
+    if(!rows.length) return '<div style="text-align:center;padding:30px;color:#AAA;font-family:var(--f-mono);font-size:11px;">No finance data for this period</div>';
+    let totCash=0,totCard=0,totBNPL=0,totTotal=0,totClose=0;
+    let html = rows.map(({label,d,locked})=>{
+      const cash  = +d.cash||0;
+      const cc    = (d.ccRows||[]).reduce((s,r)=>s+(+r.amt||0),0);
+      const bnpl  = (+d.tabby||0)+(+d.tamara||0);
+      const cred  = +d.credit||0;
+      const total = cash+cc+bnpl+cred;
+      const tCash = (+d.openCash||0)+cash+(+d.debtors||0);
+      const close = tCash-(+d.directorAmt||0)-(+d.bankAmt||0)-(+d.expenses||0);
+      totCash+=cash; totCard+=cc; totBNPL+=bnpl; totTotal+=total;
+      const bg = locked ? '#FFFBE8' : '#fff';
+      return `<div class="fin-period-day-row" style="background:${bg};border-bottom:1px solid #EEE;">
+        <div style="min-width:0;flex:1;">
+          <div class="fin-period-day-label" style="${locked?'color:#C9A44E;':''}">${label}${locked?' 🔒':''}</div>
+          ${d.preparedBy?`<div style="font-size:10px;color:#AAA;font-family:var(--f-mono);">By: ${d.preparedBy}</div>`:''}
+        </div>
+        <div class="fin-period-day-vals">
+          <div class="fin-period-val"><span class="fin-period-val-n" style="color:#1A6040;">${cash||'—'}</span><span class="fin-period-val-l">Cash</span></div>
+          <div class="fin-period-val"><span class="fin-period-val-n" style="color:#1A3A7A;">${cc||'—'}</span><span class="fin-period-val-l">Card</span></div>
+          ${bnpl?`<div class="fin-period-val"><span class="fin-period-val-n" style="color:#5A2A8A;">${bnpl}</span><span class="fin-period-val-l">BNPL</span></div>`:''}
+          <div class="fin-period-val"><span class="fin-period-val-n" style="color:#C9A44E;font-weight:800;">${total||'—'}</span><span class="fin-period-val-l">Total</span></div>
+          <div class="fin-period-val"><span class="fin-period-val-n" style="font-size:11px;color:${close<0?'#E87070':'#2A6040'};">${close}</span><span class="fin-period-val-l">Closing</span></div>
+        </div>
+      </div>`;
+    }).join('');
+    // Totals
+    html += `<div class="fin-period-day-row" style="background:#FFF8E0;border-top:2px solid #C9A44E;">
+      <div class="fin-period-day-label" style="color:#C9A44E;">TOTALS (${rows.length} days)</div>
+      <div class="fin-period-day-vals">
+        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#1A6040;font-size:15px;">${totCash}</span><span class="fin-period-val-l">Cash</span></div>
+        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#1A3A7A;font-size:15px;">${totCard}</span><span class="fin-period-val-l">Card</span></div>
+        ${totBNPL?`<div class="fin-period-val"><span class="fin-period-val-n" style="color:#5A2A8A;font-size:15px;">${totBNPL}</span><span class="fin-period-val-l">BNPL</span></div>`:''}
+        <div class="fin-period-val"><span class="fin-period-val-n" style="color:#C9A44E;font-size:18px;font-weight:900;">${totTotal}</span><span class="fin-period-val-l">TOTAL</span></div>
+      </div>
+    </div>`;
+    return html;
+  }
+
+  // Last 30 days
+  const today30 = new Date(); today30.setHours(0,0,0,0);
+  const from30  = new Date(today30); from30.setDate(today30.getDate()-29);
+  const rows30  = allFinRows.filter(r=>{ const d=new Date(r.d.dayDate||r.dateStr); d.setHours(12,0,0,0); return d>=from30&&d<=today30; });
+
+  // Calendar month (current month)
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(),now.getMonth(),1);
+  const monthEnd   = new Date(now.getFullYear(),now.getMonth()+1,0);
+  const monthName  = now.toLocaleString('en-GB',{month:'long',year:'numeric'});
+  const rowsMonth  = allFinRows.filter(r=>{ const d=new Date(r.d.dayDate||r.dateStr); d.setHours(12,0,0,0); return d>=monthStart&&d<=monthEnd; });
+
+  body.innerHTML = `
+    <div style="background:#F9F9F9;min-height:100%;">
+      <!-- Export buttons row -->
+      <div style="padding:10px 14px;background:#111;border-bottom:1px solid #222;display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="exportFinanceRangePDF(30)" style="flex:1;min-width:140px;background:#1A1A2A;border:1px solid #2A3A5A;color:#6FA8DC;font-family:var(--f-body);font-size:13px;font-weight:700;padding:10px;border-radius:8px;cursor:pointer;">📋 Last 30 Days PDF</button>
+        <button onclick="exportFinanceMonthPDF()" style="flex:1;min-width:140px;background:#1A2A1A;border:1px solid #2A5A2A;color:#6FCF97;font-family:var(--f-body);font-size:13px;font-weight:700;padding:10px;border-radius:8px;cursor:pointer;">📋 ${monthName} PDF</button>
+      </div>
+
+      <!-- Last 30 Days -->
+      <div style="padding:8px 14px 4px;font-family:var(--f-mono);font-size:9px;font-weight:800;color:#C9A44E;text-transform:uppercase;letter-spacing:1px;background:#111;">
+        📅 Last 30 Days · ${me.name}
+      </div>
+      ${buildRowsHtml(rows30)}
+
+      <!-- Calendar Month -->
+      <div style="padding:8px 14px 4px;font-family:var(--f-mono);font-size:9px;font-weight:800;color:#6FCF97;text-transform:uppercase;letter-spacing:1px;background:#111;margin-top:12px;">
+        🗓 ${monthName} · ${me.name}
+      </div>
+      ${buildRowsHtml(rowsMonth)}
+    </div>`;
+}
+
+// ── Finance PDF: last N days ───────────────────────────────────────
+function exportFinanceRangePDF(days){
+  if(!me){ toast('Login first'); return; }
+  const today = new Date(); today.setHours(0,0,0,0);
+  const fromD = new Date(today); fromD.setDate(today.getDate()-(days-1));
+  _exportFinancePDFRange(fromD, today, `Last ${days} Days`);
+}
+
+function exportFinanceMonthPDF(){
+  if(!me){ toast('Login first'); return; }
+  const now = new Date();
+  const fromD = new Date(now.getFullYear(),now.getMonth(),1);
+  const toD   = new Date(now.getFullYear(),now.getMonth()+1,0);
+  const mn = now.toLocaleString('en-GB',{month:'long',year:'numeric'});
+  _exportFinancePDFRange(fromD, toD, mn);
+}
+
+function _exportFinancePDFRange(fromDate, toDate, label){
+  const finStore = db.finance?.[me.code]||{};
+  const labels = getDayLabels();
+  const rows = [];
+
+  // Collect from all sources
+  const seen = new Set();
+  // Day-indexed
+  labels.forEach((dl,di)=>{
+    const d = finStore[di]; if(!d) return;
+    rows.push({label:dl.full+' '+dl.date, d, date: new Date(d.dayDate||dl.date+'/'+new Date().getFullYear())});
+  });
+  // Date-keyed historical
+  Object.keys(finStore).forEach(k=>{
+    if(!k.startsWith('d_')) return;
+    const d=finStore[k]; if(!d) return;
+    rows.push({label:k.replace('d_',''), d, date:new Date(d.dayDate||k.replace('d_',''))});
+  });
+
+  // Filter by range
+  const filtered = rows.filter(r=>{ const dt=new Date(r.date); dt.setHours(12,0,0,0); return dt>=fromDate&&dt<=toDate; })
+    .sort((a,b)=>a.date-b.date);
+
+  const f=n=>(+n||0)>0?(+n||0).toFixed(0):'—';
+  let totCash=0,totCC=0,totBNPL=0,totTotal=0;
+  let tableRows = filtered.map(({label,d})=>{
+    const cash=(+d.cash||0), cc=(d.ccRows||[]).reduce((s,r)=>s+(+r.amt||0),0);
+    const bnpl=(+d.tabby||0)+(+d.tamara||0), cred=(+d.credit||0);
+    const total=cash+cc+bnpl+cred;
+    const tCash=(+d.openCash||0)+cash+(+d.debtors||0);
+    const close=tCash-(+d.directorAmt||0)-(+d.bankAmt||0)-(+d.expenses||0);
+    totCash+=cash; totCC+=cc; totBNPL+=bnpl; totTotal+=total;
+    return `<tr>
+      <td style="border:1px solid #DDD;padding:5px 8px;font-weight:600;">${label}</td>
+      <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;color:#1A6040;">${f(cash)}</td>
+      <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;color:#1A3A7A;">${f(cc)}</td>
+      <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;color:#5A2A8A;">${f(bnpl)}</td>
+      <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;font-weight:800;color:#7A5200;">${f(total)}</td>
+      <td style="border:1px solid #DDD;padding:5px 8px;text-align:right;font-family:monospace;font-size:11px;color:${close<0?'#8B1A1A':'#1A6040'};">${close}</td>
+      <td style="border:1px solid #DDD;padding:5px 8px;font-size:10px;color:#888;">${d.preparedBy||''}</td>
+    </tr>`;
+  }).join('');
+
+  if(!tableRows){ toast('No data found for this period'); return; }
+
+  tableRows += `<tr style="background:#FFF8E0;font-weight:800;">
+    <td style="border:1px solid #CCC;padding:6px 8px;color:#7A5200;">TOTALS</td>
+    <td style="border:1px solid #CCC;padding:6px 8px;text-align:right;font-family:monospace;color:#1A6040;font-size:14px;">${totCash}</td>
+    <td style="border:1px solid #CCC;padding:6px 8px;text-align:right;font-family:monospace;color:#1A3A7A;font-size:14px;">${totCC}</td>
+    <td style="border:1px solid #CCC;padding:6px 8px;text-align:right;font-family:monospace;color:#5A2A8A;font-size:14px;">${totBNPL}</td>
+    <td style="border:1px solid #CCC;padding:6px 8px;text-align:right;font-family:monospace;color:#7A5200;font-size:16px;">${totTotal}</td>
+    <td colspan="2" style="border:1px solid #CCC;"></td>
+  </tr>`;
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Finance Report — ${label}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Arial,sans-serif;padding:12mm;font-size:11px;}@page{size:A4 landscape;margin:0;}
+</style></head><body>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #C9A44E;margin-bottom:12px;padding-bottom:8px;">
+  <div>
+    <div style="font-size:17px;font-weight:900;color:#C9A44E;letter-spacing:2px;">EMIRATES PRIDE</div>
+    <div style="font-family:Tahoma;font-size:11px;color:#8B6914;direction:rtl;text-align:left;">فخـر الإمارات</div>
+  </div>
+  <div style="text-align:center;">
+    <div style="font-size:14px;font-weight:800;">Finance Summary Report</div>
+    <div style="font-size:12px;color:#666;margin-top:2px;">${label}</div>
+  </div>
+  <div style="text-align:right;font-size:10px;color:#888;">
+    <div>${me.name}</div>
+    <div>Generated: ${new Date().toLocaleString('en-GB')}</div>
+  </div>
+</div>
+<table style="width:100%;border-collapse:collapse;">
+  <thead><tr style="background:#1A1A1A;color:#fff;">
+    <th style="padding:7px 8px;text-align:left;border:1px solid #333;">Date</th>
+    <th style="padding:7px 8px;text-align:right;border:1px solid #333;">Cash Sales</th>
+    <th style="padding:7px 8px;text-align:right;border:1px solid #333;">Card Sales</th>
+    <th style="padding:7px 8px;text-align:right;border:1px solid #333;">BNPL</th>
+    <th style="padding:7px 8px;text-align:right;border:1px solid #333;">Total Sales</th>
+    <th style="padding:7px 8px;text-align:right;border:1px solid #333;">Closing Cash</th>
+    <th style="padding:7px 8px;border:1px solid #333;">Prepared By</th>
+  </tr></thead>
+  <tbody>${tableRows}</tbody>
+</table>
+</body></html>`;
+  openPrintWindow(html);
+  toast(`📋 ${label} Finance PDF ready`);
+}
 
 // ── Finance PDF ──────────────────────────────────────
 function exportFinancePDF(period){
@@ -5328,22 +5538,20 @@ try{
 }catch(e){}
 
 // ════════════════════════════════════════════════════════════════════
-// EMIRATES PRIDE — REAL-TIME SYNC ENGINE
-// Supabase backend — 50+ concurrent users, zero data loss
+// EMIRATES PRIDE — REAL-TIME SYNC ENGINE v2
+// Supabase public schema · correct REST headers · 50-user concurrent
 // ════════════════════════════════════════════════════════════════════
 
 const SB_URL = 'https://ncszurcrkngjcjqsowln.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
 const CLIENT_ID = 'cli_' + Math.random().toString(36).slice(2,10);
 
-// Sync state
-let _syncOnline   = false;
-let _syncChannel  = null;
-let _pendingWrites = [];  // queue for offline writes
-let _lastSyncTs   = null;
+let _syncOnline    = false;
+let _syncChannel   = null;
+let _pendingWrites = [];
 let _syncRetryTimer = null;
 
-// ── Supabase REST helper ──────────────────────────────────────────
+// ── REST helper — public schema, no special headers needed ─────────
 async function sbFetch(path, method='GET', body=null){
   const opts = {
     method,
@@ -5351,388 +5559,327 @@ async function sbFetch(path, method='GET', body=null){
       'apikey':        SB_KEY,
       'Authorization': 'Bearer ' + SB_KEY,
       'Content-Type':  'application/json',
-      'Prefer':        'return=minimal'
+      'Prefer':        method==='POST' ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal'
     }
   };
   if(body) opts.body = JSON.stringify(body);
-  const r = await fetch(SB_URL + path, opts);
-  if(!r.ok){
-    const txt = await r.text();
-    throw new Error(`SB ${method} ${path} ${r.status}: ${txt}`);
+  try{
+    const r = await fetch(SB_URL + path, opts);
+    if(r.status===204||r.status===201) return null;
+    if(!r.ok){
+      const t=await r.text();
+      throw new Error(r.status+': '+t.slice(0,120));
+    }
+    const ct=r.headers.get('content-type')||'';
+    return ct.includes('json') ? r.json() : r.text();
+  } catch(e){
+    throw e;
   }
-  if(r.status === 204) return null;
-  const ct = r.headers.get('content-type')||'';
-  return ct.includes('json') ? r.json() : r.text();
 }
 
-// ── Date helpers ──────────────────────────────────────────────────
-function dayIdxToDate(dayIdx){
-  // dayIdx 0..14 in rolling window; DAY_PAST=5 is today
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const d = new Date(today);
-  d.setDate(d.getDate() + (dayIdx - DAY_PAST));
-  return d.toISOString().split('T')[0]; // YYYY-MM-DD
-}
-function dateToDayIdx(dateStr){
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const d = new Date(dateStr);
-  d.setHours(0,0,0,0);
-  const diff = Math.round((d - today) / 86400000);
-  return DAY_PAST + diff;
-}
-
-// ── Show sync status badge ────────────────────────────────────────
+// ── Sync status badge ──────────────────────────────────────────────
 function updateSyncBadge(state, msg){
-  let badge = document.getElementById('sync-badge');
-  if(!badge){
-    badge = document.createElement('div');
-    badge.id = 'sync-badge';
-    badge.style.cssText = 'position:fixed;bottom:70px;right:12px;z-index:800;'+
-      'font-family:monospace;font-size:10px;padding:4px 8px;border-radius:6px;'+
-      'pointer-events:none;transition:all 0.3s;';
-    document.body.appendChild(badge);
+  let b=document.getElementById('sync-badge');
+  if(!b){
+    b=document.createElement('div');
+    b.id='sync-badge';
+    b.style.cssText='position:fixed;bottom:68px;right:10px;z-index:800;font-family:monospace;font-size:10px;font-weight:700;padding:4px 9px;border-radius:20px;pointer-events:none;transition:opacity 0.5s;white-space:nowrap;box-shadow:0 1px 8px rgba(0,0,0,0.4);';
+    document.body.appendChild(b);
   }
-  const styles = {
-    online:   'background:#0A2A0A;border:1px solid #2A6A2A;color:#6FCF97;',
-    syncing:  'background:#2A1A00;border:1px solid #C9A44E;color:#C9A44E;',
-    offline:  'background:#2A0A0A;border:1px solid #6A2A2A;color:#E87070;',
-    conflict: 'background:#1A0A2A;border:1px solid #6A2A8A;color:#BB88DD;',
-  };
-  badge.style.cssText += styles[state]||styles.offline;
-  badge.textContent = msg || state;
-  if(state==='online') setTimeout(()=>{ if(badge) badge.style.opacity='0.4'; }, 3000);
-  else badge.style.opacity='1';
+  const C={online:'background:#0A2A0A;border:1px solid #2A6A2A;color:#6FCF97;',
+    syncing:'background:#2A1A00;border:1px solid #C9A44E;color:#C9A44E;',
+    offline:'background:#2A0A0A;border:1px solid #8A2A2A;color:#E87070;'};
+  b.style.cssText+=C[state]||C.offline;
+  b.textContent=msg;
+  b.style.opacity='1';
+  if(state==='online') setTimeout(()=>b&&(b.style.opacity='0.35'),4000);
 }
 
-// ── WRITE: Save a single stock cell to Supabase ───────────────────
-async function syncWriteCell(storeCode, dayIdx, prodCode, field, value){
-  const dayDate = dayIdxToDate(dayIdx);
-  const payload = {
-    store_code: storeCode,
-    day_date:   dayDate,
-    prod_code:  prodCode,
-    field,
-    value,
-    updated_by: me ? me.name : storeCode,
-    updated_at: new Date().toISOString()
+// ── Date helpers ───────────────────────────────────────────────────
+function dayIdxToDate(idx){
+  const d=new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate()+(idx-DAY_PAST));
+  return d.toISOString().split('T')[0];
+}
+function dateToDayIdx(s){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const d=new Date(s); d.setHours(12,0,0,0);
+  return DAY_PAST+Math.round((d-today)/86400000);
+}
+
+// ── WRITE stock cell ───────────────────────────────────────────────
+async function syncWriteCell(store,dayIdx,prod,field,value){
+  const payload={
+    store_code:store, day_date:dayIdxToDate(dayIdx),
+    prod_code:prod, field, value,
+    updated_by:me?me.name:store, updated_at:new Date().toISOString()
   };
   try{
     updateSyncBadge('syncing','⇅ Saving…');
-    await sbFetch('/rest/v1/rpc/ep_upsert_stock', 'POST', {
-      p_store_code: storeCode, p_day_date: dayDate,
-      p_prod_code:  prodCode,  p_field:    field,
-      p_value:      value,     p_updated_by: me ? me.name : storeCode
-    });
+    await sbFetch('/rest/v1/stock_cells','POST',[payload]);
+    _syncOnline=true;
     updateSyncBadge('online','✓ Synced');
-    _syncOnline = true;
-    // Drain pending queue
-    drainPendingWrites();
-  } catch(e){
-    console.warn('syncWriteCell failed, queuing:', e.message);
-    _pendingWrites.push({storeCode, dayIdx, prodCode, field, value, ts: Date.now()});
-    updateSyncBadge('offline','⚠ Offline — will retry');
+    drainPending();
+  }catch(e){
+    console.warn('syncWriteCell fail:',e.message);
+    _pendingWrites.push({store,dayIdx,prod,field,value,ts:Date.now()});
+    updateSyncBadge('offline','⚠ Offline · '+_pendingWrites.length+' queued');
     scheduleRetry();
   }
 }
 
-// ── WRITE: Transfer log ───────────────────────────────────────────
+// ── WRITE transfer ─────────────────────────────────────────────────
 async function syncWriteTransfer(t){
   try{
-    await sbFetch('/rest/v1/ep.transfers', 'POST', {
-      day_date:   dayIdxToDate(t.day),
-      from_store: t.fromStore, from_name: t.fromName,
-      to_store:   t.toStore,   to_name:   t.toName,
-      prod_code:  t.prodCode,  prod_name: t.prodName, prod_ar: t.prodAr||'',
-      qty:        t.qty,       remark:    t.remark||'', note: t.note||''
+    await sbFetch('/rest/v1/transfers','POST',{
+      day_date:dayIdxToDate(t.day),
+      from_store:t.fromStore,from_name:t.fromName,
+      to_store:t.toStore,to_name:t.toName,
+      prod_code:t.prodCode,prod_name:t.prodName,prod_ar:t.prodAr||'',
+      qty:t.qty,remark:t.remark||'',note:t.note||''
     });
-  } catch(e){ console.warn('Transfer sync failed:', e.message); }
+  }catch(e){console.warn('Transfer sync:',e.message);}
 }
 
-// ── WRITE: Finance report ─────────────────────────────────────────
-async function syncWriteFinance(storeCode, dayIdx, data){
-  const dayDate = dayIdxToDate(dayIdx);
+// ── WRITE finance ──────────────────────────────────────────────────
+async function syncWriteFinance(store,dayIdx,d){
   try{
-    await sbFetch('/rest/v1/ep.finance', 'POST',
-      Object.assign({store_code:storeCode, day_date:dayDate, updated_at:new Date().toISOString()}, data)
-    );
-  } catch(e){ console.warn('Finance sync failed:', e.message); }
+    await sbFetch('/rest/v1/finance','POST',[{
+      store_code:store, day_date:dayIdxToDate(dayIdx),
+      cash:d.cash||0, tabby:d.tabby||0, tamara:d.tamara||0,
+      credit:d.credit||0, open_cash:d.openCash||0, debtors:d.debtors||0,
+      director_amt:d.directorAmt||0, bank_amt:d.bankAmt||0, expenses:d.expenses||0,
+      director_name:d.directorName||'', bank_slip:d.bankSlip||'',
+      prepared_by:d.preparedBy||'', checked_by:d.checkedBy||'',
+      cc_rows:JSON.stringify(d.ccRows||[]),
+      fin_locked:d.finLocked||false,
+      updated_at:new Date().toISOString()
+    }]);
+  }catch(e){console.warn('Finance sync:',e.message);}
 }
 
-// ── WRITE: Lock day ───────────────────────────────────────────────
-async function syncLockDay(storeCode, dayIdx){
+// ── WRITE lock ─────────────────────────────────────────────────────
+async function syncLockDay(store,dayIdx){
   try{
-    await sbFetch('/rest/v1/rpc/ep_lock_day', 'POST', {
-      p_store_code: storeCode,
-      p_day_date:   dayIdxToDate(dayIdx),
-      p_locked_by:  me ? me.name : storeCode
+    await sbFetch('/rest/v1/rpc/lock_store_day','POST',{
+      p_store:store, p_date:dayIdxToDate(dayIdx),
+      p_by:me?me.name:store
     });
-    updateSyncBadge('online','🔒 Day locked & synced');
-  } catch(e){ console.warn('Lock sync failed:', e.message); }
+    updateSyncBadge('online','🔒 Locked & synced');
+  }catch(e){console.warn('Lock sync:',e.message);}
 }
 
-// ── READ: Load all data for this store from server ────────────────
-async function syncLoadFromServer(storeCode){
-  updateSyncBadge('syncing','⇅ Loading…');
+// ── LOAD all data for store from server ───────────────────────────
+async function syncLoadFromServer(store){
+  updateSyncBadge('syncing','⇅ Loading data…');
   try{
-    // Load stock cells
-    const cells = await sbFetch(
-      `/rest/v1/ep.stock_cells?store_code=eq.${storeCode}&select=day_date,prod_code,field,value,locked`
-    );
-    if(cells && cells.length){
+    // 1. Stock cells
+    const cells=await sbFetch(`/rest/v1/stock_cells?store_code=eq.${store}&select=day_date,prod_code,field,value,locked&limit=5000`);
+    if(cells&&cells.length){
       cells.forEach(c=>{
-        const dayIdx = dateToDayIdx(c.day_date);
-        if(dayIdx<0||dayIdx>=DAY_WINDOW) return;
-        if(!db[storeCode]) db[storeCode]={};
-        if(!db[storeCode][dayIdx]) db[storeCode][dayIdx]={};
-        if(!db[storeCode][dayIdx][c.prod_code]) db[storeCode][dayIdx][c.prod_code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
-        db[storeCode][dayIdx][c.prod_code][c.field] = c.value;
-        if(c.locked) db[storeCode][dayIdx][c.prod_code].locked = true;
+        const di=dateToDayIdx(c.day_date);
+        if(di<0||di>=DAY_WINDOW) return;
+        if(!db[store])db[store]={};
+        if(!db[store][di])db[store][di]={};
+        if(!db[store][di][c.prod_code])db[store][di][c.prod_code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+        db[store][di][c.prod_code][c.field]=c.value;
+        if(c.locked)db[store][di][c.prod_code].locked=true;
+      });
+      console.log(`Loaded ${cells.length} cells for ${store}`);
+    }
+
+    // 2. Transfers (last 90 days)
+    const trfs=await sbFetch(`/rest/v1/transfers?select=*&order=ts.desc&limit=2000`);
+    if(trfs&&trfs.length){
+      db.transferLog=(db.transferLog||[]).filter(t=>t._local); // keep local-only
+      trfs.forEach(t=>{
+        db.transferLog.push({
+          id:t.id,ts:new Date(t.ts).toLocaleString('en-GB'),
+          day:dateToDayIdx(t.day_date),dayDate:t.day_date,
+          fromStore:t.from_store,fromName:t.from_name,
+          toStore:t.to_store,toName:t.to_name,
+          prodCode:t.prod_code,prodName:t.prod_name,prodAr:t.prod_ar,
+          qty:t.qty,remark:t.remark,note:t.note
+        });
       });
     }
 
-    // Load transfers
-    const transfers = await sbFetch(
-      `/rest/v1/ep.transfers?select=*&order=ts.desc&limit=500`
-    );
-    if(transfers && transfers.length){
-      db.transferLog = transfers.map(t=>{
-        const dayIdx = dateToDayIdx(t.day_date);
-        return {
-          id: t.id, ts: new Date(t.ts).toLocaleString('en-GB'),
-          day: dayIdx, dayDate: t.day_date,
-          fromStore: t.from_store, fromName: t.from_name,
-          toStore:   t.to_store,   toName:   t.to_name,
-          prodCode:  t.prod_code,  prodName: t.prod_name,
-          prodAr:    t.prod_ar,    qty:      t.qty,
-          remark:    t.remark,     note:     t.note
+    // 3. Finance (all)
+    const fins=await sbFetch(`/rest/v1/finance?store_code=eq.${store}&select=*&limit=500`);
+    if(fins&&fins.length){
+      if(!db.finance)db.finance={};
+      if(!db.finance[store])db.finance[store]={};
+      fins.forEach(f=>{
+        const di=dateToDayIdx(f.day_date);
+        // Store by both index and date for month view
+        const key=di>=0&&di<DAY_WINDOW?di:'d_'+f.day_date;
+        db.finance[store][key]={
+          cash:+f.cash||0,tabby:+f.tabby||0,tamara:+f.tamara||0,
+          credit:+f.credit||0,openCash:+f.open_cash||0,debtors:+f.debtors||0,
+          directorAmt:+f.director_amt||0,bankAmt:+f.bank_amt||0,expenses:+f.expenses||0,
+          directorName:f.director_name||'',bankSlip:f.bank_slip||'',
+          preparedBy:f.prepared_by||'',checkedBy:f.checked_by||'',
+          ccRows:typeof f.cc_rows==='string'?JSON.parse(f.cc_rows):f.cc_rows||[],
+          finLocked:f.fin_locked,finLockedAt:f.fin_locked_at,
+          savedAt:f.saved_at, dayDate:f.day_date
         };
+        if(f.fin_locked)finDaySaved[store+'_'+(di>=0&&di<DAY_WINDOW?di:'d_'+f.day_date)]=true;
       });
     }
 
-    // Load finance
-    const fin = await sbFetch(
-      `/rest/v1/ep.finance?store_code=eq.${storeCode}&select=*`
-    );
-    if(fin && fin.length){
-      if(!db.finance) db.finance={};
-      if(!db.finance[storeCode]) db.finance[storeCode]={};
-      fin.forEach(f=>{
-        const dayIdx = dateToDayIdx(f.day_date);
-        if(dayIdx<0||dayIdx>=DAY_WINDOW) return;
-        db.finance[storeCode][dayIdx] = {
-          cash:         f.cash||0,     tabby:      f.tabby||0,
-          tamara:       f.tamara||0,   credit:     f.credit||0,
-          openCash:     f.open_cash||0,debtors:    f.debtors||0,
-          directorAmt:  f.director_amt||0, bankAmt: f.bank_amt||0,
-          expenses:     f.expenses||0, directorName: f.director_name||'',
-          bankSlip:     f.bank_slip||'', preparedBy: f.prepared_by||'',
-          checkedBy:    f.checked_by||'', ccRows:   f.cc_rows||[],
-          finLocked:    f.fin_locked,  finLockedAt: f.fin_locked_at,
-          savedAt:      f.saved_at
-        };
-        if(f.fin_locked) finDaySaved[storeCode+'_'+dayIdx] = true;
-      });
-    }
-
-    // Load lock status
-    const locks = await sbFetch(
-      `/rest/v1/ep.day_locks?store_code=eq.${storeCode}&locked=eq.true&select=day_date`
-    );
-    if(locks && locks.length){
+    // 4. Lock status
+    const locks=await sbFetch(`/rest/v1/day_locks?store_code=eq.${store}&locked=eq.true&select=day_date`);
+    if(locks&&locks.length){
       locks.forEach(l=>{
-        const dayIdx = dateToDayIdx(l.day_date);
-        if(dayIdx<0||dayIdx>=DAY_WINDOW) return;
-        if(db[storeCode]?.[dayIdx]){
-          Object.keys(db[storeCode][dayIdx]).forEach(code=>{
-            if(db[storeCode][dayIdx][code]) db[storeCode][dayIdx][code].locked = true;
+        const di=dateToDayIdx(l.day_date);
+        if(di<0||di>=DAY_WINDOW)return;
+        if(db[store]?.[di]){
+          Object.keys(db[store][di]).forEach(c=>{
+            if(db[store][di][c])db[store][di][c].locked=true;
           });
         }
       });
     }
 
-    saveDB(); // Persist to localStorage as offline cache
-    updateSyncBadge('online','✓ Loaded from server');
-    _syncOnline = true;
-    _lastSyncTs = Date.now();
+    saveDB();
+    updateSyncBadge('online','✓ Live — '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
+    _syncOnline=true;
     return true;
-  } catch(e){
-    console.warn('syncLoadFromServer failed:', e.message);
-    updateSyncBadge('offline','⚠ Offline — using local cache');
-    _syncOnline = false;
+  }catch(e){
+    console.error('syncLoadFromServer:',e);
+    updateSyncBadge('offline','⚠ Server unavailable — using local data');
+    _syncOnline=false;
     return false;
   }
 }
 
-// ── REAL-TIME: Subscribe to changes ──────────────────────────────
-function syncSubscribeRealtime(storeCode){
-  if(!window.supabase) return;
-  if(_syncChannel) _syncChannel.unsubscribe();
-
-  _syncChannel = window.supabase
-    .channel('ep-stock-' + storeCode)
-    .on('postgres_changes',
-      { event:'*', schema:'ep', table:'stock_cells', filter:`store_code=eq.${storeCode}` },
-      payload => {
-        const c = payload.new;
-        if(!c) return;
-        const dayIdx = dateToDayIdx(c.day_date);
-        if(dayIdx<0||dayIdx>=DAY_WINDOW) return;
-        // Only apply if different writer (not our own echo)
-        if(c.updated_by === (me?me.name:storeCode)) return;
-        if(!db[storeCode]) db[storeCode]={};
-        if(!db[storeCode][dayIdx]) db[storeCode][dayIdx]={};
-        if(!db[storeCode][dayIdx][c.prod_code]) db[storeCode][dayIdx][c.prod_code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
-        db[storeCode][dayIdx][c.prod_code][c.field] = c.value;
-        saveDB();
-        // Refresh UI if on current day
-        if(dayIdx === curDay){
-          buildGrid(); updateTotalsRow(); buildFooter();
-          updateSyncBadge('online','⇅ Live update from ' + c.updated_by);
-        }
-      }
-    )
-    .on('postgres_changes',
-      { event:'*', schema:'ep', table:'day_locks', filter:`store_code=eq.${storeCode}` },
-      payload => {
-        const l = payload.new;
-        if(!l||!l.locked) return;
-        const dayIdx = dateToDayIdx(l.day_date);
-        if(dayIdx<0||dayIdx>=DAY_WINDOW) return;
-        if(db[storeCode]?.[dayIdx]){
-          Object.keys(db[storeCode][dayIdx]).forEach(code=>{
-            if(db[storeCode][dayIdx][code]) db[storeCode][dayIdx][code].locked = true;
-          });
-        }
-        saveDB();
-        if(dayIdx===curDay){ buildGrid(); buildDayTabs(); buildFooter(); }
-        updateSyncBadge('online','🔒 Day locked by ' + (l.locked_by||'manager'));
-        toast('🔒 Day locked by ' + (l.locked_by||'another user'));
-      }
-    )
-    .subscribe(status=>{
-      if(status==='SUBSCRIBED'){
-        updateSyncBadge('online','● Live');
-      } else if(status==='CHANNEL_ERROR'){
+// ── REAL-TIME subscription ────────────────────────────────────────
+function syncSubscribeRealtime(store){
+  if(!window.supabase)return;
+  if(_syncChannel)_syncChannel.unsubscribe();
+  _syncChannel=window.supabase.channel('ep-'+store)
+    .on('postgres_changes',{event:'*',schema:'public',table:'stock_cells',filter:`store_code=eq.${store}`},p=>{
+      const c=p.new; if(!c) return;
+      const di=dateToDayIdx(c.day_date);
+      if(di<0||di>=DAY_WINDOW)return;
+      if(c.updated_by===(me?me.name:store))return; // own echo
+      if(!db[store])db[store]={};
+      if(!db[store][di])db[store][di]={};
+      if(!db[store][di][c.prod_code])db[store][di][c.prod_code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+      db[store][di][c.prod_code][c.field]=c.value;
+      saveDB();
+      if(di===curDay){ buildGrid();updateTotalsRow();buildFooter(); }
+      updateSyncBadge('online','⇅ '+c.updated_by+' updated');
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'day_locks',filter:`store_code=eq.${store}`},p=>{
+      const l=p.new; if(!l||!l.locked)return;
+      const di=dateToDayIdx(l.day_date);
+      if(di<0||di>=DAY_WINDOW)return;
+      if(db[store]?.[di])Object.values(db[store][di]).forEach(x=>x&&(x.locked=true));
+      saveDB();
+      if(di===curDay){buildGrid();buildDayTabs();buildFooter();}
+      toast('🔒 Day locked by '+( l.locked_by||'manager'));
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'finance',filter:`store_code=eq.${store}`},p=>{
+      const f=p.new; if(!f)return;
+      const di=dateToDayIdx(f.day_date);
+      if(!db.finance)db.finance={};
+      if(!db.finance[store])db.finance[store]={};
+      const key=di>=0&&di<DAY_WINDOW?di:'d_'+f.day_date;
+      db.finance[store][key]={
+        cash:+f.cash||0,tabby:+f.tabby||0,tamara:+f.tamara||0,
+        credit:+f.credit||0,openCash:+f.open_cash||0,debtors:+f.debtors||0,
+        directorAmt:+f.director_amt||0,bankAmt:+f.bank_amt||0,expenses:+f.expenses||0,
+        directorName:f.director_name||'',bankSlip:f.bank_slip||'',
+        preparedBy:f.prepared_by||'',checkedBy:f.checked_by||'',
+        ccRows:typeof f.cc_rows==='string'?JSON.parse(f.cc_rows):f.cc_rows||[],
+        finLocked:f.fin_locked,savedAt:f.saved_at,dayDate:f.day_date
+      };
+      saveDB();
+      updateSyncBadge('online','⇅ Finance updated');
+    })
+    .subscribe(s=>{
+      if(s==='SUBSCRIBED')updateSyncBadge('online','● Live');
+      else if(s==='CHANNEL_ERROR'){
         updateSyncBadge('offline','⚠ Reconnecting…');
-        setTimeout(()=>syncSubscribeRealtime(storeCode), 5000);
+        setTimeout(()=>syncSubscribeRealtime(store),5000);
       }
     });
 }
 
-// ── Offline queue drain ───────────────────────────────────────────
-async function drainPendingWrites(){
-  if(!_pendingWrites.length) return;
-  const toWrite = [..._pendingWrites];
-  _pendingWrites = [];
-  updateSyncBadge('syncing',`⇅ Syncing ${toWrite.length} queued writes…`);
-  for(const w of toWrite){
+// ── Pending write queue ────────────────────────────────────────────
+async function drainPending(){
+  if(!_pendingWrites.length)return;
+  const q=[..._pendingWrites]; _pendingWrites=[];
+  updateSyncBadge('syncing',`⇅ Syncing ${q.length} queued…`);
+  for(const w of q){
     try{
-      await sbFetch('/rest/v1/rpc/ep_upsert_stock', 'POST', {
-        p_store_code: w.storeCode, p_day_date: dayIdxToDate(w.dayIdx),
-        p_prod_code:  w.prodCode,  p_field:    w.field,
-        p_value:      w.value,     p_updated_by: me ? me.name : w.storeCode
-      });
-    } catch(e){
-      _pendingWrites.push(w); // Re-queue failed writes
-    }
+      await sbFetch('/rest/v1/stock_cells','POST',[{
+        store_code:w.store,day_date:dayIdxToDate(w.dayIdx),
+        prod_code:w.prod,field:w.field,value:w.value,
+        updated_by:me?me.name:w.store,updated_at:new Date().toISOString()
+      }]);
+    }catch(e){_pendingWrites.push(w);}
   }
-  if(_pendingWrites.length){
-    updateSyncBadge('offline',`⚠ ${_pendingWrites.length} writes pending`);
-  } else {
-    updateSyncBadge('online','✓ All synced');
-  }
+  if(_pendingWrites.length)updateSyncBadge('offline',`⚠ ${_pendingWrites.length} writes pending`);
+  else updateSyncBadge('online','✓ All synced');
 }
-
 function scheduleRetry(){
   clearTimeout(_syncRetryTimer);
-  _syncRetryTimer = setTimeout(()=>{
-    if(_pendingWrites.length) drainPendingWrites();
-  }, 5000);
+  _syncRetryTimer=setTimeout(()=>{if(_pendingWrites.length)drainPending();},5000);
 }
+setInterval(()=>{if(_pendingWrites.length){sbFetch('/rest/v1/stock_cells?limit=1').then(()=>{_syncOnline=true;drainPending();}).catch(()=>{_syncOnline=false;});}},30000);
 
-// ── Patch saveDB to also sync to Supabase ────────────────────────
-const _localSaveDB = saveDB;
-window.saveDB = function(){
-  _localSaveDB(); // Always save to localStorage first (offline safety)
-  // Supabase sync happens explicitly via syncWriteCell calls
+// ── Patch dbSet → sync ─────────────────────────────────────────────
+const _origDbSet2=window.dbSet||dbSet;
+window.dbSet=function(store,day,code,field,value,force){
+  _origDbSet2(store,day,code,field,value,force);
+  if(_syncOnline||_pendingWrites.length<200) syncWriteCell(store,day,code,field,value);
 };
 
-// ── Patch dbSet to trigger sync ───────────────────────────────────
-const _origDbSet = dbSet;
-window.dbSet = function(store, day, code, field, value, force){
-  _origDbSet(store, day, code, field, value, force);
-  // Sync to server
-  syncWriteCell(store, day, code, field, value);
+// ── Patch lockDay → sync ───────────────────────────────────────────
+const _origLockDay2=window.lockDay||lockDay;
+window.lockDay=function(store,day){
+  _origLockDay2(store,day);
+  syncLockDay(store,day);
 };
 
-// ── Patch lockDay to sync ─────────────────────────────────────────
-const _origLockDay = lockDay;
-window.lockDay = function(store, day){
-  _origLockDay(store, day);
-  syncLockDay(store, day);
-};
-
-// ── Patch saveFinanceData to sync ────────────────────────────────
-const _origSaveFinance = saveFinanceData;
-window.saveFinanceData = function(){
-  _origSaveFinance();
+// ── Patch saveFinanceData → sync ───────────────────────────────────
+const _origSaveFin2=window.saveFinanceData||saveFinanceData;
+window.saveFinanceData=function(){
+  _origSaveFin2();
   if(me){
-    const finDay = typeof dashDay!=='undefined'?dashDay:DAY_PAST;
-    const d = db.finance?.[me.code]?.[finDay];
-    if(d) syncWriteFinance(me.code, finDay, {
-      cash: d.cash, tabby: d.tabby||0, tamara: d.tamara||0,
-      credit: d.credit, open_cash: d.openCash, debtors: d.debtors,
-      director_amt: d.directorAmt, bank_amt: d.bankAmt, expenses: d.expenses,
-      director_name: d.directorName, bank_slip: d.bankSlip,
-      prepared_by: d.preparedBy, checked_by: d.checkedBy,
-      cc_rows: d.ccRows||[], fin_locked: d.finLocked||false
-    });
+    const fd=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+    const d=db.finance?.[me.code]?.[fd];
+    if(d) syncWriteFinance(me.code,fd,d);
   }
 };
 
-// ── Init: load Supabase JS client then start sync ─────────────────
+// ── Init Supabase JS client ────────────────────────────────────────
 function initSupabase(){
-  const s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-  s.onload = ()=>{
-    window.supabase = supabase.createClient(SB_URL, SB_KEY, {
-      realtime: { params: { eventsPerSecond: 10 } },
-      auth: { persistSession: false }
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  s.onload=()=>{
+    window.supabase=supabase.createClient(SB_URL,SB_KEY,{
+      realtime:{params:{eventsPerSecond:10}},
+      auth:{persistSession:false}
     });
-    console.log('Supabase connected');
+    console.log('Supabase v2 client ready');
   };
+  s.onerror=()=>console.warn('Supabase CDN failed — offline mode');
   document.head.appendChild(s);
 }
 
-// Called after login
-async function startSync(storeCode){
-  updateSyncBadge('syncing','⇅ Connecting…');
-  const loaded = await syncLoadFromServer(storeCode);
-  if(loaded){
-    buildGrid(); buildDayTabs(); buildFooter();
-  }
+// ── Start sync after login ─────────────────────────────────────────
+async function startSync(store){
+  const ok=await syncLoadFromServer(store);
+  if(ok){buildGrid();buildDayTabs();buildFooter();}
   if(window.supabase){
-    syncSubscribeRealtime(storeCode);
-  } else {
-    // Wait for supabase to load
-    setTimeout(()=>{ if(window.supabase) syncSubscribeRealtime(storeCode); }, 2000);
+    syncSubscribeRealtime(store);
+  }else{
+    setTimeout(()=>{if(window.supabase)syncSubscribeRealtime(store);},3000);
   }
 }
-
-// Heartbeat — check connection every 30s, drain queue if online
-setInterval(async ()=>{
-  if(_pendingWrites.length){
-    try{
-      await sbFetch('/rest/v1/ep.stock_cells?limit=1','GET');
-      _syncOnline = true;
-      drainPendingWrites();
-    } catch(e){
-      _syncOnline = false;
-    }
-  }
-}, 30000);
 
 // Run on page load
 initSupabase();
