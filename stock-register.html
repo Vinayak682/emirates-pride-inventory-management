@@ -5537,352 +5537,245 @@ try{
   }
 }catch(e){}
 
-// ════════════════════════════════════════════════════════════════════
-// EMIRATES PRIDE — REAL-TIME SYNC ENGINE v2
-// Supabase public schema · correct REST headers · 50-user concurrent
-// ════════════════════════════════════════════════════════════════════
 
+// ════════════════════════════════════════════════════════════════════
+// EMIRATES PRIDE — SYNC ENGINE v3 (RPC upsert, bulletproof)
+// ════════════════════════════════════════════════════════════════════
 const SB_URL = 'https://ncszurcrkngjcjqsowln.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
-const CLIENT_ID = 'cli_' + Math.random().toString(36).slice(2,10);
+const _SBH   = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
 
-let _syncOnline    = false;
-let _syncChannel   = null;
-let _pendingWrites = [];
-let _syncRetryTimer = null;
+let _online  = false;
+let _queue   = [];
+let _ftimer  = null;
+let _rtCh    = null;
 
-// ── REST helper — public schema, no special headers needed ─────────
-async function sbFetch(path, method='GET', body=null){
-  const opts = {
-    method,
-    headers: {
-      'apikey':        SB_KEY,
-      'Authorization': 'Bearer ' + SB_KEY,
-      'Content-Type':  'application/json',
-      'Prefer':        method==='POST' ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal'
-    }
-  };
-  if(body) opts.body = JSON.stringify(body);
-  try{
-    const r = await fetch(SB_URL + path, opts);
-    if(r.status===204||r.status===201) return null;
-    if(!r.ok){
-      const t=await r.text();
-      throw new Error(r.status+': '+t.slice(0,120));
-    }
-    const ct=r.headers.get('content-type')||'';
-    return ct.includes('json') ? r.json() : r.text();
-  } catch(e){
-    throw e;
-  }
+function _badge(state, msg){
+  let b=document.getElementById('_sb');
+  if(!b){b=document.createElement('div');b.id='_sb';
+    b.style.cssText='position:fixed;bottom:64px;right:10px;z-index:9999;font-size:11px;font-weight:700;font-family:monospace;padding:5px 10px;border-radius:20px;pointer-events:none;transition:opacity 0.6s;white-space:nowrap;';
+    document.body.appendChild(b);}
+  const S={ok:'background:#0A2A0A;border:1px solid #2A6A2A;color:#6FCF97;',
+    saving:'background:#2A1800;border:1px solid #C9A44E;color:#C9A44E;',
+    offline:'background:#2A0A0A;border:1px solid #8A2A2A;color:#E87070;',
+    loading:'background:#0A1A2A;border:1px solid #2A4A8A;color:#6FA8DC;'};
+  b.style.cssText+=S[state]||S.offline;
+  b.textContent=msg;b.style.opacity='1';
+  if(state==='ok')setTimeout(()=>{if(b)b.style.opacity='0.3';},3000);
 }
 
-// ── Sync status badge ──────────────────────────────────────────────
-function updateSyncBadge(state, msg){
-  let b=document.getElementById('sync-badge');
-  if(!b){
-    b=document.createElement('div');
-    b.id='sync-badge';
-    b.style.cssText='position:fixed;bottom:68px;right:10px;z-index:800;font-family:monospace;font-size:10px;font-weight:700;padding:4px 9px;border-radius:20px;pointer-events:none;transition:opacity 0.5s;white-space:nowrap;box-shadow:0 1px 8px rgba(0,0,0,0.4);';
-    document.body.appendChild(b);
-  }
-  const C={online:'background:#0A2A0A;border:1px solid #2A6A2A;color:#6FCF97;',
-    syncing:'background:#2A1A00;border:1px solid #C9A44E;color:#C9A44E;',
-    offline:'background:#2A0A0A;border:1px solid #8A2A2A;color:#E87070;'};
-  b.style.cssText+=C[state]||C.offline;
-  b.textContent=msg;
-  b.style.opacity='1';
-  if(state==='online') setTimeout(()=>b&&(b.style.opacity='0.35'),4000);
+async function _rpc(fn, params){
+  const r=await fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:_SBH,body:JSON.stringify(params)});
+  if(!r.ok){const t=await r.text();throw new Error(fn+' '+r.status+':'+t.slice(0,200));}
+  return r.status===204?null:r.json();
+}
+async function _get(path){
+  const r=await fetch(SB_URL+'/rest/v1/'+path,{headers:_SBH});
+  if(!r.ok)throw new Error('GET '+r.status);
+  return r.json();
 }
 
-// ── Date helpers ───────────────────────────────────────────────────
-function dayIdxToDate(idx){
-  const d=new Date(); d.setHours(0,0,0,0);
-  d.setDate(d.getDate()+(idx-DAY_PAST));
+function _idx2date(i){
+  const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+i-DAY_PAST);
   return d.toISOString().split('T')[0];
 }
-function dateToDayIdx(s){
-  const today=new Date(); today.setHours(0,0,0,0);
-  const d=new Date(s); d.setHours(12,0,0,0);
-  return DAY_PAST+Math.round((d-today)/86400000);
+function _date2idx(s){
+  const t=new Date();t.setHours(0,0,0,0);
+  const d=new Date(s+'T12:00:00');
+  return DAY_PAST+Math.round((d-t)/86400000);
 }
 
-// ── WRITE stock cell ───────────────────────────────────────────────
-async function syncWriteCell(store,dayIdx,prod,field,value){
-  const payload={
-    store_code:store, day_date:dayIdxToDate(dayIdx),
-    prod_code:prod, field, value,
-    updated_by:me?me.name:store, updated_at:new Date().toISOString()
-  };
+function _queueWrite(store,dayIdx,prod,field,value){
+  const by=me?me.name:store;
+  const date=_idx2date(dayIdx);
+  _queue=_queue.filter(w=>!(w.s===store&&w.d===date&&w.p===prod&&w.f===field));
+  _queue.push({s:store,d:date,p:prod,f:field,v:value,b:by});
+  _badge('saving','⇅ '+_queue.length+' pending');
+  clearTimeout(_ftimer);
+  _ftimer=setTimeout(_flush,800);
+}
+
+async function _flush(){
+  if(!_queue.length)return;
+  const batch=_queue.splice(0,50);
+  _badge('saving','⇅ Saving '+batch.length+'…');
   try{
-    updateSyncBadge('syncing','⇅ Saving…');
-    await sbFetch('/rest/v1/stock_cells','POST',[payload]);
-    _syncOnline=true;
-    updateSyncBadge('online','✓ Synced');
-    drainPending();
+    await _rpc('save_stock_batch',{p_rows:batch.map(w=>({store:w.s,date:w.d,prod:w.p,field:w.f,value:w.v,by:w.b}))});
+    _online=true;
+    _badge('ok','✓ Synced · '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
+    if(_queue.length)setTimeout(_flush,200);
   }catch(e){
-    console.warn('syncWriteCell fail:',e.message);
-    _pendingWrites.push({store,dayIdx,prod,field,value,ts:Date.now()});
-    updateSyncBadge('offline','⚠ Offline · '+_pendingWrites.length+' queued');
-    scheduleRetry();
+    console.error('flush:',e.message);
+    _queue=batch.concat(_queue);
+    _online=false;
+    _badge('offline','⚠ Offline · '+_queue.length+' queued');
+    setTimeout(_flush,5000);
   }
 }
 
-// ── WRITE transfer ─────────────────────────────────────────────────
-async function syncWriteTransfer(t){
+async function _loadFromServer(store){
+  _badge('loading','⇅ Loading…');
   try{
-    await sbFetch('/rest/v1/transfers','POST',{
-      day_date:dayIdxToDate(t.day),
-      from_store:t.fromStore,from_name:t.fromName,
-      to_store:t.toStore,to_name:t.toName,
-      prod_code:t.prodCode,prod_name:t.prodName,prod_ar:t.prodAr||'',
-      qty:t.qty,remark:t.remark||'',note:t.note||''
+    const cells=await _get('stock_cells?store_code=eq.'+store+'&select=day_date,prod_code,field,value,locked&limit=10000');
+    cells.forEach(c=>{
+      const di=_date2idx(c.day_date);
+      if(di<0||di>=DAY_WINDOW)return;
+      if(!db[store])db[store]={};
+      if(!db[store][di])db[store][di]={};
+      if(!db[store][di][c.prod_code])db[store][di][c.prod_code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+      db[store][di][c.prod_code][c.field]=c.value;
+      if(c.locked)db[store][di][c.prod_code].locked=true;
     });
-  }catch(e){console.warn('Transfer sync:',e.message);}
-}
 
-// ── WRITE finance ──────────────────────────────────────────────────
-async function syncWriteFinance(store,dayIdx,d){
-  try{
-    await sbFetch('/rest/v1/finance','POST',[{
-      store_code:store, day_date:dayIdxToDate(dayIdx),
-      cash:d.cash||0, tabby:d.tabby||0, tamara:d.tamara||0,
-      credit:d.credit||0, open_cash:d.openCash||0, debtors:d.debtors||0,
-      director_amt:d.directorAmt||0, bank_amt:d.bankAmt||0, expenses:d.expenses||0,
-      director_name:d.directorName||'', bank_slip:d.bankSlip||'',
-      prepared_by:d.preparedBy||'', checked_by:d.checkedBy||'',
-      cc_rows:JSON.stringify(d.ccRows||[]),
-      fin_locked:d.finLocked||false,
-      updated_at:new Date().toISOString()
-    }]);
-  }catch(e){console.warn('Finance sync:',e.message);}
-}
-
-// ── WRITE lock ─────────────────────────────────────────────────────
-async function syncLockDay(store,dayIdx){
-  try{
-    await sbFetch('/rest/v1/rpc/lock_store_day','POST',{
-      p_store:store, p_date:dayIdxToDate(dayIdx),
-      p_by:me?me.name:store
+    const locks=await _get('day_locks?store_code=eq.'+store+'&locked=eq.true&select=day_date');
+    locks.forEach(l=>{
+      const di=_date2idx(l.day_date);
+      if(di<0||di>=DAY_WINDOW||!db[store]?.[di])return;
+      Object.values(db[store][di]).forEach(x=>{if(x)x.locked=true;});
     });
-    updateSyncBadge('online','🔒 Locked & synced');
-  }catch(e){console.warn('Lock sync:',e.message);}
-}
 
-// ── LOAD all data for store from server ───────────────────────────
-async function syncLoadFromServer(store){
-  updateSyncBadge('syncing','⇅ Loading data…');
-  try{
-    // 1. Stock cells
-    const cells=await sbFetch(`/rest/v1/stock_cells?store_code=eq.${store}&select=day_date,prod_code,field,value,locked&limit=5000`);
-    if(cells&&cells.length){
-      cells.forEach(c=>{
-        const di=dateToDayIdx(c.day_date);
-        if(di<0||di>=DAY_WINDOW) return;
-        if(!db[store])db[store]={};
-        if(!db[store][di])db[store][di]={};
-        if(!db[store][di][c.prod_code])db[store][di][c.prod_code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
-        db[store][di][c.prod_code][c.field]=c.value;
-        if(c.locked)db[store][di][c.prod_code].locked=true;
-      });
-      console.log(`Loaded ${cells.length} cells for ${store}`);
-    }
+    const trfs=await _get('transfers?select=*&order=ts.desc&limit=2000');
+    if(trfs.length) db.transferLog=trfs.map(t=>({
+      id:t.id,ts:new Date(t.ts).toLocaleString('en-GB'),
+      day:_date2idx(t.day_date),dayDate:t.day_date,
+      fromStore:t.from_store,fromName:t.from_name,
+      toStore:t.to_store,toName:t.to_name,
+      prodCode:t.prod_code,prodName:t.prod_name,
+      prodAr:t.prod_ar,qty:t.qty,remark:t.remark,note:t.note
+    }));
 
-    // 2. Transfers (last 90 days)
-    const trfs=await sbFetch(`/rest/v1/transfers?select=*&order=ts.desc&limit=2000`);
-    if(trfs&&trfs.length){
-      db.transferLog=(db.transferLog||[]).filter(t=>t._local); // keep local-only
-      trfs.forEach(t=>{
-        db.transferLog.push({
-          id:t.id,ts:new Date(t.ts).toLocaleString('en-GB'),
-          day:dateToDayIdx(t.day_date),dayDate:t.day_date,
-          fromStore:t.from_store,fromName:t.from_name,
-          toStore:t.to_store,toName:t.to_name,
-          prodCode:t.prod_code,prodName:t.prod_name,prodAr:t.prod_ar,
-          qty:t.qty,remark:t.remark,note:t.note
-        });
-      });
-    }
-
-    // 3. Finance (all)
-    const fins=await sbFetch(`/rest/v1/finance?store_code=eq.${store}&select=*&limit=500`);
-    if(fins&&fins.length){
+    const fins=await _get('finance?store_code=eq.'+store+'&select=*&limit=500');
+    if(fins.length){
       if(!db.finance)db.finance={};
       if(!db.finance[store])db.finance[store]={};
       fins.forEach(f=>{
-        const di=dateToDayIdx(f.day_date);
-        // Store by both index and date for month view
-        const key=di>=0&&di<DAY_WINDOW?di:'d_'+f.day_date;
+        const di=_date2idx(f.day_date);
+        const key=(di>=0&&di<DAY_WINDOW)?di:'d_'+f.day_date;
         db.finance[store][key]={
           cash:+f.cash||0,tabby:+f.tabby||0,tamara:+f.tamara||0,
           credit:+f.credit||0,openCash:+f.open_cash||0,debtors:+f.debtors||0,
           directorAmt:+f.director_amt||0,bankAmt:+f.bank_amt||0,expenses:+f.expenses||0,
           directorName:f.director_name||'',bankSlip:f.bank_slip||'',
           preparedBy:f.prepared_by||'',checkedBy:f.checked_by||'',
-          ccRows:typeof f.cc_rows==='string'?JSON.parse(f.cc_rows):f.cc_rows||[],
-          finLocked:f.fin_locked,finLockedAt:f.fin_locked_at,
-          savedAt:f.saved_at, dayDate:f.day_date
+          ccRows:typeof f.cc_rows==='string'?JSON.parse(f.cc_rows):(f.cc_rows||[]),
+          finLocked:f.fin_locked||false,finLockedAt:f.fin_locked_at,
+          savedAt:f.saved_at,dayDate:f.day_date
         };
-        if(f.fin_locked)finDaySaved[store+'_'+(di>=0&&di<DAY_WINDOW?di:'d_'+f.day_date)]=true;
+        if(f.fin_locked)finDaySaved[store+'_'+key]=true;
       });
     }
-
-    // 4. Lock status
-    const locks=await sbFetch(`/rest/v1/day_locks?store_code=eq.${store}&locked=eq.true&select=day_date`);
-    if(locks&&locks.length){
-      locks.forEach(l=>{
-        const di=dateToDayIdx(l.day_date);
-        if(di<0||di>=DAY_WINDOW)return;
-        if(db[store]?.[di]){
-          Object.keys(db[store][di]).forEach(c=>{
-            if(db[store][di][c])db[store][di][c].locked=true;
-          });
-        }
-      });
-    }
-
     saveDB();
-    updateSyncBadge('online','✓ Live — '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
-    _syncOnline=true;
+    _online=true;
+    _badge('ok','✓ Live · '+cells.length+' cells loaded');
     return true;
   }catch(e){
-    console.error('syncLoadFromServer:',e);
-    updateSyncBadge('offline','⚠ Server unavailable — using local data');
-    _syncOnline=false;
+    console.error('loadFromServer:',e.message);
+    _badge('offline','⚠ Offline — using cached data');
+    _online=false;
     return false;
   }
 }
 
-// ── REAL-TIME subscription ────────────────────────────────────────
-function syncSubscribeRealtime(store){
-  if(!window.supabase)return;
-  if(_syncChannel)_syncChannel.unsubscribe();
-  _syncChannel=window.supabase.channel('ep-'+store)
-    .on('postgres_changes',{event:'*',schema:'public',table:'stock_cells',filter:`store_code=eq.${store}`},p=>{
-      const c=p.new; if(!c) return;
-      const di=dateToDayIdx(c.day_date);
-      if(di<0||di>=DAY_WINDOW)return;
-      if(c.updated_by===(me?me.name:store))return; // own echo
-      if(!db[store])db[store]={};
-      if(!db[store][di])db[store][di]={};
+function _subscribeRealtime(store){
+  if(!window._SB)return;
+  if(_rtCh)_rtCh.unsubscribe();
+  _rtCh=window._SB.channel('ep_'+store+'_'+Date.now())
+    .on('postgres_changes',{event:'*',schema:'public',table:'stock_cells',filter:'store_code=eq.'+store},p=>{
+      const c=p.new;if(!c||!c.prod_code)return;
+      if(c.updated_by===(me?me.name:store))return;
+      const di=_date2idx(c.day_date);if(di<0||di>=DAY_WINDOW)return;
+      if(!db[store])db[store]={};if(!db[store][di])db[store][di]={};
       if(!db[store][di][c.prod_code])db[store][di][c.prod_code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
       db[store][di][c.prod_code][c.field]=c.value;
+      if(c.locked)db[store][di][c.prod_code].locked=true;
       saveDB();
-      if(di===curDay){ buildGrid();updateTotalsRow();buildFooter(); }
-      updateSyncBadge('online','⇅ '+c.updated_by+' updated');
+      if(di===curDay){buildGrid();updateTotalsRow();buildFooter();}
+      _badge('ok','⇅ '+( c.updated_by||'?')+' synced');
     })
-    .on('postgres_changes',{event:'*',schema:'public',table:'day_locks',filter:`store_code=eq.${store}`},p=>{
-      const l=p.new; if(!l||!l.locked)return;
-      const di=dateToDayIdx(l.day_date);
-      if(di<0||di>=DAY_WINDOW)return;
-      if(db[store]?.[di])Object.values(db[store][di]).forEach(x=>x&&(x.locked=true));
+    .on('postgres_changes',{event:'*',schema:'public',table:'day_locks',filter:'store_code=eq.'+store},p=>{
+      const l=p.new;if(!l||!l.locked)return;
+      const di=_date2idx(l.day_date);if(di<0||di>=DAY_WINDOW)return;
+      if(db[store]?.[di])Object.values(db[store][di]).forEach(x=>{if(x)x.locked=true;});
       saveDB();
       if(di===curDay){buildGrid();buildDayTabs();buildFooter();}
-      toast('🔒 Day locked by '+( l.locked_by||'manager'));
+      toast('🔒 Day locked by '+(l.locked_by||'manager'));
     })
-    .on('postgres_changes',{event:'*',schema:'public',table:'finance',filter:`store_code=eq.${store}`},p=>{
-      const f=p.new; if(!f)return;
-      const di=dateToDayIdx(f.day_date);
-      if(!db.finance)db.finance={};
-      if(!db.finance[store])db.finance[store]={};
-      const key=di>=0&&di<DAY_WINDOW?di:'d_'+f.day_date;
+    .on('postgres_changes',{event:'*',schema:'public',table:'finance',filter:'store_code=eq.'+store},p=>{
+      const f=p.new;if(!f)return;
+      const di=_date2idx(f.day_date);
+      const key=(di>=0&&di<DAY_WINDOW)?di:'d_'+f.day_date;
+      if(!db.finance)db.finance={};if(!db.finance[store])db.finance[store]={};
       db.finance[store][key]={
         cash:+f.cash||0,tabby:+f.tabby||0,tamara:+f.tamara||0,
         credit:+f.credit||0,openCash:+f.open_cash||0,debtors:+f.debtors||0,
         directorAmt:+f.director_amt||0,bankAmt:+f.bank_amt||0,expenses:+f.expenses||0,
         directorName:f.director_name||'',bankSlip:f.bank_slip||'',
         preparedBy:f.prepared_by||'',checkedBy:f.checked_by||'',
-        ccRows:typeof f.cc_rows==='string'?JSON.parse(f.cc_rows):f.cc_rows||[],
-        finLocked:f.fin_locked,savedAt:f.saved_at,dayDate:f.day_date
+        ccRows:typeof f.cc_rows==='string'?JSON.parse(f.cc_rows):(f.cc_rows||[]),
+        finLocked:f.fin_locked||false,dayDate:f.day_date
       };
-      saveDB();
-      updateSyncBadge('online','⇅ Finance updated');
+      saveDB();_badge('ok','⇅ Finance synced');
     })
     .subscribe(s=>{
-      if(s==='SUBSCRIBED')updateSyncBadge('online','● Live');
-      else if(s==='CHANNEL_ERROR'){
-        updateSyncBadge('offline','⚠ Reconnecting…');
-        setTimeout(()=>syncSubscribeRealtime(store),5000);
-      }
+      if(s==='SUBSCRIBED')_badge('ok','● Live · All devices synced');
+      else if(s==='CHANNEL_ERROR'){_badge('offline','⚠ Reconnecting…');setTimeout(()=>_subscribeRealtime(store),5000);}
     });
 }
 
-// ── Pending write queue ────────────────────────────────────────────
-async function drainPending(){
-  if(!_pendingWrites.length)return;
-  const q=[..._pendingWrites]; _pendingWrites=[];
-  updateSyncBadge('syncing',`⇅ Syncing ${q.length} queued…`);
-  for(const w of q){
-    try{
-      await sbFetch('/rest/v1/stock_cells','POST',[{
-        store_code:w.store,day_date:dayIdxToDate(w.dayIdx),
-        prod_code:w.prod,field:w.field,value:w.value,
-        updated_by:me?me.name:w.store,updated_at:new Date().toISOString()
-      }]);
-    }catch(e){_pendingWrites.push(w);}
-  }
-  if(_pendingWrites.length)updateSyncBadge('offline',`⚠ ${_pendingWrites.length} writes pending`);
-  else updateSyncBadge('online','✓ All synced');
-}
-function scheduleRetry(){
-  clearTimeout(_syncRetryTimer);
-  _syncRetryTimer=setTimeout(()=>{if(_pendingWrites.length)drainPending();},5000);
-}
-setInterval(()=>{if(_pendingWrites.length){sbFetch('/rest/v1/stock_cells?limit=1').then(()=>{_syncOnline=true;drainPending();}).catch(()=>{_syncOnline=false;});}},30000);
-
-// ── Patch dbSet → sync ─────────────────────────────────────────────
-const _origDbSet2=window.dbSet||dbSet;
+// ── Patch dbSet ────────────────────────────────────────────────
+const _origDBSet=dbSet;
 window.dbSet=function(store,day,code,field,value,force){
-  _origDbSet2(store,day,code,field,value,force);
-  if(_syncOnline||_pendingWrites.length<200) syncWriteCell(store,day,code,field,value);
+  _origDBSet(store,day,code,field,value,force);
+  _queueWrite(store,day,code,field,value);
 };
 
-// ── Patch lockDay → sync ───────────────────────────────────────────
-const _origLockDay2=window.lockDay||lockDay;
+// ── Patch lockDay ──────────────────────────────────────────────
+const _origLockDay=lockDay;
 window.lockDay=function(store,day){
-  _origLockDay2(store,day);
-  syncLockDay(store,day);
+  _origLockDay(store,day);
+  _rpc('lock_store_day',{p_store:store,p_date:_idx2date(day),p_by:me?me.name:store})
+    .then(()=>_badge('ok','🔒 Locked & synced'))
+    .catch(e=>console.error('lock:',e.message));
 };
 
-// ── Patch saveFinanceData → sync ───────────────────────────────────
-const _origSaveFin2=window.saveFinanceData||saveFinanceData;
+// ── Patch saveFinanceData ─────────────────────────────────────
+const _origSaveFin=saveFinanceData;
 window.saveFinanceData=function(){
-  _origSaveFin2();
-  if(me){
-    const fd=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
-    const d=db.finance?.[me.code]?.[fd];
-    if(d) syncWriteFinance(me.code,fd,d);
-  }
+  _origSaveFin();
+  if(!me)return;
+  const fd=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  const d=db.finance?.[me.code]?.[fd];
+  if(!d)return;
+  _rpc('save_finance',{
+    p_store:me.code,p_date:_idx2date(fd),
+    p_data:{cash:d.cash||0,tabby:d.tabby||0,tamara:d.tamara||0,
+      credit:d.credit||0,open_cash:d.openCash||0,debtors:d.debtors||0,
+      director_amt:d.directorAmt||0,bank_amt:d.bankAmt||0,expenses:d.expenses||0,
+      director_name:d.directorName||'',bank_slip:d.bankSlip||'',
+      prepared_by:d.preparedBy||'',checked_by:d.checkedBy||'',
+      cc_rows:d.ccRows||[],fin_locked:d.finLocked||false}
+  }).catch(e=>console.error('fin sync:',e.message));
 };
 
-// ── Init Supabase JS client ────────────────────────────────────────
-function initSupabase(){
+// ── Load Supabase client ──────────────────────────────────────
+(function loadSB(){
   const s=document.createElement('script');
   s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-  s.onload=()=>{
-    window.supabase=supabase.createClient(SB_URL,SB_KEY,{
-      realtime:{params:{eventsPerSecond:10}},
-      auth:{persistSession:false}
-    });
-    console.log('Supabase v2 client ready');
-  };
-  s.onerror=()=>console.warn('Supabase CDN failed — offline mode');
+  s.onload=()=>{window._SB=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false},realtime:{params:{eventsPerSecond:10}}});};
   document.head.appendChild(s);
-}
+})();
 
-// ── Start sync after login ─────────────────────────────────────────
+// ── Start after login ─────────────────────────────────────────
 async function startSync(store){
-  const ok=await syncLoadFromServer(store);
+  const ok=await _loadFromServer(store);
   if(ok){buildGrid();buildDayTabs();buildFooter();}
-  if(window.supabase){
-    syncSubscribeRealtime(store);
-  }else{
-    setTimeout(()=>{if(window.supabase)syncSubscribeRealtime(store);},3000);
-  }
+  const tryRT=(n)=>{if(window._SB)_subscribeRealtime(store);else if(n>0)setTimeout(()=>tryRT(n-1),600);};
+  tryRT(15);
+  setInterval(()=>{if(_queue.length)_flush();},10000);
 }
-
-// Run on page load
-initSupabase();
+// ════════════════════════════════════════════════════════════════════
+// END SYNC ENGINE v3
+// ════════════════════════════════════════════════════════════════════
 
 </script>
 </body>
