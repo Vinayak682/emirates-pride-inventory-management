@@ -220,11 +220,12 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   padding:0;text-align:center;border:1px solid var(--border);
   cursor:pointer;transition:background 0.1s;min-width:72px;width:72px;
 }
-/* Transfer columns wider + auto height for multi-chip display */
-.sgrid td.dcell.inn,.sgrid td.dcell.trf{min-width:100px;width:100px;}
-.sgrid thead th.gh-in,.sgrid thead th.gh-trf,.sgrid thead th.gs-in,.sgrid thead th.gs-trf{min-width:100px;width:100px;}
-/* Cells auto-height when chips present */
-.sgrid td.dcell.dcell-has-note{height:auto;vertical-align:top;padding-top:4px;}
+/* Transfer columns — wide enough for full store names */
+.sgrid td.dcell.inn,.sgrid td.dcell.trf{min-width:130px;width:130px;}
+.sgrid thead th.gh-in,.sgrid thead th.gh-trf,.sgrid thead th.gs-in,.sgrid thead th.gs-trf{min-width:130px;width:130px;}
+/* Auto-height when chips present — value on top, chips below */
+.sgrid td.dcell.dcell-has-note{height:auto;vertical-align:top;padding:4px 0 0;}
+.sgrid td.dcell.dcell-has-note .dcell-val{padding-bottom:3px;}
 
 .sgrid td.dcell.open{background:var(--c-open);}
 .sgrid td.dcell.inn{background:var(--c-in);}
@@ -261,22 +262,21 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 }
 /* Each individual transfer line */
 .trf-chip{
-  display:flex;align-items:center;justify-content:center;gap:3px;
-  margin:1px 2px;
-  padding:2px 5px;
-  border-radius:3px;
-  font-family:var(--f-mono);font-size:8px;font-weight:700;
-  line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  max-width:100%;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:4px;
+  margin:2px 0;padding:4px 6px;border-radius:4px;
+  font-family:var(--f-mono);font-size:9px;font-weight:600;
+  line-height:1.3;width:100%;box-sizing:border-box;
+  text-align:left;
 }
-.trf-chip-arrow{font-size:9px;flex-shrink:0;}
+.trf-chip-arrow{font-size:9px;flex-shrink:0;opacity:0.7;margin-top:1px;}
 .trf-chip-name{
-  font-size:8px;overflow:hidden;text-overflow:ellipsis;
-  white-space:nowrap;flex:1;min-width:0;
+  font-size:9px;font-weight:700;
+  flex:1;min-width:0;
+  white-space:normal;word-break:break-word;line-height:1.3;
 }
 .trf-chip-qty{
-  font-size:9px;font-weight:900;flex-shrink:0;
-  margin-left:2px;padding:0 3px;border-radius:2px;
+  font-size:10px;font-weight:900;flex-shrink:0;
+  padding:1px 5px;border-radius:3px;margin-left:4px;margin-top:1px;
 }
 /* Received from — green */
 .dcell.inn .trf-chip{background:#E8F5EE;color:#1A6040;}
@@ -1485,27 +1485,18 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
         <div class="fin-row-amount fin-amt-cash" id="famt-cash">—</div>
       </div>
 
-      <!-- Row A2: Tabby -->
-      <div class="fin-row fin-row-bnpl" id="finrow-tabby" onclick="finTap('tabby')">
-        <div class="fin-row-left">
-          <div class="fin-row-badge fin-badge-bnpl" style="background:#E8F0FF;color:#2A4A8A;">T</div>
-          <div class="fin-row-info">
-            <div class="fin-row-ar">تابي — الدفع لاحقاً</div>
-            <div class="fin-row-en">Tabby <span class="fin-bnpl-tag">BNPL</span></div>
-          </div>
-        </div>
-        <div class="fin-row-amount" style="color:#2A4A8A;" id="famt-tabby">—</div>
+      <!-- BNPL Section: Tabby + Tamara (multi-transaction like CC) -->
+      <div class="fin-section-hdr" style="margin:0;background:#0E0E1A;padding:6px 14px;">
+        <span style="color:#4A6AAA;font-size:9px;">BNPL PAYMENTS — Tabby & Tamara</span>
+        <span class="fin-section-ar" style="color:#2A3A5A;">الدفع الآجل</span>
+        <button class="fin-add-btn" id="fin-add-bnpl-btn" onclick="addBNPLRow()" style="background:#1A1A2A;border-color:#2A3A5A;color:#6FA8DC;">＋ Add</button>
       </div>
-      <!-- Row A3: Tamara -->
-      <div class="fin-row fin-row-bnpl" id="finrow-tamara" onclick="finTap('tamara')">
-        <div class="fin-row-left">
-          <div class="fin-row-badge fin-badge-bnpl" style="background:#F0E8FF;color:#5A2A8A;">T</div>
-          <div class="fin-row-info">
-            <div class="fin-row-ar">تمارا — الدفع لاحقاً</div>
-            <div class="fin-row-en">Tamara <span class="fin-bnpl-tag" style="background:#EEE8FF;color:#5A2A8A;">BNPL</span></div>
-          </div>
-        </div>
-        <div class="fin-row-amount" style="color:#5A2A8A;" id="famt-tamara">—</div>
+      <div id="fin-bnpl-list">
+        <div class="fin-cc-empty" id="fin-bnpl-empty-msg">No BNPL transactions — tap ＋ Add</div>
+      </div>
+      <div class="fin-cc-total-row" id="fin-bnpl-total-row" style="display:none;background:#0E0E1A;">
+        <span class="fin-cc-total-label" style="color:#6FA8DC;">BNPL TOTAL (Tabby + Tamara)</span>
+        <span class="fin-cc-total-val" style="color:#6FA8DC;" id="famt-bnpl-total">0</span>
       </div>
 
       <!-- Row B: CC Sales (auto) -->
@@ -1652,23 +1643,26 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
         <div class="fin-row-amount fin-amt-deduct" id="famt-bankAmt">—</div>
       </div>
 
-      <!-- H: Expenses -->
-      <div class="fin-row" id="finrow-expenses" onclick="finTap('expenses')">
-        <div class="fin-row-left">
+      <!-- H: Expenses — multi-line with description + receipt -->
+      <div style="background:#0D0D14;padding:6px 14px;border-top:1px solid #111;border-bottom:1px solid #111;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:8px;">
           <div class="fin-row-badge fin-badge-h">H</div>
-          <div class="fin-row-info">
+          <div>
             <div class="fin-row-ar">المصاريف (مع إرفاق الفاتورة)</div>
-            <div class="fin-row-en">Expenses (Attach Bills)</div>
-            <div class="fin-receipt-row" onclick="event.stopPropagation()">
-              <label class="fin-receipt-btn" id="fin-exp-receipt-label">
-                <input type="file" accept="image/jpeg,image/png" style="display:none" onchange="finUploadReceipt('expense',this)">
-                📎 <span id="fin-exp-receipt-txt">Attach Bill/Receipt</span>
-              </label>
-              <div id="fin-exp-receipt-thumb" class="fin-receipt-thumb" onclick="finViewReceipt('expense')" style="display:none;"></div>
-            </div>
+            <div class="fin-row-en" style="font-size:12px;font-weight:700;">Expenses (Attach Bills)</div>
           </div>
         </div>
-        <div class="fin-row-amount fin-amt-deduct" id="famt-expenses">—</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="font-family:var(--f-mono);font-size:16px;font-weight:800;color:#8B1A1A;" id="famt-expenses">—</div>
+          <button onclick="addExpenseRow()" id="fin-add-exp-btn"
+            style="background:#1A0A0A;border:1px solid #5A1A1A;border-radius:6px;color:#E87070;
+                   font-family:var(--f-body);font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer;">
+            ＋ Add
+          </button>
+        </div>
+      </div>
+      <div id="fin-expense-list">
+        <div class="fin-cc-empty" id="fin-expense-empty-msg" style="color:#3A1A1A;">No expenses recorded — tap ＋ Add</div>
       </div>
 
       <!-- CLOSING BALANCE -->
@@ -1906,7 +1900,14 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
     <div style="font-size:17px;font-weight:700;color:#E8C97A;margin-bottom:8px;">🔒 Lock <span id="lockModalDay"></span>?</div>
     <div style="font-size:12px;color:#666;margin-bottom:10px;" id="lockModalSummary"></div>
     <div style="font-size:12px;color:#4A8A4A;background:#1A2A1A;border:1px solid #2A4A2A;border-radius:8px;padding:10px 12px;margin-bottom:10px;">✅ Closing balance becomes tomorrow's Opening Stock automatically</div>
-    <div style="font-size:11px;color:#8B4A4A;background:#2A1A1A;border:1px solid #4A2A2A;border-radius:8px;padding:8px 12px;margin-bottom:18px;">⚠ Cannot be edited after locking</div>
+    <div style="font-size:11px;color:#8B4A4A;background:#2A1A1A;border:1px solid #4A2A2A;border-radius:8px;padding:8px 12px;margin-bottom:12px;">⚠ Cannot be edited after locking</div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:#888;font-family:var(--f-mono);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">Your Name (required to lock)</div>
+      <input id="lockByName" type="text" placeholder="Enter your name…"
+        style="width:100%;background:#252525;border:1px solid #C9A44E;border-radius:8px;
+               padding:11px 14px;font-family:var(--f-body);font-size:14px;color:#E0E0E0;
+               outline:none;box-sizing:border-box;">
+    </div>
     <div style="display:flex;gap:10px;">
       <button onclick="closeLockModal()" style="flex:1;background:#252525;border:1px solid #3A3A3A;color:#888;font-family:var(--f-body);font-size:16px;padding:15px;border-radius:10px;cursor:pointer;">Cancel</button>
       <button onclick="confirmLock()" style="flex:2;background:linear-gradient(135deg,#1A5A1A,#0D3A0D);color:#6FCF97;font-family:var(--f-body);font-size:16px;font-weight:700;border:none;padding:15px;border-radius:10px;cursor:pointer;">Lock & Carry Forward ✓</button>
@@ -2024,6 +2025,21 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   <div style="font-family:var(--f-mono);font-size:11px;color:#666;">Tap anywhere to close</div>
 </div>
 
+<!-- ══════════ MANAGER DASHBOARD PANEL ══════════ -->
+<div id="mgrDashPanel" style="position:fixed;inset:0;background:#080808;z-index:800;display:none;flex-direction:column;">
+  <div style="background:#111;border-bottom:2px solid #C9A44E;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+    <div>
+      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#C9A44E;letter-spacing:1px;">EMIRATES PRIDE</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:#666;margin-top:1px;">Manager Dashboard — All Stores</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="renderMgrDashboard()" style="background:#1A1A1A;border:1px solid #333;border-radius:7px;color:#888;font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer;">⇅ Refresh</button>
+      <button onclick="closeMgrDashboard()" style="background:#1A0A0A;border:1px solid #5A1A1A;border-radius:7px;color:#E87070;font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer;">✕ Close</button>
+    </div>
+  </div>
+  <div id="mgrDashBody" style="flex:1;overflow-y:auto;"></div>
+</div>
+
 <!-- ══════════ NUMPAD ══════════ -->
 <div id="numpad">
   <div class="np-sheet">
@@ -2034,11 +2050,24 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
       </div>
       <button class="np-x" onclick="closeNP()">✕</button>
     </div>
-    <div id="npStoreRow" style="display:none;margin-bottom:10px;">
+    <div id="npStoreRow" style="display:none;margin-bottom:8px;">
       <div style="font-family:var(--f-mono);font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;" id="npStoreLabel">From Store</div>
       <select id="npStoreSelect" style="width:100%;background:#252525;border:1px solid #3A3A3A;border-radius:8px;padding:9px 12px;font-family:var(--f-body);font-size:13px;color:#E0E0E0;outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;">
         <option value="">— Select store —</option>
       </select>
+      <!-- Existing splits for this SKU -->
+      <div id="npSplitList" style="margin-top:7px;display:none;max-height:120px;overflow-y:auto;"></div>
+      <!-- Remark field -->
+      <input id="npRemark" placeholder="Remark (optional)…" type="text"
+        style="margin-top:6px;width:100%;background:#1E1E1E;border:1px solid #333;border-radius:7px;
+               padding:7px 10px;font-family:var(--f-body);font-size:12px;color:#CCC;outline:none;
+               box-sizing:border-box;display:none;">
+      <!-- Add split button (shown for inn/trf after first save) -->
+      <button id="npAddSplitBtn" onclick="npAddSplit()" style="display:none;margin-top:6px;width:100%;
+        background:#1A2A1A;border:1px solid #2A5A2A;border-radius:7px;color:#6FCF97;
+        font-family:var(--f-body);font-size:13px;font-weight:700;padding:9px;cursor:pointer;">
+        ＋ Add Another Store
+      </button>
     </div>
     <div class="np-display">
       <span class="np-cur-label" id="npCurLabel">Current value</span>
@@ -2280,19 +2309,42 @@ function isLocked(store,day){
   return Object.values(d).some(v=>v.locked);
 }
 function lockDay(store,day){
-  if(!db[store]||!db[store][day]) return;
+  if(!db[store]) db[store]={};
+  if(!db[store][day]) db[store][day]={};
   // Check finance saved — warn if not
   if(!isFinanceSaved(store, day)){
     const proceed=confirm('⚠️ Finance report for this day has not been saved!\n\nPlease go to Finance tab → fill in the report → Save before locking.\n\nPress OK to lock anyway (not recommended), or Cancel to go save it first.');
     if(!proceed) return;
   }
-  Object.keys(db[store][day]).forEach(code=>{
+  // Lock all cells and carry closing → next day opening
+  const nextDay = day + 1;
+  if(nextDay < DAY_WINDOW){
+    if(!db[store][nextDay]) db[store][nextDay]={};
+  }
+  // Collect ALL product codes across PRODUCTS (not just what's in db)
+  const allCodes = new Set([
+    ...Object.keys(db[store][day]||{}),
+    ...PRODUCTS.map(p=>p.code)
+  ]);
+  allCodes.forEach(code=>{
+    // Lock current day
+    if(!db[store][day][code]) db[store][day][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
     db[store][day][code].locked=true;
-    if(day<6){
-      const closing=Math.max(0,bal(store,day,code));
-      if(!db[store][day+1]) db[store][day+1]={};
-      if(!db[store][day+1][code]) db[store][day+1][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
-      dbSet(store,day+1,code,'open',closing,true);
+    // Carry closing balance → next day opening (any future day)
+    if(nextDay < DAY_WINDOW){
+      const closing = Math.max(0, bal(store, day, code));
+      if(closing > 0){ // Only carry if there's something
+        if(!db[store][nextDay][code]) db[store][nextDay][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+        // Only set if next day opening is 0 (don't overwrite manual entries)
+        if((db[store][nextDay][code].open||0) === 0){
+          db[store][nextDay][code].open = closing;
+          // Sync to server without triggering recursive queue
+          if(typeof _idx2date === 'function'){
+            const date = _idx2date(nextDay);
+            _sbRpc('save_stock', {p_store:store, p_date:date, p_prod:code, p_field:'open', p_value:closing, p_by:'carry-forward'}).catch(()=>{});
+          }
+        }
+      }
     }
   });
   // ── Finance carry-forward: closing balance → next day opening cash ──
@@ -2364,6 +2416,22 @@ function doLogin(){
   buildSpSkuSel();
   // startSync shows loading overlay, loads server data, then rebuilds grid
   startSync(store.code);
+  // If MGR login — show manager dashboard button in top bar
+  if(store.code==='MGR'){
+    setTimeout(()=>{
+      const tb=document.querySelector('.app-topbar');
+      if(tb&&!document.getElementById('mgrDashBtn')){
+        const btn=document.createElement('button');
+        btn.id='mgrDashBtn';
+        btn.textContent='📊 All Stores Dashboard';
+        btn.style.cssText='background:#2A1800;border:1px solid #C9A44E;color:#C9A44E;font-family:var(--f-body);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;';
+        btn.onclick=openMgrDashboard;
+        const logoutBtn=tb.querySelector('.top-btn.logout');
+        if(logoutBtn) tb.insertBefore(btn,logoutBtn);
+      }
+      openMgrDashboard();
+    },1500);
+  }
 }
 function doLogout(){
   mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;
@@ -2396,6 +2464,7 @@ function buildDayTabs(){
       `<span class="day-date">${dl.date}</span>`+
       (isToday?`<span class="today-dot"></span>`:'')+
       (locked?` <span style="font-size:9px;">🔒</span>`:'')+
+      (locked&&db._lockNames?.[me.code+'_'+i]?`<span style="font-family:var(--f-mono);font-size:7px;color:#7A5C28;display:block;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;">${db._lockNames[me.code+'_'+i].name}</span>`:'')+
       (hasData&&!locked?`<span class="data-dot"></span>`:'');
     bar.appendChild(t);
   });
@@ -2550,11 +2619,9 @@ function buildTrfNote(entries, type) {
   let html = '<span class="cell-note">';
   shown.forEach(e => {
     const storeName = type === 'inn' ? e.fromName : e.toName;
-    // Abbreviate: first 2 words max
-    const abbr = storeName.split(' ').slice(0, 3).join(' ');
     html += `<span class="trf-chip" title="${storeName}${e.remark?' · '+e.remark:''}">
       <span class="trf-chip-arrow">${arrow}</span>
-      <span class="trf-chip-name">${abbr}</span>
+      <span class="trf-chip-name">${storeName}</span>
       <span class="trf-chip-qty">${e.qty}</span>
     </span>`;
   });
@@ -2613,15 +2680,20 @@ function toggleLock(){
 }
 function closeLockModal(){document.getElementById('lockModal').style.display='none';}
 function confirmLock(){
+  const nameEl = document.getElementById('lockByName');
+  const lockedBy = nameEl ? nameEl.value.trim() : '';
+  if(!lockedBy){ toast('⚠ Please enter your name to lock'); return; }
   closeLockModal();
-  lockDay(me.code,curDay);
-  buildGrid();buildDayTabs();buildFooter();
-  // Refresh dashboard if open
+  // Store the locked-by name
+  if(!db._lockNames) db._lockNames = {};
+  const dateStr = _localDateStr ? _localDateStr(new Date()) : new Date().toLocaleDateString('en-GB');
+  db._lockNames[me.code + '_' + curDay] = {name: lockedBy, ts: new Date().toLocaleString('en-GB'), dateStr};
+  lockDay(me.code, curDay);
+  buildGrid(); buildDayTabs(); buildFooter();
   if(document.getElementById('dashPanel').style.display==='flex'){
-    buildDashDayRow();
-    renderDash();
+    buildDashDayRow(); renderDash();
   }
-  toast('🔒 '+DAY_FULL[curDay]+' locked — opening carried to tomorrow');
+  toast('🔒 Locked by ' + lockedBy + ' — opening carried to tomorrow');
 }
 
 // ── NUMPAD ──
@@ -2669,10 +2741,35 @@ function openNP(code,field){
         });
         storeSel.appendChild(og);
       });
-      // Pre-select from existing transfer log
-      const prev=getTransferLog().find(t=>t.day===curDay&&t.prodCode===code&&
+      // Show existing splits for this SKU
+      const existingSplits=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===code&&
         (field==='inn'?t.toStore===me.code:t.fromStore===me.code));
-      if(prev) storeSel.value=field==='inn'?prev.fromStore:prev.toStore;
+      const splitList=document.getElementById('npSplitList');
+      const remarkEl=document.getElementById('npRemark');
+      const addBtn=document.getElementById('npAddSplitBtn');
+      if(splitList){
+        if(existingSplits.length){
+          splitList.style.display='block';
+          splitList.innerHTML=existingSplits.map((t,i)=>`
+            <div style="display:flex;align-items:center;justify-content:space-between;
+              background:#1A2A1A;border:1px solid #2A4A2A;border-radius:6px;
+              padding:6px 10px;margin-bottom:4px;">
+              <div style="font-size:11px;color:#6FCF97;flex:1;min-width:0;">
+                <div style="font-weight:700;">${field==='inn'?t.fromName:t.toName}</div>
+                ${t.remark?'<div style="font-size:10px;color:#3A6A3A;">'+t.remark+'</div>':''}
+              </div>
+              <span style="font-family:var(--f-mono);font-size:14px;font-weight:900;
+                color:#6FCF97;margin-left:8px;">×${t.qty}</span>
+            </div>`).join('');
+        } else {
+          splitList.style.display='none';
+          splitList.innerHTML='';
+        }
+      }
+      if(remarkEl) remarkEl.style.display='block';
+      if(addBtn) addBtn.style.display='block';
+      // Reset value to 0 for new split entry
+      npBuf=''; document.getElementById('npVal').textContent='0';
     } else {
       storeRow.style.display='none';
     }
@@ -2687,7 +2784,78 @@ function openNP(code,field){
   document.getElementById('npNote').textContent=`Open ${curO} + WH ${curW} + In ${curI} − Sold ${curS} − Sent ${curT} = ${curO+curW+curI-curS-curT}`;
   document.getElementById('numpad').classList.add('show');
 }
-function closeNP(){document.getElementById('numpad').classList.remove('show');npCtx=null;npBuf='';}
+function closeNP(){
+  document.getElementById('numpad').classList.remove('show');
+  npCtx=null;npBuf='';
+  const splitList=document.getElementById('npSplitList');
+  const remarkEl=document.getElementById('npRemark');
+  const addBtn=document.getElementById('npAddSplitBtn');
+  if(splitList){splitList.style.display='none';splitList.innerHTML='';}
+  if(remarkEl){remarkEl.style.display='none';remarkEl.value='';}
+  if(addBtn) addBtn.style.display='none';
+}
+
+// Add a new transfer split without closing numpad
+function npAddSplit(){
+  if(!npCtx) return;
+  const val = parseInt(npBuf)||0;
+  if(val<=0){ toast('⚠ Enter quantity first'); return; }
+  const sel = document.getElementById('npStoreSelect');
+  const sc  = sel ? sel.value : '';
+  if(!sc){ toast('⚠ Select a store first'); return; }
+  const remarkEl = document.getElementById('npRemark');
+  const remark = remarkEl ? remarkEl.value.trim() : '';
+  const ss = STORES.find(s=>s.code===sc);
+  if(!ss) return;
+  const {code, field} = npCtx;
+
+  // Add to transfer log
+  const now2 = new Date();
+  const ts2  = now2.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})
+               + ' ' + now2.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const pp = PRODUCTS.find(x=>x.code===code);
+  if(!db.transferLog) db.transferLog=[];
+  db.transferLog.unshift({
+    id:Date.now(), ts:ts2, day:curDay,
+    fromStore: field==='inn' ? sc       : me.code,
+    fromName:  field==='inn' ? ss.name  : me.name,
+    toStore:   field==='trf' ? sc       : me.code,
+    toName:    field==='trf' ? ss.name  : me.name,
+    prodCode:code, prodName:pp?pp.en:code, prodAr:pp?pp.ar||'':'',
+    qty:val, remark, note:'multi-split'
+  });
+
+  // Accumulate the field value
+  const curVal = dbGet(me.code, curDay, code, field);
+  const origDbSet2 = window._ORIG_dbSet || dbSet;
+  origDbSet2(me.code, curDay, code, field, curVal + val);
+  _qWrite(me.code, curDay, code, field, curVal + val);
+
+  // Sync transfer
+  if(typeof _sbFetch === 'function' || typeof _sbRpc === 'function'){
+    const dt = new Date(); const dayDate = _localDateStr(dt);
+    fetch(_SB_URL + '/rest/v1/transfers', {
+      method:'POST', headers:{..._SBH,'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        day_date:dayDate, from_store:field==='inn'?sc:me.code,
+        from_name:field==='inn'?ss.name:me.name,
+        to_store:field==='trf'?sc:me.code,
+        to_name:field==='trf'?ss.name:me.name,
+        prod_code:code, prod_name:pp?pp.en:code, prod_ar:pp?pp.ar||'':'',
+        qty:val, remark, note:'multi-split'
+      })
+    }).catch(()=>{});
+  }
+
+  saveDB();
+  // Reset qty, keep numpad open for next split
+  npBuf=''; document.getElementById('npVal').textContent='0';
+  if(remarkEl) remarkEl.value='';
+  // Refresh split list
+  openNP(code, field);
+  buildGrid(); updateTotalsRow(); buildFooter();
+  toast('✓ Added: '+val+' → '+ss.name);
+}
 function updateNpProj(){
   if(!npCtx) return;
   const v=parseInt(npBuf)||0;
@@ -3434,6 +3602,8 @@ function renderDash(){
 // FINANCE — CLEAN REWRITE
 // ══════════════════════════════════════════
 let finCC = [];
+let finBNPL = [];
+let finExpenses = [];
 let finPeriod = 'day';
 let finNPCtx  = null;  // 'cash' | 'credit' | 'openCash' | 'debtors' | 'directorAmt' | 'bankAmt' | 'expenses' | '__cc__N'
 let finNPBuf  = '';
@@ -3519,6 +3689,8 @@ function finRender(){
 
   // CC list
   renderCCList();
+  renderBNPLList();
+  renderExpenseList();
 }
 
 // ── Render CC transaction list ───────────────────────
@@ -3719,16 +3891,36 @@ function confirmNP(){
   // Finance numpad
   if(finNPCtx !== null && !npCtx){
     const val = parseFloat(finNPBuf) || 0;
-    const isCC = typeof finNPCtx === 'string' && finNPCtx.startsWith('__cc__');
+    const isCC   = typeof finNPCtx==='string' && finNPCtx.startsWith('__cc__');
+    const isBNPL = typeof finNPCtx==='string' && finNPCtx.startsWith('__bnpl__');
+    const isExp  = typeof finNPCtx==='string' && finNPCtx.startsWith('__exp__');
+    const isMtd  = typeof finNPCtx==='string' && finNPCtx.startsWith('__mtd__');
+    const isAdj  = typeof finNPCtx==='string' && finNPCtx.startsWith('__adj__');
     if(isCC){
-      const idx = parseInt(finNPCtx.replace('__cc__',''));
-      if(finCC[idx]) finCC[idx].amt = val;
+      const idx=parseInt(finNPCtx.replace('__cc__',''));
+      if(finCC[idx]) finCC[idx].amt=val;
+      finMarkUnsaved(); finRender();
+    } else if(isBNPL){
+      const idx=parseInt(finNPCtx.replace('__bnpl__',''));
+      if(finBNPL[idx]) finBNPL[idx].amt=val;
+      finMarkUnsaved(); renderBNPLList(); finCalc();
+      const te=document.getElementById('famt-total');
+      if(te) te.textContent=fmtAmt(finData._total);
+    } else if(isExp){
+      const idx=parseInt(finNPCtx.replace('__exp__',''));
+      if(finExpenses[idx]) finExpenses[idx].amt=val;
+      finMarkUnsaved(); renderExpenseList();
+    } else if(isMtd){
+      _mtdQty=parseInt(finNPBuf)||0;
+      document.getElementById('mtd-qty-btn').textContent=_mtdQty||'0';
+    } else if(isAdj){
+      _adjNewVal=parseInt(finNPBuf)||0;
+      document.getElementById('adj-new-val-display').textContent=_adjNewVal;
     } else {
-      finData[finNPCtx] = val;
+      finData[finNPCtx]=val;
+      finMarkUnsaved(); finRender();
     }
-    finNPCtx = null; finNPBuf = '';
-    finMarkUnsaved();
-    finRender();
+    finNPCtx=null; finNPBuf='';
     document.getElementById('numpad').classList.remove('show');
     toast('✓ Updated');
     return;
@@ -3887,7 +4079,13 @@ function saveFinanceData(){
   if(pb) finData.preparedBy   = pb.value;
   if(cb) finData.checkedBy    = cb.value;
   finCalc();
-  finData.ccRows = finCC.map(r=>({code:r.code||'', amt:r.amt||0}));
+  finData.ccRows     = finCC.map(r=>({code:r.code||'',amt:r.amt||0}));
+  finData.bnplRows   = finBNPL.map(r=>({type:r.type||'tabby',code:r.code||'',amt:r.amt||0}));
+  finData.expenseRows= finExpenses.map(r=>({desc:r.desc||'',amt:r.amt||0,photo:r.photo||''}));
+  // Recalc tabby/tamara totals from BNPL rows
+  finData.tabby  = finBNPL.filter(r=>r.type==='tabby').reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+  finData.tamara = finBNPL.filter(r=>r.type==='tamara').reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+  finData.expenses = finExpenses.reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
   if(!db.finance) db.finance={};
   if(!db.finance[me.code]) db.finance[me.code]={};
   db.finance[me.code][finDay] = { ...finData, savedAt: new Date().toLocaleString('en-GB') };
@@ -3900,16 +4098,19 @@ function saveFinanceData(){
 
 // ── Load finance data ────────────────────────────────
 function loadFinanceData(finDay){
-  finCC = [];
+  finCC = []; finBNPL = []; finExpenses = [];
   finData = {
-    cash:0, credit:0, openCash:0, debtors:0,
+    cash:0, tabby:0, tamara:0, credit:0, openCash:0, debtors:0,
     directorAmt:0, bankAmt:0, expenses:0,
-    directorName:'', bankSlip:'', preparedBy:'', checkedBy:'', ccRows:[]
+    directorName:'', bankSlip:'', preparedBy:'', checkedBy:'',
+    bankReceiptPhoto:'', expenseReceiptPhoto:'', ccRows:[]
   };
   if(me && db.finance?.[me.code]?.[finDay]){
     const d = db.finance[me.code][finDay];
     Object.assign(finData, d);
-    finCC = (d.ccRows||[]).map(r=>({code:r.code||'', amt:r.amt||0}));
+    finCC       = (d.ccRows    ||[]).map(r=>({code:r.code||'',amt:r.amt||0}));
+    finBNPL     = (d.bnplRows  ||[]).map(r=>({type:r.type||'tabby',code:r.code||'',amt:r.amt||0}));
+    finExpenses = (d.expenseRows||[]).map(r=>({desc:r.desc||'',amt:r.amt||0,photo:r.photo||''}));
     finDaySaved[me.code+'_'+finDay] = true;
   }
   finRender();
@@ -4394,6 +4595,347 @@ function renderCCRows(){}
 function updateFinTotalsRow(){}
 function openFinNP(f){ finTap(f); }
 function openFinCCNP(i){ finTapCC(i); }
+
+// ══════════════════════════════════════════════════════════════
+// BNPL (Tabby / Tamara) — multi-transaction list
+// ══════════════════════════════════════════════════════════════
+let finBNPL = []; // [{type:'tabby'|'tamara', code:'', amt:0}]
+
+function addBNPLRow(){
+  const finDay = typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  if(isFinanceLocked(me?.code,finDay)){toast('🔒 Finance locked');return;}
+  finBNPL.push({type:'tabby',code:'',amt:0});
+  finMarkUnsaved(); renderBNPLList();
+}
+function delBNPLRow(i){
+  finBNPL.splice(i,1); finMarkUnsaved(); finRender();
+}
+
+function renderBNPLList(){
+  const list     = document.getElementById('fin-bnpl-list');
+  const emptyMsg = document.getElementById('fin-bnpl-empty-msg');
+  const totalRow = document.getElementById('fin-bnpl-total-row');
+  const addBtn   = document.getElementById('fin-add-bnpl-btn');
+  if(!list) return;
+  const finDay = typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  const locked = (me?isLocked(me.code,finDay):false)||isFinanceLocked(me?.code,finDay);
+  if(addBtn) addBtn.style.display = locked?'none':'';
+  list.querySelectorAll('.fin-cc-item').forEach(e=>e.remove());
+  if(!finBNPL.length){
+    if(emptyMsg) emptyMsg.style.display='block';
+    if(totalRow) totalRow.style.display='none';
+    return;
+  }
+  if(emptyMsg) emptyMsg.style.display='none';
+  finBNPL.forEach((row,i)=>{
+    const div=document.createElement('div');
+    div.className='fin-cc-item';
+    div.style.background='#0E0E1A';div.style.borderBottomColor='#1A1A2A';
+    div.innerHTML=`
+      <div class="fin-cc-num" style="color:#6FA8DC;">${i+1}</div>
+      <div style="flex:0 0 auto;margin-right:6px;">
+        <select onchange="finBNPL[${i}].type=this.value;finMarkUnsaved()"
+          style="background:#151520;border:1px solid #2A2A4A;border-radius:5px;
+                 color:#6FA8DC;font-family:var(--f-mono);font-size:11px;
+                 padding:4px 6px;outline:none;cursor:pointer;" ${locked?'disabled':''}>
+          <option value="tabby" ${row.type==='tabby'?'selected':''}>Tabby</option>
+          <option value="tamara" ${row.type==='tamara'?'selected':''}>Tamara</option>
+        </select>
+      </div>
+      <div class="fin-cc-code-wrap">
+        <div class="fin-cc-code-label">Transaction Code</div>
+        <input class="fin-cc-code-input" style="color:#6FA8DC;"
+          value="${(row.code||'').replace(/"/g,'&quot;')}" placeholder="Transaction #…"
+          ${locked?'readonly':''}
+          oninput="finBNPL[${i}].code=this.value;finMarkUnsaved()">
+      </div>
+      <div class="fin-cc-amt-btn" onclick="${locked?'':'finTapBNPL('+i+')'}" style="${locked?'cursor:default;opacity:0.7;':'background:#151520;border-color:#2A2A4A;'}">
+        <div class="fin-cc-amt-label" style="color:#6FA8DC;">AED</div>
+        <div class="fin-cc-amt-val" style="color:#4A6AAA;">${(parseFloat(row.amt)||0)===0?'—':(parseFloat(row.amt)||0).toFixed(0)}</div>
+      </div>
+      ${locked?'':`<button class="fin-cc-del" onclick="delBNPLRow(${i})">✕</button>`}`;
+    list.appendChild(div);
+  });
+  const total=finBNPL.reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+  if(totalRow){
+    totalRow.style.display='flex';
+    const tv=document.getElementById('famt-bnpl-total');
+    if(tv) tv.textContent=total>0?total.toFixed(0):'0';
+  }
+  // Update famt-tabby and famt-tamara (kept for calc compatibility)
+  finData.tabby  = finBNPL.filter(r=>r.type==='tabby').reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+  finData.tamara = finBNPL.filter(r=>r.type==='tamara').reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+}
+
+function finTapBNPL(i){
+  const finDay=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  if(isFinanceLocked(me?.code,finDay)){toast('🔒 Finance locked');return;}
+  finNPCtx='__bnpl__'+i;
+  finNPBuf=String(parseFloat(finBNPL[i]?.amt)||'');
+  if(finNPBuf==='0') finNPBuf='';
+  document.getElementById('npProduct').textContent='BNPL #'+(i+1)+' ('+((finBNPL[i]?.type||'').toUpperCase())+')';
+  const fEl=document.getElementById('npField');
+  fEl.textContent='Transaction Amount (AED)';fEl.className='np-field inn';
+  document.getElementById('npCurLabel').textContent='AMOUNT';
+  document.getElementById('npVal').textContent=finNPBuf||'0';
+  document.getElementById('npNote').textContent=finBNPL[i]?.code?'Code: '+finBNPL[i].code:'Enter transaction amount';
+  const sr=document.getElementById('npStoreRow');if(sr)sr.style.display='none';
+  npCtx=null;
+  document.getElementById('numpad').classList.add('show');
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXPENSES — multi-line with description + photo receipt
+// ══════════════════════════════════════════════════════════════
+let finExpenses = []; // [{desc:'', amt:0, photo:''}]
+
+function addExpenseRow(){
+  const finDay=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  if(isFinanceLocked(me?.code,finDay)){toast('🔒 Finance locked');return;}
+  finExpenses.push({desc:'',amt:0,photo:''});
+  finMarkUnsaved(); renderExpenseList();
+}
+function delExpenseRow(i){
+  finExpenses.splice(i,1); finMarkUnsaved(); finRender();
+}
+
+function renderExpenseList(){
+  const list     = document.getElementById('fin-expense-list');
+  const emptyMsg = document.getElementById('fin-expense-empty-msg');
+  if(!list) return;
+  const finDay=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  const locked=(me?isLocked(me.code,finDay):false)||isFinanceLocked(me?.code,finDay);
+  const addBtn=document.getElementById('fin-add-exp-btn');
+  if(addBtn) addBtn.style.display=locked?'none':'';
+  list.querySelectorAll('.fin-exp-item').forEach(e=>e.remove());
+  if(!finExpenses.length){
+    if(emptyMsg) emptyMsg.style.display='block';
+    const amtEl=document.getElementById('famt-expenses');
+    if(amtEl) amtEl.textContent='—';
+    return;
+  }
+  if(emptyMsg) emptyMsg.style.display='none';
+  finExpenses.forEach((row,i)=>{
+    const div=document.createElement('div');
+    div.className='fin-exp-item';
+    div.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 12px;background:#1A0808;border-bottom:1px solid #2A1010;';
+    div.innerHTML=`
+      <div style="flex:1;min-width:0;">
+        <input placeholder="What is this expense? (e.g. Water bottles, Cleaning)" type="text"
+          value="${(row.desc||'').replace(/"/g,'&quot;')}"
+          ${locked?'readonly':''}
+          oninput="finExpenses[${i}].desc=this.value;finMarkUnsaved()"
+          style="width:100%;background:#250A0A;border:none;border-bottom:1px solid #3A1010;
+                 font-family:var(--f-body);font-size:12px;color:#E0B0B0;padding:4px 0;outline:none;">
+      </div>
+      <div class="fin-cc-amt-btn" onclick="${locked?'':'finTapExpense('+i+')'}"
+        style="background:#250A0A;border-color:#5A1A1A;${locked?'cursor:default;opacity:0.7;':''}min-width:70px;">
+        <div class="fin-cc-amt-label" style="color:#E87070;">AED</div>
+        <div class="fin-cc-amt-val" style="color:#8B1A1A;">${(parseFloat(row.amt)||0)===0?'—':(parseFloat(row.amt)||0).toFixed(0)}</div>
+      </div>
+      <label style="cursor:pointer;" title="Attach receipt photo">
+        <input type="file" accept="image/*" style="display:none"
+          onchange="finExpensePhoto(${i},this)">
+        <span style="font-size:16px;">${row.photo?'🖼':'📎'}</span>
+      </label>
+      ${locked?'':`<button class="fin-cc-del" style="color:#5A1A1A;" onclick="delExpenseRow(${i})">✕</button>`}`;
+    list.appendChild(div);
+  });
+  // Update total
+  const total=finExpenses.reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+  finData.expenses=total;
+  const amtEl=document.getElementById('famt-expenses');
+  if(amtEl) amtEl.textContent=total>0?'('+total.toFixed(0)+')':'—';
+  finCalc();
+  const clsEl=document.getElementById('famt-closing');
+  if(clsEl){
+    const c=finData._closing||0;
+    clsEl.textContent=c===0?'—':c.toLocaleString('en-US',{maximumFractionDigits:0});
+    clsEl.className='fin-row-amount fin-amt-closing'+(c<0?' neg':'');
+  }
+}
+
+function finTapExpense(i){
+  const finDay=typeof dashDay!=='undefined'?dashDay:DAY_PAST;
+  if(isFinanceLocked(me?.code,finDay)){toast('🔒 Finance locked');return;}
+  finNPCtx='__exp__'+i;
+  finNPBuf=String(parseFloat(finExpenses[i]?.amt)||'');
+  if(finNPBuf==='0') finNPBuf='';
+  document.getElementById('npProduct').textContent='Expense #'+(i+1);
+  const fEl=document.getElementById('npField');
+  fEl.textContent=(finExpenses[i]?.desc||'Amount')+' (AED)';fEl.className='np-field sold';
+  document.getElementById('npCurLabel').textContent='AMOUNT';
+  document.getElementById('npVal').textContent=finNPBuf||'0';
+  document.getElementById('npNote').textContent='Enter expense amount then SAVE ✓';
+  const sr=document.getElementById('npStoreRow');if(sr)sr.style.display='none';
+  npCtx=null;
+  document.getElementById('numpad').classList.add('show');
+}
+
+function finExpensePhoto(i,input){
+  const file=input.files[0]; if(!file) return;
+  if(file.size>3*1024*1024){toast('⚠ Max 3MB');return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    finExpenses[i].photo=e.target.result;
+    finMarkUnsaved(); renderExpenseList();
+    toast('📎 Receipt attached');
+  };
+  r.readAsDataURL(file);
+}
+
+// ══════════════════════════════════════════════════════════════
+// MANAGER DASHBOARD — All Stores Analytics
+// ══════════════════════════════════════════════════════════════
+let mgrDashStore = null; // currently selected store in MGR view
+
+function openMgrDashboard(){
+  // Build manager dashboard panel
+  const panel=document.getElementById('mgrDashPanel');
+  if(panel){panel.style.display='flex';renderMgrDashboard();}
+}
+function closeMgrDashboard(){
+  const panel=document.getElementById('mgrDashPanel');
+  if(panel) panel.style.display='none';
+}
+
+function renderMgrDashboard(){
+  const body=document.getElementById('mgrDashBody');
+  if(!body) return;
+  const labels=getDayLabels();
+
+  // Build summary per store
+  const storeData=STORES.filter(s=>s.code!=='MGR').map(s=>{
+    let totalSold=0,totalBal=0,totalOpen=0;
+    PRODUCTS.forEach(p=>{
+      const sold=dbGet(s.code,DAY_PAST,p.code,'sold');
+      const b=bal(s.code,DAY_PAST,p.code);
+      const o=dbGet(s.code,DAY_PAST,p.code,'open');
+      totalSold+=sold; totalBal+=b; totalOpen+=o;
+    });
+    const locked=isLocked(s.code,DAY_PAST);
+    const lockInfo=db._lockNames?.[s.code+'_'+DAY_PAST];
+    return {code:s.code,name:s.name,region:s.region,mgr:s.mgr,
+            totalSold,totalBal,totalOpen,locked,lockInfo};
+  }).sort((a,b)=>b.totalSold-a.totalSold);
+
+  // Top SKUs across all stores today
+  const skuMap={};
+  PRODUCTS.forEach(p=>{
+    let tot=0;
+    STORES.filter(s=>s.code!=='MGR').forEach(s=>{tot+=dbGet(s.code,DAY_PAST,p.code,'sold');});
+    if(tot>0) skuMap[p.code]={en:p.en,ar:p.ar||'',cat:p.cat,total:tot};
+  });
+  const topSKUs=Object.entries(skuMap).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
+
+  // Weekly totals per store (last 7 days)
+  const weekData=STORES.filter(s=>s.code!=='MGR').map(s=>{
+    let wSold=0,wBal=0;
+    for(let d=0;d<7;d++){
+      const di=Math.max(0,DAY_PAST-d);
+      PRODUCTS.forEach(p=>{wSold+=dbGet(s.code,di,p.code,'sold');});
+    }
+    PRODUCTS.forEach(p=>{wBal+=bal(s.code,DAY_PAST,p.code);});
+    return {code:s.code,name:s.name,wSold,wBal};
+  }).sort((a,b)=>b.wSold-a.wSold);
+
+  const totalSoldToday=storeData.reduce((s,x)=>s+x.totalSold,0);
+  const lockedCount=storeData.filter(s=>s.locked).length;
+
+  body.innerHTML=`
+  <!-- KPI strip -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 14px;background:#111;border-bottom:1px solid #1E1E1E;">
+    ${[
+      {label:'Stores Locked',val:lockedCount+'/'+storeData.length,c:'#6FCF97'},
+      {label:'Today Total Sales',val:totalSoldToday,c:'#C9A44E'},
+      {label:'Stores Active',val:storeData.filter(s=>s.totalSold>0).length,c:'#6FA8DC'},
+      {label:'Top Store',val:storeData[0]?.name?.split(' ').slice(0,2).join(' ')||'—',c:'#E8C97A'},
+    ].map(k=>`<div style="background:#1A1A1A;border:1px solid #222;border-radius:8px;padding:10px 12px;text-align:center;">
+      <div style="font-family:var(--f-mono);font-size:16px;font-weight:900;color:${k.c};">${k.val}</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;">${k.label}</div>
+    </div>`).join('')}
+  </div>
+
+  <!-- Today Performance Bar Chart -->
+  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
+    <div style="font-family:var(--f-mono);font-size:10px;color:#C9A44E;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📊 Today's Sales by Store</div>
+    ${storeData.filter(s=>s.totalSold>0||s.totalOpen>0).map(s=>{
+      const pct=totalSoldToday>0?Math.round((s.totalSold/totalSoldToday)*100):0;
+      const maxSold=storeData[0]?.totalSold||1;
+      const barW=Math.round((s.totalSold/maxSold)*100);
+      return `<div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <div style="font-size:11px;font-weight:600;color:#CCC;">${s.name}</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            ${s.locked?`<span style="font-size:9px;color:#6FCF97;font-family:var(--f-mono);">🔒${s.lockInfo?s.lockInfo.name:''}</span>`:'<span style="font-size:9px;color:#E87070;font-family:var(--f-mono);">OPEN</span>'}
+            <span style="font-family:var(--f-mono);font-size:12px;font-weight:800;color:#C9A44E;">${s.totalSold}</span>
+          </div>
+        </div>
+        <div style="height:8px;background:#1A1A1A;border-radius:4px;overflow:hidden;">
+          <div style="height:100%;background:linear-gradient(90deg,#C9A44E,#E8C97A);width:${barW}%;border-radius:4px;transition:width 0.5s;"></div>
+        </div>
+        <div style="font-size:9px;color:#444;margin-top:2px;font-family:var(--f-mono);">Balance: ${s.totalBal} units · ${pct}% of today's total</div>
+      </div>`;
+    }).join('')||'<div style="color:#333;font-family:var(--f-mono);font-size:11px;text-align:center;padding:20px;">No sales data today yet</div>'}
+  </div>
+
+  <!-- Weekly Store Ranking -->
+  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
+    <div style="font-family:var(--f-mono);font-size:10px;color:#6FA8DC;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📈 7-Day Sales Ranking</div>
+    ${weekData.slice(0,8).map((s,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #1A1A1A;">
+        <div style="font-family:var(--f-mono);font-size:11px;color:${i===0?'#C9A44E':i===1?'#888':i===2?'#7A5C28':'#444'};font-weight:900;width:18px;">#${i+1}</div>
+        <div style="flex:1;font-size:12px;color:#CCC;font-weight:600;">${s.name}</div>
+        <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#6FA8DC;">${s.wSold}</div>
+        <div style="font-size:10px;color:#444;font-family:var(--f-mono);">units</div>
+      </div>`).join('')}
+  </div>
+
+  <!-- Top 10 SKUs today -->
+  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
+    <div style="font-family:var(--f-mono);font-size:10px;color:#BB88DD;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">🏆 Top Moving SKUs Today (All Stores)</div>
+    ${topSKUs.map(([code,{en,cat,total}],i)=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #141414;">
+        <div style="font-family:var(--f-mono);font-size:10px;color:#555;width:18px;">${i+1}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;color:#CCC;">${en}</div>
+          <div style="font-size:9px;color:#444;font-family:var(--f-mono);">${code} · ${cat}</div>
+        </div>
+        <div style="font-family:var(--f-mono);font-size:15px;font-weight:900;color:#BB88DD;">${total}</div>
+        <div style="font-size:10px;color:#444;">sold</div>
+      </div>`).join('')||'<div style="color:#333;font-family:var(--f-mono);font-size:11px;text-align:center;padding:20px;">No sales data yet</div>'}
+  </div>
+
+  <!-- Store selector for editing -->
+  <div style="padding:12px 14px;background:#0D0D0D;">
+    <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">View / Edit a Specific Store</div>
+    <div style="display:flex;gap:8px;">
+      <select id="mgrStoreSelect" style="flex:1;background:#1A1A1A;border:1px solid #333;border-radius:7px;padding:9px 12px;font-family:var(--f-body);font-size:13px;color:#CCC;outline:none;">
+        ${STORES.filter(s=>s.code!=='MGR').map(s=>`<option value="${s.code}">${s.name}</option>`).join('')}
+      </select>
+      <button onclick="mgrSwitchToStore()" style="background:#1A2A1A;border:1px solid #2A5A2A;border-radius:7px;color:#6FCF97;font-family:var(--f-body);font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer;">
+        Open Store →
+      </button>
+    </div>
+  </div>`;
+}
+
+function mgrSwitchToStore(){
+  const sel=document.getElementById('mgrStoreSelect');
+  if(!sel||!sel.value) return;
+  const store=STORES.find(s=>s.code===sel.value);
+  if(!store) return;
+  // Switch context to this store
+  const prevMe=me; me=store;
+  // Reload data for this store
+  _sbLoad(store.code).then(()=>{
+    buildGrid(); buildDayTabs(); buildFooter();
+    closeMgrDashboard();
+    document.getElementById('topStore').textContent=store.name+' ← MGR';
+    toast('📋 Viewing: '+store.name+' — All edits allowed');
+  });
+}
+
 
 // ══════════════════════════════════════════════════════════
 // MULTI-STORE TRANSFER DRAWER
