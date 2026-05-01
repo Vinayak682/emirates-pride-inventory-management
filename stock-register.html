@@ -480,63 +480,74 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sp-mode-btn.active{color:var(--gold2);border-bottom-color:var(--gold);}
 
 /* Product lookup panel */
-.avail-panel{display:flex;flex-direction:column;flex:1;}
-.avail-empty{text-align:center;padding:48px 16px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.avail-empty-icon{font-size:36px;margin-bottom:10px;}
-.avail-empty-text{font-size:13px;color:#444;line-height:1.6;}
-.avail-empty-hint{font-size:11px;color:#333;margin-top:8px;}
+.avail-panel{display:flex;flex-direction:column;height:100%;}
 
-/* Hero card */
-.sp-hero{background:#111;border-bottom:1px solid #222;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
+/* Empty state */
+.avail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;}
+.avail-empty-icon{font-size:32px;margin-bottom:8px;}
+.avail-empty-text{font-size:13px;color:#444;line-height:1.6;}
+.avail-empty-hint{font-size:11px;color:#333;margin-top:6px;}
+
+/* Product hero — compact single bar */
+.sp-hero{background:#111;border-bottom:1px solid #222;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
 .sp-hero-info{flex:1;min-width:0;}
-.sp-hero-name{font-size:15px;font-weight:700;color:#E8E0D0;}
-.sp-hero-ar{font-family:var(--f-ar);font-size:11px;color:#555;direction:rtl;text-align:left;margin-top:1px;}
-.sp-hero-meta{font-family:var(--f-mono);font-size:9px;color:#444;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px;}
+.sp-hero-name{font-size:14px;font-weight:700;color:#E8E0D0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-hero-ar{font-family:var(--f-ar);font-size:10px;color:#555;direction:rtl;margin-top:1px;}
+.sp-hero-meta{font-family:var(--f-mono);font-size:8px;color:#444;margin-top:3px;text-transform:uppercase;letter-spacing:0.4px;}
 .sp-hero-right{text-align:right;flex-shrink:0;}
-.sp-hero-total{font-family:var(--f-mono);font-size:30px;font-weight:900;color:#6FCF97;line-height:1;}
-.sp-hero-total-lbl{font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.6px;}
+.sp-hero-total{font-family:var(--f-mono);font-size:26px;font-weight:900;color:#6FCF97;line-height:1;}
+.sp-hero-total-lbl{font-size:7px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
 
 /* Stats strip */
 .sp-stats{display:flex;border-bottom:1px solid #1A1A1A;flex-shrink:0;}
-.sp-stat{flex:1;padding:8px;text-align:center;border-right:1px solid #1A1A1A;}
+.sp-stat{flex:1;padding:6px 8px;text-align:center;border-right:1px solid #1A1A1A;}
 .sp-stat:last-child{border-right:none;}
-.sp-stat-n{font-family:var(--f-mono);font-size:20px;font-weight:900;display:block;}
+.sp-stat-n{font-family:var(--f-mono);font-size:17px;font-weight:900;display:block;}
 .sp-stat-n.g{color:#6FCF97;}.sp-stat-n.r{color:#E87070;}.sp-stat-n.a{color:#C9A44E;}
-.sp-stat-l{font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
+.sp-stat-l{font-size:7px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
 
-/* Area manager header */
-.sp-am{background:#1A1400;border-top:2px solid #C9A44E55;border-bottom:1px solid #2A2000;padding:7px 16px;display:flex;align-items:center;justify-content:space-between;}
-.sp-am-name{font-family:var(--f-mono);font-size:10px;font-weight:700;color:#C9A44E;text-transform:uppercase;letter-spacing:0.8px;}
-.sp-am-sub{font-family:var(--f-mono);font-size:8px;color:#555;}
+/* Two-column AM layout */
+.sp-am-panels{display:flex;flex:1;overflow:hidden;min-height:0;}
+.sp-am-panel{flex:1;display:flex;flex-direction:column;border-right:1px solid #1A1A1A;overflow:hidden;}
+.sp-am-panel:last-child{border-right:none;}
 
-/* Region sub-header */
-.sp-rgn{background:#0D0D0D;padding:4px 16px;border-bottom:1px solid #141414;display:flex;align-items:center;justify-content:space-between;}
-.sp-rgn-name{font-family:var(--f-mono);font-size:8px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;}
-.sp-rgn-info{font-family:var(--f-mono);font-size:8px;color:#2A2A2A;}
+/* AM header */
+.sp-am-hdr{background:#1A1400;border-bottom:1px solid #2A2000;padding:5px 10px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
+.sp-am-hdr-name{font-family:var(--f-mono);font-size:9px;font-weight:700;color:#C9A44E;text-transform:uppercase;letter-spacing:0.7px;}
+.sp-am-hdr-sub{font-family:var(--f-mono);font-size:7px;color:#555;}
 
-/* Store row */
-.sp-row{display:flex;align-items:center;gap:0;border-bottom:1px solid #111;min-height:52px;cursor:default;transition:background 0.1s;}
-.sp-row.hs{background:#0C180C;cursor:pointer;}.sp-row.hs:active{background:#111F11;}
-.sp-row.ls{background:#181400;cursor:pointer;}.sp-row.ls:active{background:#1E1900;}
-.sp-row.zs{background:#090909;}
-.sp-row.mine{outline:1px solid #C9A44E44;outline-offset:-1px;z-index:1;position:relative;}
+/* Region header */
+.sp-rgn-hdr{background:#0A0A0A;padding:3px 10px;border-bottom:1px solid #141414;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
+.sp-rgn-hdr-name{font-family:var(--f-mono);font-size:7px;font-weight:700;color:#3A3A3A;text-transform:uppercase;letter-spacing:1px;}
+.sp-rgn-hdr-info{font-family:var(--f-mono);font-size:7px;color:#252525;}
 
-/* Left indicator bar */
-.sp-bar{width:4px;height:52px;flex-shrink:0;}
-.sp-bar.g{background:#6FCF97;}.sp-bar.a{background:#C9A44E;}.sp-bar.z{background:#1A1A1A;}
+/* Store grid within each AM panel */
+.sp-store-grid{display:grid;grid-template-columns:1fr 1fr;flex-shrink:0;}
 
-/* Row body */
-.sp-row-body{flex:1;min-width:0;padding:8px 12px;}
-.sp-row-name{font-size:12px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sp-row-name.g{color:#D0D0D0;}.sp-row-name.z{color:#242424;}
-.sp-row-meta{font-family:var(--f-mono);font-size:8px;color:#2E2E2E;margin-top:2px;}
-.sp-mine-tag{display:inline-block;background:#2A1A00;border:1px solid #4A3000;color:#C9A44E;font-size:7px;padding:1px 4px;border-radius:2px;font-family:var(--f-mono);margin-left:5px;vertical-align:middle;}
+/* Store tile — uniform 38px */
+.sp-tile{display:flex;align-items:center;gap:0;height:38px;border-bottom:1px solid #0E0E0E;border-right:1px solid #0E0E0E;overflow:hidden;}
+.sp-tile:nth-child(even){border-right:none;}
+.sp-tile.hs{background:#0B180B;cursor:pointer;}.sp-tile.hs:active{background:#0F2010;}
+.sp-tile.ls{background:#171300;cursor:pointer;}.sp-tile.ls:active{background:#1C1800;}
+.sp-tile.zs{background:#090909;}
+.sp-tile.mine{outline:1px solid #C9A44E55;outline-offset:-1px;z-index:1;position:relative;}
+
+/* Left accent bar */
+.sp-acc{width:3px;height:38px;flex-shrink:0;}
+.sp-acc.g{background:#6FCF97;}.sp-acc.a{background:#C9A44E;}.sp-acc.z{background:#1E1E1E;}
+
+/* Tile text body */
+.sp-tile-body{flex:1;min-width:0;padding:0 6px;}
+.sp-tile-name{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}
+.sp-tile-name.g{color:#C8C8C8;}.sp-tile-name.r{color:#E87070;font-weight:700;}
+.sp-tile-code{font-family:var(--f-mono);font-size:7px;color:#2A2A2A;margin-top:1px;}
+.sp-mine-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#C9A44E;margin-left:3px;vertical-align:middle;}
 
 /* Qty column */
-.sp-qty{flex-shrink:0;width:72px;height:52px;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.sp-qty-n{font-family:var(--f-mono);font-size:22px;font-weight:900;line-height:1;}
-.sp-qty-n.g{color:#6FCF97;}.sp-qty-n.a{color:#C9A44E;}.sp-qty-n.r{color:#E87070;}
-.sp-qty-u{font-size:7px;color:#444;text-transform:uppercase;letter-spacing:0.4px;}
+.sp-tile-qty{flex-shrink:0;width:40px;height:38px;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.sp-tile-qn{font-family:var(--f-mono);font-size:14px;font-weight:900;line-height:1;}
+.sp-tile-qn.g{color:#6FCF97;}.sp-tile-qn.a{color:#C9A44E;}.sp-tile-qn.r{color:#E87070;}
+.sp-tile-qu{font-size:6px;color:#333;text-transform:uppercase;}
 
 /* REQUEST modal */
 #reqModal{
@@ -2931,17 +2942,16 @@ function renderStores(){
   else renderStoreMode(body);
 }
 
-// ─── PRODUCT MODE: uniform list — Area Manager → Region → Stores ──
+// ─── PRODUCT MODE: side-by-side AM panels, no scroll ────────────
 function renderProductMode(body){
   const skuF=document.getElementById('spSku').value;
   const q=(document.getElementById('spSearch').value||'').toLowerCase();
 
   if(!skuF&&!q){
-    body.innerHTML='<div class="avail-panel"><div class="avail-empty"><div class="avail-empty-icon">🔍</div><div class="avail-empty-text">Select a product above<br>to see availability across all stores</div><div class="avail-empty-hint">Green = in stock · Red = out of stock</div></div></div>';
+    body.innerHTML='<div class="avail-panel"><div class="avail-empty"><div class="avail-empty-icon">🔍</div><div class="avail-empty-text">Select a product above<br>to check availability across all 27 stores</div><div class="avail-empty-hint">Green = in stock · Red = out of stock</div></div></div>';
     return;
   }
 
-  // Resolve product
   let prod=null;
   if(skuF){ prod=PRODUCTS.find(p=>p.code===skuF); }
   else if(q){
@@ -2949,7 +2959,7 @@ function renderProductMode(body){
     if(prod) document.getElementById('spSku').value=prod.code;
   }
   if(!prod){
-    body.innerHTML='<div class="avail-panel"><div class="avail-empty"><div class="avail-empty-icon">❓</div><div class="avail-empty-text">No product matched. Try a different search.</div></div></div>';
+    body.innerHTML='<div class="avail-panel"><div class="avail-empty"><div class="avail-empty-icon">❓</div><div class="avail-empty-text">No product matched.</div></div></div>';
     return;
   }
 
@@ -2960,62 +2970,65 @@ function renderProductMode(body){
   });
 
   const netTotal=rows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
-  const inStockCnt=rows.filter(r=>r.b>0).length;
+  const inCnt=rows.filter(r=>r.b>0).length;
   const zeroCnt=rows.filter(r=>r.b<=0).length;
   const myBal=rows.find(r=>r.isMine)?.b||0;
   const myStatus=myBal>0
-    ?`<span style="color:#6FCF97;">● ${myBal} in your store</span>`
+    ?`<span style="color:#6FCF97;font-weight:700;">● ${myBal} in your store</span>`
     :`<span style="color:#E87070;">✕ Not in your store</span>`;
 
-  // Build by Area Manager → Region
-  const amList=[
-    {name:'Mohamed Hessin',icon:'👤'},
-    {name:'Mohammed Elmatloub',icon:'👤'},
-  ];
-  // get AM list dynamically in order of appearance
-  const amOrder=[...new Set(allStores.map(s=>s.mgr))];
-
-  let sectionsHTML='';
-  amOrder.forEach(am=>{
-    const amRows=rows.filter(r=>r.store.mgr===am);
+  // Helper: build tiles for an array of store rows (sorted: stock first)
+  function buildAMPanel(amName,amRows){
     const amTotal=amRows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
-    const amInStock=amRows.filter(r=>r.b>0).length;
-    sectionsHTML+=`<div class="sp-am"><span class="sp-am-name">👤 ${am}</span><span class="sp-am-sub">${amInStock} stores in stock · ${amTotal} units</span></div>`;
-
-    // Group by region within AM
+    const amIn=amRows.filter(r=>r.b>0).length;
     const regions=[...new Set(amRows.map(r=>r.store.region))];
+    let html=`<div class="sp-am-hdr">
+      <span class="sp-am-hdr-name">👤 ${amName.split(' ')[1]||amName}</span>
+      <span class="sp-am-hdr-sub">${amIn} in stock · ${amTotal} units</span>
+    </div>`;
     regions.forEach(region=>{
-      const rRows=amRows.filter(r=>r.store.region===region);
-      // Sort: stock first (desc), then zero
+      let rRows=amRows.filter(r=>r.store.region===region);
+      // Sort: stock first (desc qty), then zero sorted by name
       rRows.sort((a,b2)=>{
         if(a.b>0&&b2.b<=0) return -1;
         if(a.b<=0&&b2.b>0) return 1;
-        return b2.b-a.b;
+        if(a.b>0&&b2.b>0) return b2.b-a.b;
+        return a.store.name.localeCompare(b2.store.name);
       });
       const rTotal=rRows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
-      const rInStock=rRows.filter(r=>r.b>0).length;
-      sectionsHTML+=`<div class="sp-rgn"><span class="sp-rgn-name">▸ ${region}</span><span class="sp-rgn-info">${rInStock}/${rRows.length} in stock · ${rTotal} units</span></div>`;
-
+      const rIn=rRows.filter(r=>r.b>0).length;
+      html+=`<div class="sp-rgn-hdr">
+        <span class="sp-rgn-hdr-name">▸ ${region}</span>
+        <span class="sp-rgn-hdr-info">${rIn}/${rRows.length} · ${rTotal}u</span>
+      </div><div class="sp-store-grid">`;
       rRows.forEach(({store,b,isMine})=>{
         const cls=b>3?'hs':b>0?'ls':'zs';
-        const barCls=b>3?'g':b>0?'a':'z';
-        const nameCls=b>0?'g':'z';
-        const qtyCls=b>3?'g':b>0?'a':'r';
-        const qty=b>0?b:0;
-        sectionsHTML+=`<div class="sp-row ${cls}${isMine?' mine':''}">
-          <div class="sp-bar ${barCls}"></div>
-          <div class="sp-row-body">
-            <div class="sp-row-name ${nameCls}">${store.name}${isMine?'<span class="sp-mine-tag">YOUR STORE</span>':''}</div>
-            <div class="sp-row-meta">${store.city} · ${store.code}</div>
+        const acc=b>3?'g':b>0?'a':'z';
+        const nameC=b>0?'g':'r';
+        const qnC=b>3?'g':b>0?'a':'r';
+        html+=`<div class="sp-tile ${cls}${isMine?' mine':''}">
+          <div class="sp-acc ${acc}"></div>
+          <div class="sp-tile-body">
+            <div class="sp-tile-name ${nameC}">${store.name}${isMine?'<span class="sp-mine-dot"></span>':''}</div>
+            <div class="sp-tile-code">${store.code}</div>
           </div>
-          <div class="sp-qty">
-            <span class="sp-qty-n ${qtyCls}">${qty}</span>
-            ${b>0?'<span class="sp-qty-u">UNITS</span>':''}
+          <div class="sp-tile-qty">
+            <span class="sp-tile-qn ${qnC}">${b>0?b:0}</span>
+            ${b>0?'<span class="sp-tile-qu">units</span>':''}
           </div>
         </div>`;
       });
+      html+='</div>';
     });
-  });
+    return `<div class="sp-am-panel">${html}</div>`;
+  }
+
+  // Split into two AM groups
+  const amOrder=[...new Set(allStores.map(s=>s.mgr))];
+  const panelsHTML=amOrder.map(am=>{
+    const amRows=rows.filter(r=>r.store.mgr===am);
+    return buildAMPanel(am,amRows);
+  }).join('');
 
   body.innerHTML=`<div class="avail-panel">
     <div class="sp-hero">
@@ -3030,11 +3043,11 @@ function renderProductMode(body){
       </div>
     </div>
     <div class="sp-stats">
-      <div class="sp-stat"><span class="sp-stat-n g">${inStockCnt}</span><span class="sp-stat-l">Stores In Stock</span></div>
+      <div class="sp-stat"><span class="sp-stat-n g">${inCnt}</span><span class="sp-stat-l">Stores In Stock</span></div>
       <div class="sp-stat"><span class="sp-stat-n r">${zeroCnt}</span><span class="sp-stat-l">Out of Stock</span></div>
       <div class="sp-stat"><span class="sp-stat-n a">${netTotal}</span><span class="sp-stat-l">Total Units</span></div>
     </div>
-    <div style="flex:1;overflow-y:auto;">${sectionsHTML}</div>
+    <div class="sp-am-panels">${panelsHTML}</div>
   </div>`;
 }
 // ─── STORE MODE: cards per store ───
