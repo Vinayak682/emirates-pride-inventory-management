@@ -287,8 +287,15 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 /* More indicator */
 .trf-more{
   display:block;font-family:var(--f-mono);font-size:8px;
-  text-align:center;opacity:0.6;padding-bottom:3px;
+  text-align:center;color:#C9A44E;padding-bottom:3px;
+  text-decoration:underline;cursor:pointer;
 }
+.dcell-trf-tap{cursor:pointer;}
+.dcell-trf-tap::after{
+  content:'▼';font-size:7px;position:absolute;
+  bottom:3px;right:3px;opacity:0.4;
+}
+.dcell.inn.dcell-has-note,.dcell.trf.dcell-has-note{position:relative;}
 /* Old selectors kept for compat */
 .cell-note-arrow{display:none;}
 .cell-note-name{display:none;}
@@ -2007,6 +2014,53 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   <div id="mgrDashBody" style="flex:1;overflow-y:auto;"></div>
 </div>
 
+<!-- ══════════ TRANSFER DRAWER ══════════ -->
+<div id="trfDrawer" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  display:none;align-items:flex-end;justify-content:center;z-index:960;
+  padding-bottom:env(safe-area-inset-bottom,0px);">
+  <div style="background:#141414;border-radius:20px 20px 0 0;
+    width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;">
+
+    <!-- Header -->
+    <div style="padding:16px 18px 10px;border-bottom:1px solid #222;flex-shrink:0;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:9px;font-weight:700;color:#555;text-transform:uppercase;
+            letter-spacing:1px;margin-bottom:3px;" id="trfDrawerType">—</div>
+          <div style="font-size:17px;font-weight:700;color:#E0E0E0;" id="trfDrawerProd">—</div>
+          <div style="font-family:var(--f-mono);font-size:10px;color:#555;margin-top:2px;" id="trfDrawerDay">—</div>
+        </div>
+        <button onclick="closeTrfDrawer()"
+          style="background:#1A1A1A;border:1px solid #333;border-radius:50%;
+            width:32px;height:32px;color:#888;font-size:16px;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+      </div>
+      <!-- Total badge -->
+      <div style="margin-top:10px;display:flex;align-items:center;gap:10px;">
+        <div id="trfDrawerTotal"
+          style="font-family:var(--f-mono);font-size:28px;font-weight:900;color:#C9A44E;"></div>
+        <div style="font-family:var(--f-mono);font-size:10px;color:#555;">
+          <div id="trfDrawerTotalLabel">TOTAL UNITS</div>
+          <div id="trfDrawerStoreCount" style="color:#444;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Breakdown list -->
+    <div id="trfDrawerList" style="flex:1;overflow-y:auto;padding:8px 0;"></div>
+
+    <!-- Add new split button -->
+    <div style="padding:12px 18px;border-top:1px solid #1E1E1E;flex-shrink:0;display:flex;gap:8px;" id="trfDrawerActions">
+      <button id="trfDrawerAddBtn" onclick="trfDrawerAddNew()"
+        style="flex:1;background:#1A2A1A;border:1px solid #2A5A2A;border-radius:10px;
+          color:#6FCF97;font-family:var(--f-body);font-size:15px;font-weight:700;
+          padding:13px;cursor:pointer;">
+        ＋ Add Another Store
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════ NUMPAD ══════════ -->
 <div id="numpad">
   <div class="np-sheet">
@@ -2543,14 +2597,14 @@ function buildGrid(){
         <td class="dcell wh" onclick="${canEdit?'openNP(\''+p.code+'\',\'wh\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showW===''?' empty':''}">${showW===''?'—':showW}</span>
         </td>
-        <td class="dcell inn${(()=>{const lg2=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===p.code&&t.toStore===me.code);return lg2.length?' dcell-has-note':''})()}" onclick="${canEdit?'openNP(\''+p.code+'\',\'inn\')':'toast(\'🔒 Day locked\')'}">
+        <td class="dcell inn${(()=>{const lg2=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===p.code&&t.toStore===me.code);return lg2.length?' dcell-has-note dcell-trf-tap':''})()}" onclick="${canEdit?'openTrfDrawer(\''+p.code+'\',\'inn\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showI===''?' empty':''}">${showI===''?'—':showI}</span>
           ${(()=>{const lg=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===p.code&&t.toStore===me.code);return buildTrfNote(lg,'inn');})()}
         </td>
         <td class="dcell sold" onclick="${canEdit?'openNP(\''+p.code+'\',\'sold\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showS===''?' empty':''}">${showS===''?'—':showS}</span>
         </td>
-        <td class="dcell trf${(()=>{const lg2=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return lg2.length?' dcell-has-note':''})()}" onclick="${canEdit?'openNP(\''+p.code+'\',\'trf\')':'toast(\'🔒 Day locked\')'}">
+        <td class="dcell trf${(()=>{const lg2=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return lg2.length?' dcell-has-note dcell-trf-tap':''})()}" onclick="${canEdit?'openTrfDrawer(\''+p.code+'\',\'trf\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showT===''?' empty':''}">${showT===''?'—':showT}</span>
           ${(()=>{const lg=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return buildTrfNote(lg,'trf');})()}
         </td>
@@ -2582,13 +2636,15 @@ function buildGrid(){
 
 // ── Build compact multi-transfer chips for inn/trf cells ──────────
 function buildTrfNote(entries, type) {
-  // entries: [{fromName/toName, qty, remark}]
   if (!entries.length) return '';
-  const MAX_SHOW = 4; // show up to 4 chips, then "+N more"
-  const shown = entries.slice(0, MAX_SHOW);
-  const extra = entries.length - MAX_SHOW;
+  const total = entries.reduce((s,e)=>s+(e.qty||0), 0);
+  const count = entries.length;
   const arrow = type === 'inn' ? '←' : '→';
+  const color = type === 'inn' ? '#1A6040' : '#5A2A7A';
+  const bgCol = type === 'inn' ? '#E8F5EE' : '#F0E8FF';
 
+  // Show first 2 stores abbreviated, then "tap for all"
+  const shown = entries.slice(0, 2);
   let html = '<span class="cell-note">';
   shown.forEach(e => {
     const storeName = type === 'inn' ? e.fromName : e.toName;
@@ -2598,7 +2654,9 @@ function buildTrfNote(entries, type) {
       <span class="trf-chip-qty">${e.qty}</span>
     </span>`;
   });
-  if (extra > 0) html += `<span class="trf-more">+${extra} more</span>`;
+  if (count > 2) {
+    html += `<span class="trf-more">+${count-2} more stores — tap to see all</span>`;
+  }
   html += '</span>';
   return html;
 }
@@ -3944,6 +4002,66 @@ function confirmNP(){
       }
     }
   }
+  if((npCtx.field==='inn'||npCtx.field==='trf') && val>0){
+    const sel = document.getElementById('npStoreSelect');
+    const sc  = sel ? sel.value : '';
+    if(!sc){ toast('⚠ Select a store first'); return; }
+    const ss = STORES.find(s=>s.code===sc);
+    if(ss){
+      const now2 = new Date();
+      const ts2  = now2.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})
+                 + ' ' + now2.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      const pp = PRODUCTS.find(x=>x.code===npCtx.code);
+      const remarkVal = (document.getElementById('npRemark')?.value||'').trim();
+      if(!db.transferLog) db.transferLog=[];
+      // ── ADD as new split (never remove existing splits for other stores) ──
+      // Only remove if same store already has an entry for this SKU/day/direction
+      db.transferLog = db.transferLog.filter(t=>!(
+        t.day===curDay && t.prodCode===npCtx.code &&
+        (npCtx.field==='inn' ? t.toStore===me.code && t.fromStore===sc
+                              : t.fromStore===me.code && t.toStore===sc)
+      ));
+      db.transferLog.unshift({
+        id:Date.now(), ts:ts2, day:curDay,
+        fromStore: npCtx.field==='inn' ? sc       : me.code,
+        fromName:  npCtx.field==='inn' ? ss.name  : me.name,
+        toStore:   npCtx.field==='trf' ? sc       : me.code,
+        toName:    npCtx.field==='trf' ? ss.name  : me.name,
+        prodCode:npCtx.code, prodName:pp?pp.en:npCtx.code,
+        prodAr:pp?pp.ar||'':'', qty:val, remark:remarkVal, note:'via numpad'
+      });
+      // Sync this transfer to Supabase
+      if(typeof _SB_URL !== 'undefined'){
+        const dayDate = _localDateStr(new Date());
+        fetch(_SB_URL + '/rest/v1/transfers', {
+          method:'POST', headers:{..._SBH,'Prefer':'return=minimal'},
+          body:JSON.stringify({
+            day_date:dayDate,
+            from_store:npCtx.field==='inn'?sc:me.code,
+            from_name:npCtx.field==='inn'?ss.name:me.name,
+            to_store:npCtx.field==='trf'?sc:me.code,
+            to_name:npCtx.field==='trf'?ss.name:me.name,
+            prod_code:npCtx.code, prod_name:pp?pp.en:npCtx.code,
+            qty:val, remark:remarkVal, note:'via numpad'
+          })
+        }).catch(()=>{});
+      }
+    }
+    // For inn/trf: ACCUMULATE (sum all splits) not replace
+    const newTotal = (db.transferLog||[])
+      .filter(t=>t.day===curDay && t.prodCode===npCtx.code &&
+        (npCtx.field==='inn' ? t.toStore===me.code : t.fromStore===me.code))
+      .reduce((s,t)=>s+(t.qty||0), 0);
+    const scrollEl = document.getElementById('scrollArea');
+    const st = scrollEl ? scrollEl.scrollTop : 0;
+    dbSet(me.code,curDay,npCtx.code,npCtx.field,newTotal);
+    saveDB();
+    closeNP();
+    buildGrid(); buildFooter(); buildDayTabs(); updateTotalsRow();
+    if(scrollEl) scrollEl.scrollTop = st;
+    toast('✓ Added · Total ' + npCtx.field + ': ' + newTotal + ' units');
+    return;
+  }
   const scrollEl = document.getElementById('scrollArea');
   const st = scrollEl ? scrollEl.scrollTop : 0;
   dbSet(me.code,curDay,npCtx.code,npCtx.field,val);
@@ -4626,8 +4744,163 @@ function openFinNP(f){ finTap(f); }
 function openFinCCNP(i){ finTapCC(i); }
 
 // ══════════════════════════════════════════════════════════════
-// BNPL (Tabby / Tamara) — multi-transaction list
+// TRANSFER DRAWER — Total + Breakdown + Delete + Add
 // ══════════════════════════════════════════════════════════════
+let _trfCtx = null; // {code, type:'inn'|'trf'}
+
+function openTrfDrawer(code, type) {
+  const p = PRODUCTS.find(x=>x.code===code);
+  const dl = getDayLabels()[curDay];
+  _trfCtx = {code, type};
+
+  // Header
+  document.getElementById('trfDrawerType').textContent =
+    type==='inn' ? '← RECEIVED FROM OTHER STORES' : '→ SENT TO OTHER STORES';
+  document.getElementById('trfDrawerProd').textContent = p ? p.en : code;
+  document.getElementById('trfDrawerDay').textContent =
+    (p?p.ar+' · ':'') + code + ' · ' + (dl?dl.full+' '+dl.date:'');
+
+  const locked = isLocked(me.code, curDay) && !mgrOverrideActive;
+  const addBtn = document.getElementById('trfDrawerAddBtn');
+  if(addBtn) addBtn.style.display = locked ? 'none' : 'flex';
+
+  renderTrfDrawer();
+  document.getElementById('trfDrawer').style.display = 'flex';
+}
+
+function closeTrfDrawer() {
+  document.getElementById('trfDrawer').style.display = 'none';
+  _trfCtx = null;
+}
+
+function renderTrfDrawer() {
+  if (!_trfCtx) return;
+  const {code, type} = _trfCtx;
+  const locked = isLocked(me.code, curDay) && !mgrOverrideActive;
+
+  const entries = getTransferLog().filter(t =>
+    t.day === curDay &&
+    t.prodCode === code &&
+    (type==='inn' ? t.toStore===me.code : t.fromStore===me.code)
+  );
+
+  const total = entries.reduce((s,e)=>s+(e.qty||0), 0);
+  const isInn = type === 'inn';
+
+  // Update header totals
+  document.getElementById('trfDrawerTotal').textContent = total || '—';
+  document.getElementById('trfDrawerTotalLabel').textContent =
+    isInn ? 'TOTAL RECEIVED' : 'TOTAL SENT OUT';
+  document.getElementById('trfDrawerStoreCount').textContent =
+    entries.length + ' store' + (entries.length!==1?'s':'');
+
+  const list = document.getElementById('trfDrawerList');
+  if (!entries.length) {
+    list.innerHTML = `
+      <div style="text-align:center;padding:30px 18px;font-family:var(--f-mono);
+        font-size:12px;color:#333;">
+        No ${isInn?'incoming':'outgoing'} transfers recorded yet.<br>
+        <span style="color:#555;font-size:10px;">Tap ＋ Add to record one.</span>
+      </div>`;
+    return;
+  }
+
+  const accentCol = isInn ? '#6FCF97' : '#BB88DD';
+  const bgCol     = isInn ? '#0D1A0D' : '#160D1A';
+  const borderCol = isInn ? '#1A4A1A' : '#2A1A4A';
+
+  list.innerHTML = entries.map((t, i) => {
+    const storeName = isInn ? t.fromName : t.toName;
+    const storeCode = isInn ? t.fromStore : t.toStore;
+    const pct = total > 0 ? Math.round((t.qty/total)*100) : 0;
+    return `
+      <div style="padding:12px 18px;border-bottom:1px solid #1A1A1A;background:${i%2===0?bgCol:'transparent'};">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <!-- Store info -->
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:700;color:${accentCol};
+              line-height:1.3;margin-bottom:3px;">${storeName}</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:#444;
+              margin-bottom:${t.remark?'3px':'0'};">${storeCode} · ${t.ts||''}</div>
+            ${t.remark?`<div style="font-size:11px;color:#5A7A5A;font-style:italic;">💬 ${t.remark}</div>`:''}
+          </div>
+          <!-- Qty badge -->
+          <div style="text-align:center;flex-shrink:0;">
+            <div style="font-family:var(--f-mono);font-size:26px;font-weight:900;
+              color:${accentCol};line-height:1;">${t.qty}</div>
+            <div style="font-family:var(--f-mono);font-size:8px;color:#444;margin-top:1px;">units</div>
+          </div>
+          <!-- Delete button (only if not locked) -->
+          ${!locked ? `
+          <button onclick="deleteTrfSplit(${t.id},'${code}','${type}')"
+            style="background:#2A0A0A;border:1px solid #5A1A1A;border-radius:7px;
+              color:#E87070;font-size:11px;font-weight:700;padding:6px 10px;
+              cursor:pointer;flex-shrink:0;align-self:flex-start;">
+            🗑 Delete
+          </button>` : ''}
+        </div>
+        <!-- Progress bar showing % of total -->
+        <div style="margin-top:8px;height:3px;background:#1A1A1A;border-radius:2px;overflow:hidden;">
+          <div style="height:100%;background:${accentCol};opacity:0.5;width:${pct}%;
+            border-radius:2px;transition:width 0.3s;"></div>
+        </div>
+        <div style="font-family:var(--f-mono);font-size:9px;color:#333;
+          margin-top:3px;text-align:right;">${pct}% of total</div>
+      </div>`;
+  }).join('');
+}
+
+function deleteTrfSplit(id, code, type) {
+  if (!confirm('Delete this transfer entry?')) return;
+
+  // Find the entry
+  const entry = (db.transferLog||[]).find(t=>t.id===id);
+  if (!entry) return;
+
+  const qty = entry.qty || 0;
+  const field = type === 'inn' ? 'inn' : 'trf';
+
+  // Remove from log
+  db.transferLog = (db.transferLog||[]).filter(t=>t.id!==id);
+
+  // Subtract qty from the cell value
+  const curVal = dbGet(me.code, curDay, code, field);
+  const newVal = Math.max(0, curVal - qty);
+  // Write directly to avoid double-queueing
+  if(!db[me.code]) db[me.code]={};
+  if(!db[me.code][curDay]) db[me.code][curDay]={};
+  if(!db[me.code][curDay][code]) db[me.code][curDay][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+  db[me.code][curDay][code][field] = newVal;
+
+  // Sync to server
+  _qWrite(me.code, curDay, code, field, newVal);
+  // Also delete from transfers table in Supabase
+  if(typeof _SB_URL !== 'undefined') {
+    fetch(_SB_URL + '/rest/v1/transfers?id=eq.' + id, {
+      method:'DELETE', headers:{..._SBH, 'Prefer':'return=minimal'}
+    }).catch(e=>console.warn('Delete transfer sync:', e.message));
+  }
+
+  saveDB();
+
+  // Refresh drawer and grid
+  renderTrfDrawer();
+  const scroll = document.getElementById('scrollArea');
+  const st = scroll ? scroll.scrollTop : 0;
+  buildGrid(); updateTotalsRow(); buildFooter();
+  if(scroll) scroll.scrollTop = st;
+
+  toast('🗑 Transfer deleted · cell updated');
+}
+
+function trfDrawerAddNew() {
+  if (!_trfCtx) return;
+  closeTrfDrawer();
+  // Open the numpad for adding a new split
+  setTimeout(() => openNP(_trfCtx.code, _trfCtx.type), 150);
+}
+
+
 let finBNPL = []; // [{type:'tabby'|'tamara', code:'', amt:0}]
 
 function addBNPLRow(){
