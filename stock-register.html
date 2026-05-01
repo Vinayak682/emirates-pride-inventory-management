@@ -4871,10 +4871,16 @@ function finExpensePhoto(i,input){
 // ══════════════════════════════════════════════════════════════
 let mgrDashStore = null; // currently selected store in MGR view
 
-function openMgrDashboard(){
-  // Build manager dashboard panel
+async function openMgrDashboard(){
   const panel=document.getElementById('mgrDashPanel');
-  if(panel){panel.style.display='flex';renderMgrDashboard();}
+  if(!panel) return;
+  panel.style.display='flex';
+  // Show loading state in body
+  const body=document.getElementById('mgrDashBody');
+  if(body) body.innerHTML='<div style="padding:40px;text-align:center;font-family:var(--f-mono);color:#555;font-size:12px;">⇅ Loading all stores data…</div>';
+  // Load fresh data from Supabase
+  try { await _sbLoadMgrSummary(); } catch(e){ console.warn('MGR summary load:', e.message); }
+  renderMgrDashboard();
 }
 function closeMgrDashboard(){
   const panel=document.getElementById('mgrDashPanel');
@@ -4886,118 +4892,183 @@ function renderMgrDashboard(){
   if(!body) return;
   try{
   const labels=getDayLabels();
+  const sm=db._mgrSummary||{soldMap:{},lockSet:{},finSet:{},todayStr:'',loadedAt:null};
 
-  // Build summary per store
-  const storeData=STORES.filter(s=>s.code!=='MGR').map(s=>{
-    let totalSold=0,totalBal=0,totalOpen=0;
-    PRODUCTS.forEach(p=>{
-      const sold=dbGet(s.code,DAY_PAST,p.code,'sold');
-      const b=bal(s.code,DAY_PAST,p.code);
-      const o=dbGet(s.code,DAY_PAST,p.code,'open');
-      totalSold+=sold; totalBal+=b; totalOpen+=o;
+  // ── Build per-store data ──────────────────────────────────────
+  const allStores=STORES.filter(s=>s.code!=='MGR');
+  const todayStr=sm.todayStr||_localDateStr(new Date());
+
+  // Generate last 15 date strings
+  const dateDays=[];
+  const todayD=new Date(); todayD.setHours(0,0,0,0);
+  for(let i=14;i>=0;i--){
+    const d=new Date(todayD); d.setDate(todayD.getDate()-i);
+    dateDays.push({str:_localDateStr(d),label:d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}),isPast:i>0,idx:DAY_PAST-i});
+  }
+  const past5=dateDays.slice(9,15); // last 6 days including today
+
+  const storeRows=allStores.map(s=>{
+    // Stock lock compliance: which of last 6 days had sales but no lock?
+    const lockStatus=past5.map(dd=>{
+      const hasSales=(sm.soldMap[s.code+'_'+dd.str]||0)>0;
+      const isLk=!!(sm.lockSet[s.code+'_'+dd.str]);
+      return {str:dd.str,label:dd.label,hasSales,locked:isLk,lockedBy:sm.lockSet[s.code+'_'+dd.str]||''};
     });
-    const locked=isLocked(s.code,DAY_PAST);
-    const lockInfo=db._lockNames?.[s.code+'_'+DAY_PAST];
-    return {code:s.code,name:s.name,region:s.region,mgr:s.mgr,
-            totalSold,totalBal,totalOpen,locked,lockInfo};
-  }).sort((a,b)=>b.totalSold-a.totalSold);
-
-  // Top SKUs across all stores today
-  const skuMap={};
-  PRODUCTS.forEach(p=>{
-    let tot=0;
-    STORES.filter(s=>s.code!=='MGR').forEach(s=>{tot+=dbGet(s.code,DAY_PAST,p.code,'sold');});
-    if(tot>0) skuMap[p.code]={en:p.en,ar:p.ar||'',cat:p.cat,total:tot};
+    const pendingDays=lockStatus.filter(d=>d.hasSales&&!d.locked);
+    const latestLock=lockStatus.filter(d=>d.locked).slice(-1)[0];
+    // Finance compliance
+    const finStatus=past5.map(dd=>{
+      const fi=sm.finSet[s.code+'_'+dd.str]||{};
+      return {str:dd.str,label:dd.label,locked:fi.locked||false,at:fi.at||''};
+    });
+    const finPending=finStatus.filter(d=>!d.locked);
+    const latestFinLock=finStatus.filter(d=>d.locked).slice(-1)[0];
+    // Today sales
+    const todaySold=sm.soldMap[s.code+'_'+todayStr]||0;
+    const todayLocked=!!(sm.lockSet[s.code+'_'+todayStr]);
+    return {s,lockStatus,pendingDays,latestLock,finStatus,finPending,latestFinLock,todaySold,todayLocked};
   });
-  const topSKUs=Object.entries(skuMap).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
 
-  // Weekly totals per store (last 7 days)
-  const weekData=STORES.filter(s=>s.code!=='MGR').map(s=>{
-    let wSold=0,wBal=0;
-    for(let d=0;d<7;d++){
-      const di=Math.max(0,DAY_PAST-d);
-      PRODUCTS.forEach(p=>{wSold+=dbGet(s.code,di,p.code,'sold');});
-    }
-    PRODUCTS.forEach(p=>{wBal+=bal(s.code,DAY_PAST,p.code);});
-    return {code:s.code,name:s.name,wSold,wBal};
-  }).sort((a,b)=>b.wSold-a.wSold);
+  const totalSoldToday=storeRows.reduce((a,r)=>a+r.todaySold,0);
+  const lockedTodayCount=storeRows.filter(r=>r.todayLocked).length;
+  const totalPendingDays=storeRows.reduce((a,r)=>a+r.pendingDays.length,0);
+  const totalFinPending=storeRows.reduce((a,r)=>a+r.finPending.length,0);
+  const topStore=storeRows.sort((a,b)=>b.todaySold-a.todaySold)[0];
 
-  const totalSoldToday=storeData.reduce((s,x)=>s+x.totalSold,0);
-  const lockedCount=storeData.filter(s=>s.locked).length;
+  // Sorted by today sales for bar chart
+  const byTodaySales=[...storeRows].sort((a,b)=>b.todaySold-a.todaySold);
+  // Sorted by pending days (worst first) for compliance
+  const byPending=[...storeRows].sort((a,b)=>b.pendingDays.length-a.pendingDays.length);
+  const byFinPending=[...storeRows].sort((a,b)=>b.finPending.length-a.finPending.length);
+
+  const loadedAgo=sm.loadedAt?Math.round((new Date()-sm.loadedAt)/1000)+'s ago':'—';
 
   body.innerHTML=`
-  <!-- KPI strip -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 14px;background:#111;border-bottom:1px solid #1E1E1E;">
+  <!-- ── KPI STRIP ─────────────────────────────────────────── -->
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px;background:#111;border-bottom:1px solid #1E1E1E;">
     ${[
-      {label:'Stores Locked',val:lockedCount+'/'+storeData.length,c:'#6FCF97'},
-      {label:'Today Total Sales',val:totalSoldToday,c:'#C9A44E'},
-      {label:'Stores Active',val:storeData.filter(s=>s.totalSold>0).length,c:'#6FA8DC'},
-      {label:'Top Store',val:storeData[0]?.name?.split(' ').slice(0,2).join(' ')||'—',c:'#E8C97A'},
+      {label:'Locked Today',val:lockedTodayCount+' / '+allStores.length,c:lockedTodayCount===allStores.length?'#6FCF97':'#E87070',icon:'🔒'},
+      {label:'Stock Days Pending',val:totalPendingDays,c:totalPendingDays===0?'#6FCF97':totalPendingDays<5?'#C9A44E':'#E87070',icon:'⏳'},
+      {label:'Finance Pending',val:totalFinPending,c:totalFinPending===0?'#6FCF97':totalFinPending<5?'#C9A44E':'#E87070',icon:'📋'},
+      {label:'Today Total Sales',val:totalSoldToday+' units',c:'#C9A44E',icon:'📊'},
     ].map(k=>`<div style="background:#1A1A1A;border:1px solid #222;border-radius:8px;padding:10px 12px;text-align:center;">
-      <div style="font-family:var(--f-mono);font-size:16px;font-weight:900;color:${k.c};">${k.val}</div>
-      <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;">${k.label}</div>
+      <div style="font-size:18px;margin-bottom:2px;">${k.icon}</div>
+      <div style="font-family:var(--f-mono);font-size:18px;font-weight:900;color:${k.c};">${k.val}</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:2px;text-transform:uppercase;letter-spacing:0.5px;">${k.label}</div>
     </div>`).join('')}
   </div>
 
-  <!-- Today Performance Bar Chart -->
+  <!-- ── STOCK LOCK COMPLIANCE ──────────────────────────────── -->
+  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-family:var(--f-mono);font-size:10px;color:#E87070;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">⏳ Stock Lock Status — Last 6 Days</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:#333;">Data: ${loadedAgo}</div>
+    </div>
+    <!-- Header row: dates -->
+    <div style="display:grid;grid-template-columns:1fr repeat(6,36px);gap:3px;margin-bottom:4px;padding:0 2px;">
+      <div style="font-size:9px;color:#444;font-family:var(--f-mono);">STORE</div>
+      ${past5.map(dd=>`<div style="font-size:8px;color:#555;font-family:var(--f-mono);text-align:center;line-height:1.2;">${dd.label}</div>`).join('')}
+    </div>
+    ${byPending.map(r=>{
+      const pending=r.pendingDays.length;
+      const rowColor=pending===0?'#222':pending<=2?'#2A1A00':'#2A0808';
+      const badgeColor=pending===0?'#6FCF97':pending<=2?'#C9A44E':'#E87070';
+      return `<div style="display:grid;grid-template-columns:1fr repeat(6,36px);gap:3px;margin-bottom:3px;background:${rowColor};border-radius:6px;padding:5px 6px;border:1px solid ${pending>0?badgeColor+'33':'#1E1E1E'};">
+        <div style="min-width:0;">
+          <div style="font-size:10px;font-weight:700;color:#CCC;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.s.name}</div>
+          <div style="font-size:8px;color:#555;font-family:var(--f-mono);">${r.s.city}${pending>0?` · <span style="color:${badgeColor};">${pending} day${pending>1?'s':''} open</span>`:' · ✓ all locked'}</div>
+        </div>
+        ${r.lockStatus.map(d=>{
+          if(!d.hasSales) return `<div style="background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#2A2A2A;">—</div>`;
+          if(d.locked) return `<div title="Locked by ${d.lockedBy}" style="background:#1A3A1A;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;">🔒</div>`;
+          return `<div style="background:#3A0808;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;border:1px solid #E87070;">🔴</div>`;
+        }).join('')}
+      </div>`;
+    }).join('')}
+    <div style="margin-top:8px;display:flex;gap:12px;font-size:9px;font-family:var(--f-mono);color:#444;">
+      <span>🔒 Locked</span><span>🔴 Pending</span><span style="color:#2A2A2A;">— No sales</span>
+    </div>
+  </div>
+
+  <!-- ── FINANCE LOCK COMPLIANCE ────────────────────────────── -->
+  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
+    <div style="font-family:var(--f-mono);font-size:10px;color:#BB88DD;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📋 Finance Lock Status — Last 6 Days</div>
+    <!-- Header row: dates -->
+    <div style="display:grid;grid-template-columns:1fr repeat(6,36px);gap:3px;margin-bottom:4px;padding:0 2px;">
+      <div style="font-size:9px;color:#444;font-family:var(--f-mono);">STORE</div>
+      ${past5.map(dd=>`<div style="font-size:8px;color:#555;font-family:var(--f-mono);text-align:center;line-height:1.2;">${dd.label}</div>`).join('')}
+    </div>
+    ${byFinPending.map(r=>{
+      const pending=r.finPending.length;
+      const rowColor=pending===0?'#222':pending<=2?'#1A0A2A':'#20082A';
+      const badgeColor=pending===0?'#6FCF97':pending<=2?'#BB88DD':'#E87070';
+      return `<div style="display:grid;grid-template-columns:1fr repeat(6,36px);gap:3px;margin-bottom:3px;background:${rowColor};border-radius:6px;padding:5px 6px;border:1px solid ${pending>0?badgeColor+'33':'#1E1E1E'};">
+        <div style="min-width:0;">
+          <div style="font-size:10px;font-weight:700;color:#CCC;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.s.name}</div>
+          <div style="font-size:8px;color:#555;font-family:var(--f-mono);">${pending>0?`<span style="color:${badgeColor};">${pending} day${pending>1?'s':''} pending</span>`:' ✓ finance current'}</div>
+        </div>
+        ${r.finStatus.map(d=>{
+          if(d.locked) return `<div title="Locked ${d.at}" style="background:#1A1A3A;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;">✅</div>`;
+          return `<div style="background:#2A1030;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;border:1px solid #BB88DD55;">📭</div>`;
+        }).join('')}
+      </div>`;
+    }).join('')}
+    <div style="margin-top:8px;display:flex;gap:12px;font-size:9px;font-family:var(--f-mono);color:#444;">
+      <span>✅ Finance Locked</span><span>📭 Pending / Not submitted</span>
+    </div>
+  </div>
+
+  <!-- ── MGR EXPORT PANEL ───────────────────────────────────── -->
+  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
+    <div style="font-family:var(--f-mono);font-size:10px;color:#6FA8DC;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📥 Manager Exports — No Lock Required</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button onclick="mgrExportAllStocksCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
+        📊 All Stores Stock CSV<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">Today · All 27 stores</div>
+      </button>
+      <button onclick="mgrExportLockReportCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
+        🔒 Lock Status Report<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 6 days</div>
+      </button>
+      <button onclick="mgrExportFinanceReportCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
+        💰 Finance Status Report<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 6 days</div>
+      </button>
+      <button onclick="mgrExportSalesSummaryCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
+        📈 Sales Summary CSV<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 6 days</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── TODAY PERFORMANCE BAR CHART ───────────────────────── -->
   <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
     <div style="font-family:var(--f-mono);font-size:10px;color:#C9A44E;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📊 Today's Sales by Store</div>
-    ${storeData.filter(s=>s.totalSold>0||s.totalOpen>0).map(s=>{
-      const pct=totalSoldToday>0?Math.round((s.totalSold/totalSoldToday)*100):0;
-      const maxSold=storeData[0]?.totalSold||1;
-      const barW=Math.round((s.totalSold/maxSold)*100);
+    ${byTodaySales.filter(r=>r.todaySold>0||r.todayLocked).map(r=>{
+      const pct=totalSoldToday>0?Math.round((r.todaySold/totalSoldToday)*100):0;
+      const maxSold=byTodaySales[0]?.todaySold||1;
+      const barW=maxSold>0?Math.round((r.todaySold/maxSold)*100):0;
       return `<div style="margin-bottom:8px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
-          <div style="font-size:11px;font-weight:600;color:#CCC;">${s.name}</div>
+          <div style="font-size:11px;font-weight:600;color:#CCC;">${r.s.name}</div>
           <div style="display:flex;gap:8px;align-items:center;">
-            ${s.locked?`<span style="font-size:9px;color:#6FCF97;font-family:var(--f-mono);">🔒${s.lockInfo?s.lockInfo.name:''}</span>`:'<span style="font-size:9px;color:#E87070;font-family:var(--f-mono);">OPEN</span>'}
-            <span style="font-family:var(--f-mono);font-size:12px;font-weight:800;color:#C9A44E;">${s.totalSold}</span>
+            ${r.todayLocked?`<span style="font-size:9px;color:#6FCF97;font-family:var(--f-mono);">🔒</span>`:'<span style="font-size:9px;color:#E87070;font-family:var(--f-mono);">OPEN</span>'}
+            <span style="font-family:var(--f-mono);font-size:12px;font-weight:800;color:#C9A44E;">${r.todaySold}</span>
           </div>
         </div>
         <div style="height:8px;background:#1A1A1A;border-radius:4px;overflow:hidden;">
-          <div style="height:100%;background:linear-gradient(90deg,#C9A44E,#E8C97A);width:${barW}%;border-radius:4px;transition:width 0.5s;"></div>
+          <div style="height:100%;background:linear-gradient(90deg,#C9A44E,#E8C97A);width:${barW}%;border-radius:4px;"></div>
         </div>
-        <div style="font-size:9px;color:#444;margin-top:2px;font-family:var(--f-mono);">Balance: ${s.totalBal} units · ${pct}% of today's total</div>
+        <div style="font-size:9px;color:#444;margin-top:2px;font-family:var(--f-mono);">${r.s.city} · ${pct}% of today's total</div>
       </div>`;
     }).join('')||'<div style="color:#333;font-family:var(--f-mono);font-size:11px;text-align:center;padding:20px;">No sales data today yet</div>'}
   </div>
 
-  <!-- Weekly Store Ranking -->
-  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
-    <div style="font-family:var(--f-mono);font-size:10px;color:#6FA8DC;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📈 7-Day Sales Ranking</div>
-    ${weekData.slice(0,8).map((s,i)=>`
-      <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #1A1A1A;">
-        <div style="font-family:var(--f-mono);font-size:11px;color:${i===0?'#C9A44E':i===1?'#888':i===2?'#7A5C28':'#444'};font-weight:900;width:18px;">#${i+1}</div>
-        <div style="flex:1;font-size:12px;color:#CCC;font-weight:600;">${s.name}</div>
-        <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#6FA8DC;">${s.wSold}</div>
-        <div style="font-size:10px;color:#444;font-family:var(--f-mono);">units</div>
-      </div>`).join('')}
-  </div>
-
-  <!-- Top 10 SKUs today -->
-  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
-    <div style="font-family:var(--f-mono);font-size:10px;color:#BB88DD;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">🏆 Top Moving SKUs Today (All Stores)</div>
-    ${topSKUs.map(([code,{en,cat,total}],i)=>`
-      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #141414;">
-        <div style="font-family:var(--f-mono);font-size:10px;color:#555;width:18px;">${i+1}</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:700;color:#CCC;">${en}</div>
-          <div style="font-size:9px;color:#444;font-family:var(--f-mono);">${code} · ${cat}</div>
-        </div>
-        <div style="font-family:var(--f-mono);font-size:15px;font-weight:900;color:#BB88DD;">${total}</div>
-        <div style="font-size:10px;color:#444;">sold</div>
-      </div>`).join('')||'<div style="color:#333;font-family:var(--f-mono);font-size:11px;text-align:center;padding:20px;">No sales data yet</div>'}
-  </div>
-
-  <!-- Store selector for editing -->
+  <!-- ── STORE SELECTOR FOR EDITING ────────────────────────── -->
   <div style="padding:12px 14px;background:#0D0D0D;">
-    <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">View / Edit a Specific Store</div>
+    <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">View / Edit a Specific Store — Full Access, No Lock Restrictions</div>
     <div style="display:flex;gap:8px;">
       <select id="mgrStoreSelect" style="flex:1;background:#1A1A1A;border:1px solid #333;border-radius:7px;padding:9px 12px;font-family:var(--f-body);font-size:13px;color:#CCC;outline:none;">
-        ${STORES.filter(s=>s.code!=='MGR').map(s=>`<option value="${s.code}">${s.name}</option>`).join('')}
+        ${STORES.filter(s=>s.code!=='MGR').map(s=>`<option value="${s.code}">${s.name} (${s.city})</option>`).join('')}
       </select>
       <button onclick="mgrSwitchToStore()" style="background:#1A2A1A;border:1px solid #2A5A2A;border-radius:7px;color:#6FCF97;font-family:var(--f-body);font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer;">
-        Open Store →
+        Open →
       </button>
     </div>
   </div>`;
@@ -5006,6 +5077,116 @@ function renderMgrDashboard(){
     body.innerHTML = '<div style="padding:20px;color:#E87070;font-family:monospace;font-size:12px;">⚠ Dashboard error: ' + e.message + '</div>';
   }
 }
+
+// ── MGR Export Functions ─────────────────────────────────────────
+function mgrExportAllStocksCSV(){
+  if(!db._mgrSummary){toast('⚠ Open dashboard first to load data');return;}
+  const sm=db._mgrSummary;
+  const todayStr=sm.todayStr||_localDateStr(new Date());
+  const rows=[['EMIRATES PRIDE PERFUMES — ALL STORES STOCK REPORT']];
+  rows.push(['Date:', todayStr, 'Generated:', new Date().toLocaleString('en-GB')]);
+  rows.push([]);
+  rows.push(['Store Code','Store Name','City','Region','Manager','Locked Today','Today Sales (units)']);
+  STORES.filter(s=>s.code!=='MGR').forEach(s=>{
+    const sold=sm.soldMap[s.code+'_'+todayStr]||0;
+    const locked=!!(sm.lockSet[s.code+'_'+todayStr]);
+    rows.push([s.code,s.name,s.city,s.region,s.mgr,locked?'YES':'NO',sold]);
+  });
+  downloadCSV('EP_AllStores_'+todayStr+'.csv',rows);
+  toast('📥 All Stores Stock CSV downloaded');
+}
+
+function mgrExportLockReportCSV(){
+  if(!db._mgrSummary){toast('⚠ Open dashboard first to load data');return;}
+  const sm=db._mgrSummary;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const days=[];
+  for(let i=5;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);days.push({str:_localDateStr(d),label:d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})});}
+  const rows=[['EMIRATES PRIDE PERFUMES — STOCK LOCK STATUS REPORT']];
+  rows.push(['Generated:', new Date().toLocaleString('en-GB'),'','MGR Export — No Lock Required']);
+  rows.push([]);
+  const header=['Store Code','Store Name','City','Manager'];
+  days.forEach(d=>header.push(d.label));
+  header.push('Days Pending');
+  rows.push(header);
+  STORES.filter(s=>s.code!=='MGR').forEach(s=>{
+    const row=[s.code,s.name,s.city,s.mgr];
+    let pending=0;
+    days.forEach(d=>{
+      const hasSales=(sm.soldMap[s.code+'_'+d.str]||0)>0;
+      const locked=!!(sm.lockSet[s.code+'_'+d.str]);
+      if(!hasSales) row.push('—');
+      else if(locked) row.push('LOCKED');
+      else{row.push('OPEN');pending++;}
+    });
+    row.push(pending);
+    rows.push(row);
+  });
+  downloadCSV('EP_LockReport_'+_localDateStr(new Date())+'.csv',rows);
+  toast('📥 Lock Status Report downloaded');
+}
+
+function mgrExportFinanceReportCSV(){
+  if(!db._mgrSummary){toast('⚠ Open dashboard first to load data');return;}
+  const sm=db._mgrSummary;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const days=[];
+  for(let i=5;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);days.push({str:_localDateStr(d),label:d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})});}
+  const rows=[['EMIRATES PRIDE PERFUMES — FINANCE LOCK STATUS REPORT']];
+  rows.push(['Generated:', new Date().toLocaleString('en-GB')]);
+  rows.push([]);
+  const header=['Store Code','Store Name','City','Manager'];
+  days.forEach(d=>header.push(d.label));
+  header.push('Days Pending');
+  rows.push(header);
+  STORES.filter(s=>s.code!=='MGR').forEach(s=>{
+    const row=[s.code,s.name,s.city,s.mgr];
+    let pending=0;
+    days.forEach(d=>{
+      const fi=sm.finSet[s.code+'_'+d.str]||{};
+      if(fi.locked) row.push('LOCKED');
+      else{row.push('PENDING');pending++;}
+    });
+    row.push(pending);
+    rows.push(row);
+  });
+  downloadCSV('EP_FinanceReport_'+_localDateStr(new Date())+'.csv',rows);
+  toast('📥 Finance Status Report downloaded');
+}
+
+function mgrExportSalesSummaryCSV(){
+  if(!db._mgrSummary){toast('⚠ Open dashboard first to load data');return;}
+  const sm=db._mgrSummary;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const days=[];
+  for(let i=5;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);days.push({str:_localDateStr(d),label:d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})});}
+  const rows=[['EMIRATES PRIDE PERFUMES — SALES SUMMARY (All Stores)']];
+  rows.push(['Generated:', new Date().toLocaleString('en-GB')]);
+  rows.push([]);
+  const header=['Store Code','Store Name','City','Manager'];
+  days.forEach(d=>header.push(d.label+' Sales'));
+  header.push('6-Day Total');
+  rows.push(header);
+  STORES.filter(s=>s.code!=='MGR').forEach(s=>{
+    const row=[s.code,s.name,s.city,s.mgr];
+    let total=0;
+    days.forEach(d=>{const v=sm.soldMap[s.code+'_'+d.str]||0;row.push(v);total+=v;});
+    row.push(total);
+    rows.push(row);
+  });
+  // Totals row
+  const totRow=['','ALL STORES','',''];
+  let grand=0;
+  days.forEach(d=>{
+    const v=STORES.filter(s=>s.code!=='MGR').reduce((a,s)=>a+(sm.soldMap[s.code+'_'+d.str]||0),0);
+    totRow.push(v); grand+=v;
+  });
+  totRow.push(grand);
+  rows.push(totRow);
+  downloadCSV('EP_SalesSummary_'+_localDateStr(new Date())+'.csv',rows);
+  toast('📥 Sales Summary downloaded');
+}
+
 function mgrSwitchToStore(){
   const sel=document.getElementById('mgrStoreSelect');
   if(!sel||!sel.value) return;
@@ -5846,7 +6027,7 @@ function exportDayCSV(){
   const exportDay = (typeof dashDay!=='undefined'&&dashDay!==null) ? dashDay : curDay;
   const dl=getDayLabels()[exportDay];
   const locked=isLocked(me.code,exportDay);
-  if(!locked){toast('⚠ Lock the day first before exporting');return;}
+  if(!locked && !isMgrSession){toast('⚠ Lock the day first before exporting');return;}
   const rows=[];
   rows.push(['EMIRATES PRIDE PERFUMES','','','Daily Stock Report']);
   rows.push([me.name,'','',dl.full+' '+dl.date+(locked?' [LOCKED]':'')]);
@@ -6089,7 +6270,7 @@ function exportDayPDF(){
   const exportDay = (typeof dashDay!=='undefined'&&dashDay!==null) ? dashDay : curDay;
   const dl=getDayLabels()[exportDay];
   const locked=isLocked(me.code,exportDay);
-  if(!locked){toast('⚠ Lock the day first before exporting');return;}
+  if(!locked && !isMgrSession){toast('⚠ Lock the day first before exporting');return;}
   const {html,tO,tW,tI,tS,tT,tB}=buildProductTableHTML(exportDay);
   // Transfer log for this day
   const trLog=getTransferLog().filter(t=>t.day===exportDay);
@@ -6312,6 +6493,40 @@ async function _sbFlush() {
 }
 
 // ── Load ALL data for store ──────────────────────────────────────
+async function _sbLoadMgrSummary() {
+  try {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const fromD = new Date(today); fromD.setDate(today.getDate() - 14);
+    const fromStr = _localDateStr(fromD);
+    const todayStr = _localDateStr(today);
+    // Fetch all day_locks (last 15 days, all stores)
+    const locks = await _sbGet('day_locks',
+      'locked=eq.true&day_date=gte.'+fromStr+'&select=store_code,day_date,locked_by&limit=5000');
+    // Fetch finance status (last 15 days, all stores)
+    const finRows = await _sbGet('finance',
+      'day_date=gte.'+fromStr+'&select=store_code,day_date,fin_locked,fin_locked_at&limit=5000');
+    // Fetch sold cells (last 15 days, all stores) — aggregate in JS
+    const soldCells = await _sbGet('stock_cells',
+      'field=eq.sold&day_date=gte.'+fromStr+'&select=store_code,day_date,value&limit=100000');
+    // Build soldMap: store_date → total sold
+    const soldMap = {};
+    soldCells.forEach(r => {
+      const k = r.store_code+'_'+r.day_date;
+      soldMap[k] = (soldMap[k]||0) + (r.value||0);
+    });
+    // Build lockSet: store_date → locked_by
+    const lockSet = {};
+    locks.forEach(r => { lockSet[r.store_code+'_'+r.day_date] = r.locked_by||'✓'; });
+    // Build finSet: store_date → {locked, at}
+    const finSet = {};
+    finRows.forEach(r => { finSet[r.store_code+'_'+r.day_date] = {locked:r.fin_locked, at:r.fin_locked_at}; });
+    db._mgrSummary = { soldMap, lockSet, finSet, fromStr, todayStr, loadedAt: new Date() };
+    return true;
+  } catch(e) {
+    console.error('[MGR] summary load failed:', e.message);
+    return false;
+  }
+}
 async function _sbLoad(store) {
   _sb_badge('load', '⇅ Loading…');
   try {
