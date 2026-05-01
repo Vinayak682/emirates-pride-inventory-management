@@ -6053,7 +6053,8 @@ function exportDayCSV(){
   totRow.push(PRODUCTS.reduce((a,p)=>a+bal(me.code,exportDay,p.code),0));
   rows.push(totRow);
   // Transfers
-  const trLog=getTransferLog().filter(t=>t.day===exportDay);
+  const _expDateStr=_idx2date(exportDay);
+  const trLog=getTransferLog().filter(t=>t.dayDate===_expDateStr&&(t.fromStore===me.code||t.toStore===me.code));
   if(trLog.length){rows.push([]);rows.push(['TRANSFERS']);rows.push(['Time','Product','Qty','From','To','Note']);
     trLog.forEach(t=>rows.push([t.ts,t.prodName,t.qty,t.fromName,t.toName,t.note||'']));}
   downloadCSV(me.code+'_'+dl.abbr+'_'+dl.date.replace('/','.')+'.csv',rows);
@@ -6299,10 +6300,18 @@ function exportWeekPDF(){
     const locked=isLocked(me.code,di);
     const {html,tO,tW,tI,tS,tT,tB}=buildProductTableHTML(di);
     fullSum.o+=tO;fullSum.w+=tW;fullSum.i+=tI;fullSum.s+=tS;fullSum.t+=tT;fullSum.b+=tB;
+    const _wkTrDate=_idx2date(di);
+    const _wkTrLog=getTransferLog().filter(t=>t.dayDate===_wkTrDate&&(t.fromStore===me.code||t.toStore===me.code));
+    let _wkTrHTML='';
+    if(_wkTrLog.length){
+      _wkTrHTML='<div style="margin-top:6px;font-size:10px;"><table style="width:100%;border-collapse:collapse;font-size:10px;"><thead><tr style="background:#F8F4E8;"><th style="padding:3px 6px;text-align:left;">Time</th><th style="padding:3px 6px;text-align:left;">Product</th><th style="padding:3px 6px;text-align:center;">Qty</th><th style="padding:3px 6px;text-align:left;">From</th><th style="padding:3px 6px;text-align:left;">To</th><th style="padding:3px 6px;text-align:left;">Note</th></tr></thead><tbody>';
+      _wkTrLog.forEach(t=>{_wkTrHTML+=`<tr style="border-bottom:1px solid #EEE;"><td style="padding:2px 6px;">${t.ts}</td><td style="padding:2px 6px;">${t.prodName}</td><td style="padding:2px 6px;text-align:center;font-weight:700;">${t.qty}</td><td style="padding:2px 6px;">${t.fromName}</td><td style="padding:2px 6px;">${t.toName}</td><td style="padding:2px 6px;">${t.note||''}</td></tr>`;});
+      _wkTrHTML+='</tbody></table></div>';
+    }
     fullHTML+=`<div style="margin-bottom:16px;page-break-inside:avoid;">
       <h3 style="font-size:12px;font-weight:800;color:#1A1A1A;margin-bottom:6px;padding:5px 8px;background:#F8F4E8;border-left:3px solid #C9A44E;">
         ${dl.full} ${dl.date} ${locked?'<span class="locked-badge">✓ LOCKED</span>':'<span class="open-badge">OPEN</span>'}
-      </h3>${html}</div>`;
+      </h3>${html}${_wkTrLog.length?'<div style="padding:4px 0 2px;font-size:9px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;">Transfers</div>'+_wkTrHTML:''}</div>`;
   });
   const pdfHTML=buildPDFHTML('Weekly Stock Register',me.name+' · 15-Day Rolling Report',fullHTML,buildSummaryStrip(fullSum.o,fullSum.w,fullSum.i,fullSum.s,fullSum.t,fullSum.b));
   openPrintWindow(pdfHTML);
@@ -6349,7 +6358,16 @@ function exportMonthPDF(){
     </tr></thead>
     <tbody>${tableRows}</tbody>
   </table>`;
-  const pdfHTML=buildPDFHTML('Monthly Summary Report',me.name+' · '+now.toLocaleString('en-GB',{month:'long',year:'numeric'}),tableHTML,buildSummaryStrip(0,totW,totI,totS,totT,totB));
+  // Transfers for this period (all days in current window involving this store)
+  const _mthDates=Array.from({length:DAY_WINDOW},(_,i)=>_idx2date(i));
+  const _mthTrLog=getTransferLog().filter(t=>_mthDates.includes(t.dayDate)&&(t.fromStore===me.code||t.toStore===me.code));
+  let _mthTrHTML='';
+  if(_mthTrLog.length){
+    _mthTrHTML='<div class="transfer-section"><h3>Transfer Movements (Period)</h3><table><thead><tr><th>Time</th><th>Product</th><th>Qty</th><th>From</th><th>To</th><th>Note</th></tr></thead><tbody>';
+    _mthTrLog.forEach(t=>{_mthTrHTML+=`<tr><td>${t.ts}</td><td>${t.prodName}</td><td style="text-align:center;font-weight:700;">${t.qty}</td><td>${t.fromName}</td><td>${t.toName}</td><td>${t.note||''}</td></tr>`;});
+    _mthTrHTML+='</tbody></table></div>';
+  }
+  const pdfHTML=buildPDFHTML('Monthly Summary Report',me.name+' · '+now.toLocaleString('en-GB',{month:'long',year:'numeric'}),tableHTML+_mthTrHTML,buildSummaryStrip(0,totW,totI,totS,totT,totB));
   openPrintWindow(pdfHTML);
   closeExport();toast('📋 PDF opened — use Print → Save as PDF');
 }
