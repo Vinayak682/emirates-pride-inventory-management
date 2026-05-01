@@ -481,97 +481,44 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sp-mode-btn.active{color:var(--gold2);border-bottom-color:var(--gold);}
 
 /* Product lookup panel */
-.avail-panel{padding:14px 12px;}
-.avail-empty{
-  text-align:center;padding:48px 16px;
-}
+.avail-panel{padding:0;}
+.avail-empty{text-align:center;padding:48px 16px;}
 .avail-empty-icon{font-size:36px;display:block;margin-bottom:10px;}
 .avail-empty-text{font-size:13px;color:#444;line-height:1.6;}
 .avail-empty-hint{font-size:11px;color:#333;margin-top:8px;}
-
-/* Selected product header */
-.avail-product-bar{
-  background:#1A1A1A;border:1px solid #2A2A2A;border-radius:10px;
-  padding:12px 14px;margin-bottom:14px;
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-}
-.avail-prod-info{}
-.avail-prod-name{font-size:15px;font-weight:600;color:#E8E0D0;margin-bottom:2px;}
-.avail-prod-ar{font-family:var(--f-ar);font-size:12px;color:#666;direction:rtl;text-align:left;}
-.avail-prod-code{font-family:var(--f-mono);font-size:10px;color:#555;margin-top:3px;}
-.avail-total-badge{
-  text-align:right;flex-shrink:0;
-}
-.avail-total-num{font-family:var(--f-mono);font-size:24px;font-weight:600;color:#6FCF97;display:block;}
-.avail-total-label{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:0.7px;}
-
-/* Store availability list */
-.avail-list{}
-.avail-section-label{
-  font-family:var(--f-mono);font-size:9px;font-weight:600;
-  text-transform:uppercase;letter-spacing:1px;
-  padding:8px 0 5px;color:#555;border-bottom:1px solid #1E1E1E;margin-bottom:4px;
-}
-.avail-section-label.has-stock{color:#4A8A4A;}
-.avail-section-label.no-stock{color:#3A2A2A;}
-
-.avail-row{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 12px;border-radius:8px;margin-bottom:4px;
-  cursor:default;transition:background 0.12s;border:1px solid transparent;
-}
-.avail-row.in-stock{
-  background:#111D11;border-color:#1E3A1E;cursor:pointer;
-}
-.avail-row.in-stock:active{background:#162416;}
-.avail-row.low-stock{
-  background:#1A1800;border-color:#2A2600;cursor:pointer;
-}
-.avail-row.low-stock:active{background:#201E00;}
-.avail-row.no-stock{
-  background:#111;border-color:#1A1A1A;opacity:0.5;
-}
-.avail-row.is-mine{border-color:var(--gold3)!important;}
-
-.avail-store-icon{
-  font-size:16px;flex-shrink:0;
-  width:32px;height:32px;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-}
-.avail-store-icon.ok-icon{background:rgba(111,207,151,0.12);}
-.avail-store-icon.low-icon{background:rgba(240,160,48,0.12);}
-.avail-store-icon.zero-icon{background:rgba(60,60,60,0.3);}
-
-.avail-store-info{flex:1;min-width:0;}
-.avail-store-name{
-  font-size:13px;font-weight:600;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.avail-store-name.ok{color:#CCC;}
-.avail-store-name.zero{color:#3A3A3A;}
-.avail-city{font-size:10px;color:#444;margin-top:1px;}
-
-.avail-qty-badge{
-  flex-shrink:0;min-width:44px;height:44px;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--f-mono);font-size:20px;font-weight:700;
-  flex-direction:column;
-}
-.avail-qty-badge.ok{background:rgba(111,207,151,0.15);color:#6FCF97;}
-.avail-qty-badge.low{background:rgba(240,160,48,0.15);color:#F0A030;}
-.avail-qty-badge.zero{background:rgba(40,40,40,0.5);color:#2A2A2A;font-size:14px;}
-.avail-qty-units{font-size:8px;font-weight:400;opacity:0.6;letter-spacing:0.5px;}
-
-.avail-mine-tag{
-  display:inline-block;background:#2A2000;border:1px solid #4A3800;
-  color:var(--gold2);font-size:8px;padding:1px 5px;border-radius:3px;
-  margin-left:5px;font-family:var(--f-mono);vertical-align:middle;
-}
-.avail-action-hint{
-  font-size:9px;color:#4A8A4A;margin-top:2px;
-  display:flex;align-items:center;gap:3px;
-}
-.avail-action-hint.low-hint{color:#6A5A00;}
+.avail-hero{background:linear-gradient(135deg,#1A1A1A,#111);border-bottom:1px solid #2A2A2A;padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.avail-hero-info{flex:1;min-width:0;}
+.avail-hero-name{font-size:16px;font-weight:700;color:#E8E0D0;line-height:1.2;}
+.avail-hero-ar{font-family:var(--f-ar);font-size:12px;color:#666;direction:rtl;text-align:left;margin-top:2px;}
+.avail-hero-code{font-family:var(--f-mono);font-size:9px;color:#555;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px;}
+.avail-hero-badge{text-align:right;flex-shrink:0;}
+.avail-hero-num{font-family:var(--f-mono);font-size:28px;font-weight:900;color:#6FCF97;display:block;line-height:1;}
+.avail-hero-lbl{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
+.avail-stats{display:flex;gap:0;border-bottom:1px solid #1A1A1A;}
+.avail-stat{flex:1;padding:8px 10px;text-align:center;border-right:1px solid #1A1A1A;}
+.avail-stat:last-child{border-right:none;}
+.avail-stat-num{font-family:var(--f-mono);font-size:18px;font-weight:900;display:block;}
+.avail-stat-num.green{color:#6FCF97;}.avail-stat-num.red{color:#E87070;}.avail-stat-num.gold{color:#C9A44E;}
+.avail-stat-lbl{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
+.avail-region{padding:5px 14px 4px;font-family:var(--f-mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#C9A44E;background:#111;border-top:1px solid #1A1A1A;border-bottom:1px solid #1A1A1A;display:flex;align-items:center;justify-content:space-between;}
+.avail-region-total{color:#555;font-size:8px;}
+.avail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.avail-tile{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #111;border-right:1px solid #111;cursor:default;transition:background 0.1s;position:relative;}
+.avail-tile:nth-child(even){border-right:none;}
+.avail-tile.has-stock{background:#0D1A0D;cursor:pointer;}.avail-tile.has-stock:active{background:#122012;}
+.avail-tile.low-stock{background:#1A1600;cursor:pointer;}.avail-tile.low-stock:active{background:#201C00;}
+.avail-tile.no-stock{background:#0D0D0D;}
+.avail-tile.is-mine{outline:1px solid #C9A44E55;z-index:1;}
+.avail-tile-body{flex:1;min-width:0;}
+.avail-tile-name{font-size:11px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.avail-tile-name.green{color:#CCC;}.avail-tile-name.dim{color:#2E2E2E;}
+.avail-tile-sub{font-family:var(--f-mono);font-size:8px;color:#333;margin-top:1px;}
+.avail-mine-badge{display:inline-block;background:#2A2000;border:1px solid #4A3000;color:#C9A44E;font-size:7px;padding:1px 4px;border-radius:2px;font-family:var(--f-mono);margin-left:4px;vertical-align:middle;}
+.avail-tile-qty{flex-shrink:0;width:46px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.avail-tile-qty.green{background:rgba(111,207,151,0.12);}.avail-tile-qty.amber{background:rgba(201,164,78,0.12);}.avail-tile-qty.red{background:rgba(232,112,112,0.08);}
+.avail-tile-qty-num{font-family:var(--f-mono);font-size:18px;font-weight:900;line-height:1;}
+.avail-tile-qty-num.green{color:#6FCF97;}.avail-tile-qty-num.amber{color:#C9A44E;}.avail-tile-qty-num.red{color:#E87070;}
+.avail-tile-qty-lbl{font-size:7px;color:#555;text-transform:uppercase;letter-spacing:0.4px;}
 
 /* REQUEST modal */
 #reqModal{
@@ -1807,15 +1754,6 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   <!-- Body -->
   <div class="sp-body" id="spBody" style="flex:1;overflow-y:auto;"></div>
 
-  <!-- Transfer Movement Log -->
-  <div id="spMovLog" style="border-top:1px solid #2A2A2A;flex-shrink:0;">
-    <div onclick="toggleMovLog()" style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:#0D0D0D;">
-      <span style="font-family:var(--f-mono);font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.8px;">🔄 Transfer Log</span>
-      <span id="movLogCount" style="font-family:var(--f-mono);font-size:10px;color:#444;"></span>
-      <span id="movLogArrow" style="color:#444;font-size:12px;">▲</span>
-    </div>
-    <div id="movLogBody" style="max-height:240px;overflow-y:auto;display:none;"></div>
-  </div>
 </div>
 
 <!-- REQUEST SHEET -->
@@ -2963,9 +2901,6 @@ function onSpSkuChange(){
 function openStores(){
   document.getElementById('storesPanel').style.display='flex';
   setSpMode('product');
-  renderMovLog();
-  const movBody=document.getElementById('movLogBody');
-  if(movBody) movBody.style.display=movLogOpen?'block':'none';
 }
 function closeStores(){
   document.getElementById('storesPanel').style.display='none';
@@ -2978,7 +2913,7 @@ function renderStores(){
   else renderStoreMode(body);
 }
 
-// ─── PRODUCT MODE: one list, all stores ranked by availability ───
+// ─── PRODUCT MODE: grid layout — all 27 stores, green/red ───────
 function renderProductMode(body){
   const skuF=document.getElementById('spSku').value;
   const q=(document.getElementById('spSearch').value||'').toLowerCase();
@@ -2986,123 +2921,91 @@ function renderProductMode(body){
   if(!skuF&&!q){
     body.innerHTML=`<div class="avail-empty">
       <span class="avail-empty-icon">🔍</span>
-      <div class="avail-empty-text">Select a product above<br>to see which stores have it in stock</div>
-      <div class="avail-empty-hint">Tap any store with stock to request a transfer</div>
+      <div class="avail-empty-text">Select a product above<br>to see availability across all 27 stores</div>
+      <div class="avail-empty-hint">Green = in stock · Red 0 = out of stock</div>
     </div>`;
     return;
   }
 
-  // Determine product
+  // Resolve product
   let prod=null;
-  if(skuF){
-    prod=PRODUCTS.find(p=>p.code===skuF);
-  } else if(q){
-    prod=PRODUCTS.find(p=>
-      p.en.toLowerCase().includes(q)||
-      p.code.toLowerCase().includes(q)||
-      (p.ar&&p.ar.toLowerCase().includes(q))
-    );
+  if(skuF){ prod=PRODUCTS.find(p=>p.code===skuF); }
+  else if(q){
+    prod=PRODUCTS.find(p=>p.en.toLowerCase().includes(q)||p.code.toLowerCase().includes(q)||(p.ar&&p.ar.toLowerCase().includes(q)));
     if(prod) document.getElementById('spSku').value=prod.code;
   }
   if(!prod){
-    body.innerHTML=`<div class="avail-empty"><span class="avail-empty-icon">❓</span><div class="avail-empty-text">No product matched.<br>Try a different search.</div></div>`;
+    body.innerHTML=`<div class="avail-empty"><span class="avail-empty-icon">❓</span><div class="avail-empty-text">No product matched. Try a different search.</div></div>`;
     return;
   }
 
   const allStores=STORES.filter(s=>s.code!=='MGR');
-  // Build rows with balances
   const rows=allStores.map(store=>{
     const b=bal(store.code,curDay,prod.code);
-    const isMine=me&&store.code===me.code;
-    return {store,b,isMine};
-  });
-  // Sort: in stock first (desc qty), then zero
-  rows.sort((a,b2)=>{
-    if(a.b>0&&b2.b<=0) return -1;
-    if(a.b<=0&&b2.b>0) return 1;
-    return b2.b-a.b;
+    return {store,b,isMine:!!(me&&store.code===me.code)};
   });
 
-  const totalStock=rows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
-  const myBal=rows.find(r=>r.isMine)?.b||0;
+  const netTotal=rows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
+  const inStockCount=rows.filter(r=>r.b>0).length;
+  const zeroCount=rows.filter(r=>r.b<=0).length;
+  const myRow=rows.find(r=>r.isMine);
+  const myBal=myRow?myRow.b:0;
 
-  const wrap=document.createElement('div');
-  wrap.className='avail-panel';
-
-  // Product header bar
-  const myStatus=myBal>0
-    ?`<span style="color:#6FCF97;font-weight:600;">${myBal} in your store</span>`
-    :`<span style="color:#E87070;">Not in your store</span>`;
-  wrap.innerHTML=`
-    <div class="avail-product-bar">
-      <div class="avail-prod-info">
-        <div class="avail-prod-name">${prod.en}</div>
-        ${prod.ar?`<div class="avail-prod-ar">${prod.ar}</div>`:''}
-        <div class="avail-prod-code">${prod.code} · ${myStatus}</div>
-      </div>
-      <div class="avail-total-badge">
-        <span class="avail-total-num">${totalStock}</span>
-        <span class="avail-total-label">Network Total</span>
-      </div>
-    </div>
-    <div class="avail-section-label has-stock">✅ Stores with stock — tap to view</div>
-  `;
-
-  const list=document.createElement('div');
-  list.className='avail-list';
-
-  // Group by Area Manager → Region
-  const mgrs=[...new Set(rows.map(r=>r.store.mgr||''))];
-  mgrs.forEach(mgr=>{
-    const mgrRows=rows.filter(r=>(r.store.mgr||'')===mgr);
-    const mgrTotal=mgrRows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
-    const mgrHdr=document.createElement('div');
-    mgrHdr.style.cssText='padding:8px 12px 4px;font-family:var(--f-mono);font-size:9px;font-weight:700;color:var(--gold2);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #1E1E1E;display:flex;align-items:center;justify-content:space-between;margin-top:6px;';
-    mgrHdr.innerHTML=`<span>👤 ${mgr||'Unknown'}</span><span style="color:#444;font-size:8px;">${mgrTotal} units across region</span>`;
-    list.appendChild(mgrHdr);
-    const regions=[...new Set(mgrRows.map(r=>r.store.region||''))];
-    regions.forEach(region=>{
-      const regRows=mgrRows.filter(r=>(r.store.region||'')===region);
-      const regTotal=regRows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
-      const regHdr=document.createElement('div');
-      regHdr.style.cssText='padding:4px 12px 2px;font-size:9px;color:#444;font-family:var(--f-mono);';
-      regHdr.innerHTML=`▸ ${region} <span style="color:#333;">(${regTotal} units)</span>`;
-      list.appendChild(regHdr);
-      regRows.forEach(({store,b,isMine})=>{
-        const cls=b>3?'in-stock':b>0?'low-stock':'no-stock';
-        const iconCls=b>3?'ok-icon':b>0?'low-icon':'zero-icon';
-        const qCls=b>3?'ok':b>0?'low':'zero';
-        const icon=b>3?'🟢':b>0?'🟡':'⚪';
-        const row=document.createElement('div');
-        row.className='avail-row '+cls+(isMine?' is-mine':'');
-        row.innerHTML=`
-          <div class="avail-store-icon ${iconCls}">${icon}</div>
-          <div class="avail-store-info">
-            <div class="avail-store-name ${b>0?'ok':'zero'}">${store.name}${isMine?'<span class="avail-mine-tag">YOUR STORE</span>':''}</div>
-            <div class="avail-city">${store.city} · ${store.code}</div>
-            ${b<=3&&b>0?`<div class="avail-action-hint low-hint">⚠ Low stock</div>`:''}
-          </div>
-          <div class="avail-qty-badge ${qCls}">
-            <span>${b>0?b:'—'}</span>
-            ${b>0?'<span class="avail-qty-units">UNITS</span>':''}
-          </div>`;
-        list.appendChild(row);
-      });
+  // Build output HTML string (fast, no DOM manipulation per row)
+  // Group by region
+  const regions=[...new Set(allStores.map(s=>s.region))];
+  let gridHTML='';
+  regions.forEach(region=>{
+    const rRows=rows.filter(r=>r.store.region===region);
+    const rTotal=rRows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
+    const rInStock=rRows.filter(r=>r.b>0).length;
+    gridHTML+=`<div class="avail-region">
+      <span>${region}</span>
+      <span class="avail-region-total">${rInStock}/${rRows.length} stores · ${rTotal} units</span>
+    </div><div class="avail-grid">`;
+    rRows.forEach(({store,b,isMine})=>{
+      const cls=b>3?'has-stock':b>0?'low-stock':'no-stock';
+      const qColor=b>3?'green':b>0?'amber':'red';
+      const nameColor=b>0?'green':'dim';
+      const qty=b>0?b:0;
+      const unitLbl=b>0?'UNITS':'';
+      gridHTML+=`<div class="avail-tile ${cls}${isMine?' is-mine':''}">
+        <div class="avail-tile-body">
+          <div class="avail-tile-name ${nameColor}">${store.name}${isMine?'<span class="avail-mine-badge">YOU</span>':''}</div>
+          <div class="avail-tile-sub">${store.city} · ${store.code}</div>
+        </div>
+        <div class="avail-tile-qty ${qColor}">
+          <span class="avail-tile-qty-num ${qColor}">${qty}</span>
+          ${unitLbl?`<span class="avail-tile-qty-lbl">${unitLbl}</span>`:''}
+        </div>
+      </div>`;
     });
+    gridHTML+='</div>';
   });
 
-  wrap.appendChild(list);
+  const myStatus=myBal>0
+    ?`<span style="color:#6FCF97;font-size:11px;font-weight:700;">● ${myBal} in your store</span>`
+    :`<span style="color:#E87070;font-size:11px;">Not in your store</span>`;
 
-  if(totalStock===0){
-    const alert=document.createElement('div');
-    alert.style.cssText='text-align:center;padding:20px;color:#444;font-size:13px;margin-top:8px;';
-    alert.innerHTML='No stock found at any store today.<br><span style="font-size:11px;color:#333;">Check if deliveries are expected in the Shipments tab.</span>';
-    wrap.appendChild(alert);
-  }
-
-  body.appendChild(wrap);
+  body.innerHTML=`
+  <div class="avail-hero">
+    <div class="avail-hero-info">
+      <div class="avail-hero-name">${prod.en}</div>
+      ${prod.ar?`<div class="avail-hero-ar">${prod.ar}</div>`:''}
+      <div class="avail-hero-code">${prod.code} · ${prod.cat||''} · ${myStatus}</div>
+    </div>
+    <div class="avail-hero-badge">
+      <span class="avail-hero-num">${netTotal}</span>
+      <span class="avail-hero-lbl">Network Total</span>
+    </div>
+  </div>
+  <div class="avail-stats">
+    <div class="avail-stat"><span class="avail-stat-num green">${inStockCount}</span><span class="avail-stat-lbl">In Stock</span></div>
+    <div class="avail-stat"><span class="avail-stat-num red">${zeroCount}</span><span class="avail-stat-lbl">Out of Stock</span></div>
+    <div class="avail-stat"><span class="avail-stat-num gold">${netTotal}</span><span class="avail-stat-lbl">Total Units</span></div>
+  </div>
+  ${gridHTML}`;
 }
-
 // ─── STORE MODE: cards per store ───
 function renderStoreMode(body){
   const q=(document.getElementById('spSearch').value||'').toLowerCase();
