@@ -2015,49 +2015,122 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 </div>
 
 <!-- ══════════ TRANSFER DRAWER ══════════ -->
-<div id="trfDrawer" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);
+<div id="trfDrawer" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);
   display:none;align-items:flex-end;justify-content:center;z-index:960;
   padding-bottom:env(safe-area-inset-bottom,0px);">
   <div style="background:#141414;border-radius:20px 20px 0 0;
-    width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;">
+    width:100%;max-width:540px;max-height:92vh;display:flex;flex-direction:column;">
 
-    <!-- Header -->
-    <div style="padding:16px 18px 10px;border-bottom:1px solid #222;flex-shrink:0;">
+    <!-- ── Header ── -->
+    <div style="padding:14px 16px 10px;border-bottom:1px solid #222;flex-shrink:0;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;">
-        <div>
+        <div style="flex:1;min-width:0;">
           <div style="font-size:9px;font-weight:700;color:#555;text-transform:uppercase;
             letter-spacing:1px;margin-bottom:3px;" id="trfDrawerType">—</div>
-          <div style="font-size:17px;font-weight:700;color:#E0E0E0;" id="trfDrawerProd">—</div>
-          <div style="font-family:var(--f-mono);font-size:10px;color:#555;margin-top:2px;" id="trfDrawerDay">—</div>
+          <div style="font-size:16px;font-weight:700;color:#E0E0E0;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="trfDrawerProd">—</div>
+          <div style="font-family:var(--f-mono);font-size:10px;color:#555;margin-top:1px;"
+            id="trfDrawerDay">—</div>
         </div>
-        <button onclick="closeTrfDrawer()"
-          style="background:#1A1A1A;border:1px solid #333;border-radius:50%;
-            width:32px;height:32px;color:#888;font-size:16px;cursor:pointer;
-            display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+        <button onclick="closeTrfDrawer()" style="background:#1A1A1A;border:1px solid #333;
+          border-radius:50%;width:30px;height:30px;color:#888;font-size:15px;cursor:pointer;
+          flex-shrink:0;display:flex;align-items:center;justify-content:center;">✕</button>
       </div>
-      <!-- Total badge -->
-      <div style="margin-top:10px;display:flex;align-items:center;gap:10px;">
+      <!-- Total strip -->
+      <div style="margin-top:10px;display:flex;align-items:center;gap:12px;
+        background:#1A1A0A;border:1px solid #2A2A0A;border-radius:8px;padding:8px 12px;">
         <div id="trfDrawerTotal"
-          style="font-family:var(--f-mono);font-size:28px;font-weight:900;color:#C9A44E;"></div>
-        <div style="font-family:var(--f-mono);font-size:10px;color:#555;">
-          <div id="trfDrawerTotalLabel">TOTAL UNITS</div>
-          <div id="trfDrawerStoreCount" style="color:#444;"></div>
+          style="font-family:var(--f-mono);font-size:32px;font-weight:900;color:#C9A44E;
+          line-height:1;min-width:40px;">—</div>
+        <div>
+          <div style="font-family:var(--f-mono);font-size:9px;font-weight:700;color:#7A5C28;
+            text-transform:uppercase;letter-spacing:0.5px;" id="trfDrawerTotalLabel">TOTAL UNITS</div>
+          <div style="font-family:var(--f-mono);font-size:10px;color:#555;margin-top:1px;"
+            id="trfDrawerStoreCount">0 stores</div>
         </div>
       </div>
     </div>
 
-    <!-- Breakdown list -->
-    <div id="trfDrawerList" style="flex:1;overflow-y:auto;padding:8px 0;"></div>
+    <!-- ── Existing splits list ── -->
+    <div id="trfDrawerList" style="flex:1;overflow-y:auto;padding:6px 0;min-height:60px;"></div>
 
-    <!-- Add new split button -->
-    <div style="padding:12px 18px;border-top:1px solid #1E1E1E;flex-shrink:0;display:flex;gap:8px;" id="trfDrawerActions">
-      <button id="trfDrawerAddBtn" onclick="trfDrawerAddNew()"
-        style="flex:1;background:#1A2A1A;border:1px solid #2A5A2A;border-radius:10px;
-          color:#6FCF97;font-family:var(--f-body);font-size:15px;font-weight:700;
+    <!-- ── ADD NEW SPLIT — inline form ── -->
+    <div id="trfDrawerAddSection" style="border-top:2px solid #1E2A1E;flex-shrink:0;background:#0D160D;padding:12px 14px;">
+
+      <div style="font-family:var(--f-mono);font-size:9px;font-weight:800;color:#2A6A2A;
+        text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">
+        ＋ ADD TRANSFER ENTRY
+      </div>
+
+      <!-- Store selector -->
+      <div style="margin-bottom:8px;">
+        <div style="font-family:var(--f-mono);font-size:9px;color:#444;
+          text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"
+          id="trfDrawerStoreLabel">Select Store</div>
+        <select id="trfDrawerStoreSel"
+          style="width:100%;background:#1A1A1A;border:1px solid #2A4A2A;border-radius:8px;
+            padding:10px 12px;font-family:var(--f-body);font-size:13px;color:#CCC;
+            outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;">
+          <option value="">— Select store —</option>
+        </select>
+      </div>
+
+      <!-- Remark -->
+      <div style="margin-bottom:10px;">
+        <input id="trfDrawerRemark" type="text" placeholder="Remark / reason (optional)…"
+          style="width:100%;background:#1A1A1A;border:1px solid #222;border-radius:8px;
+            padding:9px 12px;font-family:var(--f-body);font-size:12px;color:#CCC;
+            outline:none;box-sizing:border-box;">
+      </div>
+
+      <!-- Quantity row -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div style="font-family:var(--f-mono);font-size:11px;color:#555;white-space:nowrap;">QTY</div>
+        <!-- Minus -->
+        <button onclick="trfDrawerQtyAdj(-1)"
+          style="background:#1A1A1A;border:1px solid #333;border-radius:8px;
+            color:#888;font-size:20px;font-weight:700;width:42px;height:42px;
+            cursor:pointer;flex-shrink:0;">−</button>
+        <!-- Display -->
+        <div id="trfDrawerQtyDisplay"
+          style="flex:1;text-align:center;font-family:var(--f-mono);font-size:28px;
+            font-weight:900;color:#6FCF97;background:#1A2A1A;border:1px solid #2A4A2A;
+            border-radius:8px;padding:6px;cursor:pointer;" onclick="trfDrawerQtyFocus()">
+          0
+        </div>
+        <!-- Plus -->
+        <button onclick="trfDrawerQtyAdj(1)"
+          style="background:#1A2A1A;border:1px solid #2A5A2A;border-radius:8px;
+            color:#6FCF97;font-size:20px;font-weight:700;width:42px;height:42px;
+            cursor:pointer;flex-shrink:0;">＋</button>
+      </div>
+
+      <!-- Mini numpad for quantity -->
+      <div id="trfDrawerNumpad" style="display:none;margin-bottom:10px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
+          ${[1,2,3,4,5,6,7,8,9,'CLR',0,'⌫'].map(k=>`
+            <button onclick="trfDrawerKey('${k}')"
+              style="background:#252525;border:1px solid #333;border-radius:8px;
+                color:${k==='CLR'?'#E87070':'#E0E0E0'};font-family:var(--f-mono);
+                font-size:${k==='CLR'||k==='⌫'?'13':'18'}px;font-weight:600;
+                padding:12px;cursor:pointer;">${k}</button>`).join('')}
+        </div>
+        <button onclick="document.getElementById('trfDrawerNumpad').style.display='none'"
+          style="width:100%;margin-top:5px;background:#1A1A1A;border:1px solid #333;
+            border-radius:8px;color:#555;font-family:var(--f-mono);font-size:11px;
+            padding:7px;cursor:pointer;">▲ Done</button>
+      </div>
+
+      <!-- Save split button -->
+      <button onclick="trfDrawerSaveSplit()"
+        style="width:100%;background:linear-gradient(135deg,#1A5A1A,#0D3A0D);
+          border:1px solid #2A7A2A;border-radius:10px;color:#6FCF97;
+          font-family:var(--f-body);font-size:15px;font-weight:700;
           padding:13px;cursor:pointer;">
-        ＋ Add Another Store
+        ✓ Save This Transfer
       </button>
     </div>
+
   </div>
 </div>
 
@@ -4744,25 +4817,50 @@ function openFinNP(f){ finTap(f); }
 function openFinCCNP(i){ finTapCC(i); }
 
 // ══════════════════════════════════════════════════════════════
-// TRANSFER DRAWER — Total + Breakdown + Delete + Add
+// TRANSFER DRAWER — Self-contained: breakdown + inline add form
 // ══════════════════════════════════════════════════════════════
-let _trfCtx = null; // {code, type:'inn'|'trf'}
+let _trfCtx  = null; // {code, type:'inn'|'trf'}
+let _trfQty  = 0;
+let _trfQBuf = '';
 
 function openTrfDrawer(code, type) {
-  const p = PRODUCTS.find(x=>x.code===code);
+  const p  = PRODUCTS.find(x=>x.code===code);
   const dl = getDayLabels()[curDay];
   _trfCtx = {code, type};
+  _trfQty = 0; _trfQBuf = '';
+  const isInn = type === 'inn';
 
-  // Header
   document.getElementById('trfDrawerType').textContent =
-    type==='inn' ? '← RECEIVED FROM OTHER STORES' : '→ SENT TO OTHER STORES';
+    isInn ? '← RECEIVED FROM OTHER STORES' : '→ SENT TO OTHER STORES';
   document.getElementById('trfDrawerProd').textContent = p ? p.en : code;
-  document.getElementById('trfDrawerDay').textContent =
-    (p?p.ar+' · ':'') + code + ' · ' + (dl?dl.full+' '+dl.date:'');
+  document.getElementById('trfDrawerDay').textContent  =
+    (p ? p.ar + ' · ' : '') + code + ' · ' + (dl ? dl.full + ' ' + dl.date : '');
+  document.getElementById('trfDrawerStoreLabel').textContent =
+    isInn ? '📥 Received FROM which store?' : '📤 Sent TO which store?';
+  document.getElementById('trfDrawerQtyDisplay').textContent = '0';
+  if(document.getElementById('trfDrawerRemark')) document.getElementById('trfDrawerRemark').value = '';
 
+  // Populate store dropdown
+  const sel = document.getElementById('trfDrawerStoreSel');
+  sel.innerHTML = '<option value="">— Select store —</option>';
+  const mgrs = [...new Set(STORES.filter(s=>s.code!==me.code&&s.code!=='MGR').map(s=>s.mgr||''))];
+  mgrs.forEach(mgr => {
+    const og = document.createElement('optgroup');
+    og.label = mgr || 'Other';
+    STORES.filter(s=>s.code!==me.code&&s.code!=='MGR'&&(s.mgr||'')===mgr).forEach(s=>{
+      const o = document.createElement('option');
+      o.value = s.code;
+      const sb = bal(s.code, curDay, code);
+      o.textContent = s.name + (sb>0?' ['+sb+' avail]':'');
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+
+  // Show/hide add section
   const locked = isLocked(me.code, curDay) && !mgrOverrideActive;
-  const addBtn = document.getElementById('trfDrawerAddBtn');
-  if(addBtn) addBtn.style.display = locked ? 'none' : 'flex';
+  const addSec = document.getElementById('trfDrawerAddSection');
+  if(addSec) addSec.style.display = locked ? 'none' : 'block';
 
   renderTrfDrawer();
   document.getElementById('trfDrawer').style.display = 'flex';
@@ -4770,135 +4868,199 @@ function openTrfDrawer(code, type) {
 
 function closeTrfDrawer() {
   document.getElementById('trfDrawer').style.display = 'none';
-  _trfCtx = null;
+  const np = document.getElementById('trfDrawerNumpad');
+  if(np) np.style.display = 'none';
+  _trfCtx = null; _trfQty = 0; _trfQBuf = '';
 }
 
 function renderTrfDrawer() {
   if (!_trfCtx) return;
   const {code, type} = _trfCtx;
+  const isInn  = type === 'inn';
   const locked = isLocked(me.code, curDay) && !mgrOverrideActive;
 
   const entries = getTransferLog().filter(t =>
-    t.day === curDay &&
-    t.prodCode === code &&
-    (type==='inn' ? t.toStore===me.code : t.fromStore===me.code)
+    t.day === curDay && t.prodCode === code &&
+    (isInn ? t.toStore === me.code : t.fromStore === me.code)
   );
 
   const total = entries.reduce((s,e)=>s+(e.qty||0), 0);
-  const isInn = type === 'inn';
-
-  // Update header totals
-  document.getElementById('trfDrawerTotal').textContent = total || '—';
-  document.getElementById('trfDrawerTotalLabel').textContent =
-    isInn ? 'TOTAL RECEIVED' : 'TOTAL SENT OUT';
+  document.getElementById('trfDrawerTotal').textContent      = total || '—';
+  document.getElementById('trfDrawerTotalLabel').textContent = isInn ? 'TOTAL RECEIVED' : 'TOTAL SENT';
   document.getElementById('trfDrawerStoreCount').textContent =
     entries.length + ' store' + (entries.length!==1?'s':'');
 
+  const accentCol = isInn ? '#6FCF97' : '#BB88DD';
   const list = document.getElementById('trfDrawerList');
+
   if (!entries.length) {
-    list.innerHTML = `
-      <div style="text-align:center;padding:30px 18px;font-family:var(--f-mono);
-        font-size:12px;color:#333;">
-        No ${isInn?'incoming':'outgoing'} transfers recorded yet.<br>
-        <span style="color:#555;font-size:10px;">Tap ＋ Add to record one.</span>
-      </div>`;
+    list.innerHTML = '<div style="text-align:center;padding:16px 18px;' +
+      'font-family:var(--f-mono);font-size:11px;color:#333;line-height:1.6;">' +
+      'No ' + (isInn?'incoming':'outgoing') + ' transfers yet.<br>' +
+      '<span style="color:#2A5A2A;font-size:10px;">Use the form below ↓ to add one.</span>' +
+      '</div>';
     return;
   }
-
-  const accentCol = isInn ? '#6FCF97' : '#BB88DD';
-  const bgCol     = isInn ? '#0D1A0D' : '#160D1A';
-  const borderCol = isInn ? '#1A4A1A' : '#2A1A4A';
 
   list.innerHTML = entries.map((t, i) => {
     const storeName = isInn ? t.fromName : t.toName;
     const storeCode = isInn ? t.fromStore : t.toStore;
     const pct = total > 0 ? Math.round((t.qty/total)*100) : 0;
-    return `
-      <div style="padding:12px 18px;border-bottom:1px solid #1A1A1A;background:${i%2===0?bgCol:'transparent'};">
-        <div style="display:flex;align-items:flex-start;gap:12px;">
-          <!-- Store info -->
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;font-weight:700;color:${accentCol};
-              line-height:1.3;margin-bottom:3px;">${storeName}</div>
-            <div style="font-family:var(--f-mono);font-size:9px;color:#444;
-              margin-bottom:${t.remark?'3px':'0'};">${storeCode} · ${t.ts||''}</div>
-            ${t.remark?`<div style="font-size:11px;color:#5A7A5A;font-style:italic;">💬 ${t.remark}</div>`:''}
-          </div>
-          <!-- Qty badge -->
-          <div style="text-align:center;flex-shrink:0;">
-            <div style="font-family:var(--f-mono);font-size:26px;font-weight:900;
-              color:${accentCol};line-height:1;">${t.qty}</div>
-            <div style="font-family:var(--f-mono);font-size:8px;color:#444;margin-top:1px;">units</div>
-          </div>
-          <!-- Delete button (only if not locked) -->
-          ${!locked ? `
-          <button onclick="deleteTrfSplit(${t.id},'${code}','${type}')"
-            style="background:#2A0A0A;border:1px solid #5A1A1A;border-radius:7px;
-              color:#E87070;font-size:11px;font-weight:700;padding:6px 10px;
-              cursor:pointer;flex-shrink:0;align-self:flex-start;">
-            🗑 Delete
-          </button>` : ''}
-        </div>
-        <!-- Progress bar showing % of total -->
-        <div style="margin-top:8px;height:3px;background:#1A1A1A;border-radius:2px;overflow:hidden;">
-          <div style="height:100%;background:${accentCol};opacity:0.5;width:${pct}%;
-            border-radius:2px;transition:width 0.3s;"></div>
-        </div>
-        <div style="font-family:var(--f-mono);font-size:9px;color:#333;
-          margin-top:3px;text-align:right;">${pct}% of total</div>
-      </div>`;
+    return '<div style="padding:10px 16px;border-bottom:1px solid #1A1A1A;' +
+      'background:' + (i%2===0?'rgba(10,20,10,0.4)':'transparent') + ';">' +
+      '<div style="display:flex;align-items:flex-start;gap:10px;">' +
+      '<div style="flex:1;min-width:0;">' +
+      '<div style="font-size:13px;font-weight:700;color:' + accentCol + ';line-height:1.3;">' +
+        storeName + '</div>' +
+      '<div style="font-family:var(--f-mono);font-size:9px;color:#444;margin-top:2px;">' +
+        storeCode + (t.ts?' · '+t.ts:'') + '</div>' +
+      (t.remark?'<div style="font-size:11px;color:#5A7A5A;font-style:italic;margin-top:2px;">💬 '+t.remark+'</div>':'') +
+      '</div>' +
+      '<div style="text-align:right;flex-shrink:0;">' +
+      '<div style="font-family:var(--f-mono);font-size:26px;font-weight:900;color:' + accentCol + ';line-height:1;">' +
+        t.qty + '</div>' +
+      '<div style="font-family:var(--f-mono);font-size:8px;color:#444;">units</div>' +
+      '</div>' +
+      (!locked ? '<button data-tid="' + t.id + '" data-code="' + code + '" data-type="' + type + '" ' +
+        'onclick="deleteTrfSplit(+this.dataset.tid, this.dataset.code, this.dataset.type)" ' +
+        'style="background:#200808;border:1px solid #4A1A1A;border-radius:6px;' +
+        'color:#E87070;font-size:11px;font-weight:700;padding:6px 9px;' +
+        'cursor:pointer;flex-shrink:0;align-self:center;">🗑 Del</button>' : '') +
+      '</div>' +
+      '<div style="margin-top:6px;height:3px;background:#1A1A1A;border-radius:2px;overflow:hidden;">' +
+      '<div style="height:100%;background:' + accentCol + ';opacity:0.4;width:' + pct + '%;border-radius:2px;"></div>' +
+      '</div>' +
+      '<div style="font-family:var(--f-mono);font-size:8px;color:#333;margin-top:2px;text-align:right;">' +
+        pct + '% of total</div>' +
+      '</div>';
   }).join('');
 }
 
-function deleteTrfSplit(id, code, type) {
-  if (!confirm('Delete this transfer entry?')) return;
+function trfDrawerQtyAdj(delta) {
+  _trfQty = Math.max(0, (_trfQty||0) + delta);
+  _trfQBuf = String(_trfQty);
+  document.getElementById('trfDrawerQtyDisplay').textContent = _trfQty;
+}
+function trfDrawerQtyFocus() {
+  const np = document.getElementById('trfDrawerNumpad');
+  if(np) np.style.display = np.style.display==='none' ? 'block' : 'none';
+}
+function trfDrawerKey(k) {
+  if (k === 'CLR') { _trfQBuf = '0'; }
+  else if (k === '⌫') { _trfQBuf = _trfQBuf.slice(0,-1) || '0'; }
+  else { _trfQBuf = (_trfQBuf === '0' || _trfQBuf === '') ? String(k) : _trfQBuf + k; }
+  if (parseInt(_trfQBuf) > 9999) _trfQBuf = '9999';
+  _trfQty = parseInt(_trfQBuf) || 0;
+  document.getElementById('trfDrawerQtyDisplay').textContent = _trfQty || '0';
+}
 
-  // Find the entry
-  const entry = (db.transferLog||[]).find(t=>t.id===id);
-  if (!entry) return;
+function trfDrawerSaveSplit() {
+  if (!_trfCtx) return;
+  const {code, type} = _trfCtx;
+  const sc    = document.getElementById('trfDrawerStoreSel').value;
+  const qty   = _trfQty || 0;
+  const remark= (document.getElementById('trfDrawerRemark')?.value||'').trim();
+  if (!sc)    { toast('⚠ Select a store first'); return; }
+  if (qty<=0) { toast('⚠ Enter quantity using + / − or the numpad'); return; }
 
-  const qty = entry.qty || 0;
-  const field = type === 'inn' ? 'inn' : 'trf';
+  const isInn = type === 'inn';
+  const ss = STORES.find(s=>s.code===sc);
+  if (!ss) return;
+  const pp = PRODUCTS.find(x=>x.code===code);
+  const now2 = new Date();
+  const ts2  = now2.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})
+             + ' ' + now2.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
 
-  // Remove from log
-  db.transferLog = (db.transferLog||[]).filter(t=>t.id!==id);
+  if (!db.transferLog) db.transferLog = [];
+  // Remove if same store+direction already exists (update not duplicate)
+  db.transferLog = db.transferLog.filter(t => !(
+    t.day===curDay && t.prodCode===code &&
+    (isInn ? t.toStore===me.code && t.fromStore===sc
+            : t.fromStore===me.code && t.toStore===sc)
+  ));
+  const newEntry = {
+    id: Date.now(), ts: ts2, day: curDay,
+    fromStore: isInn ? sc      : me.code,
+    fromName:  isInn ? ss.name : me.name,
+    toStore:   isInn ? me.code : sc,
+    toName:    isInn ? me.name : ss.name,
+    prodCode: code, prodName: pp?pp.en:code, prodAr: pp?pp.ar||'':'',
+    qty, remark, note:'via drawer'
+  };
+  db.transferLog.unshift(newEntry);
 
-  // Subtract qty from the cell value
-  const curVal = dbGet(me.code, curDay, code, field);
-  const newVal = Math.max(0, curVal - qty);
-  // Write directly to avoid double-queueing
+  // Recalculate total from ALL splits
+  const newTotal = db.transferLog
+    .filter(t=>t.day===curDay && t.prodCode===code &&
+      (isInn ? t.toStore===me.code : t.fromStore===me.code))
+    .reduce((s,t)=>s+(t.qty||0), 0);
+
   if(!db[me.code]) db[me.code]={};
   if(!db[me.code][curDay]) db[me.code][curDay]={};
   if(!db[me.code][curDay][code]) db[me.code][curDay][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
-  db[me.code][curDay][code][field] = newVal;
+  db[me.code][curDay][code][type] = newTotal;
+  _qWrite(me.code, curDay, code, type, newTotal);
 
-  // Sync to server
-  _qWrite(me.code, curDay, code, field, newVal);
-  // Also delete from transfers table in Supabase
-  if(typeof _SB_URL !== 'undefined') {
-    fetch(_SB_URL + '/rest/v1/transfers?id=eq.' + id, {
-      method:'DELETE', headers:{..._SBH, 'Prefer':'return=minimal'}
-    }).catch(e=>console.warn('Delete transfer sync:', e.message));
+  if(typeof _SB_URL !== 'undefined'){
+    fetch(_SB_URL + '/rest/v1/transfers', {
+      method:'POST', headers:{..._SBH,'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        day_date: _localDateStr(new Date()),
+        from_store: newEntry.fromStore, from_name: newEntry.fromName,
+        to_store:   newEntry.toStore,   to_name:   newEntry.toName,
+        prod_code: code, prod_name: pp?pp.en:code,
+        qty, remark, note:'via drawer'
+      })
+    }).catch(()=>{});
   }
-
   saveDB();
 
-  // Refresh drawer and grid
+  // Reset qty, keep store for quick multi-add
+  _trfQty = 0; _trfQBuf = '';
+  document.getElementById('trfDrawerQtyDisplay').textContent = '0';
+  if(document.getElementById('trfDrawerRemark')) document.getElementById('trfDrawerRemark').value = '';
+  if(document.getElementById('trfDrawerNumpad')) document.getElementById('trfDrawerNumpad').style.display = 'none';
+
   renderTrfDrawer();
   const scroll = document.getElementById('scrollArea');
   const st = scroll ? scroll.scrollTop : 0;
   buildGrid(); updateTotalsRow(); buildFooter();
   if(scroll) scroll.scrollTop = st;
-
-  toast('🗑 Transfer deleted · cell updated');
+  toast('✓ ' + qty + ' units ' + (isInn?'from':'to') + ' ' + ss.name + ' saved · Total: ' + newTotal);
 }
 
-function trfDrawerAddNew() {
-  if (!_trfCtx) return;
-  closeTrfDrawer();
-  // Open the numpad for adding a new split
-  setTimeout(() => openNP(_trfCtx.code, _trfCtx.type), 150);
+function deleteTrfSplit(id, code, type) {
+  if (!confirm('Delete this transfer entry?')) return;
+  const entry = (db.transferLog||[]).find(t=>t.id===id);
+  if (!entry) return;
+  const isInn = type === 'inn';
+  db.transferLog = (db.transferLog||[]).filter(t=>t.id!==id);
+
+  const newTotal = (db.transferLog||[])
+    .filter(t=>t.day===curDay && t.prodCode===code &&
+      (isInn ? t.toStore===me.code : t.fromStore===me.code))
+    .reduce((s,t)=>s+(t.qty||0), 0);
+
+  if(!db[me.code]) db[me.code]={};
+  if(!db[me.code][curDay]) db[me.code][curDay]={};
+  if(!db[me.code][curDay][code]) db[me.code][curDay][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+  db[me.code][curDay][code][type] = newTotal;
+  _qWrite(me.code, curDay, code, type, newTotal);
+
+  if(typeof _SB_URL !== 'undefined'){
+    fetch(_SB_URL + '/rest/v1/transfers?id=eq.' + id, {
+      method:'DELETE', headers:{..._SBH,'Prefer':'return=minimal'}
+    }).catch(()=>{});
+  }
+  saveDB();
+  renderTrfDrawer();
+  const scroll = document.getElementById('scrollArea');
+  const st = scroll ? scroll.scrollTop : 0;
+  buildGrid(); updateTotalsRow(); buildFooter();
+  if(scroll) scroll.scrollTop = st;
+  toast('🗑 Deleted · New total: ' + newTotal);
 }
+function trfDrawerAddNew() {}
 
 
 let finBNPL = []; // [{type:'tabby'|'tamara', code:'', amt:0}]
