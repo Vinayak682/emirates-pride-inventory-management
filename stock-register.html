@@ -366,8 +366,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   padding:9px 10px;font-family:var(--f-body);font-size:13px;color:#E0E0E0;
   outline:none;appearance:none;cursor:pointer;min-width:130px;
 }
-.sp-body{flex:1;overflow-y:auto;padding:10px 12px;
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
+.sp-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
 .store-card{
   background:#1A1A1A;border:1px solid #2A2A2A;border-radius:10px;overflow:hidden;
 }
@@ -481,44 +480,63 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sp-mode-btn.active{color:var(--gold2);border-bottom-color:var(--gold);}
 
 /* Product lookup panel */
-.avail-panel{padding:0;}
-.avail-empty{text-align:center;padding:48px 16px;}
-.avail-empty-icon{font-size:36px;display:block;margin-bottom:10px;}
+.avail-panel{display:flex;flex-direction:column;flex:1;}
+.avail-empty{text-align:center;padding:48px 16px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.avail-empty-icon{font-size:36px;margin-bottom:10px;}
 .avail-empty-text{font-size:13px;color:#444;line-height:1.6;}
 .avail-empty-hint{font-size:11px;color:#333;margin-top:8px;}
-.avail-hero{background:linear-gradient(135deg,#1A1A1A,#111);border-bottom:1px solid #2A2A2A;padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.avail-hero-info{flex:1;min-width:0;}
-.avail-hero-name{font-size:16px;font-weight:700;color:#E8E0D0;line-height:1.2;}
-.avail-hero-ar{font-family:var(--f-ar);font-size:12px;color:#666;direction:rtl;text-align:left;margin-top:2px;}
-.avail-hero-code{font-family:var(--f-mono);font-size:9px;color:#555;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px;}
-.avail-hero-badge{text-align:right;flex-shrink:0;}
-.avail-hero-num{font-family:var(--f-mono);font-size:28px;font-weight:900;color:#6FCF97;display:block;line-height:1;}
-.avail-hero-lbl{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
-.avail-stats{display:flex;gap:0;border-bottom:1px solid #1A1A1A;}
-.avail-stat{flex:1;padding:8px 10px;text-align:center;border-right:1px solid #1A1A1A;}
-.avail-stat:last-child{border-right:none;}
-.avail-stat-num{font-family:var(--f-mono);font-size:18px;font-weight:900;display:block;}
-.avail-stat-num.green{color:#6FCF97;}.avail-stat-num.red{color:#E87070;}.avail-stat-num.gold{color:#C9A44E;}
-.avail-stat-lbl{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
-.avail-region{padding:5px 14px 4px;font-family:var(--f-mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#C9A44E;background:#111;border-top:1px solid #1A1A1A;border-bottom:1px solid #1A1A1A;display:flex;align-items:center;justify-content:space-between;}
-.avail-region-total{color:#555;font-size:8px;}
-.avail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
-.avail-tile{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #111;border-right:1px solid #111;cursor:default;transition:background 0.1s;position:relative;}
-.avail-tile:nth-child(even){border-right:none;}
-.avail-tile.has-stock{background:#0D1A0D;cursor:pointer;}.avail-tile.has-stock:active{background:#122012;}
-.avail-tile.low-stock{background:#1A1600;cursor:pointer;}.avail-tile.low-stock:active{background:#201C00;}
-.avail-tile.no-stock{background:#0D0D0D;}
-.avail-tile.is-mine{outline:1px solid #C9A44E55;z-index:1;}
-.avail-tile-body{flex:1;min-width:0;}
-.avail-tile-name{font-size:11px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.avail-tile-name.green{color:#CCC;}.avail-tile-name.dim{color:#2E2E2E;}
-.avail-tile-sub{font-family:var(--f-mono);font-size:8px;color:#333;margin-top:1px;}
-.avail-mine-badge{display:inline-block;background:#2A2000;border:1px solid #4A3000;color:#C9A44E;font-size:7px;padding:1px 4px;border-radius:2px;font-family:var(--f-mono);margin-left:4px;vertical-align:middle;}
-.avail-tile-qty{flex-shrink:0;width:46px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.avail-tile-qty.green{background:rgba(111,207,151,0.12);}.avail-tile-qty.amber{background:rgba(201,164,78,0.12);}.avail-tile-qty.red{background:rgba(232,112,112,0.08);}
-.avail-tile-qty-num{font-family:var(--f-mono);font-size:18px;font-weight:900;line-height:1;}
-.avail-tile-qty-num.green{color:#6FCF97;}.avail-tile-qty-num.amber{color:#C9A44E;}.avail-tile-qty-num.red{color:#E87070;}
-.avail-tile-qty-lbl{font-size:7px;color:#555;text-transform:uppercase;letter-spacing:0.4px;}
+
+/* Hero card */
+.sp-hero{background:#111;border-bottom:1px solid #222;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.sp-hero-info{flex:1;min-width:0;}
+.sp-hero-name{font-size:15px;font-weight:700;color:#E8E0D0;}
+.sp-hero-ar{font-family:var(--f-ar);font-size:11px;color:#555;direction:rtl;text-align:left;margin-top:1px;}
+.sp-hero-meta{font-family:var(--f-mono);font-size:9px;color:#444;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px;}
+.sp-hero-right{text-align:right;flex-shrink:0;}
+.sp-hero-total{font-family:var(--f-mono);font-size:30px;font-weight:900;color:#6FCF97;line-height:1;}
+.sp-hero-total-lbl{font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.6px;}
+
+/* Stats strip */
+.sp-stats{display:flex;border-bottom:1px solid #1A1A1A;flex-shrink:0;}
+.sp-stat{flex:1;padding:8px;text-align:center;border-right:1px solid #1A1A1A;}
+.sp-stat:last-child{border-right:none;}
+.sp-stat-n{font-family:var(--f-mono);font-size:20px;font-weight:900;display:block;}
+.sp-stat-n.g{color:#6FCF97;}.sp-stat-n.r{color:#E87070;}.sp-stat-n.a{color:#C9A44E;}
+.sp-stat-l{font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
+
+/* Area manager header */
+.sp-am{background:#1A1400;border-top:2px solid #C9A44E55;border-bottom:1px solid #2A2000;padding:7px 16px;display:flex;align-items:center;justify-content:space-between;}
+.sp-am-name{font-family:var(--f-mono);font-size:10px;font-weight:700;color:#C9A44E;text-transform:uppercase;letter-spacing:0.8px;}
+.sp-am-sub{font-family:var(--f-mono);font-size:8px;color:#555;}
+
+/* Region sub-header */
+.sp-rgn{background:#0D0D0D;padding:4px 16px;border-bottom:1px solid #141414;display:flex;align-items:center;justify-content:space-between;}
+.sp-rgn-name{font-family:var(--f-mono);font-size:8px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1px;}
+.sp-rgn-info{font-family:var(--f-mono);font-size:8px;color:#2A2A2A;}
+
+/* Store row */
+.sp-row{display:flex;align-items:center;gap:0;border-bottom:1px solid #111;min-height:52px;cursor:default;transition:background 0.1s;}
+.sp-row.hs{background:#0C180C;cursor:pointer;}.sp-row.hs:active{background:#111F11;}
+.sp-row.ls{background:#181400;cursor:pointer;}.sp-row.ls:active{background:#1E1900;}
+.sp-row.zs{background:#090909;}
+.sp-row.mine{outline:1px solid #C9A44E44;outline-offset:-1px;z-index:1;position:relative;}
+
+/* Left indicator bar */
+.sp-bar{width:4px;height:52px;flex-shrink:0;}
+.sp-bar.g{background:#6FCF97;}.sp-bar.a{background:#C9A44E;}.sp-bar.z{background:#1A1A1A;}
+
+/* Row body */
+.sp-row-body{flex:1;min-width:0;padding:8px 12px;}
+.sp-row-name{font-size:12px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-row-name.g{color:#D0D0D0;}.sp-row-name.z{color:#242424;}
+.sp-row-meta{font-family:var(--f-mono);font-size:8px;color:#2E2E2E;margin-top:2px;}
+.sp-mine-tag{display:inline-block;background:#2A1A00;border:1px solid #4A3000;color:#C9A44E;font-size:7px;padding:1px 4px;border-radius:2px;font-family:var(--f-mono);margin-left:5px;vertical-align:middle;}
+
+/* Qty column */
+.sp-qty{flex-shrink:0;width:72px;height:52px;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.sp-qty-n{font-family:var(--f-mono);font-size:22px;font-weight:900;line-height:1;}
+.sp-qty-n.g{color:#6FCF97;}.sp-qty-n.a{color:#C9A44E;}.sp-qty-n.r{color:#E87070;}
+.sp-qty-u{font-size:7px;color:#444;text-transform:uppercase;letter-spacing:0.4px;}
 
 /* REQUEST modal */
 #reqModal{
@@ -2913,17 +2931,13 @@ function renderStores(){
   else renderStoreMode(body);
 }
 
-// ─── PRODUCT MODE: grid layout — all 27 stores, green/red ───────
+// ─── PRODUCT MODE: uniform list — Area Manager → Region → Stores ──
 function renderProductMode(body){
   const skuF=document.getElementById('spSku').value;
   const q=(document.getElementById('spSearch').value||'').toLowerCase();
 
   if(!skuF&&!q){
-    body.innerHTML=`<div class="avail-empty">
-      <span class="avail-empty-icon">🔍</span>
-      <div class="avail-empty-text">Select a product above<br>to see availability across all 27 stores</div>
-      <div class="avail-empty-hint">Green = in stock · Red 0 = out of stock</div>
-    </div>`;
+    body.innerHTML='<div class="avail-panel"><div class="avail-empty"><div class="avail-empty-icon">🔍</div><div class="avail-empty-text">Select a product above<br>to see availability across all stores</div><div class="avail-empty-hint">Green = in stock · Red = out of stock</div></div></div>';
     return;
   }
 
@@ -2935,7 +2949,7 @@ function renderProductMode(body){
     if(prod) document.getElementById('spSku').value=prod.code;
   }
   if(!prod){
-    body.innerHTML=`<div class="avail-empty"><span class="avail-empty-icon">❓</span><div class="avail-empty-text">No product matched. Try a different search.</div></div>`;
+    body.innerHTML='<div class="avail-panel"><div class="avail-empty"><div class="avail-empty-icon">❓</div><div class="avail-empty-text">No product matched. Try a different search.</div></div></div>';
     return;
   }
 
@@ -2946,65 +2960,82 @@ function renderProductMode(body){
   });
 
   const netTotal=rows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
-  const inStockCount=rows.filter(r=>r.b>0).length;
-  const zeroCount=rows.filter(r=>r.b<=0).length;
-  const myRow=rows.find(r=>r.isMine);
-  const myBal=myRow?myRow.b:0;
+  const inStockCnt=rows.filter(r=>r.b>0).length;
+  const zeroCnt=rows.filter(r=>r.b<=0).length;
+  const myBal=rows.find(r=>r.isMine)?.b||0;
+  const myStatus=myBal>0
+    ?`<span style="color:#6FCF97;">● ${myBal} in your store</span>`
+    :`<span style="color:#E87070;">✕ Not in your store</span>`;
 
-  // Build output HTML string (fast, no DOM manipulation per row)
-  // Group by region
-  const regions=[...new Set(allStores.map(s=>s.region))];
-  let gridHTML='';
-  regions.forEach(region=>{
-    const rRows=rows.filter(r=>r.store.region===region);
-    const rTotal=rRows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
-    const rInStock=rRows.filter(r=>r.b>0).length;
-    gridHTML+=`<div class="avail-region">
-      <span>${region}</span>
-      <span class="avail-region-total">${rInStock}/${rRows.length} stores · ${rTotal} units</span>
-    </div><div class="avail-grid">`;
-    rRows.forEach(({store,b,isMine})=>{
-      const cls=b>3?'has-stock':b>0?'low-stock':'no-stock';
-      const qColor=b>3?'green':b>0?'amber':'red';
-      const nameColor=b>0?'green':'dim';
-      const qty=b>0?b:0;
-      const unitLbl=b>0?'UNITS':'';
-      gridHTML+=`<div class="avail-tile ${cls}${isMine?' is-mine':''}">
-        <div class="avail-tile-body">
-          <div class="avail-tile-name ${nameColor}">${store.name}${isMine?'<span class="avail-mine-badge">YOU</span>':''}</div>
-          <div class="avail-tile-sub">${store.city} · ${store.code}</div>
-        </div>
-        <div class="avail-tile-qty ${qColor}">
-          <span class="avail-tile-qty-num ${qColor}">${qty}</span>
-          ${unitLbl?`<span class="avail-tile-qty-lbl">${unitLbl}</span>`:''}
-        </div>
-      </div>`;
+  // Build by Area Manager → Region
+  const amList=[
+    {name:'Mohamed Hessin',icon:'👤'},
+    {name:'Mohammed Elmatloub',icon:'👤'},
+  ];
+  // get AM list dynamically in order of appearance
+  const amOrder=[...new Set(allStores.map(s=>s.mgr))];
+
+  let sectionsHTML='';
+  amOrder.forEach(am=>{
+    const amRows=rows.filter(r=>r.store.mgr===am);
+    const amTotal=amRows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
+    const amInStock=amRows.filter(r=>r.b>0).length;
+    sectionsHTML+=`<div class="sp-am"><span class="sp-am-name">👤 ${am}</span><span class="sp-am-sub">${amInStock} stores in stock · ${amTotal} units</span></div>`;
+
+    // Group by region within AM
+    const regions=[...new Set(amRows.map(r=>r.store.region))];
+    regions.forEach(region=>{
+      const rRows=amRows.filter(r=>r.store.region===region);
+      // Sort: stock first (desc), then zero
+      rRows.sort((a,b2)=>{
+        if(a.b>0&&b2.b<=0) return -1;
+        if(a.b<=0&&b2.b>0) return 1;
+        return b2.b-a.b;
+      });
+      const rTotal=rRows.reduce((s,r)=>s+(r.b>0?r.b:0),0);
+      const rInStock=rRows.filter(r=>r.b>0).length;
+      sectionsHTML+=`<div class="sp-rgn"><span class="sp-rgn-name">▸ ${region}</span><span class="sp-rgn-info">${rInStock}/${rRows.length} in stock · ${rTotal} units</span></div>`;
+
+      rRows.forEach(({store,b,isMine})=>{
+        const cls=b>3?'hs':b>0?'ls':'zs';
+        const barCls=b>3?'g':b>0?'a':'z';
+        const nameCls=b>0?'g':'z';
+        const qtyCls=b>3?'g':b>0?'a':'r';
+        const qty=b>0?b:0;
+        sectionsHTML+=`<div class="sp-row ${cls}${isMine?' mine':''}">
+          <div class="sp-bar ${barCls}"></div>
+          <div class="sp-row-body">
+            <div class="sp-row-name ${nameCls}">${store.name}${isMine?'<span class="sp-mine-tag">YOUR STORE</span>':''}</div>
+            <div class="sp-row-meta">${store.city} · ${store.code}</div>
+          </div>
+          <div class="sp-qty">
+            <span class="sp-qty-n ${qtyCls}">${qty}</span>
+            ${b>0?'<span class="sp-qty-u">UNITS</span>':''}
+          </div>
+        </div>`;
+      });
     });
-    gridHTML+='</div>';
   });
 
-  const myStatus=myBal>0
-    ?`<span style="color:#6FCF97;font-size:11px;font-weight:700;">● ${myBal} in your store</span>`
-    :`<span style="color:#E87070;font-size:11px;">Not in your store</span>`;
-
-  body.innerHTML=`
-  <div class="avail-hero">
-    <div class="avail-hero-info">
-      <div class="avail-hero-name">${prod.en}</div>
-      ${prod.ar?`<div class="avail-hero-ar">${prod.ar}</div>`:''}
-      <div class="avail-hero-code">${prod.code} · ${prod.cat||''} · ${myStatus}</div>
+  body.innerHTML=`<div class="avail-panel">
+    <div class="sp-hero">
+      <div class="sp-hero-info">
+        <div class="sp-hero-name">${prod.en}</div>
+        ${prod.ar?`<div class="sp-hero-ar">${prod.ar}</div>`:''}
+        <div class="sp-hero-meta">${prod.code} · ${prod.cat||''} · ${myStatus}</div>
+      </div>
+      <div class="sp-hero-right">
+        <div class="sp-hero-total">${netTotal}</div>
+        <div class="sp-hero-total-lbl">Network Total</div>
+      </div>
     </div>
-    <div class="avail-hero-badge">
-      <span class="avail-hero-num">${netTotal}</span>
-      <span class="avail-hero-lbl">Network Total</span>
+    <div class="sp-stats">
+      <div class="sp-stat"><span class="sp-stat-n g">${inStockCnt}</span><span class="sp-stat-l">Stores In Stock</span></div>
+      <div class="sp-stat"><span class="sp-stat-n r">${zeroCnt}</span><span class="sp-stat-l">Out of Stock</span></div>
+      <div class="sp-stat"><span class="sp-stat-n a">${netTotal}</span><span class="sp-stat-l">Total Units</span></div>
     </div>
-  </div>
-  <div class="avail-stats">
-    <div class="avail-stat"><span class="avail-stat-num green">${inStockCount}</span><span class="avail-stat-lbl">In Stock</span></div>
-    <div class="avail-stat"><span class="avail-stat-num red">${zeroCount}</span><span class="avail-stat-lbl">Out of Stock</span></div>
-    <div class="avail-stat"><span class="avail-stat-num gold">${netTotal}</span><span class="avail-stat-lbl">Total Units</span></div>
-  </div>
-  ${gridHTML}`;
+    <div style="flex:1;overflow-y:auto;">${sectionsHTML}</div>
+  </div>`;
 }
 // ─── STORE MODE: cards per store ───
 function renderStoreMode(body){
