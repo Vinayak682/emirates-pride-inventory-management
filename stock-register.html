@@ -224,7 +224,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sgrid td.dcell.inn,.sgrid td.dcell.trf{min-width:130px;width:130px;}
 .sgrid thead th.gh-in,.sgrid thead th.gh-trf,.sgrid thead th.gs-in,.sgrid thead th.gs-trf{min-width:130px;width:130px;}
 /* Auto-height when chips present — value on top, chips below */
-.sgrid td.dcell.dcell-has-note{height:auto;vertical-align:top;padding:4px 0 0;}
+.sgrid td.dcell.dcell-has-note{height:72px;vertical-align:top;padding:2px 0 0;overflow:hidden;}
 .sgrid td.dcell.dcell-has-note .dcell-val{padding-bottom:3px;}
 
 .sgrid td.dcell.open{background:var(--c-open);}
@@ -261,23 +261,10 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   text-align:center;
 }
 /* Each individual transfer line */
-.trf-chip{
-  display:flex;align-items:flex-start;justify-content:space-between;gap:4px;
-  margin:2px 0;padding:4px 6px;border-radius:4px;
-  font-family:var(--f-mono);font-size:9px;font-weight:600;
-  line-height:1.3;width:100%;box-sizing:border-box;
-  text-align:left;
-}
-.trf-chip-arrow{font-size:9px;flex-shrink:0;opacity:0.7;margin-top:1px;}
-.trf-chip-name{
-  font-size:9px;font-weight:700;
-  flex:1;min-width:0;
-  white-space:normal;word-break:break-word;line-height:1.3;
-}
-.trf-chip-qty{
-  font-size:10px;font-weight:900;flex-shrink:0;
-  padding:1px 5px;border-radius:3px;margin-left:4px;margin-top:1px;
-}
+.trf-chip{display:none;} /* replaced by trf-note-row */
+.trf-chip-arrow{display:none;}
+.trf-chip-name{display:none;}
+.trf-chip-qty{display:none;}
 /* Received from — green */
 .dcell.inn .trf-chip{background:#E8F5EE;color:#1A6040;}
 .dcell.inn .trf-chip-qty{background:#C8EED8;color:#0A4020;}
@@ -285,17 +272,8 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dcell.trf .trf-chip{background:#F0E8FF;color:#5A2A7A;}
 .dcell.trf .trf-chip-qty{background:#DFC8F8;color:#3A0A5A;}
 /* More indicator */
-.trf-more{
-  display:block;font-family:var(--f-mono);font-size:8px;
-  text-align:center;color:#C9A44E;padding-bottom:3px;
-  text-decoration:underline;cursor:pointer;
-}
+.trf-more{display:none;}
 .dcell-trf-tap{cursor:pointer;}
-.dcell-trf-tap::after{
-  content:'▼';font-size:7px;position:absolute;
-  bottom:3px;right:3px;opacity:0.4;
-}
-.dcell.inn.dcell-has-note,.dcell.trf.dcell-has-note{position:relative;}
 /* Old selectors kept for compat */
 .cell-note-arrow{display:none;}
 .cell-note-name{display:none;}
@@ -1282,6 +1260,44 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 /* Uniform row height across finance grid */
 .fin-grid-row td{height:50px;}
 .fin-grid-row.fin-subtotal td,.fin-grid-row.fin-closing td{height:54px;}
+
+/* ── Transfer cell: compact fixed-height note rows ── */
+.trf-note-block{padding:0 4px 3px;display:block;width:100%;box-sizing:border-box;}
+.trf-note-row{
+  display:flex;align-items:center;gap:2px;margin-bottom:1px;
+  font-family:var(--f-mono);font-size:9px;font-weight:600;
+  line-height:1.3;width:100%;min-width:0;
+}
+.trf-note-arrow{font-size:9px;flex-shrink:0;opacity:0.6;}
+.trf-note-name{
+  flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:9px;font-weight:700;
+}
+.trf-note-qty{
+  flex-shrink:0;font-family:var(--f-mono);font-size:9px;font-weight:900;
+  padding:0 4px;border-radius:3px;margin-left:1px;
+}
+.trf-note-more{
+  font-family:var(--f-mono);font-size:8px;color:#C9A44E;
+  text-align:center;padding:1px 0;text-decoration:underline;cursor:pointer;
+  display:block;
+}
+/* Fixed height — no more auto-expansion */
+.sgrid td.dcell.inn,.sgrid td.dcell.trf{
+  min-width:130px;width:130px;height:72px;overflow:hidden;
+  vertical-align:top;position:relative;
+}
+/* Tap hint */
+.dcell.inn.dcell-has-note::after,
+.dcell.trf.dcell-has-note::after{
+  content:'▶';font-size:7px;color:#888;opacity:0.4;
+  position:absolute;bottom:3px;right:3px;pointer-events:none;
+}
+.dcell.inn .trf-note-row{color:#1A6040;}
+.dcell.inn .trf-note-qty{background:#C8EED8;color:#0A4020;}
+.dcell.trf .trf-note-row{color:#5A2A7A;}
+.dcell.trf .trf-note-qty{background:#DFC8F8;color:#3A0A5A;}
 </style>
 </head>
 <body>
@@ -2712,25 +2728,35 @@ function buildTrfNote(entries, type) {
   if (!entries.length) return '';
   const total = entries.reduce((s,e)=>s+(e.qty||0), 0);
   const count = entries.length;
-  const arrow = type === 'inn' ? '←' : '→';
-  const color = type === 'inn' ? '#1A6040' : '#5A2A7A';
-  const bgCol = type === 'inn' ? '#E8F5EE' : '#F0E8FF';
+  const isInn = type === 'inn';
+  const arrow = isInn ? '←' : '→';
+  const accentCol = isInn ? '#1A6040' : '#5A2A7A';
+  const tagBg     = isInn ? '#E8F5EE' : '#F0E8FF';
 
-  // Show first 2 stores abbreviated, then "tap for all"
-  const shown = entries.slice(0, 2);
-  let html = '<span class="cell-note">';
+  // Compact: show each store as a single tight row — name truncated, qty badge
+  // Max 3 rows visible, rest shown as "+N more" link — tap whole cell for drawer
+  const MAX = 3;
+  const shown = entries.slice(0, MAX);
+  const extra = entries.length - MAX;
+
+  let html = '<div class="trf-note-block">';
   shown.forEach(e => {
-    const storeName = type === 'inn' ? e.fromName : e.toName;
-    html += `<span class="trf-chip" title="${storeName}${e.remark?' · '+e.remark:''}">
-      <span class="trf-chip-arrow">${arrow}</span>
-      <span class="trf-chip-name">${storeName}</span>
-      <span class="trf-chip-qty">${e.qty}</span>
-    </span>`;
+    const name = isInn ? e.fromName : e.toName;
+    // Shorten: first word + first word of second part if exists
+    const parts = name.split(' ');
+    const short = parts.length > 3
+      ? parts[0] + ' ' + parts[1] + ' ' + parts[2]
+      : name;
+    html += '<div class="trf-note-row" style="color:' + accentCol + '">' +
+      '<span class="trf-note-arrow">' + arrow + '</span>' +
+      '<span class="trf-note-name" title="' + name + '">' + short + '</span>' +
+      '<span class="trf-note-qty" style="background:' + tagBg + '">' + e.qty + '</span>' +
+      '</div>';
   });
-  if (count > 2) {
-    html += `<span class="trf-more">+${count-2} more stores — tap to see all</span>`;
+  if (extra > 0) {
+    html += '<div class="trf-note-more">+' + extra + ' more — tap</div>';
   }
-  html += '</span>';
+  html += '</div>';
   return html;
 }
 
