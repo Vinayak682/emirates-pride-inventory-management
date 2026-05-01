@@ -1772,9 +1772,9 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
     <!-- Info line -->
     <div style="background:#111;border:1px solid #1E1E1E;border-radius:8px;padding:10px 12px;margin-top:4px;margin-bottom:0;">
-      <div style="font-size:11px;color:#555;font-family:var(--f-mono);">
+      <div id="exp-info-line" style="font-size:11px;color:#555;font-family:var(--f-mono);">
         📌 Daily CSV requires the day to be locked first.<br>
-        Weekly & Monthly exports include all available data.
+        Weekly &amp; Monthly exports include all available data.
       </div>
     </div>
 
@@ -6002,16 +6002,20 @@ function selectPeriod(p){
 }
 
 function updateExpUI(){
-  // Always reference curDay for the export UI (the day user has been working on)
   const dl=getDayLabels()[curDay];
   const locked=isLocked(me.code,curDay);
-  document.getElementById('ep-day-date').textContent=dl.full+' '+dl.date+(locked?' 🔒':'');
+  document.getElementById('ep-day-date').textContent=dl.full+' '+dl.date+(locked?' 🔒':isMgrSession?' (MGR)':'');
   const now=new Date();
   document.getElementById('ep-month-date').textContent=now.toLocaleString('en-GB',{month:'long',year:'numeric'});
   const sub={day:'Export data for '+dl.full+' '+dl.date,
     week:'Export all 15 days of rolling data',
     month:'Export this month\'s available data'};
   document.getElementById('expSubTitle').textContent=sub[expPeriod]||'';
+  const info=document.getElementById('exp-info-line');
+  if(info){
+    if(isMgrSession){info.innerHTML='✅ Manager mode — all exports available without lock requirement.';info.style.color='#6FCF97';}
+    else{info.innerHTML='📌 Daily CSV requires the day to be locked first.<br>Weekly & Monthly exports include all available data.';info.style.color='#555';}
+  }
 }
 
 function doExport(fmt){
