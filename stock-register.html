@@ -1298,6 +1298,34 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dcell.inn .trf-note-qty{background:#C8EED8;color:#0A4020;}
 .dcell.trf .trf-note-row{color:#5A2A7A;}
 .dcell.trf .trf-note-qty{background:#DFC8F8;color:#3A0A5A;}
+
+/* ── Export Panel — new 3-step design ── */
+.exp-type-btn{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:#1A1A1A;border:1px solid #333;border-radius:10px;
+  padding:10px 8px;cursor:pointer;transition:all 0.15s;text-align:center;
+}
+.exp-type-btn.active{background:#1A2A1A;border-color:#2A6A2A;}
+.exp-type-btn:active{transform:scale(0.97);}
+.exp-type-label{font-family:var(--f-body);font-size:12px;font-weight:700;color:#CCC;margin-top:2px;}
+.exp-type-sub{font-family:var(--f-mono);font-size:9px;color:#555;line-height:1.3;}
+.exp-type-btn.active .exp-type-label{color:#6FCF97;}
+.exp-type-btn.active .exp-type-sub{color:#3A6A3A;}
+
+.exp-preset-btn{
+  background:#1A1A1A;border:1px solid #2A2A2A;border-radius:8px;
+  padding:7px 4px;cursor:pointer;text-align:center;transition:all 0.15s;color:#888;
+}
+.exp-preset-btn.active{background:#1A2A1A;border-color:#C9A44E;color:#C9A44E;}
+.exp-preset-btn:active{transform:scale(0.96);}
+.exp-preset-sub{font-family:var(--f-mono);font-size:8px;color:#444;margin-top:1px;}
+.exp-preset-btn.active .exp-preset-sub{color:#7A5C28;}
+
+/* Dark date input styling */
+input[type="date"]::-webkit-calendar-picker-indicator{
+  filter:invert(0.7);cursor:pointer;
+}
+input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 </style>
 </head>
 <body>
@@ -1730,54 +1758,105 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 <!-- ══════════ EXPORT PANEL ══════════ -->
 <div id="exportPanel">
   <div class="exp-sheet">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
-      <div class="exp-title">📥 Export Reports</div>
-      <button onclick="closeExport()" style="background:transparent;border:none;color:#555;font-size:20px;cursor:pointer;">✕</button>
-    </div>
-    <div class="exp-sub" id="expSubTitle">Select period and format to download</div>
 
-    <!-- Period selector -->
-    <div class="exp-section-title">Select Period</div>
-    <div class="exp-period-row" id="expPeriodRow">
-      <div class="exp-period-btn sel" id="ep-day" onclick="selectPeriod('day')">
-        <span class="exp-period-label">Today</span>
-        <span class="exp-period-sub" id="ep-day-date">—</span>
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <div>
+        <div class="exp-title">📥 Export Reports</div>
+        <div style="font-family:var(--f-mono);font-size:10px;color:#555;margin-top:1px;" id="expStoreName">—</div>
       </div>
-      <div class="exp-period-btn" id="ep-week" onclick="selectPeriod('week')">
-        <span class="exp-period-label">This Week</span>
-        <span class="exp-period-sub" id="ep-week-date">15 days</span>
-      </div>
-      <div class="exp-period-btn" id="ep-month" onclick="selectPeriod('month')">
-        <span class="exp-period-label">This Month</span>
-        <span class="exp-period-sub" id="ep-month-date">—</span>
-      </div>
+      <button onclick="closeExport()" style="background:#1A1A1A;border:1px solid #333;border-radius:50%;width:30px;height:30px;color:#888;font-size:15px;cursor:pointer;">✕</button>
     </div>
 
-    <!-- Format buttons -->
-    <div class="exp-section-title">Download Format</div>
-
-    <div class="exp-row">
-      <button class="exp-btn csv" onclick="doExport('csv')">
-        <span class="exp-btn-icon">📄</span>
-        <span class="exp-btn-label">CSV / Excel</span>
-        <span class="exp-btn-sub">Opens in Excel, Sheets</span>
+    <!-- ── STEP 1: Report Type ── -->
+    <div class="exp-section-title">① Report Type</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+      <button class="exp-type-btn active" id="expType-stock" onclick="expSetType('stock')">
+        <span style="font-size:16px;">📦</span>
+        <span class="exp-type-label">Stock / Inventory</span>
+        <span class="exp-type-sub">Opening · Sales · Transfers · Balance</span>
       </button>
-      <button class="exp-btn pdf" onclick="doExport('pdf')">
+      <button class="exp-type-btn" id="expType-finance" onclick="expSetType('finance')">
+        <span style="font-size:16px;">💰</span>
+        <span class="exp-type-label">Finance / DSR</span>
+        <span class="exp-type-sub">Cash · Card · BNPL · Bank · Expenses</span>
+      </button>
+    </div>
+
+    <!-- ── STEP 2: Date Range ── -->
+    <div class="exp-section-title">② Date Range</div>
+
+    <!-- Quick presets -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px;">
+      <button class="exp-preset-btn active" id="expPreset-today" onclick="expSetPreset('today')">
+        <div style="font-size:10px;font-weight:800;">Today</div>
+        <div class="exp-preset-sub" id="expPresetSub-today">—</div>
+      </button>
+      <button class="exp-preset-btn" id="expPreset-7" onclick="expSetPreset('7')">
+        <div style="font-size:10px;font-weight:800;">Last 7d</div>
+        <div class="exp-preset-sub" id="expPresetSub-7">—</div>
+      </button>
+      <button class="exp-preset-btn" id="expPreset-30" onclick="expSetPreset('30')">
+        <div style="font-size:10px;font-weight:800;">Last 30d</div>
+        <div class="exp-preset-sub" id="expPresetSub-30">—</div>
+      </button>
+      <button class="exp-preset-btn" id="expPreset-month" onclick="expSetPreset('month')">
+        <div style="font-size:10px;font-weight:800;">This Month</div>
+        <div class="exp-preset-sub" id="expPresetSub-month">—</div>
+      </button>
+    </div>
+
+    <!-- Custom date range -->
+    <div style="background:#111;border:1px solid #222;border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+      <div style="font-family:var(--f-mono);font-size:9px;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;">
+        📅 Custom Date Range
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:#666;margin-bottom:3px;">FROM</div>
+          <input type="date" id="expDateFrom"
+            style="width:100%;background:#1A1A1A;border:1px solid #C9A44E;border-radius:7px;
+              padding:9px 10px;font-family:var(--f-mono);font-size:13px;color:#E0E0E0;
+              outline:none;box-sizing:border-box;cursor:pointer;"
+            onchange="expCustomDateChanged()">
+        </div>
+        <div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:#666;margin-bottom:3px;">TO</div>
+          <input type="date" id="expDateTo"
+            style="width:100%;background:#1A1A1A;border:1px solid #C9A44E;border-radius:7px;
+              padding:9px 10px;font-family:var(--f-mono);font-size:13px;color:#E0E0E0;
+              outline:none;box-sizing:border-box;cursor:pointer;"
+            onchange="expCustomDateChanged()">
+        </div>
+      </div>
+      <!-- Selected range summary -->
+      <div id="expRangeSummary" style="margin-top:8px;font-family:var(--f-mono);font-size:10px;
+        color:#C9A44E;text-align:center;min-height:16px;"></div>
+    </div>
+
+    <!-- ── STEP 3: Download ── -->
+    <div class="exp-section-title">③ Download</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <button class="exp-btn csv" onclick="expDownload('csv')">
+        <span class="exp-btn-icon">📄</span>
+        <span class="exp-btn-label">Excel / CSV</span>
+        <span class="exp-btn-sub">Opens in Excel, Google Sheets</span>
+      </button>
+      <button class="exp-btn pdf" onclick="expDownload('pdf')">
         <span class="exp-btn-icon">📋</span>
         <span class="exp-btn-label">PDF Report</span>
-        <span class="exp-btn-sub">Print-ready format</span>
+        <span class="exp-btn-sub">Print-ready · Share-ready</span>
       </button>
     </div>
 
-    <!-- Info line -->
-    <div style="background:#111;border:1px solid #1E1E1E;border-radius:8px;padding:10px 12px;margin-top:4px;margin-bottom:0;">
-      <div id="exp-info-line" style="font-size:11px;color:#555;font-family:var(--f-mono);">
-        📌 Daily CSV requires the day to be locked first.<br>
-        Weekly &amp; Monthly exports include all available data.
-      </div>
+    <!-- Status / info -->
+    <div id="exp-status-bar" style="background:#0D1A0D;border:1px solid #1A3A1A;border-radius:8px;
+      padding:8px 12px;font-family:var(--f-mono);font-size:10px;color:#4A8A4A;
+      margin-bottom:8px;min-height:20px;text-align:center;">
+      Select a date range above, then download
     </div>
 
-    <button class="exp-close" onclick="closeExport()">Close</button>
+    <button class="exp-close" onclick="closeExport()">✕ Close</button>
   </div>
 </div>
 
@@ -6391,394 +6470,583 @@ function downloadWeek(){
 // ═══════════════════════════════════════════════════════════
 let expPeriod='day';
 
+// ══════════════════════════════════════════════════════════════
+// EXPORT CENTER — Calendar-based, Stock + Finance, CSV + PDF
+// ══════════════════════════════════════════════════════════════
+let _expType    = 'stock'; // 'stock' | 'finance'
+let _expPreset  = 'today';
+let _expFromDate = null;   // Date objects
+let _expToDate   = null;
+
+// ── Helpers ─────────────────────────────────────────────────
+function _dateStr(d){ // YYYY-MM-DD from Date
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function _parseDate(s){ // Date from YYYY-MM-DD (local)
+  const [y,m,d]=s.split('-').map(Number);
+  return new Date(y,m-1,d);
+}
+function _fmtDateShort(d){ // "1 May"
+  return d.getDate()+' '+d.toLocaleString('en-GB',{month:'short'});
+}
+function _fmtDateFull(d){ // "Friday 1/5/2026"
+  return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'numeric',year:'numeric'});
+}
+function _daysBetween(from,to){
+  return Math.round((to-from)/86400000)+1;
+}
+
+// ── Open / Close ────────────────────────────────────────────
 function openExport(){
-  // Always sync to current working day before opening export
-  dashDay = curDay;
-  expPeriod='day';
-  updateExpUI();
+  _expType='stock'; _expPreset='today';
+  const t=new Date(); t.setHours(0,0,0,0);
+  _expFromDate=new Date(t); _expToDate=new Date(t);
+  _expInitUI();
   document.getElementById('exportPanel').classList.add('show');
 }
-function openExportDay(){dashDay=curDay;expPeriod='day';updateExpUI();document.getElementById('exportPanel').classList.add('show');}
-function openExportWeek(){dashDay=curDay;expPeriod='week';updateExpUI();document.getElementById('exportPanel').classList.add('show');}
+function openExportDay(){_expPreset='today';openExport();}
+function openExportWeek(){_expPreset='7';openExport();}
 function closeExport(){document.getElementById('exportPanel').classList.remove('show');}
 
-function selectPeriod(p){
-  expPeriod=p;
-  document.querySelectorAll('.exp-period-btn').forEach(b=>b.classList.remove('sel'));
-  document.getElementById('ep-'+p).classList.add('sel');
-  updateExpUI();
+// Legacy compatibility
+function selectPeriod(p){ if(p==='day')expSetPreset('today'); else if(p==='week')expSetPreset('7'); else expSetPreset('month'); }
+function doExport(fmt){ expDownload(fmt); }
+function updateExpUI(){ _expRefreshSummary(); }
+
+// ── Init UI ─────────────────────────────────────────────────
+function _expInitUI(){
+  // Store name
+  const sn=document.getElementById('expStoreName');
+  if(sn) sn.textContent=me?me.name:'—';
+
+  // Preset labels with dates
+  const t=new Date(); t.setHours(0,0,0,0);
+  const s7=new Date(t); s7.setDate(t.getDate()-6);
+  const s30=new Date(t); s30.setDate(t.getDate()-29);
+  const sm=new Date(t.getFullYear(),t.getMonth(),1);
+  const em=new Date(t.getFullYear(),t.getMonth()+1,0);
+
+  _setEl('expPresetSub-today',_fmtDateShort(t));
+  _setEl('expPresetSub-7',_fmtDateShort(s7)+' – '+_fmtDateShort(t));
+  _setEl('expPresetSub-30',_fmtDateShort(s30)+' – '+_fmtDateShort(t));
+  _setEl('expPresetSub-month',_fmtDateShort(sm)+' – '+_fmtDateShort(em));
+
+  // Set date inputs
+  const fi=document.getElementById('expDateFrom');
+  const ti=document.getElementById('expDateTo');
+  if(fi) fi.value=_dateStr(_expFromDate);
+  if(ti) ti.value=_dateStr(_expToDate);
+  if(fi) fi.max=_dateStr(t);
+  if(ti) ti.max=_dateStr(t);
+
+  // Apply preset
+  expSetPreset(_expPreset);
+  expSetType(_expType);
 }
 
-function updateExpUI(){
-  const dl=getDayLabels()[curDay];
-  const locked=isLocked(me.code,curDay);
-  document.getElementById('ep-day-date').textContent=dl.full+' '+dl.date+(locked?' 🔒':isMgrSession?' (MGR)':'');
-  const now=new Date();
-  document.getElementById('ep-month-date').textContent=now.toLocaleString('en-GB',{month:'long',year:'numeric'});
-  const sub={day:'Export data for '+dl.full+' '+dl.date,
-    week:'Export all 15 days of rolling data',
-    month:'Export this month\'s available data'};
-  document.getElementById('expSubTitle').textContent=sub[expPeriod]||'';
-  const info=document.getElementById('exp-info-line');
-  if(info){
-    if(isMgrSession){info.innerHTML='✅ Manager mode — all exports available without lock requirement.';info.style.color='#6FCF97';}
-    else{info.innerHTML='📌 Daily CSV requires the day to be locked first.<br>Weekly & Monthly exports include all available data.';info.style.color='#555';}
+function _setEl(id,txt){const e=document.getElementById(id);if(e)e.textContent=txt;}
+
+// ── Type selector ────────────────────────────────────────────
+function expSetType(type){
+  _expType=type;
+  ['stock','finance'].forEach(t=>{
+    const b=document.getElementById('expType-'+t);
+    if(b) b.classList.toggle('active',t===type);
+  });
+  _expRefreshSummary();
+}
+
+// ── Preset selector ──────────────────────────────────────────
+function expSetPreset(p){
+  _expPreset=p;
+  const t=new Date(); t.setHours(0,0,0,0);
+  if(p==='today'){ _expFromDate=new Date(t); _expToDate=new Date(t); }
+  else if(p==='7'){ _expFromDate=new Date(t); _expFromDate.setDate(t.getDate()-6); _expToDate=new Date(t); }
+  else if(p==='30'){ _expFromDate=new Date(t); _expFromDate.setDate(t.getDate()-29); _expToDate=new Date(t); }
+  else if(p==='month'){ _expFromDate=new Date(t.getFullYear(),t.getMonth(),1); _expToDate=new Date(t.getFullYear(),t.getMonth()+1,0); }
+
+  // Update date inputs to match
+  const fi=document.getElementById('expDateFrom');
+  const ti=document.getElementById('expDateTo');
+  if(fi) fi.value=_dateStr(_expFromDate);
+  if(ti) ti.value=_dateStr(_expToDate);
+
+  // Highlight active preset
+  document.querySelectorAll('.exp-preset-btn').forEach(b=>b.classList.remove('active'));
+  const active=document.getElementById('expPreset-'+p);
+  if(active) active.classList.add('active');
+
+  _expRefreshSummary();
+}
+
+// ── Custom date picker changed ───────────────────────────────
+function expCustomDateChanged(){
+  const fv=document.getElementById('expDateFrom')?.value;
+  const tv=document.getElementById('expDateTo')?.value;
+  if(!fv||!tv) return;
+  _expFromDate=_parseDate(fv);
+  _expToDate=_parseDate(tv);
+  if(_expToDate<_expFromDate){ _expToDate=new Date(_expFromDate); document.getElementById('expDateTo').value=fv; }
+
+  // Deselect presets
+  document.querySelectorAll('.exp-preset-btn').forEach(b=>b.classList.remove('active'));
+  _expPreset='custom';
+  _expRefreshSummary();
+}
+
+// ── Refresh summary bar ──────────────────────────────────────
+function _expRefreshSummary(){
+  if(!_expFromDate||!_expToDate) return;
+  const days=_daysBetween(_expFromDate,_expToDate);
+  const rs=document.getElementById('expRangeSummary');
+  if(rs){
+    rs.textContent=_fmtDateShort(_expFromDate)+' → '+_fmtDateShort(_expToDate)+
+      ' · '+days+' day'+(days!==1?'s':'')+
+      ' · '+(_expType==='stock'?'Stock Report':'Finance DSR');
+  }
+  const sb=document.getElementById('exp-status-bar');
+  if(sb){
+    const t=_expType==='stock'?'Stock / Inventory':'Finance / DSR';
+    const lockNote=_expType==='stock'&&days===1?' (Day must be locked for CSV)':'';
+    sb.textContent='Ready: '+t+' · '+days+' day'+(days!==1?'s':'')+lockNote;
+    sb.style.color='#6FCF97';
+    sb.style.borderColor='#1A4A1A';
   }
 }
 
-function doExport(fmt){
-  if(!me){toast('Please log in first');return;}
-  if(expPeriod==='day') fmt==='pdf'?exportDayPDF():exportDayCSV();
-  else if(expPeriod==='week') fmt==='pdf'?exportWeekPDF():exportWeekCSV();
-  else fmt==='pdf'?exportMonthPDF():exportMonthCSV();
-}
+// ══════════════════════════════════════════════════════════════
+// MAIN DOWNLOAD DISPATCHER
+// ══════════════════════════════════════════════════════════════
+function expDownload(fmt){
+  if(!me){ toast('⚠ Please log in first'); return; }
+  if(!_expFromDate||!_expToDate){ toast('⚠ Select a date range first'); return; }
 
-// ── CSV EXPORTS ──
-function exportDayCSV(){
-  // Use curDay if export opened from main grid; dashDay if from dashboard
-  const exportDay = (typeof dashDay!=='undefined'&&dashDay!==null) ? dashDay : curDay;
-  const dl=getDayLabels()[exportDay];
-  const locked=isLocked(me.code,exportDay);
-  if(!locked && !isMgrSession){toast('⚠ Lock the day first before exporting');return;}
-  const rows=[];
-  rows.push(['EMIRATES PRIDE PERFUMES','','','Daily Stock Report']);
-  rows.push([me.name,'','',dl.full+' '+dl.date+(locked?' [LOCKED]':'')]);
-  rows.push(['Generated:',new Date().toLocaleString('en-GB')]);
-  rows.push([]);
-  rows.push(['ERP Code','Product (English)','Product (Arabic)','Category',
-             'Opening','WH Transfer','Store In','Sales','Transfer Out','Balance']);
-  PRODUCTS.forEach(p=>{
-    const o=dbGet(me.code,exportDay,p.code,'open');
-    const w=dbGet(me.code,exportDay,p.code,'wh');
-    const i=dbGet(me.code,exportDay,p.code,'inn');
-    const s=dbGet(me.code,exportDay,p.code,'sold');
-    const t=dbGet(me.code,exportDay,p.code,'trf');
-    const b=bal(me.code,exportDay,p.code);
-    if(o>0||w>0||i>0||s>0||t>0||b>0) rows.push([p.code,p.en,p.ar||'',p.cat,o,w,i,s,t,b]);
-  });
-  const totRow=['','TOTALS','',''];
-  ['open','wh','inn','sold','trf'].forEach(f=>totRow.push(PRODUCTS.reduce((a,p)=>a+dbGet(me.code,exportDay,p.code,f),0)));
-  totRow.push(PRODUCTS.reduce((a,p)=>a+bal(me.code,exportDay,p.code),0));
-  rows.push(totRow);
-  // Transfers
-  const _expDateStr=_idx2date(exportDay);
-  const trLog=getTransferLog().filter(t=>t.dayDate===_expDateStr&&(t.fromStore===me.code||t.toStore===me.code));
-  if(trLog.length){rows.push([]);rows.push(['TRANSFERS']);rows.push(['Time','Product','Qty','From','To','Note']);
-    trLog.forEach(t=>rows.push([t.ts,t.prodName,t.qty,t.fromName,t.toName,t.note||'']));}
-  downloadCSV(me.code+'_'+dl.abbr+'_'+dl.date.replace('/','.')+'.csv',rows);
-  closeExport();toast('📥 Day CSV downloaded');
-}
+  const days = _daysBetween(_expFromDate,_expToDate);
+  const sb=document.getElementById('exp-status-bar');
+  if(sb){ sb.textContent='⇅ Generating '+fmt.toUpperCase()+'…'; sb.style.color='#C9A44E'; }
 
-function exportWeekCSV(){
-  const rows=[];
-  rows.push(['EMIRATES PRIDE PERFUMES','','','Weekly Stock Register']);
-  rows.push([me.name,'','','15-Day Rolling Report']);
-  rows.push(['Generated:',new Date().toLocaleString('en-GB')]);
-  rows.push([]);
-  getDayLabels().forEach((dl,di)=>{
-    const locked=isLocked(me.code,di);
-    const anyData=PRODUCTS.some(p=>dbGet(me.code,di,p.code,'open')>0||dbGet(me.code,di,p.code,'sold')>0||dbGet(me.code,di,p.code,'wh')>0||dbGet(me.code,di,p.code,'inn')>0);
-    if(!anyData) return;
-    rows.push([dl.full.toUpperCase()+' '+dl.date+(locked?' ✓ LOCKED':' (open)')]);
-    rows.push(['ERP Code','Product','Arabic','Category','Opening','WH Transfer','Store In','Sales','Transfer Out','Balance']);
-    PRODUCTS.forEach(p=>{
-      const o=dbGet(me.code,di,p.code,'open'),w=dbGet(me.code,di,p.code,'wh'),
-            i=dbGet(me.code,di,p.code,'inn'),s=dbGet(me.code,di,p.code,'sold'),
-            t=dbGet(me.code,di,p.code,'trf'),b=bal(me.code,di,p.code);
-      if(o>0||w>0||i>0||s>0||t>0) rows.push([p.code,p.en,p.ar||'',p.cat,o,w,i,s,t,b]);
-    });
-    const tots=[0,0,0,0,0,0];
-    PRODUCTS.forEach(p=>{tots[0]+=dbGet(me.code,di,p.code,'open');tots[1]+=dbGet(me.code,di,p.code,'wh');
-      tots[2]+=dbGet(me.code,di,p.code,'inn');tots[3]+=dbGet(me.code,di,p.code,'sold');
-      tots[4]+=dbGet(me.code,di,p.code,'trf');tots[5]+=bal(me.code,di,p.code);});
-    rows.push(['','DAILY TOTALS','','','Open:'+tots[0],'WH:'+tots[1],'In:'+tots[2],'Sold:'+tots[3],'Sent:'+tots[4],'Bal:'+tots[5]]);
-    rows.push([]);
-  });
-  const allLog=getTransferLog();
-  if(allLog.length){rows.push(['ALL TRANSFER MOVEMENTS']);
-    rows.push(['Timestamp','Day','Product','Qty','From','To']);
-    allLog.forEach(t=>rows.push([t.ts,getDayLabels()[t.day]?.full||'',t.prodName,t.qty,t.fromName,t.toName]));}
-  downloadCSV(me.code+'_week_report.csv',rows);
-  closeExport();toast('📥 Week CSV downloaded');
-}
-
-function exportMonthCSV(){
-  // Month = same as week data but with month label
-  const now=new Date();
-  const rows=[];
-  rows.push(['EMIRATES PRIDE PERFUMES','Monthly Report']);
-  rows.push([me.name,now.toLocaleString('en-GB',{month:'long',year:'numeric'})]);
-  rows.push(['Generated:',new Date().toLocaleString('en-GB')]);
-  rows.push([]);
-  // Summary section — totals per day
-  rows.push(['DATE','DAY','SALES','WH IN','STORE IN','TRANSFER OUT','BALANCE']);
-  getDayLabels().forEach((dl,di)=>{
-    const s=PRODUCTS.reduce((a,p)=>a+dbGet(me.code,di,p.code,'sold'),0);
-    const w=PRODUCTS.reduce((a,p)=>a+dbGet(me.code,di,p.code,'wh'),0);
-    const i=PRODUCTS.reduce((a,p)=>a+dbGet(me.code,di,p.code,'inn'),0);
-    const t=PRODUCTS.reduce((a,p)=>a+dbGet(me.code,di,p.code,'trf'),0);
-    const b=PRODUCTS.reduce((a,p)=>a+bal(me.code,di,p.code),0);
-    if(s>0||w>0) rows.push([dl.date,dl.full,s,w,i,t,b]);
-  });
-  rows.push([]);
-  // Top sellers
-  const sellerMap={};
-  getDayLabels().forEach((_,di)=>{PRODUCTS.forEach(p=>{
-    if(!sellerMap[p.code]) sellerMap[p.code]={en:p.en,ar:p.ar,sold:0,cat:p.cat};
-    sellerMap[p.code].sold+=dbGet(me.code,di,p.code,'sold');
-  });});
-  const topSellers=Object.entries(sellerMap).filter(([,v])=>v.sold>0).sort((a,b)=>b[1].sold-a[1].sold);
-  if(topSellers.length){
-    rows.push(['TOP SELLERS THIS PERIOD']);
-    rows.push(['ERP Code','Product','Arabic','Category','Total Sold']);
-    topSellers.forEach(([code,v])=>rows.push([code,v.en,v.ar||'',v.cat,v.sold]));
+  try{
+    if(_expType==='finance'){
+      if(fmt==='pdf') _expFinancePDF(_expFromDate,_expToDate);
+      else            _expFinanceCSV(_expFromDate,_expToDate);
+    } else {
+      if(days===1 && fmt==='pdf') _expStockDayPDF(_expFromDate);
+      else if(days===1 && fmt==='csv') _expStockDayCSV(_expFromDate);
+      else if(fmt==='pdf') _expStockRangePDF(_expFromDate,_expToDate);
+      else                 _expStockRangeCSV(_expFromDate,_expToDate);
+    }
+    if(sb){ sb.textContent='✓ Generated! Check your downloads / print dialog'; sb.style.color='#6FCF97'; }
+  } catch(e){
+    console.error('Export error:',e);
+    toast('⚠ Export failed: '+e.message);
+    if(sb){ sb.textContent='⚠ Error: '+e.message; sb.style.color='#E87070'; }
   }
-  downloadCSV(me.code+'_month_'+now.getMonth()+1+'_'+now.getFullYear()+'.csv',rows);
-  closeExport();toast('📥 Month CSV downloaded');
 }
 
-// ── PDF EXPORTS ──
-function buildPDFHTML(title, subtitle, tableHTML, summaryHTML){
-  const logo='EMIRATES PRIDE';
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-<title>${title}</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1A1A1A;font-size:11px;}
-@page{size:A4 landscape;margin:12mm 10mm;}
-.header{display:flex;align-items:center;justify-content:space-between;
-  border-bottom:3px solid #C9A44E;padding-bottom:8px;margin-bottom:12px;}
-.brand{font-size:20px;font-weight:800;color:#C9A44E;letter-spacing:1px;}
-.brand-ar{font-family:Tahoma,Arial,sans-serif;font-size:13px;color:#8B6914;direction:rtl;}
-.report-info{text-align:right;}
-.report-title{font-size:14px;font-weight:700;color:#1A1A1A;}
-.report-sub{font-size:10px;color:#666;margin-top:2px;}
-.summary-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;
-  margin-bottom:12px;background:#F8F4E8;border:1px solid #E8C97A;border-radius:6px;padding:8px;}
-.sum-box{text-align:center;}
-.sum-val{font-size:18px;font-weight:800;display:block;}
-.sum-val.fo{color:#1A4A7A;} .sum-val.wh{color:#1A6040;} .sum-val.inn{color:#1A5040;}
-.sum-val.sold{color:#8B1A1A;} .sum-val.trf{color:#4A1A6A;} .sum-val.bal{color:#7A5200;}
-.sum-lbl{font-size:8px;text-transform:uppercase;color:#888;letter-spacing:0.6px;margin-top:2px;}
-.sum-lbl-ar{font-family:Tahoma;font-size:8px;color:#AAA;direction:rtl;}
-table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10px;}
-thead th{background:#1A1A1A;color:#fff;padding:6px 4px;text-align:center;font-weight:700;
-  font-size:9px;text-transform:uppercase;letter-spacing:0.5px;border:1px solid #333;}
-thead th.prod-col{text-align:left;min-width:160px;}
-thead th.num-col{width:65px;}
-thead .ar{font-family:Tahoma;font-size:8px;color:#AAA;direction:rtl;font-weight:400;}
-tbody tr:nth-child(even){background:#F9F9F9;}
-tbody tr:hover{background:#FDF8EE;}
-tbody td{padding:5px 4px;border:1px solid #E0E0E0;vertical-align:middle;}
-tbody td.prod-name{font-weight:600;color:#1A1A1A;}
-tbody td.prod-code{font-family:monospace;font-size:9px;color:#888;}
-tbody td.prod-ar{font-family:Tahoma;font-size:9px;direction:rtl;color:#666;}
-tbody td.num{text-align:center;font-family:monospace;font-weight:600;}
-tbody td.num.open{color:#1A4A7A;background:#EFF6FF;}
-tbody td.num.wh{color:#1A6040;background:#EDFAF3;}
-tbody td.num.inn{color:#1A5040;background:#E8FBF4;}
-tbody td.num.sold{color:#8B1A1A;background:#FFF2F2;}
-tbody td.num.trf{color:#4A1A6A;background:#FBF0FF;}
-tbody td.num.bal{color:#7A5200;background:#FFF8E8;font-weight:800;}
-tbody td.num.neg{color:#8B1A1A;font-weight:800;}
-.cat-row td{background:#F0EBE0!important;font-weight:700;color:#7A5200;
-  font-size:9px;letter-spacing:0.8px;text-transform:uppercase;padding:4px 6px!important;}
-.totals-row td{background:#1A1A1A!important;color:#fff!important;font-weight:700!important;
-  font-size:10px!important;}
-.totals-row td.num{color:#fff!important;background:#1A1A1A!important;}
-.totals-row td.num.sold{color:#E87070!important;background:#1A1A1A!important;}
-.totals-row td.num.bal{color:var(--gold2,#C9A44E)!important;background:#1A1A1A!important;}
-.footer{border-top:1px solid #E0E0E0;padding-top:8px;display:flex;
-  justify-content:space-between;color:#AAA;font-size:8px;}
-.transfer-section{margin-top:12px;}
-.transfer-section h3{font-size:11px;font-weight:700;color:#333;margin-bottom:6px;
-  border-bottom:1px solid #DDD;padding-bottom:4px;}
-.locked-badge{display:inline-block;background:#1A5A1A;color:#6FCF97;
-  font-size:8px;padding:1px 6px;border-radius:3px;margin-left:6px;font-weight:700;}
-.open-badge{display:inline-block;background:#5A4A00;color:#C9A44E;
-  font-size:8px;padding:1px 6px;border-radius:3px;margin-left:6px;font-weight:700;}
-</style></head><body>
-<div class="header">
-  <div>
-    <div class="brand">EMIRATES PRIDE</div>
-    <div class="brand-ar">فخـــر الإمارات</div>
-  </div>
-  <div class="report-info">
-    <div class="report-title">${title}</div>
-    <div class="report-sub">${subtitle}</div>
-    <div class="report-sub">Generated: ${new Date().toLocaleString('en-GB')}</div>
-  </div>
-</div>
-${summaryHTML}
-${tableHTML}
-<div class="footer">
-  <span>Emirates Pride Perfumes · فخر الإمارات · Confidential</span>
-  <span>Generated by Stock Register System · ${new Date().toLocaleDateString('en-GB')}</span>
-</div>
-</body></html>`;
+// ══════════════════════════════════════════════════════════════
+// STOCK EXPORTS — Day, Range (CSV + PDF)
+// ══════════════════════════════════════════════════════════════
+
+function _dateToIdx(dateObj){
+  const today=new Date(); today.setHours(0,0,0,0);
+  return 5+Math.round((dateObj-today)/86400000);
 }
 
-function buildSummaryStrip(o,w,i,s,t,b){
-  return `<div class="summary-strip">
-    <div class="sum-box"><span class="sum-val fo">${o}</span><div class="sum-lbl">Opening</div><div class="sum-lbl-ar">الافتتاح</div></div>
-    <div class="sum-box"><span class="sum-val wh">${w}</span><div class="sum-lbl">WH Transfer</div><div class="sum-lbl-ar">مستودع</div></div>
-    <div class="sum-box"><span class="sum-val inn">${i}</span><div class="sum-lbl">Store In</div><div class="sum-lbl-ar">نقل داخل</div></div>
-    <div class="sum-box"><span class="sum-val sold">${s}</span><div class="sum-lbl">Sales</div><div class="sum-lbl-ar">المبيعات</div></div>
-    <div class="sum-box"><span class="sum-val trf">${t}</span><div class="sum-lbl">Transfer Out</div><div class="sum-lbl-ar">نقل خارج</div></div>
-    <div class="sum-box"><span class="sum-val bal">${b}</span><div class="sum-lbl">Balance</div><div class="sum-lbl-ar">الرصيد</div></div>
-  </div>`;
-}
-
-function buildProductTableHTML(di){
+function _expStockDayCSV(date){
+  const di=_dateToIdx(date);
+  const dl=getDayLabels()[di];
+  const locked=di>=0&&di<DAY_WINDOW&&isLocked(me.code,di);
+  if(!locked&&!isMgrSession){ toast('⚠ Lock the day before exporting CSV'); return; }
+  const rows=[];
+  rows.push(['EMIRATES PRIDE PERFUMES','','Daily Stock Report']);
+  rows.push([me.name,'',_fmtDateFull(date)+(locked?' [LOCKED]':'')]);
+  if(db._lockNames?.[me.code+'_'+di]) rows.push(['Locked By:','',db._lockNames[me.code+'_'+di].name]);
+  rows.push(['Generated:','',new Date().toLocaleString('en-GB')]);
+  rows.push([]);
+  rows.push(['SKU Code','Product Name','Opening','WH In','Store In','Sales','Sent Out','Balance']);
   let tO=0,tW=0,tI=0,tS=0,tT=0,tB=0;
-  let rows='';
-  let lastCat='';
   PRODUCTS.forEach(p=>{
+    if(di<0||di>=DAY_WINDOW){ rows.push([p.code,p.en,'-','-','-','-','-','-']); return; }
     const o=dbGet(me.code,di,p.code,'open'),w=dbGet(me.code,di,p.code,'wh'),
           i=dbGet(me.code,di,p.code,'inn'),s=dbGet(me.code,di,p.code,'sold'),
-          t=dbGet(me.code,di,p.code,'trf'),b=bal(me.code,di,p.code);
-    if(o===0&&w===0&&i===0&&s===0&&t===0&&b===0) return;
-    if(p.cat!==lastCat){
-      rows+=`<tr class="cat-row"><td colspan="10">${p.cat}</td></tr>`;
-      lastCat=p.cat;
-    }
+          t=dbGet(me.code,di,p.code,'trf'),b=Math.max(0,o+w+i-s-t);
     tO+=o;tW+=w;tI+=i;tS+=s;tT+=t;tB+=b;
-    const neg=b<0?' neg':'';
-    rows+=`<tr>
-      <td class="prod-name">${p.en}</td>
-      <td class="prod-ar">${p.ar||''}</td>
-      <td class="prod-code">${p.code}</td>
-      <td class="num open">${o||'—'}</td>
-      <td class="num wh">${w||'—'}</td>
-      <td class="num inn">${i||'—'}</td>
-      <td class="num sold">${s||'—'}</td>
-      <td class="num trf">${t||'—'}</td>
-      <td class="num bal${neg}">${b}</td>
-    </tr>`;
+    rows.push([p.code,p.en,o||'',w||'',i||'',s||'',t||'',b]);
   });
-  if(!rows) rows='<tr><td colspan="9" style="text-align:center;color:#AAA;padding:20px;">No data recorded for this period</td></tr>';
-  rows+=`<tr class="totals-row">
-    <td colspan="3" style="text-align:left;padding:6px 8px;letter-spacing:0.5px;">TOTALS</td>
-    <td class="num open">${tO}</td><td class="num wh">${tW}</td>
-    <td class="num inn">${tI}</td><td class="num sold">${tS}</td>
-    <td class="num trf">${tT}</td><td class="num bal">${tB}</td>
-  </tr>`;
-  return {html:`<table>
-    <thead><tr>
-      <th class="prod-col">Product<div class="ar">المنتج</div></th>
-      <th class="prod-col" style="width:100px;font-family:Tahoma;">عربي</th>
-      <th style="width:70px;">Code</th>
-      <th class="num-col" style="background:#1A3A6A;">Opening<div class="ar">الافتتاح</div></th>
-      <th class="num-col" style="background:#1A4A2A;">WH In<div class="ar">مستودع</div></th>
-      <th class="num-col" style="background:#1A5A3A;">Store In<div class="ar">نقل</div></th>
-      <th class="num-col" style="background:#6A1A1A;">Sales<div class="ar">مبيعات</div></th>
-      <th class="num-col" style="background:#4A1A6A;">Sent Out<div class="ar">خارج</div></th>
-      <th class="num-col" style="background:#5A4000;">Balance<div class="ar">الرصيد</div></th>
-    </tr></thead>
-    <tbody>${rows}</tbody>
-  </table>`,tO,tW,tI,tS,tT,tB};
+  rows.push([]);
+  rows.push(['','TOTALS',tO,tW,tI,tS,tT,tB]);
+  _downloadCSV(rows,'Stock_'+me.code+'_'+_dateStr(date)+'.csv');
 }
 
-function exportDayPDF(){
-  const exportDay = (typeof dashDay!=='undefined'&&dashDay!==null) ? dashDay : curDay;
-  const dl=getDayLabels()[exportDay];
-  const locked=isLocked(me.code,exportDay);
-  if(!locked && !isMgrSession){toast('⚠ Lock the day first before exporting');return;}
-  const {html,tO,tW,tI,tS,tT,tB}=buildProductTableHTML(exportDay);
-  // Transfer log for this day
-  const trLog=getTransferLog().filter(t=>t.day===exportDay);
-  let trHTML='';
-  if(trLog.length){
-    trHTML='<div class="transfer-section"><h3>Transfer Movements</h3><table><thead><tr><th>Time</th><th>Product</th><th>Qty</th><th>From</th><th>To</th><th>Note</th></tr></thead><tbody>';
-    trLog.forEach(t=>{trHTML+=`<tr><td>${t.ts}</td><td>${t.prodName}</td><td style="text-align:center;font-weight:700;">${t.qty}</td><td>${t.fromName}</td><td>${t.toName}</td><td>${t.note||''}</td></tr>`;});
-    trHTML+='</tbody></table></div>';
-  }
-  const title='Daily Stock Report'+(locked?' <span class="locked-badge">✓ LOCKED</span>':'<span class="open-badge">OPEN</span>');
-  const subtitle=me.name+' · '+dl.full+' '+dl.date;
-  const pdfHTML=buildPDFHTML(title,subtitle,html+trHTML,buildSummaryStrip(tO,tW,tI,tS,tT,tB));
-  openPrintWindow(pdfHTML);
-  closeExport();toast('📋 PDF opened — use Print → Save as PDF');
+function _expStockDayPDF(date){
+  const di=_dateToIdx(date);
+  const locked=di>=0&&di<DAY_WINDOW&&isLocked(me.code,di);
+  if(!locked&&!isMgrSession){ toast('⚠ Lock the day before exporting PDF'); return; }
+  const dl=di>=0&&di<DAY_WINDOW?getDayLabels()[di]:{full:_fmtDateShort(date),date:_fmtDateShort(date)};
+  const lockInfo=db._lockNames?.[me.code+'_'+di];
+  let tO=0,tW=0,tI=0,tS=0,tT=0,tB=0;
+  let rows='';
+  let catRows={};
+  PRODUCTS.forEach(p=>{
+    if(!catRows[p.cat]) catRows[p.cat]=[];
+    if(di<0||di>=DAY_WINDOW){ catRows[p.cat].push({...p,o:0,w:0,i:0,s:0,t:0,b:0}); return; }
+    const o=dbGet(me.code,di,p.code,'open'),w=dbGet(me.code,di,p.code,'wh'),
+          i=dbGet(me.code,di,p.code,'inn'),s=dbGet(me.code,di,p.code,'sold'),
+          t=dbGet(me.code,di,p.code,'trf'),b=Math.max(0,o+w+i-s-t);
+    tO+=o;tW+=w;tI+=i;tS+=s;tT+=t;tB+=b;
+    catRows[p.cat].push({...p,o,w,i,s,t,b});
+  });
+  Object.entries(catRows).forEach(([cat,prods])=>{
+    rows+=`<tr><td colspan="8" style="background:#1A1A1A;color:#C9A44E;font-weight:700;padding:5px 8px;font-size:10px;">${cat}</td></tr>`;
+    prods.forEach(p=>{
+      const hasData=p.o||p.w||p.i||p.s||p.t;
+      if(!hasData) return;
+      rows+=`<tr style="border-bottom:1px solid #EEE;">
+        <td style="padding:4px 8px;font-family:monospace;font-size:10px;color:#888;">${p.code}</td>
+        <td style="padding:4px 8px;font-size:11px;">${p.en}</td>
+        <td style="padding:4px 8px;text-align:center;font-weight:600;color:#2A5A8A;">${p.o||'—'}</td>
+        <td style="padding:4px 8px;text-align:center;color:#2A6A2A;">${p.w||'—'}</td>
+        <td style="padding:4px 8px;text-align:center;color:#2A5A4A;">${p.i||'—'}</td>
+        <td style="padding:4px 8px;text-align:center;color:#8B1A1A;font-weight:700;">${p.s||'—'}</td>
+        <td style="padding:4px 8px;text-align:center;color:#5A2A7A;">${p.t||'—'}</td>
+        <td style="padding:4px 8px;text-align:center;font-weight:800;color:${p.b<5?'#8B1A1A':'#1A6040'};">${p.b}</td>
+      </tr>`;
+    });
+  });
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Stock Report — ${me.name} — ${_fmtDateFull(date)}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',Arial,sans-serif;padding:10mm;font-size:11px;}
+@page{size:A4 landscape;margin:0;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:#111;color:#fff;padding:6px 8px;text-align:left;font-size:10px;border:1px solid #333;}
+thead th:nth-child(n+3){text-align:center;}
+tbody tr:nth-child(even){background:#F9F9F9;}
+</style></head><body>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #C9A44E;margin-bottom:10px;padding-bottom:8px;">
+  <div>
+    <div style="font-size:18px;font-weight:900;color:#C9A44E;letter-spacing:2px;">EMIRATES PRIDE</div>
+    <div style="font-size:11px;color:#888;font-family:Tahoma;direction:rtl;">فخر الإمارات</div>
+  </div>
+  <div style="text-align:center;">
+    <div style="font-size:15px;font-weight:800;">Daily Stock Register</div>
+    <div style="font-size:12px;color:#555;">${_fmtDateFull(date)}${locked?' · 🔒 LOCKED':''}</div>
+  </div>
+  <div style="text-align:right;font-size:10px;color:#888;">
+    <div>${me.name}</div>
+    ${lockInfo?'<div>Locked by: '+lockInfo.name+'</div>':''}
+    <div>Generated: ${new Date().toLocaleString('en-GB')}</div>
+  </div>
+</div>
+<table>
+  <thead><tr>
+    <th>SKU</th><th>Product Name</th>
+    <th>Opening<br>Stock (A)</th>
+    <th>WH In<br>(B)</th>
+    <th>Store In<br>(C)</th>
+    <th>Sales<br>(D)</th>
+    <th>Sent Out<br>(E)</th>
+    <th>Balance<br>A+B+C−D−E</th>
+  </tr></thead>
+  <tbody>${rows}
+    <tr style="background:#FFF8E0;font-weight:900;border-top:2px solid #C9A44E;">
+      <td colspan="2" style="padding:6px 8px;color:#7A5200;">TOTALS</td>
+      <td style="text-align:center;padding:6px 8px;color:#2A5A8A;">${tO}</td>
+      <td style="text-align:center;padding:6px 8px;color:#2A6A2A;">${tW}</td>
+      <td style="text-align:center;padding:6px 8px;">${tI}</td>
+      <td style="text-align:center;padding:6px 8px;color:#8B1A1A;">${tS}</td>
+      <td style="text-align:center;padding:6px 8px;">${tT}</td>
+      <td style="text-align:center;padding:6px 8px;font-size:16px;color:#1A6040;">${tB}</td>
+    </tr>
+  </tbody>
+</table>
+</body></html>`;
+  openPrintWindow(html);
 }
 
-function exportWeekPDF(){
-  let fullHTML='';let fullSum={o:0,w:0,i:0,s:0,t:0,b:0};
-  getDayLabels().forEach((dl,di)=>{
-    const anyData=PRODUCTS.some(p=>dbGet(me.code,di,p.code,'sold')>0||dbGet(me.code,di,p.code,'wh')>0||dbGet(me.code,di,p.code,'open')>0);
-    if(!anyData) return;
-    const locked=isLocked(me.code,di);
-    const {html,tO,tW,tI,tS,tT,tB}=buildProductTableHTML(di);
-    fullSum.o+=tO;fullSum.w+=tW;fullSum.i+=tI;fullSum.s+=tS;fullSum.t+=tT;fullSum.b+=tB;
-    const _wkTrDate=_idx2date(di);
-    const _wkTrLog=getTransferLog().filter(t=>t.dayDate===_wkTrDate&&(t.fromStore===me.code||t.toStore===me.code));
-    let _wkTrHTML='';
-    if(_wkTrLog.length){
-      _wkTrHTML='<div style="margin-top:6px;font-size:10px;"><table style="width:100%;border-collapse:collapse;font-size:10px;"><thead><tr style="background:#F8F4E8;"><th style="padding:3px 6px;text-align:left;">Time</th><th style="padding:3px 6px;text-align:left;">Product</th><th style="padding:3px 6px;text-align:center;">Qty</th><th style="padding:3px 6px;text-align:left;">From</th><th style="padding:3px 6px;text-align:left;">To</th><th style="padding:3px 6px;text-align:left;">Note</th></tr></thead><tbody>';
-      _wkTrLog.forEach(t=>{_wkTrHTML+=`<tr style="border-bottom:1px solid #EEE;"><td style="padding:2px 6px;">${t.ts}</td><td style="padding:2px 6px;">${t.prodName}</td><td style="padding:2px 6px;text-align:center;font-weight:700;">${t.qty}</td><td style="padding:2px 6px;">${t.fromName}</td><td style="padding:2px 6px;">${t.toName}</td><td style="padding:2px 6px;">${t.note||''}</td></tr>`;});
-      _wkTrHTML+='</tbody></table></div>';
+function _expStockRangeCSV(from,to){
+  const rows=[];
+  rows.push(['EMIRATES PRIDE PERFUMES','Stock Report']);
+  rows.push([me.name,_fmtDateShort(from)+' to '+_fmtDateShort(to)]);
+  rows.push(['Generated:',new Date().toLocaleString('en-GB')]);
+  rows.push([]);
+  rows.push(['Date','Day','SKU','Product','Opening','WH In','Store In','Sales','Sent Out','Balance','Locked']);
+  const cur=new Date(from); cur.setHours(0,0,0,0);
+  while(cur<=to){
+    const di=_dateToIdx(new Date(cur));
+    if(di>=0&&di<DAY_WINDOW){
+      const dl=getDayLabels()[di];
+      const locked=isLocked(me.code,di);
+      const lockInfo=db._lockNames?.[me.code+'_'+di];
+      PRODUCTS.forEach(p=>{
+        const o=dbGet(me.code,di,p.code,'open'),w=dbGet(me.code,di,p.code,'wh'),
+              i=dbGet(me.code,di,p.code,'inn'),s=dbGet(me.code,di,p.code,'sold'),
+              t=dbGet(me.code,di,p.code,'trf'),b=Math.max(0,o+w+i-s-t);
+        if(o||w||i||s||t)
+          rows.push([_dateStr(cur),dl.full+' '+dl.date,p.code,p.en,o,w,i,s,t,b,locked?(lockInfo?lockInfo.name:'Yes'):'No']);
+      });
     }
-    fullHTML+=`<div style="margin-bottom:16px;page-break-inside:avoid;">
-      <h3 style="font-size:12px;font-weight:800;color:#1A1A1A;margin-bottom:6px;padding:5px 8px;background:#F8F4E8;border-left:3px solid #C9A44E;">
-        ${dl.full} ${dl.date} ${locked?'<span class="locked-badge">✓ LOCKED</span>':'<span class="open-badge">OPEN</span>'}
-      </h3>${html}${_wkTrLog.length?'<div style="padding:4px 0 2px;font-size:9px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;">Transfers</div>'+_wkTrHTML:''}</div>`;
-  });
-  const pdfHTML=buildPDFHTML('Weekly Stock Register',me.name+' · 15-Day Rolling Report',fullHTML,buildSummaryStrip(fullSum.o,fullSum.w,fullSum.i,fullSum.s,fullSum.t,fullSum.b));
-  openPrintWindow(pdfHTML);
-  closeExport();toast('📋 PDF opened — use Print → Save as PDF');
+    cur.setDate(cur.getDate()+1);
+  }
+  _downloadCSV(rows,'Stock_'+me.code+'_'+_dateStr(from)+'_to_'+_dateStr(to)+'.csv');
 }
 
-function exportMonthPDF(){
-  // Month summary — one row per day
-  const now=new Date();
-  let tableRows='';
-  let totS=0,totW=0,totI=0,totT=0,totB=0;
-  getDayLabels().forEach((dl,di)=>{
-    const s=PRODUCTS.reduce((a,p)=>a+dbGet(me.code,di,p.code,'sold'),0);
-    const w=PRODUCTS.reduce((a,p)=>a+dbGet(me.code,di,p.code,'wh'),0);
-    const i=PRODUCTS.reduce((a,p)=>a+dbGet(me.code,di,p.code,'inn'),0);
-    const t=PRODUCTS.reduce((a,p)=>a+dbGet(me.code,di,p.code,'trf'),0);
-    const b=PRODUCTS.reduce((a,p)=>a+bal(me.code,di,p.code),0);
-    const locked=isLocked(me.code,di);
-    if(s===0&&w===0&&i===0) return;
-    totS+=s;totW+=w;totI+=i;totT+=t;totB+=b;
-    tableRows+=`<tr>
-      <td style="font-weight:700;">${dl.date}</td><td>${dl.full}</td>
-      <td class="num wh">${w||'—'}</td><td class="num inn">${i||'—'}</td>
-      <td class="num sold">${s||'—'}</td><td class="num trf">${t||'—'}</td>
-      <td class="num bal">${b}</td>
-      <td style="text-align:center;">${locked?'<span class="locked-badge">✓</span>':'<span class="open-badge">—</span>'}</td>
-    </tr>`;
-  });
-  tableRows+=`<tr class="totals-row">
-    <td colspan="2">TOTALS</td>
-    <td class="num wh">${totW}</td><td class="num inn">${totI}</td>
-    <td class="num sold">${totS}</td><td class="num trf">${totT}</td>
-    <td class="num bal">${totB}</td><td></td>
-  </tr>`;
-  const tableHTML=`<table>
-    <thead><tr>
-      <th>Date</th><th>Day</th>
-      <th class="num-col" style="background:#1A4A2A;">WH In</th>
-      <th class="num-col" style="background:#1A5A3A;">Store In</th>
-      <th class="num-col" style="background:#6A1A1A;">Sales</th>
-      <th class="num-col" style="background:#4A1A6A;">Sent Out</th>
-      <th class="num-col" style="background:#5A4000;">Balance</th>
-      <th style="width:60px;">Status</th>
-    </tr></thead>
-    <tbody>${tableRows}</tbody>
-  </table>`;
-  // Transfers for this period (all days in current window involving this store)
-  const _mthDates=Array.from({length:DAY_WINDOW},(_,i)=>_idx2date(i));
-  const _mthTrLog=getTransferLog().filter(t=>_mthDates.includes(t.dayDate)&&(t.fromStore===me.code||t.toStore===me.code));
-  let _mthTrHTML='';
-  if(_mthTrLog.length){
-    _mthTrHTML='<div class="transfer-section"><h3>Transfer Movements (Period)</h3><table><thead><tr><th>Time</th><th>Product</th><th>Qty</th><th>From</th><th>To</th><th>Note</th></tr></thead><tbody>';
-    _mthTrLog.forEach(t=>{_mthTrHTML+=`<tr><td>${t.ts}</td><td>${t.prodName}</td><td style="text-align:center;font-weight:700;">${t.qty}</td><td>${t.fromName}</td><td>${t.toName}</td><td>${t.note||''}</td></tr>`;});
-    _mthTrHTML+='</tbody></table></div>';
+function _expStockRangePDF(from,to){
+  const days=_daysBetween(from,to);
+  let fullHTML='';
+  const cur=new Date(from); cur.setHours(0,0,0,0);
+  let grandS=0,grandB=0;
+  const daySummaries=[];
+
+  while(cur<=to){
+    const di=_dateToIdx(new Date(cur));
+    if(di>=0&&di<DAY_WINDOW){
+      const dl=getDayLabels()[di];
+      const locked=isLocked(me.code,di);
+      const anyData=PRODUCTS.some(p=>dbGet(me.code,di,p.code,'sold')>0||dbGet(me.code,di,p.code,'open')>0||dbGet(me.code,di,p.code,'wh')>0);
+      if(anyData){
+        let tO=0,tW=0,tI=0,tS=0,tT=0,tB=0;
+        let dayRows='';
+        PRODUCTS.forEach(p=>{
+          const o=dbGet(me.code,di,p.code,'open'),w=dbGet(me.code,di,p.code,'wh'),
+                i=dbGet(me.code,di,p.code,'inn'),s=dbGet(me.code,di,p.code,'sold'),
+                t=dbGet(me.code,di,p.code,'trf'),b=Math.max(0,o+w+i-s-t);
+          tO+=o;tW+=w;tI+=i;tS+=s;tT+=t;tB+=b;
+          if(o||w||i||s||t)
+            dayRows+=`<tr style="border-bottom:1px solid #EEE;"><td style="padding:3px 6px;font-size:9px;color:#888;">${p.code}</td><td style="padding:3px 6px;font-size:10px;">${p.en}</td><td style="text-align:center;padding:3px 6px;">${o||'—'}</td><td style="text-align:center;padding:3px 6px;color:#2A6A2A;">${w||'—'}</td><td style="text-align:center;padding:3px 6px;">${i||'—'}</td><td style="text-align:center;padding:3px 6px;font-weight:700;color:#8B1A1A;">${s||'—'}</td><td style="text-align:center;padding:3px 6px;">${t||'—'}</td><td style="text-align:center;padding:3px 6px;font-weight:800;color:${b<3?'#8B1A1A':'#1A6040'};">${b}</td></tr>`;
+        });
+        grandS+=tS;grandB+=tB;
+        const lockInfo=db._lockNames?.[me.code+'_'+di];
+        daySummaries.push({date:_fmtDateFull(new Date(cur)),locked,lockBy:lockInfo?.name||'',tS,tB});
+        fullHTML+=`<div style="margin-bottom:14px;page-break-inside:avoid;">
+          <div style="background:#111;color:#C9A44E;padding:5px 10px;font-size:11px;font-weight:700;
+            display:flex;justify-content:space-between;border-radius:4px 4px 0 0;">
+            <span>${_fmtDateFull(new Date(cur))}${locked?' 🔒':''}</span>
+            <span>Sales: ${tS} · Balance: ${tB}${lockInfo?' · By: '+lockInfo.name:''}</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:10px;">
+            <thead><tr style="background:#EEE;">
+              <th style="padding:4px 6px;text-align:left;">SKU</th>
+              <th style="padding:4px 6px;text-align:left;">Product</th>
+              <th style="padding:4px 6px;text-align:center;">Open</th>
+              <th style="padding:4px 6px;text-align:center;">WH</th>
+              <th style="padding:4px 6px;text-align:center;">In</th>
+              <th style="padding:4px 6px;text-align:center;">Sold</th>
+              <th style="padding:4px 6px;text-align:center;">Out</th>
+              <th style="padding:4px 6px;text-align:center;">Bal</th>
+            </tr></thead>
+            <tbody>${dayRows}
+              <tr style="background:#FFF8E0;font-weight:700;border-top:1px solid #C9A44E;">
+                <td colspan="2" style="padding:4px 6px;color:#7A5200;">DAY TOTALS</td>
+                <td style="text-align:center;padding:4px 6px;">${tO}</td><td style="text-align:center;padding:4px 6px;color:#2A6A2A;">${tW}</td>
+                <td style="text-align:center;padding:4px 6px;">${tI}</td><td style="text-align:center;padding:4px 6px;font-weight:800;color:#8B1A1A;">${tS}</td>
+                <td style="text-align:center;padding:4px 6px;">${tT}</td><td style="text-align:center;padding:4px 6px;font-weight:800;color:#1A6040;">${tB}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>`;
+      }
+    }
+    cur.setDate(cur.getDate()+1);
   }
-  const pdfHTML=buildPDFHTML('Monthly Summary Report',me.name+' · '+now.toLocaleString('en-GB',{month:'long',year:'numeric'}),tableHTML+_mthTrHTML,buildSummaryStrip(0,totW,totI,totS,totT,totB));
-  openPrintWindow(pdfHTML);
-  closeExport();toast('📋 PDF opened — use Print → Save as PDF');
+
+  // Summary table
+  let summaryRows=daySummaries.map(d=>`<tr style="border-bottom:1px solid #EEE;">
+    <td style="padding:4px 8px;">${d.date}${d.locked?' 🔒':''}</td>
+    <td style="padding:4px 8px;text-align:center;font-weight:700;color:#8B1A1A;">${d.tS}</td>
+    <td style="padding:4px 8px;text-align:center;font-weight:700;color:#1A6040;">${d.tB}</td>
+    <td style="padding:4px 8px;font-size:10px;color:#888;">${d.lockBy}</td>
+  </tr>`).join('');
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Stock Report — ${me.name} — ${_fmtDateShort(from)} to ${_fmtDateShort(to)}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Arial,sans-serif;padding:10mm;font-size:10px;}
+@page{size:A4 landscape;margin:0;}</style></head><body>
+
+<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #C9A44E;margin-bottom:10px;padding-bottom:8px;">
+  <div><div style="font-size:17px;font-weight:900;color:#C9A44E;letter-spacing:2px;">EMIRATES PRIDE</div>
+  <div style="font-size:10px;color:#888;font-family:Tahoma;direction:rtl;">فخر الإمارات</div></div>
+  <div style="text-align:center;">
+    <div style="font-size:14px;font-weight:800;">Stock Report — ${days} Days</div>
+    <div style="font-size:11px;color:#555;">${_fmtDateShort(from)} to ${_fmtDateShort(to)}</div>
+  </div>
+  <div style="text-align:right;font-size:10px;color:#888;"><div>${me.name}</div><div>Generated: ${new Date().toLocaleString('en-GB')}</div></div>
+</div>
+
+<!-- Summary table -->
+<div style="margin-bottom:14px;">
+  <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:#333;">📊 Period Summary — Total Sales: ${grandS} units</div>
+  <table style="width:100%;border-collapse:collapse;font-size:10px;max-width:500px;">
+    <thead><tr style="background:#111;color:#fff;">
+      <th style="padding:5px 8px;text-align:left;">Date</th>
+      <th style="padding:5px 8px;text-align:center;">Total Sold</th>
+      <th style="padding:5px 8px;text-align:center;">Closing Balance</th>
+      <th style="padding:5px 8px;text-align:left;">Locked By</th>
+    </tr></thead>
+    <tbody>${summaryRows}</tbody>
+  </table>
+</div>
+
+<!-- Per-day detail -->
+${fullHTML}
+</body></html>`;
+  openPrintWindow(html);
 }
+
+// ══════════════════════════════════════════════════════════════
+// FINANCE EXPORTS — Range (CSV + PDF)
+// ══════════════════════════════════════════════════════════════
+
+function _expFinanceCSV(from,to){
+  const rows=[];
+  rows.push(['EMIRATES PRIDE PERFUMES','Finance / DSR Report']);
+  rows.push([me.name,_fmtDateShort(from)+' to '+_fmtDateShort(to)]);
+  rows.push(['Generated:',new Date().toLocaleString('en-GB')]);
+  rows.push([]);
+  rows.push(['Date','Day','Cash Sales','CC Total','Tabby','Tamara','Credit',
+    'Grand Total Sales','Opening Cash','From Debtors','Total Cash In',
+    'Director Out','Bank Deposit','Expenses','Closing Cash','Prepared By','Finance Locked']);
+  let grandTotal=0,grandCash=0,grandBnpl=0;
+  const cur=new Date(from); cur.setHours(0,0,0,0);
+  while(cur<=to){
+    const di=_dateToIdx(new Date(cur));
+    const dateKey=di>=0&&di<DAY_WINDOW?di:'d_'+_dateStr(cur);
+    const d=db.finance?.[me.code]?.[dateKey];
+    if(d){
+      const cc=(d.ccRows||[]).reduce((s,r)=>s+(+r.amt||0),0);
+      const bnpl=(+d.tabby||0)+(+d.tamara||0);
+      const total=(+d.cash||0)+cc+bnpl+(+d.credit||0);
+      const totalCash=(+d.openCash||0)+(+d.cash||0)+(+d.debtors||0);
+      const closing=totalCash-(+d.directorAmt||0)-(+d.bankAmt||0)-(+d.expenses||0);
+      grandTotal+=total;grandCash+=+d.cash||0;grandBnpl+=bnpl;
+      const dl=di>=0&&di<DAY_WINDOW?getDayLabels()[di]:{full:_fmtDateShort(new Date(cur)),date:''};
+      rows.push([_dateStr(cur),dl.full+' '+dl.date,
+        +d.cash||0,cc,+d.tabby||0,+d.tamara||0,+d.credit||0,
+        total,+d.openCash||0,+d.debtors||0,totalCash,
+        +d.directorAmt||0,+d.bankAmt||0,+d.expenses||0,closing,
+        d.preparedBy||'',d.finLocked?'Yes':'No']);
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+  rows.push([]);
+  rows.push(['TOTALS','',grandCash,'','','','',grandTotal,'','','','','','','','','']);
+  _downloadCSV(rows,'Finance_DSR_'+me.code+'_'+_dateStr(from)+'_to_'+_dateStr(to)+'.csv');
+}
+
+function _expFinancePDF(from,to){
+  const days=_daysBetween(from,to);
+  let tableRows='';
+  let totCash=0,totCC=0,totBNPL=0,totTotal=0,totBank=0,totExp=0;
+  const cur=new Date(from); cur.setHours(0,0,0,0);
+
+  while(cur<=to){
+    const di=_dateToIdx(new Date(cur));
+    const dateKey=di>=0&&di<DAY_WINDOW?di:'d_'+_dateStr(cur);
+    const d=db.finance?.[me.code]?.[dateKey];
+    const dl=di>=0&&di<DAY_WINDOW?getDayLabels()[di]:{full:_fmtDateShort(new Date(cur)),date:''};
+    const dateLabel=_fmtDateShort(new Date(cur));
+    const dayLabel=dl.full;
+
+    if(d){
+      const cc=(d.ccRows||[]).reduce((s,r)=>s+(+r.amt||0),0);
+      const bnpl=(+d.tabby||0)+(+d.tamara||0);
+      const total=(+d.cash||0)+cc+bnpl+(+d.credit||0);
+      const totalCash=(+d.openCash||0)+(+d.cash||0)+(+d.debtors||0);
+      const closing=totalCash-(+d.directorAmt||0)-(+d.bankAmt||0)-(+d.expenses||0);
+      totCash+=+d.cash||0;totCC+=cc;totBNPL+=bnpl;totTotal+=total;
+      totBank+=+d.bankAmt||0;totExp+=+d.expenses||0;
+      tableRows+=`<tr style="border-bottom:1px solid #EEE;${d.finLocked?'background:#FFFBE8;':''}">
+        <td style="padding:5px 8px;white-space:nowrap;"><strong>${dateLabel}</strong><br><span style="font-size:9px;color:#888;">${dayLabel}${d.finLocked?' 🔒':''}</span></td>
+        <td style="text-align:right;padding:5px 8px;color:#1A6040;font-weight:700;">${(+d.cash||0).toFixed(0)}</td>
+        <td style="text-align:right;padding:5px 8px;color:#1A3A7A;">${cc||'—'}</td>
+        <td style="text-align:right;padding:5px 8px;color:#2A4A8A;">${+d.tabby||0||'—'}</td>
+        <td style="text-align:right;padding:5px 8px;color:#5A2A8A;">${+d.tamara||0||'—'}</td>
+        <td style="text-align:right;padding:5px 8px;">${+d.credit||0||'—'}</td>
+        <td style="text-align:right;padding:5px 8px;font-weight:800;color:#7A5200;font-size:13px;">${total.toFixed(0)}</td>
+        <td style="text-align:right;padding:5px 8px;color:#5A1A1A;">${(+d.bankAmt||0).toFixed(0)||'—'}</td>
+        <td style="text-align:right;padding:5px 8px;color:#8B1A1A;">${(+d.expenses||0).toFixed(0)||'—'}</td>
+        <td style="text-align:right;padding:5px 8px;font-weight:700;color:${closing<0?'#8B1A1A':'#1A6040'};">${closing.toFixed(0)}</td>
+        <td style="padding:5px 8px;font-size:10px;color:#888;">${d.preparedBy||''}</td>
+      </tr>`;
+    } else {
+      tableRows+=`<tr style="border-bottom:1px solid #EEE;opacity:0.4;">
+        <td style="padding:5px 8px;white-space:nowrap;"><strong>${dateLabel}</strong><br><span style="font-size:9px;color:#888;">${dayLabel}</span></td>
+        <td colspan="10" style="padding:5px 8px;color:#AAA;font-style:italic;font-size:10px;">No finance data</td>
+      </tr>`;
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Finance DSR — ${me.name} — ${_fmtDateShort(from)} to ${_fmtDateShort(to)}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Arial,sans-serif;padding:10mm;font-size:10px;}
+@page{size:A4 landscape;margin:0;}</style></head><body>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #C9A44E;margin-bottom:10px;padding-bottom:8px;">
+  <div><div style="font-size:17px;font-weight:900;color:#C9A44E;letter-spacing:2px;">EMIRATES PRIDE</div>
+  <div style="font-size:10px;color:#888;">فخر الإمارات</div></div>
+  <div style="text-align:center;">
+    <div style="font-size:14px;font-weight:800;">Finance / Daily Sales Report</div>
+    <div style="font-size:11px;color:#555;">${_fmtDateShort(from)} to ${_fmtDateShort(to)} · ${days} days</div>
+  </div>
+  <div style="text-align:right;font-size:10px;color:#888;"><div>${me.name}</div><div>Generated: ${new Date().toLocaleString('en-GB')}</div></div>
+</div>
+<table style="width:100%;border-collapse:collapse;font-size:10px;">
+  <thead><tr style="background:#1A1A1A;color:#fff;">
+    <th style="padding:6px 8px;text-align:left;white-space:nowrap;">Date</th>
+    <th style="padding:6px 8px;text-align:right;">Cash Sales</th>
+    <th style="padding:6px 8px;text-align:right;">Card (CC)</th>
+    <th style="padding:6px 8px;text-align:right;">Tabby</th>
+    <th style="padding:6px 8px;text-align:right;">Tamara</th>
+    <th style="padding:6px 8px;text-align:right;">Credit</th>
+    <th style="padding:6px 8px;text-align:right;background:#2A1800;">Grand Total</th>
+    <th style="padding:6px 8px;text-align:right;">Bank Deposit</th>
+    <th style="padding:6px 8px;text-align:right;">Expenses</th>
+    <th style="padding:6px 8px;text-align:right;">Closing Cash</th>
+    <th style="padding:6px 8px;text-align:left;">Prepared By</th>
+  </tr></thead>
+  <tbody>${tableRows}
+    <tr style="background:#FFF8E0;font-weight:900;border-top:2px solid #C9A44E;">
+      <td style="padding:6px 8px;color:#7A5200;">TOTALS (${days} days)</td>
+      <td style="text-align:right;padding:6px 8px;color:#1A6040;font-size:13px;">${totCash.toFixed(0)}</td>
+      <td style="text-align:right;padding:6px 8px;color:#1A3A7A;">${totCC.toFixed(0)}</td>
+      <td colspan="2" style="text-align:right;padding:6px 8px;color:#2A4A8A;">BNPL: ${totBNPL.toFixed(0)}</td>
+      <td style="padding:6px 8px;"></td>
+      <td style="text-align:right;padding:6px 8px;color:#7A5200;font-size:16px;">${totTotal.toFixed(0)}</td>
+      <td style="text-align:right;padding:6px 8px;color:#5A1A1A;">${totBank.toFixed(0)}</td>
+      <td style="text-align:right;padding:6px 8px;color:#8B1A1A;">${totExp.toFixed(0)}</td>
+      <td colspan="2" style="padding:6px 8px;"></td>
+    </tr>
+  </tbody>
+</table>
+</body></html>`;
+  openPrintWindow(html);
+}
+
+// ══════════════════════════════════════════════════════════════
+// CSV DOWNLOAD HELPER
+// ══════════════════════════════════════════════════════════════
+function _downloadCSV(rows, filename){
+  const csv=rows.map(r=>r.map(v=>{
+    const s=String(v??'');
+    return s.includes(',')||s.includes('"')||s.includes('\n') ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// Legacy export functions (kept for backward compat — redirected to new system)
+function exportDayCSV(){ _expFromDate=_expToDate=new Date(); _expType='stock'; expDownload('csv'); }
+function exportDayPDF(){ _expFromDate=_expToDate=new Date(); _expType='stock'; expDownload('pdf'); }
+function exportWeekCSV(){ expSetPreset('7');_expType='stock';expDownload('csv'); }
+function exportWeekPDF(){ expSetPreset('7');_expType='stock';expDownload('pdf'); }
+function exportMonthCSV(){ expSetPreset('month');_expType='stock';expDownload('csv'); }
+function exportMonthPDF(){ expSetPreset('month');_expType='stock';expDownload('pdf'); }
+
+
 
 function openPrintWindow(html){
   const w=window.open('','_blank','width=1200,height=800');
