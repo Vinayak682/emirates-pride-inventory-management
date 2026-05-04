@@ -19,6 +19,7 @@
   --c-in-h:#E0F2E8; --c-in:#EDFAF3;  --c-in-t:#1A6640;
   --c-sold-h:#FDE8E8; --c-sold:#FFF2F2; --c-sold-t:#8B1A1A;
   --c-trf-h:#F5E8F8;  --c-trf:#FBF0FF;  --c-trf-t:#6A1A8B;
+  --c-wrh-h:#FEE8CC; --c-wrh:#FFF6EC;  --c-wrh-t:#7A3A00;
   --c-out-h:#FDE8E8; --c-out:#FFF2F2; --c-out-t:#8B1A1A;
   --c-bal-h:#FEF3D0; --c-bal:#FFFBEE; --c-bal-t:#7A5200;
   --border:#D0D0D0; --border-dark:#A0A0A0;
@@ -180,6 +181,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .gh-wh{background:var(--c-wh-h);color:var(--c-wh-t);}
 .gh-sold{background:var(--c-sold-h);color:var(--c-sold-t);}
 .gh-trf{background:var(--c-trf-h);color:var(--c-trf-t);}
+.gh-wrh{background:var(--c-wrh-h);color:var(--c-wrh-t);}
 .gh-out{background:var(--c-out-h);color:var(--c-out-t);}
 .gh-bal{background:var(--c-bal-h);color:var(--c-bal-t);}
 .gs-open{background:var(--c-open-h);}
@@ -187,6 +189,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .gs-in{background:var(--c-in-h);}
 .gs-sold{background:var(--c-sold-h);}
 .gs-trf{background:var(--c-trf-h);}
+.gs-wrh{background:var(--c-wrh-h);}
 .gs-out{background:var(--c-out-h);}
 .gs-bal{background:var(--c-bal-h);}
 
@@ -232,6 +235,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sgrid td.dcell.wh{background:var(--c-wh);}
 .sgrid td.dcell.sold{background:var(--c-sold);}
 .sgrid td.dcell.trf{background:var(--c-trf);}
+.sgrid td.dcell.wrh{background:var(--c-wrh);}
 .sgrid td.dcell.out{background:var(--c-out);}
 .sgrid td.dcell.bal{background:var(--c-bal);cursor:default;}
 .sgrid td.dcell:active:not(.bal){background:var(--gold-pale)!important;}
@@ -249,6 +253,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dcell.inn .dcell-val{color:var(--c-in-t);}
 .dcell.sold .dcell-val{color:var(--c-sold-t);}
 .dcell.trf .dcell-val{color:var(--c-trf-t);}
+.dcell.wrh .dcell-val{color:var(--c-wrh-t);}
 .dcell.out .dcell-val{color:var(--c-out-t);}
 .dcell.bal .dcell-val{color:var(--c-bal-t);font-weight:600;}
 .dcell.bal .dcell-val.negative{color:#8B1A1A;font-weight:700;}
@@ -279,7 +284,8 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .cell-note-name{display:none;}
 
 /* Locked state */
-.row-locked .dcell.open,.row-locked .dcell.wh,.row-locked .dcell.inn,.row-locked .dcell.out{
+.row-locked .dcell.open,.row-locked .dcell.wh,.row-locked .dcell.inn,.row-locked .dcell.out,
+.row-locked .dcell.sold,.row-locked .dcell.trf,.row-locked .dcell.wrh{
   cursor:default;pointer-events:none;opacity:0.85;
 }
 
@@ -298,6 +304,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .totals-row td.inn{background:#C8EDDA;color:var(--c-in-t);}
 .totals-row td.sold{background:#F5CECE;color:var(--c-sold-t);}
 .totals-row td.trf{background:#EDD8F5;color:var(--c-trf-t);}
+.totals-row td.wrh{background:#FFE4B8;color:var(--c-wrh-t);}
 .totals-row td.out{background:#F5CECE;color:var(--c-out-t);}
 .totals-row td.bal{background:#F5E8A8;color:var(--c-bal-t);}
 
@@ -400,6 +407,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .np-field.wh{background:#1E3A0A;color:#7FC860;}
 .np-field.sold{background:#3A1A1A;color:#E87070;}
 .np-field.trf{background:#2A1A3A;color:#BB88DD;}
+.np-field.wrh{background:#3A2A00;color:#E8A040;}
 .np-field.out{background:#3A1A1A;color:#E87070;}
 .np-x{
   background:#2A2A2A;border:none;color:#888;border-radius:50%;
@@ -872,6 +880,216 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 }
 .dash-tab:active{background:#1A1A1A;}
 .dash-tab.active{color:var(--gold2);border-bottom:2px solid var(--gold);}
+
+/* ── TESTER PANEL ── */
+#dashTesterPanel{background:var(--sheet);}
+.tstr-topbar{
+  background:#111;border-bottom:1px solid #2A2A2A;
+  padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.tstr-store{font-size:13px;font-weight:700;color:var(--gold2);flex:1;}
+.tstr-date{font-family:var(--f-mono);font-size:11px;color:#555;}
+.tstr-add-btn{
+  background:#1A2A1A;border:1px solid #2A5A2A;color:#6FCF97;
+  font-family:var(--f-body);font-size:11px;font-weight:700;
+  padding:6px 14px;border-radius:6px;cursor:pointer;white-space:nowrap;
+}
+.tstr-add-btn:active{background:#254A25;}
+/* Summary strip — mirrors footer-bar style */
+.tstr-summary{
+  background:#111;border-bottom:1px solid #222;
+  padding:7px 14px;display:flex;gap:0;flex-shrink:0;overflow-x:auto;
+  scrollbar-width:none;
+}
+.tstr-summary::-webkit-scrollbar{display:none;}
+.tstr-stat{display:flex;flex-direction:column;align-items:center;padding:3px 16px;flex-shrink:0;border-right:1px solid #1E1E1E;}
+.tstr-stat:last-child{border-right:none;}
+.tstr-stat-val{font-family:var(--f-mono);font-size:16px;font-weight:700;}
+.tstr-stat-lbl{font-family:var(--f-mono);font-size:8px;color:#444;text-transform:uppercase;letter-spacing:0.8px;margin-top:2px;}
+.sv-active{color:#6FCF97;} .sv-sealed{color:#6FA8DC;}
+.tstr-pill.p-none{background:#1A1A1A;color:#444;font-size:9px;}
+.tstr-row-none td{opacity:0.55;}
+.tstr-row-none .tstr-prod-td{opacity:1;}
+.sv-low{color:var(--gold2);} .sv-empty{color:#E87070;}
+/* Table — identical structure to .sgrid */
+.tstr-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.tstr-table{border-collapse:collapse;width:100%;table-layout:fixed;background:var(--sheet);}
+.tstr-table th.tstr-prod-th,.tstr-table td.tstr-prod-td{
+  position:sticky;left:0;z-index:10;background:var(--white);
+  border-right:2px solid var(--border-dark);
+  width:200px;min-width:200px;max-width:200px;
+}
+.tstr-table thead th.tstr-prod-th{z-index:20;}
+/* Column header style — same as .gh- classes */
+.tstr-table thead tr.tstr-hdr th{
+  font-family:var(--f-mono);font-size:9.5px;font-weight:700;
+  letter-spacing:0.5px;text-transform:uppercase;
+  padding:8px 5px 6px;text-align:center;
+  border:1px solid var(--border);border-bottom:2px solid var(--border-dark);
+}
+.tstr-table thead tr.tstr-sub th{
+  font-family:var(--f-mono);font-size:9px;font-weight:400;color:var(--muted);
+  padding:4px 2px 5px;text-align:center;
+  border:1px solid var(--border);border-top:none;border-bottom:2px solid var(--border-dark);
+}
+/* Column colours — new palette for tester */
+.th-tstr-status {background:#E8F5EE;color:#1A5A30;}
+.th-tstr-days   {background:#FEF3D0;color:#7A5200;}
+.th-tstr-update {background:#E8F0F8;color:#1A4A7A;}
+.th-tstr-action {background:#F5E8F8;color:#5A1A8B;}
+/* Data cells */
+.tstr-table td.tstr-dcell{
+  padding:0;text-align:center;border:1px solid var(--border);
+  vertical-align:middle;
+}
+.tstr-table tr.tstr-prow{border-bottom:1px solid var(--border);}
+.tstr-table tr.tstr-prow:hover td{background-color:#F8F4E8!important;}
+/* Category separator — same as .cat-sep */
+.tstr-table tr.tstr-cat td{
+  background:#EFEFEF;border-top:2px solid var(--border-dark);
+  border-bottom:1px solid var(--border);
+  padding:5px 12px;font-size:10px;font-weight:700;color:#444;
+  letter-spacing:1.5px;text-transform:uppercase;
+}
+/* Status pill */
+.tstr-pill{
+  display:inline-block;font-size:9px;font-weight:700;
+  padding:3px 9px;border-radius:10px;white-space:nowrap;
+}
+.tstr-pill.p-active{background:#1A3A1A;color:#6FCF97;border:1px solid #2A5A2A;}
+.tstr-pill.p-low   {background:#2A2000;color:var(--gold2);border:1px solid #4A3A00;}
+.tstr-pill.p-empty {background:#2A1010;color:#E87070;border:1px solid #5A2A2A;}
+.tstr-pill.p-sealed{background:#0A1020;color:#6FA8DC;border:1px solid #1A3A6A;}
+/* Days active */
+.tstr-days-val{
+  font-family:var(--f-mono);font-size:15px;font-weight:600;
+  color:var(--c-bal-t);padding:6px 4px;
+}
+.tstr-days-val.warn{color:#E87070;}
+/* The 3-button tap row — full width inside cell */
+.tstr-btn-group{display:flex;gap:0;width:100%;}
+.tstr-tap-btn{
+  flex:1;border:none;border-right:1px solid #E0E0E0;
+  padding:10px 4px;cursor:pointer;font-size:18px;
+  transition:background 0.12s;background:#fff;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.tstr-tap-btn:last-child{border-right:none;}
+.tstr-tap-btn .tbt-label{font-size:8px;font-weight:700;line-height:1;}
+.tstr-tap-btn.tbt-using {background:#EDF7F0;}
+.tstr-tap-btn.tbt-low   {background:#FFFBEE;}
+.tstr-tap-btn.tbt-empty {background:#FFF2F2;}
+.tstr-tap-btn.tbt-sel.tbt-using{background:#C8EED8;border:2px solid #2A6A2A;}
+.tstr-tap-btn.tbt-sel.tbt-low  {background:#FEF3D0;border:2px solid #B8892A;}
+.tstr-tap-btn.tbt-sel.tbt-empty{background:#FECECE;border:2px solid #8B1A1A;}
+.tstr-tap-btn:active{opacity:0.75;}
+/* Sealed row open button */
+.tstr-open-btn{
+  margin:8px;width:calc(100% - 16px);background:#EEF6FF;
+  border:1px solid #1A3A6A;color:#1A3A6A;
+  font-family:var(--f-body);font-size:11px;font-weight:700;
+  padding:9px;border-radius:6px;cursor:pointer;
+}
+.tstr-open-btn:active{background:#D0E8FF;}
+/* Day-dots streak */
+.tstr-dots{display:flex;gap:2px;justify-content:center;padding:4px 6px;flex-wrap:wrap;}
+.tstr-dot{width:7px;height:7px;border-radius:2px;}
+.tstr-dot.d-ok  {background:#2A7A2A;}
+.tstr-dot.d-now {background:var(--gold);animation:pulse2 1s infinite;}
+.tstr-dot.d-miss{background:#E87070;}
+.tstr-dot.d-fut {background:#E8E8E8;}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:0.4}}
+/* Save bar */
+.tstr-save-bar{
+  background:#111;border-top:1px solid #2A2A2A;
+  padding:10px 14px;flex-shrink:0;
+}
+.tstr-save-btn{
+  width:100%;background:linear-gradient(135deg,var(--gold2),var(--gold));
+  color:#0D0D0D;font-family:var(--f-body);font-size:14px;font-weight:700;
+  border:none;padding:13px;border-radius:8px;cursor:pointer;letter-spacing:0.3px;
+}
+.tstr-save-btn:active{opacity:0.85;}
+.tstr-save-hint{font-size:9px;color:#444;text-align:center;margin-top:5px;font-family:var(--f-mono);}
+/* Add tester modal */
+.tstr-modal{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  z-index:3000;align-items:flex-end;justify-content:center;
+}
+.tstr-modal.show{display:flex;}
+.tstr-modal-box{
+  background:#1A1A1A;border:1px solid #333;border-radius:16px 16px 0 0;
+  width:100%;max-width:520px;padding:20px;
+}
+.tstr-modal-title{font-size:15px;font-weight:700;color:var(--gold2);margin-bottom:14px;}
+.tstr-modal-label{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.tstr-modal-select{
+  width:100%;background:#252525;border:1px solid #3A3A3A;border-radius:8px;
+  padding:12px 14px;font-family:var(--f-body);font-size:14px;color:#E8E0D0;
+  outline:none;appearance:none;-webkit-appearance:none;margin-bottom:14px;
+}
+.tstr-modal-row{display:flex;gap:8px;}
+.tstr-modal-confirm{
+  flex:2;background:linear-gradient(135deg,var(--gold2),var(--gold));
+  color:#0D0D0D;font-size:14px;font-weight:700;border:none;
+  padding:13px;border-radius:8px;cursor:pointer;
+}
+.tstr-modal-cancel{
+  flex:1;background:#1A1A1A;border:1px solid #333;color:#888;
+  font-size:13px;padding:13px;border-radius:8px;cursor:pointer;
+}
+/* Empty confirm banner inside row */
+.tstr-empty-banner{
+  background:#FFF2F2;border-top:1px solid #FECECE;
+  padding:8px 10px;display:flex;align-items:center;gap:8px;
+}
+.tstr-empty-banner .teb-text{font-size:9px;color:#8B1A1A;flex:1;line-height:1.4;}
+.tstr-empty-banner .teb-btn{
+  background:#FECECE;border:1px solid #8B1A1A;color:#8B1A1A;
+  font-size:9px;font-weight:700;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;
+}
+/* Empty state */
+.tstr-empty-state{
+  text-align:center;padding:40px 20px;color:#444;
+  font-family:var(--f-mono);font-size:12px;
+}
+.tstr-empty-state .tes-icon{font-size:36px;margin-bottom:12px;}
+
+/* ── TESTER GRID columns ── */
+:root{
+  --c-trec:#E8F5EE; --c-trec-h:#C8EDD8; --c-trec-t:#1A5A30;
+  --c-tuse:#EEF0FF; --c-tuse-h:#D0D8FF; --c-tuse-t:#2A2A8B;
+  --c-tstat:#FFF8E8;--c-tstat-h:#FFE8A0;--c-tstat-t:#7A4A00;
+  --c-tdays:#F8F0FF;--c-tdays-h:#E8D0FF;--c-tdays-t:#5A1A8B;
+  --c-tclos:#F0F0F0;--c-tclos-h:#E0E0E0;--c-tclos-t:#333;
+}
+.gh-trec{background:var(--c-trec-h);color:var(--c-trec-t);}
+.gh-tuse{background:var(--c-tuse-h);color:var(--c-tuse-t);}
+.gh-tstat{background:var(--c-tstat-h);color:var(--c-tstat-t);}
+.gh-tdays{background:var(--c-tdays-h);color:var(--c-tdays-t);}
+.gh-tclos{background:var(--c-tclos-h);color:var(--c-tclos-t);}
+#tstrGrid td.dcell.trec {background:var(--c-trec);}
+#tstrGrid td.dcell.tuse {background:var(--c-tuse);}
+#tstrGrid td.dcell.tstat{background:var(--c-tstat);min-width:110px;width:110px;}
+#tstrGrid td.dcell.tdays{background:var(--c-tdays);}
+#tstrGrid td.dcell.tclos{background:var(--c-tclos);cursor:default;}
+#tstrGrid td.dcell.topen{background:var(--c-open);}
+#tstrGrid tr.prow{background:#FAF8FF;}
+#tstrGrid tr.prow:nth-child(odd){background:#F4F0FF;}
+.tst-pill{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:var(--f-mono);font-size:9px;font-weight:700;
+  border-radius:20px;padding:4px 10px;cursor:pointer;
+  border:1.5px solid transparent;transition:all 0.15s;white-space:nowrap;
+}
+.tst-pill:active{transform:scale(0.95);}
+.tst-full {background:#1A3A1A;color:#6FCF97;border-color:#2A6A2A;}
+.tst-half {background:#3A2A00;color:#F2C94C;border-color:#7A5200;}
+.tst-empty{background:#3A1A1A;color:#E87070;border-color:#7A2A2A;}
+.tst-none {background:#1A1A1A;color:#555;border-color:#2A2A2A;}
+.tstr-day-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin:1px;background:#2A2A2A;}
+.tstr-day-dot.logged{background:#6FCF97;}
+.tstr-day-dot.today{background:var(--gold2);outline:2px solid var(--gold);}
 
 /* ── TRACKER ── */
 .tracker-sku-header{
@@ -1402,6 +1620,23 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         <thead id="sgridHead"></thead>
         <tbody id="sgridBody"></tbody>
       </table>
+
+      <!-- ══ TESTER SECTION — same scroll as stock grid ══ -->
+      <div id="testerSection" style="margin-top:0;border-top:4px solid #2A2A1A;">
+        <!-- Section header -->
+        <div style="background:#111;padding:8px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #2A2A1A;flex-shrink:0;">
+          <span style="font-family:var(--f-mono);font-size:10px;font-weight:700;color:var(--gold2);letter-spacing:1.5px;text-transform:uppercase;">🧴 TESTER BOTTLES</span>
+          <span style="font-family:var(--f-mono);font-size:9px;color:#555;">Tap Opening or Received to enter · Tap Status to update bottle condition</span>
+        </div>
+        <!-- Tester grid -->
+        <div id="tstrTotalsBar" style="position:sticky;top:0;z-index:10;"></div>
+      <table class="sgrid" id="tstrGrid" style="table-layout:fixed;">
+          <thead id="tstrGridHead"></thead>
+          <tbody id="tstrGridBody"></tbody>
+        </table>
+      </div>
+      <!-- ══ END TESTER SECTION ══ -->
+
     </div>
   </div>
 
@@ -1417,9 +1652,12 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <div class="fdiv"></div>
     <div class="fstat"><span class="fstat-label">Sent Out</span><span class="fstat-val" style="color:#BB88DD;" id="ftTrf">0</span></div>
     <div class="fdiv"></div>
+    <div class="fstat"><span class="fstat-label">Rtn WH</span><span class="fstat-val" style="color:#E8A040;" id="ftWrh">0</span></div>
+    <div class="fdiv"></div>
     <div class="fstat"><span class="fstat-label">Balance</span><span class="fstat-val fb" id="ftBal">0</span></div>
     <button class="lock-btn" id="lockBtn" onclick="toggleLock()">🔓 Lock Day</button>
   </div>
+
 </div>
 
 
@@ -2317,10 +2555,19 @@ const CATS=[
     {code:'C00012',en:'Navy Perfume 100ml',ar:'عطر نيفي 100 مل'},
     {code:'C00011',en:'Violet 100ml Perfume',ar:'فيوليت 100 مل'},
     {code:'C00010',en:'Maroon Intense',ar:'مارون انتنس'},
-    {code:'C00013',en:'White Overdose',ar:''},
+    {code:'C00013',en:'White Overdose',ar:'وايت أوفردوز'},
     {code:'C00006',en:'Caballo Green',ar:'كبالو غرتن'},
     {code:'SP0005',en:'No.4',ar:'رقم 4'},
-    {code:'C00014',en:'Black Perfume 100ml',ar:''},
+    {code:'C00014',en:'Black Perfume 100ml',ar:'بلاك 100 مل'},
+    {code:'C00002-T',en:'White 100ml',ar:'وايت 100 مل',isTester:true},
+    {code:'C00004-T',en:'Maroon 100ml',ar:'مارون 100 مل',isTester:true},
+    {code:'C00012-T',en:'Navy Perfume 100ml',ar:'عطر نيفي 100 مل',isTester:true},
+    {code:'C00011-T',en:'Violet 100ml',ar:'فيوليت 100 مل',isTester:true},
+    {code:'C00010-T',en:'Maroon Intense',ar:'مارون انتنس',isTester:true},
+    {code:'C00013-T',en:'White Overdose',ar:'وايت أوفردوز',isTester:true},
+    {code:'C00006-T',en:'Caballo Green',ar:'كبالو غرتن',isTester:true},
+    {code:'SP0005-T',en:'No.4',ar:'رقم 4',isTester:true},
+    {code:'C00014-T',en:'Black Perfume 100ml',ar:'بلاك 100 مل',isTester:true},
   ]},
   {cat:'Bel Collection', products:[
     {code:'B00001',en:'Bergamot bel Amber',ar:'برغموت بالعنبر'},
@@ -2328,22 +2575,43 @@ const CATS=[
     {code:'B00003',en:'Amber Bel Oud',ar:'عنبر بالعود'},
     {code:'B00007',en:'Peaceful Life',ar:'بيسفول لايف'},
     {code:'B00008',en:'Midnight Glow',ar:'ميدنايت غلو'},
-    {code:'B00021',en:'Midnight Bloom 100ml',ar:''},
+    {code:'B00021',en:'Midnight Bloom 100ml',ar:'ميدنايت بلوم'},
     {code:'B00009',en:'Golden Chance',ar:'غولدن تشانس'},
     {code:'B00004',en:'Meydan',ar:'ميدان'},
     {code:'B00005',en:'Mystery',ar:'ميستري'},
     {code:'B00006',en:'Mersal',ar:'مرسال'},
-    {code:'B00010',en:'Sakura',ar:''},
-    {code:'B00011',en:'Vetiveria',ar:''},
-    {code:'B00012',en:'Ambergris',ar:''},
-    {code:'B00013',en:'Arabica',ar:''},
-    {code:'B00014',en:'Firewood',ar:''},
+    {code:'B00010',en:'Sakura',ar:'سكورا'},
+    {code:'B00011',en:'Vetiveria',ar:'فيتيفيريا'},
+    {code:'B00012',en:'Ambergris',ar:'عنبر'},
+    {code:'B00013',en:'Arabica',ar:'أرابيكا'},
+    {code:'B00014',en:'Firewood',ar:'فيروود'},
     {code:'B00015',en:'Hidden Leather',ar:'هيدن ليذر'},
     {code:'B00016',en:'Mysterious Rose',ar:'ميستيريوس روز'},
     {code:'B00017',en:'Thekrayat',ar:'ذكريات'},
     {code:'B00018',en:'Hidden Tobacco',ar:'هيدن توباكو'},
     {code:'B00019',en:'Masters Perfume 100ml',ar:'ماسترز برفيوم'},
     {code:'B00020',en:'Master Signature',ar:'ماستر سيجنتشر'},
+    {code:'B00001-T',en:'Bergamot bel Amber',ar:'برغموت بالعنبر',isTester:true},
+    {code:'B00002-T',en:'Jasmine bel Musk',ar:'جاسمين بالمسك',isTester:true},
+    {code:'B00003-T',en:'Amber Bel Oud',ar:'عنبر بالعود',isTester:true},
+    {code:'B00007-T',en:'Peaceful Life',ar:'بيسفول لايف',isTester:true},
+    {code:'B00008-T',en:'Midnight Glow',ar:'ميدنايت غلو',isTester:true},
+    {code:'B00021-T',en:'Midnight Bloom 100ml',ar:'ميدنايت بلوم',isTester:true},
+    {code:'B00009-T',en:'Golden Chance',ar:'غولدن تشانس',isTester:true},
+    {code:'B00004-T',en:'Meydan',ar:'ميدان',isTester:true},
+    {code:'B00005-T',en:'Mystery',ar:'ميستري',isTester:true},
+    {code:'B00006-T',en:'Mersal',ar:'مرسال',isTester:true},
+    {code:'B00010-T',en:'Sakura',ar:'سكورا',isTester:true},
+    {code:'B00011-T',en:'Vetiveria',ar:'فيتيفيريا',isTester:true},
+    {code:'B00012-T',en:'Ambergris',ar:'عنبر',isTester:true},
+    {code:'B00013-T',en:'Arabica',ar:'أرابيكا',isTester:true},
+    {code:'B00014-T',en:'Firewood',ar:'فيروود',isTester:true},
+    {code:'B00015-T',en:'Hidden Leather',ar:'هيدن ليذر',isTester:true},
+    {code:'B00016-T',en:'Mysterious Rose',ar:'ميستيريوس روز',isTester:true},
+    {code:'B00017-T',en:'Thekrayat',ar:'ذكريات',isTester:true},
+    {code:'B00018-T',en:'Hidden Tobacco',ar:'هيدن توباكو',isTester:true},
+    {code:'B00019-T',en:'Masters Perfume 100ml',ar:'ماسترز برفيوم',isTester:true},
+    {code:'B00020-T',en:'Master Signature',ar:'ماستر سيجنتشر',isTester:true},
   ]},
   {cat:'Sets & Specials', products:[
     {code:'SP0001',en:'White Oud Set Box (NEW)',ar:''},
@@ -2352,12 +2620,15 @@ const CATS=[
     {code:'SP0013',en:'Maroon Set Box',ar:''},
     {code:'SP0037',en:'Future Bakhoor 100ml',ar:'بخور المستقبل'},
     {code:'SP0038',en:'Future Oud 100ml',ar:'عود المستقبل'},
-    {code:'SP0022',en:'Reflection',ar:''},
+    {code:'SP0022',en:'Reflection',ar:'ريفليكشن'},
     {code:'SP0023',en:'Master Signature Box',ar:''},
     {code:'SP0029',en:'Midnight Glow Set Box',ar:''},
     {code:'DIF-001',en:'Future Oud Reed Diffuser',ar:''},
     {code:'SP0039',en:'Future Traditional Set 2×100ml',ar:'مجموعة المستقبل'},
     {code:'SP0024',en:'My Signature Set Box',ar:'صندوق ماي سيجنتشر'},
+    {code:'SP0037-T',en:'Future Bakhoor 100ml',ar:'بخور المستقبل',isTester:true},
+    {code:'SP0038-T',en:'Future Oud 100ml',ar:'عود المستقبل',isTester:true},
+    {code:'SP0022-T',en:'Reflection',ar:'ريفليكشن',isTester:true},
   ]},
   {cat:'Oud', products:[
     {code:'O00001',en:'Oud Amiri',ar:'عود أميري'},
@@ -2366,6 +2637,12 @@ const CATS=[
     {code:'O00006',en:'Oud Al Fakhamah',ar:'عود الفخامة'},
     {code:'O00008',en:'Oud Hindi Malaki — White Box',ar:'عود هندي ملكي'},
     {code:'O0007', en:'Oud Hindi Khas — Black Box',ar:'عود هندي خاص'},
+    {code:'O00001-T',en:'Oud Amiri',ar:'عود أميري',isTester:true},
+    {code:'O00002-T',en:'Oud Meydan',ar:'عود ميدان',isTester:true},
+    {code:'O00003-T',en:'Oud Al Emarat',ar:'عود الإمارات',isTester:true},
+    {code:'O00006-T',en:'Oud Al Fakhamah',ar:'عود الفخامة',isTester:true},
+    {code:'O00008-T',en:'Oud Hindi Malaki',ar:'عود هندي ملكي',isTester:true},
+    {code:'O0007-T', en:'Oud Hindi Khas',ar:'عود هندي خاص',isTester:true},
   ]},
   {cat:'Dakhoon', products:[
     {code:'D00001',en:'Dakhoon Al Emarat',ar:'دخون الإمارات'},
@@ -2374,6 +2651,12 @@ const CATS=[
     {code:'D00004',en:'Dakhoon Al Dar',ar:'دخون الدار'},
     {code:'D00005',en:'Dakhoon Al Barzah',ar:'دخون البرزة'},
     {code:'D00008',en:'Dakhoon Retaj',ar:'دخون رتاج'},
+    {code:'D00001-T',en:'Dakhoon Al Emarat',ar:'دخون الإمارات',isTester:true},
+    {code:'D00003-T',en:'Dakhoon Badia',ar:'دخون بادية',isTester:true},
+    {code:'D00002-T',en:'Dakhoon Al Marasim',ar:'دخون المراسيم',isTester:true},
+    {code:'D00004-T',en:'Dakhoon Al Dar',ar:'دخون الدار',isTester:true},
+    {code:'D00005-T',en:'Dakhoon Al Barzah',ar:'دخون البرزة',isTester:true},
+    {code:'D00008-T',en:'Dakhoon Retaj',ar:'دخون رتاج',isTester:true},
   ]},
   {cat:'Oils & Gifts', products:[
     {code:'I00001',en:'Hindi Special',ar:'هندي سبيشل'},
@@ -2419,6 +2702,13 @@ const CATS=[
     {code:'HR0005',en:'Khaimah — Heritage',ar:'الخيمة'},
     {code:'HR0006',en:'Safeena — Heritage',ar:'سفينة'},
     {code:'HR0007',en:'Dallah — Heritage',ar:'دلة'},
+    {code:'HR0001-T',en:'Qalah — Heritage',ar:'قلعة',isTester:true},
+    {code:'HR0002-T',en:'Danah — Heritage',ar:'دانة',isTester:true},
+    {code:'HR0003-T',en:'Al Emarat — Heritage',ar:'الإمارات',isTester:true},
+    {code:'HR0004-T',en:'Barjeel — Heritage',ar:'البرجيل',isTester:true},
+    {code:'HR0005-T',en:'Khaimah — Heritage',ar:'الخيمة',isTester:true},
+    {code:'HR0006-T',en:'Safeena — Heritage',ar:'سفينة',isTester:true},
+    {code:'HR0007-T',en:'Dallah — Heritage',ar:'دلة',isTester:true},
   ]},
   {cat:'Bel Paper Box (Gift Sets)', products:[
     {code:'B0001-PB',en:'Bergamot bel Amber — Paper Box',ar:''},
@@ -2462,7 +2752,7 @@ const DAY_FULL=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','S
 let me = null;
 let curDay = 0;
 let pinBuf = '';
-// db[storeCode][dayIdx][productCode] = {open,wh,inn,out,locked}
+// db[storeCode][dayIdx][productCode] = {open,wh,inn,sold,trf,wrh,locked}
 const DB_KEY = 'ep_stock_v7';
 let db = {};
 function saveDB(){ try{ localStorage.setItem(DB_KEY,JSON.stringify(db)); }catch(e){} }
@@ -2483,11 +2773,11 @@ function dbSet(store,day,code,field,val,force){
   }
   if(!db[store]) db[store]={};
   if(!db[store][day]) db[store][day]={};
-  if(!db[store][day][code]) db[store][day][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+  if(!db[store][day][code]) db[store][day][code]={open:0,wh:0,inn:0,sold:0,trf:0,wrh:0,locked:false};
   db[store][day][code][field]=val;
   // auto-carry closing to next day opening
   if(day<6){
-    const bal=dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'sold')-dbGet(store,day,code,'trf');
+    const bal=dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'sold')-dbGet(store,day,code,'trf')-dbGet(store,day,code,'wrh');
     const next=Math.max(0,bal);
     if(!db[store][day+1]) db[store][day+1]={};
     if(!db[store][day+1][code]) db[store][day+1][code]={open:0,inn:0,out:0,locked:false};
@@ -2521,13 +2811,13 @@ function lockDay(store,day){
   ]);
   allCodes.forEach(code=>{
     // Lock current day
-    if(!db[store][day][code]) db[store][day][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+    if(!db[store][day][code]) db[store][day][code]={open:0,wh:0,inn:0,sold:0,trf:0,wrh:0,locked:false};
     db[store][day][code].locked=true;
     // Carry closing balance → next day opening (any future day)
     if(nextDay < DAY_WINDOW){
       const closing = Math.max(0, bal(store, day, code));
       if(closing > 0){ // Only carry if there's something
-        if(!db[store][nextDay][code]) db[store][nextDay][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+        if(!db[store][nextDay][code]) db[store][nextDay][code]={open:0,wh:0,inn:0,sold:0,trf:0,wrh:0,locked:false};
         // Only set if next day opening is 0 (don't overwrite manual entries)
         if((db[store][nextDay][code].open||0) === 0){
           db[store][nextDay][code].open = closing;
@@ -2544,6 +2834,8 @@ function lockDay(store,day){
   }
   // ── Finance carry-forward: closing balance → next day opening cash ──
   if(day < DAY_WINDOW-1) carryFinanceForward(store, day);
+  // ── Tester carry-forward: closing → next day opening ──
+  _tbCarryForward(store);
   // ── Auto-lock Finance too if it was saved but not yet finance-locked ──
   if(db.finance?.[store]?.[day] && !isFinanceLocked(store, day)){
     db.finance[store][day].finLocked = true;
@@ -2552,7 +2844,7 @@ function lockDay(store,day){
   saveDB();
 }
 function bal(store,day,code){
-  return dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'sold')-dbGet(store,day,code,'trf');
+  return dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'sold')-dbGet(store,day,code,'trf')-dbGet(store,day,code,'wrh');
 }
 
 // ── LOGIN ──
@@ -2703,7 +2995,8 @@ function buildGrid(){
       <th class="gh-in"><div class="hdr-en">TRANSFER FROM STORE</div><div class="hdr-ar">نقل من المتجر</div><div class="hdr-sub-lbl">(C)</div></th>
       <th class="gh-sold"><div class="hdr-en">SALES</div><div class="hdr-ar">المبيعات</div><div class="hdr-sub-lbl">(D)</div></th>
       <th class="gh-trf"><div class="hdr-en">TRANSFER TO STORE</div><div class="hdr-ar">نقل إلى متجر</div><div class="hdr-sub-lbl">(E)</div></th>
-      <th class="gh-bal"><div class="hdr-en">BALANCE</div><div class="hdr-ar">الرصيد</div><div class="hdr-sub-lbl">A+B+C−D−E</div></th>
+      <th class="gh-wrh"><div class="hdr-en">RETURN TO WAREHOUSE</div><div class="hdr-ar">إرجاع إلى المستودع</div><div class="hdr-sub-lbl">(F)</div></th>
+      <th class="gh-bal"><div class="hdr-en">BALANCE</div><div class="hdr-ar">الرصيد</div><div class="hdr-sub-lbl">A+B+C−D−E−F</div></th>
     </tr>
     <tr class="hdr-sub hdr-totals-row">
       <th class="gs-open" id="tot-open-th"></th>
@@ -2711,6 +3004,7 @@ function buildGrid(){
       <th class="gs-in"   id="tot-in-th"></th>
       <th class="gs-sold" id="tot-sold-th"></th>
       <th class="gs-trf"  id="tot-trf-th"></th>
+      <th class="gs-wrh"  id="tot-wrh-th"></th>
       <th class="gs-bal"  id="tot-bal-th"></th>
     </tr>`;
   // Populate totals row immediately after building header
@@ -2719,23 +3013,27 @@ function buildGrid(){
   // Body
   const tbody=document.getElementById('sgridBody');
   tbody.innerHTML='';
-  let totO=0,totW=0,totI=0,totS=0,totT=0,totB=0;
+  let totO=0,totW=0,totI=0,totS=0,totT=0,totR=0,totB=0;
 
   CATS.forEach(cat=>{
     // Category row
     const cr=document.createElement('tr');
     cr.className='cat-sep';
-    cr.innerHTML=`<td colspan="7">${cat.cat}</td>`;
+    cr.innerHTML=`<td colspan="8">${cat.cat}</td>`;
     tbody.appendChild(cr);
 
-    cat.products.forEach((p,ri)=>{
+    let ri_idx=0;
+    cat.products.forEach((p)=>{
+      if(p.isTester) return; // tester SKUs tracked separately below grid
+      const ri=ri_idx++;
       const o=dbGet(me.code,curDay,p.code,'open');
       const i=dbGet(me.code,curDay,p.code,'inn');
       const s=dbGet(me.code,curDay,p.code,'sold');
       const t=dbGet(me.code,curDay,p.code,'trf');
       const w=dbGet(me.code,curDay,p.code,'wh');
+      const r=dbGet(me.code,curDay,p.code,'wrh');
       const b=bal(me.code,curDay,p.code);
-      totO+=o;totW+=w;totI+=i;totS+=s;totT+=t;totB+=b;
+      totO+=o;totW+=w;totI+=i;totS+=s;totT+=t;totR+=r;totB+=b;
       const isNeg=b<0;
 
       const tr=document.createElement('tr');
@@ -2747,6 +3045,7 @@ function buildGrid(){
       const showI=i>0?i:'';
       const showS=s>0?s:'';
       const showT=t>0?t:'';
+      const showR=r>0?r:'';
 
       const mgrActive=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
       const canEdit=!locked||mgrActive;
@@ -2776,6 +3075,9 @@ function buildGrid(){
           <span class="dcell-val${showT===''?' empty':''}">${showT===''?'—':showT}</span>
           ${(()=>{const lg=getTransferLog().filter(t=>t.day===curDay&&t.prodCode===p.code&&t.fromStore===me.code);return buildTrfNote(lg,'trf');})()}
         </td>
+        <td class="dcell wrh" onclick="${canEdit?'openNP(\''+p.code+'\',\'wrh\')':'toast(\'🔒 Day locked\')'}">
+          <span class="dcell-val${showR===''?' empty':''}">${showR===''?'—':showR}</span>
+        </td>
         <td class="dcell bal">
           <span class="dcell-val${isNeg?' negative':''}">${b}</span>
         </td>`;
@@ -2793,8 +3095,12 @@ function buildGrid(){
     <td class="inn">${totI}</td>
     <td class="sold">${totS}</td>
     <td class="trf">${totT}</td>
+    <td class="wrh">${totR}</td>
     <td class="bal">${totB}</td>`;
   tbody.appendChild(tot);
+
+  // Refresh tester grid below
+  if(typeof buildTesterGrid==='function') buildTesterGrid();
 
   // Lock button state
   const lb=document.getElementById('lockBtn');
@@ -2851,8 +3157,8 @@ function buildFooter(){
     totB+=bal(me.code,curDay,p.code);
   });
   const sf=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  sf('ftOpen',totO);sf('ftWh',totW);sf('ftIn',totI);sf('ftSold',totS);sf('ftTrf',totT);sf('ftBal',totB);
-  sf('sfOpen',totO);sf('sfWh',totW);sf('sfIn',totI);sf('sfSold',totS);sf('sfTrf',totT);sf('sfBal',totB);
+  sf('ftOpen',totO);sf('ftWh',totW);sf('ftIn',totI);sf('ftSold',totS);sf('ftTrf',totT);sf('ftWrh',totR);sf('ftBal',totB);
+  sf('sfOpen',totO);sf('sfWh',totW);sf('sfIn',totI);sf('sfSold',totS);sf('sfTrf',totT);sf('sfWrh',totR);sf('sfBal',totB);
   const lb=document.getElementById('lockBtn');
   if(lb){const lk=me&&isLocked(me.code,curDay);lb.textContent=lk?'🔒 Locked':'🔓 Lock Day';lb.className='lock-btn'+(lk?' locked':'');}
   if(me) checkUnlockedDays();
@@ -2860,13 +3166,14 @@ function buildFooter(){
 
 function updateTotalsRow(){
   if(!me) return;
-  let tO=0,tW=0,tI=0,tS=0,tT=0,tB=0;
+  let tO=0,tW=0,tI=0,tS=0,tT=0,tR=0,tB=0;
   PRODUCTS.forEach(p=>{
     tO+=dbGet(me.code,curDay,p.code,'open');
     tW+=dbGet(me.code,curDay,p.code,'wh');
     tI+=dbGet(me.code,curDay,p.code,'inn');
     tS+=dbGet(me.code,curDay,p.code,'sold');
     tT+=dbGet(me.code,curDay,p.code,'trf');
+    tR+=dbGet(me.code,curDay,p.code,'wrh');
     tB+=bal(me.code,curDay,p.code);
   });
   // Numbers only — no text labels
@@ -2876,6 +3183,7 @@ function updateTotalsRow(){
   set('tot-in-th',  `<span class="tot-num inn">${tI||'—'}</span>`);
   set('tot-sold-th',`<span class="tot-num sold">${tS||'—'}</span>`);
   set('tot-trf-th', `<span class="tot-num trf">${tT||'—'}</span>`);
+  set('tot-wrh-th', `<span class="tot-num wrh">${tR||'—'}</span>`);
   set('tot-bal-th', `<span class="tot-num ${tB<0?'neg':tB>0?'bal':'zero'}">${tB||'—'}</span>`);
 }
 
@@ -2919,8 +3227,8 @@ function openNP(code,field){
   const p=PRODUCTS.find(x=>x.code===code);
   npCtx={code,field};
   npBuf=String(dbGet(me.code,curDay,code,field)||'');
-  const labels={open:'Opening Stock  (A)',wh:'Warehouse IN — From Warehouse  (B)',inn:'Store IN — From Another Store  (C)',sold:'SOLD — To Customer  (D)',trf:'SENT OUT — To Another Store  (E)'};
-  const cls={open:'open',wh:'wh',inn:'inn',sold:'sold',trf:'trf'};
+  const labels={open:'Opening Stock  (A)',wh:'Warehouse IN — From Warehouse  (B)',inn:'Store IN — From Another Store  (C)',sold:'SOLD — To Customer  (D)',trf:'SENT OUT — To Another Store  (E)',wrh:'RETURN TO WAREHOUSE  (F)'};
+  const cls={open:'open',wh:'wh',inn:'inn',sold:'sold',trf:'trf',wrh:'wrh'};
   document.getElementById('npProduct').textContent=p?p.en:code;
   const fEl=document.getElementById('npField');
   fEl.textContent=labels[field]||field;
@@ -3094,10 +3402,11 @@ function updateNpProj(){
   const i=f==='inn'?v:dbGet(me.code,curDay,c,'inn');
   const s=f==='sold'?v:dbGet(me.code,curDay,c,'sold');
   const t=f==='trf'?v:dbGet(me.code,curDay,c,'trf');
+  const r=f==='wrh'?v:dbGet(me.code,curDay,c,'wrh');
   const avail=dbGet(me.code,curDay,c,'open')+dbGet(me.code,curDay,c,'wh')+dbGet(me.code,curDay,c,'inn');
-  const outTotal=s+t;
-  const warn=((f==='sold'||f==='trf')&&outTotal>avail)?' ⚠ EXCEEDS STOCK':'';
-  document.getElementById('npNote').textContent='→ Balance will be: '+(o+w+i-s-t)+warn;
+  const outTotal=s+t+r;
+  const warn=((f==='sold'||f==='trf'||f==='wrh')&&outTotal>avail)?' ⚠ EXCEEDS STOCK':'';
+  document.getElementById('npNote').textContent='→ Balance will be: '+(o+w+i-s-t-r)+warn;
 }
 // nk/nc/nd defined in Finance section below (finance-aware)
 
@@ -3289,49 +3598,190 @@ function renderProductMode(body){
 // ─── STORE MODE: cards per store ───
 function renderStoreMode(body){
   const q=(document.getElementById('spSearch').value||'').toLowerCase();
-  const grid=document.createElement('div');
-  grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;padding:10px 12px;';
-  const showStores=STORES.filter(s=>s.code!=='MGR');
-  showStores.forEach(store=>{
-    let prods=PRODUCTS.filter(p=>{
-      if(q&&!p.en.toLowerCase().includes(q)&&!p.code.toLowerCase().includes(q)&&!(p.ar&&p.ar.toLowerCase().includes(q))) return false;
-      return true;
-    });
-    prods=prods.filter(p=>bal(store.code,curDay,p.code)>0);
-    const isMine=me&&store.code===me.code;
-    const card=document.createElement('div');
-    card.className='store-card';
-    card.innerHTML=`
-      <div class="sc-head" style="${isMine?'border-left:3px solid var(--gold);':''}">
-        <div>
-          <div class="sc-name">${store.name}${isMine?'<span class="sc-mine">YOU</span>':''}</div>
-          <div class="sc-city">${store.city} · <span style="font-family:var(--f-mono);font-size:9px;">${store.code}</span></div>
-        </div>
-        <span style="font-family:var(--f-mono);font-size:11px;color:#4A8A4A;margin-left:auto;">${prods.length} SKUs</span>
-      </div>
-      <div class="sc-body">
-        ${prods.length===0
-          ?`<div class="sc-empty">${q?'No match':'No stock recorded'}</div>`
-          :prods.slice(0,8).map(p=>{
-            const b=bal(store.code,curDay,p.code);
-            const cls=b<=3?'low':'ok';
-            return `<div class="sc-row">
-              <div>
-                <span class="sc-prod">${p.en}</span>
-                ${p.ar?`<span style="font-family:var(--f-ar);font-size:10px;color:#555;display:block;direction:rtl;text-align:left;">${p.ar}</span>`:''}
-                <code style="font-family:var(--f-mono);font-size:9px;color:#444;">${p.code}</code>
-              </div>
-              <span class="sc-bal ${cls}" style="font-size:15px;">${b}</span>
-            </div>`;
-          }).join('')}
-        ${prods.length>8?`<div class="sc-empty" style="color:#444;font-size:11px;">+${prods.length-8} more…</div>`:''}
-      </div>`;
-    grid.appendChild(card);
-  });
-  body.appendChild(grid);
-}
 
-// ─── REQUEST TRANSFER SHEET ───
+  // Region groups with area manager
+  const REGIONS=[
+    {
+      id:'abudhabi',
+      label:'Abu Dhabi',
+      manager:'Mohamed Hessin',
+      codes:['A0001','A0002','A0003','A0004','A0005','A0006','A0007','A0008','A0009','YMK001','BA001']
+    },
+    {
+      id:'alain',
+      label:'Al Ain',
+      manager:'Mohamed Hessin',
+      codes:['AL001','AL002','AL003','AL004','AL005','AL006','AL007','MAK001']
+    },
+    {
+      id:'dubai',
+      label:'Dubai',
+      manager:'Mohammed Elmatloub',
+      codes:['DX001','DX004','DX005','DX006','DX084','DX085']
+    },
+    {
+      id:'northern',
+      label:'Northern Emirates',
+      manager:'Mohammed Elmatloub',
+      codes:['RK001','RK002','FJ001','FJ001A','SH001','AJ001']
+    }
+  ];
+
+  // State: track expanded regions and stores
+  if(!window._spRegionOpen) window._spRegionOpen={};
+  if(!window._spStoreOpen)  window._spStoreOpen={};
+
+  body.innerHTML='';
+  const wrap=document.createElement('div');
+  wrap.style.cssText='padding:10px 12px;';
+
+  REGIONS.forEach(region=>{
+    // Collect stores in this region
+    const regionStores=STORES.filter(s=>region.codes.indexOf(s.code)>-1);
+    if(!regionStores.length) return;
+
+    // Compute region totals
+    var regionTotal=0;
+    regionStores.forEach(function(s){
+      PRODUCTS.filter(function(p){return !p.isTester;}).forEach(function(p){
+        regionTotal+=bal(s.code,curDay,p.code)||0;
+      });
+    });
+
+    const isRegionOpen=!!window._spRegionOpen[region.id];
+    const regionEl=document.createElement('div');
+    regionEl.style.cssText='margin-bottom:14px;border:1px solid #2A2A3A;border-radius:12px;overflow:hidden;';
+
+    // Region header
+    const rHead=document.createElement('div');
+    rHead.style.cssText='display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0E0E1A;cursor:pointer;user-select:none;';
+    rHead.innerHTML=''
+      +'<span style="font-size:14px;color:#9B6FE8;font-weight:700;transition:transform 0.2s;" id="ricon-'+region.id+'">'+(isRegionOpen?'&#9660;':'&#9654;')+'</span>'
+      +'<div style="flex:1;">'
+      +'<div style="font-family:var(--f-mono);font-size:12px;font-weight:700;color:#DDD;letter-spacing:0.5px;">'+region.label+'</div>'
+      +'<div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:1px;">'+region.manager+' &nbsp;·&nbsp; '+regionStores.length+' stores</div>'
+      +'</div>'
+      +'<div style="text-align:right;">'
+      +'<div style="font-family:var(--f-mono);font-size:18px;font-weight:700;color:#6FCF97;">'+regionTotal+'</div>'
+      +'<div style="font-family:var(--f-mono);font-size:8px;color:#3A7A3A;margin-top:1px;">total units</div>'
+      +'</div>';
+    rHead.onclick=function(){
+      window._spRegionOpen[region.id]=!window._spRegionOpen[region.id];
+      renderStores();
+    };
+    regionEl.appendChild(rHead);
+
+    // Region body (stores)
+    if(isRegionOpen){
+      const rBody=document.createElement('div');
+      rBody.style.cssText='background:#080810;padding:8px 10px;display:flex;flex-direction:column;gap:8px;';
+
+      regionStores.forEach(function(store){
+        // Filter products matching search
+        var prods=PRODUCTS.filter(function(p){
+          if(p.isTester) return false;
+          if(q&&!p.en.toLowerCase().includes(q)&&!p.code.toLowerCase().includes(q)&&!(p.ar&&p.ar.toLowerCase().includes(q))) return false;
+          return bal(store.code,curDay,p.code)>0;
+        });
+
+        // Total units for this store
+        var storeTotal=0;
+        PRODUCTS.filter(function(p){return !p.isTester;}).forEach(function(p){
+          storeTotal+=bal(store.code,curDay,p.code)||0;
+        });
+
+        var isMine=me&&store.code===me.code;
+        var isStoreOpen=!!window._spStoreOpen[store.code];
+
+        const storeEl=document.createElement('div');
+        storeEl.style.cssText='border:1px solid '+(isMine?'#5A4A00':'#1A1A2A')+';border-radius:10px;overflow:hidden;'+(isMine?'box-shadow:0 0 0 1px #5A4A00;':'');
+
+        // Store header row
+        const sHead=document.createElement('div');
+        sHead.style.cssText='display:flex;align-items:center;gap:8px;padding:9px 12px;background:'+(isMine?'#1A1400':'#0E0E18')+';cursor:pointer;user-select:none;';
+        sHead.innerHTML=''
+          +'<span style="font-family:var(--f-mono);font-size:11px;color:#5A5A8A;font-weight:700;transition:transform 0.2s;" id="sicon-'+store.code+'">'+(isStoreOpen?'&#9660;':'&#9654;')+'</span>'
+          +'<div style="flex:1;min-width:0;">'
+          +'<div style="font-size:12px;font-weight:700;color:'+(isMine?'var(--gold)':'#CCC')+';">'
+          +store.name+(isMine?'<span style="font-family:var(--f-mono);font-size:8px;background:#3A3000;color:var(--gold);border-radius:3px;padding:1px 4px;margin-left:5px;">YOU</span>':'')
+          +'</div>'
+          +'<div style="font-family:var(--f-mono);font-size:9px;color:#444;margin-top:1px;">'+store.city+' &nbsp;·&nbsp; '+store.code+'</div>'
+          +'</div>'
+          +'<div style="text-align:right;flex-shrink:0;">'
+          +'<div style="font-family:var(--f-mono);font-size:20px;font-weight:700;color:'+(storeTotal>0?'#6FCF97':'#333')+';">'+storeTotal+'</div>'
+          +'<div style="font-family:var(--f-mono);font-size:8px;color:#3A5A3A;">units</div>'
+          +'</div>';
+        sHead.onclick=function(e){
+          e.stopPropagation();
+          window._spStoreOpen[store.code]=!window._spStoreOpen[store.code];
+          renderStores();
+        };
+        storeEl.appendChild(sHead);
+
+        // Store SKU list (expanded)
+        if(isStoreOpen){
+          const sBody=document.createElement('div');
+          sBody.style.cssText='background:#06060E;padding:4px 0;';
+          if(prods.length===0){
+            sBody.innerHTML='<div style="text-align:center;padding:10px;font-family:var(--f-mono);font-size:10px;color:#333;">'+(q?'No matching products':'No stock recorded')+'</div>';
+          } else {
+            // Group by category
+            CATS.forEach(function(cat){
+              var catProds=cat.products.filter(function(cp){
+                return !cp.isTester && prods.find(function(p){return p.code===cp.code;});
+              });
+              if(!catProds.length) return;
+              const catHead=document.createElement('div');
+              catHead.style.cssText='padding:5px 12px 3px;font-family:var(--f-mono);font-size:8px;color:#3A2A6A;font-weight:700;letter-spacing:1px;border-top:1px solid #0E0E1A;';
+              catHead.textContent=cat.cat.toUpperCase();
+              sBody.appendChild(catHead);
+              catProds.forEach(function(p){
+                var b=bal(store.code,curDay,p.code);
+                var cls=b<=3?'#EB5757':b<=10?'#F2C94C':'#6FCF97';
+                const row=document.createElement('div');
+                row.style.cssText='display:flex;align-items:center;padding:6px 12px;border-bottom:1px solid #0A0A14;';
+                row.innerHTML=''
+                  +'<div style="flex:1;min-width:0;">'
+                  +'<div style="font-size:11px;font-weight:600;color:#DDD;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+p.en+'</div>'
+                  +(p.ar?'<div style="font-family:var(--f-ar);font-size:10px;color:#444;direction:rtl;text-align:left;">'+p.ar+'</div>':'')
+                  +'<code style="font-family:var(--f-mono);font-size:8px;color:#333;">'+p.code+'</code>'
+                  +'</div>'
+                  +'<span style="font-family:var(--f-mono);font-size:18px;font-weight:700;color:'+cls+';flex-shrink:0;margin-left:10px;">'+b+'</span>';
+                sBody.appendChild(row);
+              });
+            });
+          }
+          storeEl.appendChild(sBody);
+        }
+        rBody.appendChild(storeEl);
+      });
+      regionEl.appendChild(rBody);
+    }
+    wrap.appendChild(regionEl);
+  });
+
+  // Uncategorised stores (not in any region)
+  var allRegionCodes=[];
+  REGIONS.forEach(function(r){allRegionCodes=allRegionCodes.concat(r.codes);});
+  var orphans=STORES.filter(function(s){return s.code!=='MGR'&&allRegionCodes.indexOf(s.code)===-1;});
+  if(orphans.length){
+    const oHead=document.createElement('div');
+    oHead.style.cssText='font-family:var(--f-mono);font-size:9px;color:#333;padding:6px 2px;letter-spacing:1px;';
+    oHead.textContent='OTHER STORES';
+    wrap.appendChild(oHead);
+    orphans.forEach(function(store){
+      var storeTotal=0;
+      PRODUCTS.filter(function(p){return !p.isTester;}).forEach(function(p){storeTotal+=bal(store.code,curDay,p.code)||0;});
+      const el=document.createElement('div');
+      el.style.cssText='border:1px solid #1A1A2A;border-radius:8px;padding:8px 12px;margin-bottom:6px;display:flex;align-items:center;background:#0A0A12;';
+      el.innerHTML='<div style="flex:1;font-size:11px;color:#888;">'+store.name+'<br><span style="font-family:var(--f-mono);font-size:9px;color:#333;">'+store.code+'</span></div>'
+        +'<span style="font-family:var(--f-mono);font-size:16px;font-weight:700;color:'+(storeTotal>0?'#6FCF97':'#333')+';">'+storeTotal+'</span>';
+      wrap.appendChild(el);
+    });
+  }
+
+  body.appendChild(wrap);
+}
 function openReq(prod,store,avail){
   reqCtx={prod,store,avail};
   selectedQty=0;
@@ -4243,6 +4693,9 @@ function confirmNP(){
   const scrollEl = document.getElementById('scrollArea');
   const st = scrollEl ? scrollEl.scrollTop : 0;
   dbSet(me.code,curDay,npCtx.code,npCtx.field,val);
+  // If tester SKU opening or received — sync bottle records
+  var _tIsTester=CATS.reduce(function(a,cat){return a.concat(cat.products);},[]).find(function(p){return p.code===npCtx.code&&p.isTester;});
+  if(_tIsTester&&(npCtx.field==='open'||npCtx.field==='wh')) _tbSyncBottles(npCtx.code,npCtx.field);
   saveDB();
   closeNP();
   buildGrid(); buildFooter(); buildDayTabs(); updateTotalsRow();
@@ -5102,7 +5555,7 @@ function trfDrawerSaveSplit() {
 
   if(!db[me.code]) db[me.code]={};
   if(!db[me.code][curDay]) db[me.code][curDay]={};
-  if(!db[me.code][curDay][code]) db[me.code][curDay][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+  if(!db[me.code][curDay][code]) db[me.code][curDay][code]={open:0,wh:0,inn:0,sold:0,trf:0,wrh:0,locked:false};
   db[me.code][curDay][code][type] = newTotal;
   _qWrite(me.code, curDay, code, type, newTotal);
 
@@ -5148,7 +5601,7 @@ function deleteTrfSplit(id, code, type) {
 
   if(!db[me.code]) db[me.code]={};
   if(!db[me.code][curDay]) db[me.code][curDay]={};
-  if(!db[me.code][curDay][code]) db[me.code][curDay][code]={open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+  if(!db[me.code][curDay][code]) db[me.code][curDay][code]={open:0,wh:0,inn:0,sold:0,trf:0,wrh:0,locked:false};
   db[me.code][curDay][code][type] = newTotal;
   _qWrite(me.code, curDay, code, type, newTotal);
 
@@ -5392,11 +5845,11 @@ function renderMgrDashboard(){
     const d=new Date(todayD); d.setDate(todayD.getDate()-i);
     dateDays.push({str:_localDateStr(d),label:d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}),isPast:i>0,idx:DAY_PAST-i});
   }
-  const past5=dateDays.slice(9,15); // last 6 days including today
+  const past7=dateDays.slice(8,15); // last 7 days (week) including today
 
   const storeRows=allStores.map(s=>{
     // Stock lock compliance: which of last 6 days had sales but no lock?
-    const lockStatus=past5.map(dd=>{
+    const lockStatus=past7.map(dd=>{
       const hasSales=(sm.soldMap[s.code+'_'+dd.str]||0)>0;
       const isLk=!!(sm.lockSet[s.code+'_'+dd.str]);
       return {str:dd.str,label:dd.label,hasSales,locked:isLk,lockedBy:sm.lockSet[s.code+'_'+dd.str]||''};
@@ -5404,7 +5857,7 @@ function renderMgrDashboard(){
     const pendingDays=lockStatus.filter(d=>d.hasSales&&!d.locked);
     const latestLock=lockStatus.filter(d=>d.locked).slice(-1)[0];
     // Finance compliance
-    const finStatus=past5.map(dd=>{
+    const finStatus=past7.map(dd=>{
       const fi=sm.finSet[s.code+'_'+dd.str]||{};
       return {str:dd.str,label:dd.label,locked:fi.locked||false,at:fi.at||''};
     });
@@ -5430,124 +5883,219 @@ function renderMgrDashboard(){
 
   const loadedAgo=sm.loadedAt?Math.round((new Date()-sm.loadedAt)/1000)+'s ago':'—';
 
+  // 6-day aggregations for redesigned dashboard (units-only, no pricing)
+  const dayTotals={};
+  past7.forEach(dd=>{dayTotals[dd.str]=storeRows.reduce((a,r)=>a+(sm.soldMap[r.s.code+'_'+dd.str]||0),0);});
+  const total7dUnits=past7.reduce((a,dd)=>a+dayTotals[dd.str],0);
+  const finLockedTodayCount=storeRows.filter(r=>(sm.finSet[r.s.code+'_'+todayStr]||{}).locked).length;
+  const by7dUnits=storeRows.map(r=>{
+    const t=past7.reduce((a,dd)=>a+(sm.soldMap[r.s.code+'_'+dd.str]||0),0);
+    return Object.assign({},r,{total7d:t});
+  }).sort((a,b)=>b.total6d-a.total6d);
+
   body.innerHTML=`
-  <!-- ── KPI STRIP ─────────────────────────────────────────── -->
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px;background:#111;border-bottom:1px solid #1E1E1E;">
-    ${[
-      {label:'Locked Today',val:lockedTodayCount+' / '+allStores.length,c:lockedTodayCount===allStores.length?'#6FCF97':'#E87070',icon:'🔒'},
-      {label:'Stock Days Pending',val:totalPendingDays,c:totalPendingDays===0?'#6FCF97':totalPendingDays<5?'#C9A44E':'#E87070',icon:'⏳'},
-      {label:'Finance Pending',val:totalFinPending,c:totalFinPending===0?'#6FCF97':totalFinPending<5?'#C9A44E':'#E87070',icon:'📋'},
-      {label:'Today Total Sales',val:totalSoldToday+' units',c:'#C9A44E',icon:'📊'},
-    ].map(k=>`<div style="background:#1A1A1A;border:1px solid #222;border-radius:8px;padding:10px 12px;text-align:center;">
-      <div style="font-size:18px;margin-bottom:2px;">${k.icon}</div>
-      <div style="font-family:var(--f-mono);font-size:18px;font-weight:900;color:${k.c};">${k.val}</div>
-      <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:2px;text-transform:uppercase;letter-spacing:0.5px;">${k.label}</div>
-    </div>`).join('')}
+  <!-- ── TOP KPI STRIP — today's snapshot ─────────────────── -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 14px;background:#0D0D0D;border-bottom:1px solid #1A1A1A;">
+
+    <div style="background:#1A1A1A;border:1px solid #222;border-left:3px solid #6FCF97;border-radius:8px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:18px;">📦</div>
+        <div style="font-family:var(--f-mono);font-size:8px;color:#666;background:#222;padding:3px 7px;border-radius:5px;letter-spacing:0.5px;">TODAY</div>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:5px;">
+        <span style="font-family:var(--f-mono);font-size:26px;font-weight:900;color:#CCC;line-height:1;">${lockedTodayCount}</span>
+        <span style="font-size:14px;color:#444;font-weight:300;">/</span>
+        <span style="font-family:var(--f-mono);font-size:14px;color:#666;">${allStores.length}</span>
+      </div>
+      <div style="font-size:11px;color:#888;font-weight:700;margin-top:5px;">Stock Locked</div>
+      <div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;">
+        <span style="font-family:var(--f-mono);font-size:9px;background:#1A3A1A;color:#6FCF97;padding:3px 7px;border-radius:5px;font-weight:700;">🔒 ${lockedTodayCount}</span>
+        <span style="font-family:var(--f-mono);font-size:9px;background:#3A1A1A;color:#E87070;padding:3px 7px;border-radius:5px;font-weight:700;">🔓 ${allStores.length-lockedTodayCount}</span>
+      </div>
+    </div>
+
+    <div style="background:#1A1A1A;border:1px solid #222;border-left:3px solid #BB88DD;border-radius:8px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:18px;">💰</div>
+        <div style="font-family:var(--f-mono);font-size:8px;color:#666;background:#222;padding:3px 7px;border-radius:5px;letter-spacing:0.5px;">TODAY</div>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:5px;">
+        <span style="font-family:var(--f-mono);font-size:26px;font-weight:900;color:#CCC;line-height:1;">${finLockedTodayCount}</span>
+        <span style="font-size:14px;color:#444;font-weight:300;">/</span>
+        <span style="font-family:var(--f-mono);font-size:14px;color:#666;">${allStores.length}</span>
+      </div>
+      <div style="font-size:11px;color:#888;font-weight:700;margin-top:5px;">Finance Locked</div>
+      <div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;">
+        <span style="font-family:var(--f-mono);font-size:9px;background:#1A1A3A;color:#BB88DD;padding:3px 7px;border-radius:5px;font-weight:700;">✅ ${finLockedTodayCount}</span>
+        <span style="font-family:var(--f-mono);font-size:9px;background:#3A1A1A;color:#E87070;padding:3px 7px;border-radius:5px;font-weight:700;">📭 ${allStores.length-finLockedTodayCount}</span>
+      </div>
+    </div>
+
+    <div style="background:#1A1A1A;border:1px solid #222;border-left:3px solid #C9A44E;border-radius:8px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:18px;">📊</div>
+        <div style="font-family:var(--f-mono);font-size:8px;color:#666;background:#222;padding:3px 7px;border-radius:5px;letter-spacing:0.5px;">TODAY</div>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:5px;">
+        <span style="font-family:var(--f-mono);font-size:26px;font-weight:900;color:#C9A44E;line-height:1;">${totalSoldToday}</span>
+        <span style="font-size:11px;color:#666;font-family:var(--f-mono);">units</span>
+      </div>
+      <div style="font-size:11px;color:#888;font-weight:700;margin-top:5px;">Total Units Sold</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:7px;">All ${allStores.length} stores combined</div>
+    </div>
+
+    <div style="background:#1A1A1A;border:1px solid #222;border-left:3px solid #6FA8DC;border-radius:8px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:18px;">📅</div>
+        <div style="font-family:var(--f-mono);font-size:8px;color:#666;background:#222;padding:3px 7px;border-radius:5px;letter-spacing:0.5px;">7 DAYS</div>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:5px;">
+        <span style="font-family:var(--f-mono);font-size:26px;font-weight:900;color:#6FA8DC;line-height:1;">${total7dUnits}</span>
+        <span style="font-size:11px;color:#666;font-family:var(--f-mono);">units</span>
+      </div>
+      <div style="font-size:11px;color:#888;font-weight:700;margin-top:5px;">Total Units · 7-day</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:7px;">All stores · last 7 days</div>
+    </div>
+
   </div>
 
-  <!-- ── STOCK LOCK COMPLIANCE ──────────────────────────────── -->
+  <!-- ── WEEK AT A GLANCE — 7-day date strip ──────────────── -->
   <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <div style="font-family:var(--f-mono);font-size:10px;color:#E87070;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">⏳ Stock Lock Status — Last 6 Days</div>
-      <div style="font-family:var(--f-mono);font-size:9px;color:#333;">Data: ${loadedAgo}</div>
+    <div style="font-family:var(--f-mono);font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📅 Week at a Glance — Last 7 Days</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+      ${past7.slice().reverse().map(dd=>{
+        const total=dayTotals[dd.str];
+        const sLocked=storeRows.filter(r=>sm.lockSet[r.s.code+'_'+dd.str]).length;
+        const fLocked=storeRows.filter(r=>(sm.finSet[r.s.code+'_'+dd.str]||{}).locked).length;
+        const isToday=dd.str===todayStr;
+        const accent=isToday?'#6FA8DC':'#222';
+        const bg=isToday?'#0A1A2A':'#1A1A1A';
+        return `<a href="#stock-day-${dd.str}" onclick="event.preventDefault();const el=document.getElementById('stock-day-${dd.str}');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.boxShadow='0 0 0 2px #6FA8DC';setTimeout(()=>el.style.boxShadow='',1500);}" style="background:${bg};border:1px solid ${accent};border-radius:7px;padding:8px 4px;text-align:center;cursor:pointer;text-decoration:none;display:block;min-height:62px;">
+          <div style="font-family:var(--f-mono);font-size:9px;color:${isToday?'#6FA8DC':'#666'};font-weight:700;letter-spacing:0.3px;text-transform:uppercase;">${isToday?'TODAY':dd.label}</div>
+          <div style="font-family:var(--f-mono);font-size:14px;font-weight:900;color:#C9A44E;margin-top:3px;">${total}u</div>
+          <div style="display:flex;justify-content:center;gap:3px;margin-top:4px;">
+            <span style="font-family:var(--f-mono);font-size:8px;color:${sLocked===allStores.length?'#6FCF97':'#888'};">📦${sLocked}</span>
+            <span style="font-family:var(--f-mono);font-size:8px;color:${fLocked===allStores.length?'#BB88DD':'#888'};">💰${fLocked}</span>
+          </div>
+        </a>`;
+      }).join('')}
     </div>
-    <!-- Header row: dates -->
-    <div style="display:grid;grid-template-columns:1fr repeat(6,36px);gap:3px;margin-bottom:4px;padding:0 2px;">
-      <div style="font-size:9px;color:#444;font-family:var(--f-mono);">STORE</div>
-      ${past5.map(dd=>`<div style="font-size:8px;color:#555;font-family:var(--f-mono);text-align:center;line-height:1.2;">${dd.label}</div>`).join('')}
+    <div style="margin-top:8px;display:flex;gap:14px;font-family:var(--f-mono);font-size:9px;color:#555;justify-content:center;">
+      <span>📦 stock locked / ${allStores.length}</span>
+      <span>💰 finance locked / ${allStores.length}</span>
+      <span style="color:#6FA8DC">━━ Today</span>
     </div>
-    ${byPending.map(r=>{
-      const pending=r.pendingDays.length;
-      const rowColor=pending===0?'#222':pending<=2?'#2A1A00':'#2A0808';
-      const badgeColor=pending===0?'#6FCF97':pending<=2?'#C9A44E':'#E87070';
-      return `<div style="display:grid;grid-template-columns:1fr repeat(6,36px);gap:3px;margin-bottom:3px;background:${rowColor};border-radius:6px;padding:5px 6px;border:1px solid ${pending>0?badgeColor+'33':'#1E1E1E'};">
-        <div style="min-width:0;">
-          <div style="font-size:10px;font-weight:700;color:#CCC;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.s.name}</div>
-          <div style="font-size:8px;color:#555;font-family:var(--f-mono);">${r.s.city}${pending>0?` · <span style="color:${badgeColor};">${pending} day${pending>1?'s':''} open</span>`:' · ✓ all locked'}</div>
+  </div>
+
+  <!-- ── SECTION 1: STOCK STATUS — last 7 days ────────────── -->
+  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
+      <div style="font-family:var(--f-mono);font-size:11px;color:#C9A44E;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">📦 Stock Status — Last 7 Days</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:#555;">Tap any chip → switch to that store</div>
+    </div>
+    ${past7.slice().reverse().map(dd=>{
+      const total=dayTotals[dd.str];
+      const locked=storeRows.filter(r=>sm.lockSet[r.s.code+'_'+dd.str]);
+      const open=storeRows.filter(r=>!sm.lockSet[r.s.code+'_'+dd.str]);
+      const isToday=dd.str===todayStr;
+      return `<div id="stock-day-${dd.str}" style="background:#1A1A1A;border:1px solid #222;border-radius:8px;padding:12px;margin-bottom:10px;transition:box-shadow 0.3s;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#CCC;">${dd.label}${isToday?' <span style=\'background:#1A2A3A;color:#6FA8DC;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;letter-spacing:0.5px;margin-left:4px;\'>TODAY</span>':''}</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:2px;">${dd.str}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:var(--f-mono);font-size:16px;font-weight:900;color:#C9A44E;background:#2A1F00;padding:5px 12px;border-radius:8px;display:inline-block;border:1px solid #3A2F00;">${total}u</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:3px;letter-spacing:0.3px;">UNITS · ALL STORES</div>
+          </div>
         </div>
-        ${r.lockStatus.map(d=>{
-          if(!d.hasSales) return `<div style="background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#2A2A2A;">—</div>`;
-          if(d.locked) return `<div title="Locked by ${d.lockedBy}" style="background:#1A3A1A;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;">🔒</div>`;
-          return `<div style="background:#3A0808;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;border:1px solid #E87070;">🔴</div>`;
-        }).join('')}
+        <div style="margin-bottom:10px;">
+          <div style="font-family:var(--f-mono);font-size:9px;color:#666;font-weight:700;margin-bottom:6px;letter-spacing:0.5px;">🔒 LOCKED (${locked.length}/${allStores.length})</div>
+          ${locked.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${locked.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#1A3A1A;color:#6FCF97;border:1px solid #2A5A2A;border-radius:7px;padding:8px 11px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>🔒 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#444;font-style:italic;padding:8px 10px;background:#0D0D0D;border:1px dashed #2A2A2A;border-radius:6px;\'>No stores locked yet</div>`}
+        </div>
+        <div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:#666;font-weight:700;margin-bottom:6px;letter-spacing:0.5px;">🔓 NOT LOCKED (${open.length}/${allStores.length})</div>
+          ${open.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${open.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#3A1A1A;color:#E87070;border:1px solid #5A2A2A;border-radius:7px;padding:8px 11px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>🔓 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#6FCF97;padding:8px 10px;background:#1A2A1A;border:1px solid #2A5A2A;border-radius:6px;font-weight:700;\'>✓ All ${allStores.length} stores locked</div>`}
+        </div>
       </div>`;
     }).join('')}
-    <div style="margin-top:8px;display:flex;gap:12px;font-size:9px;font-family:var(--f-mono);color:#444;">
-      <span>🔒 Locked</span><span>🔴 Pending</span><span style="color:#2A2A2A;">— No sales</span>
-    </div>
   </div>
 
-  <!-- ── FINANCE LOCK COMPLIANCE ────────────────────────────── -->
+  <!-- ── SECTION 2: FINANCE STATUS — last 6 days ──────────── -->
   <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
-    <div style="font-family:var(--f-mono);font-size:10px;color:#BB88DD;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📋 Finance Lock Status — Last 6 Days</div>
-    <!-- Header row: dates -->
-    <div style="display:grid;grid-template-columns:1fr repeat(6,36px);gap:3px;margin-bottom:4px;padding:0 2px;">
-      <div style="font-size:9px;color:#444;font-family:var(--f-mono);">STORE</div>
-      ${past5.map(dd=>`<div style="font-size:8px;color:#555;font-family:var(--f-mono);text-align:center;line-height:1.2;">${dd.label}</div>`).join('')}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
+      <div style="font-family:var(--f-mono);font-size:11px;color:#BB88DD;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">💰 Finance Status — Last 7 Days</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:#555;">Tap any chip → switch to that store</div>
     </div>
-    ${byFinPending.map(r=>{
-      const pending=r.finPending.length;
-      const rowColor=pending===0?'#222':pending<=2?'#1A0A2A':'#20082A';
-      const badgeColor=pending===0?'#6FCF97':pending<=2?'#BB88DD':'#E87070';
-      return `<div style="display:grid;grid-template-columns:1fr repeat(6,36px);gap:3px;margin-bottom:3px;background:${rowColor};border-radius:6px;padding:5px 6px;border:1px solid ${pending>0?badgeColor+'33':'#1E1E1E'};">
-        <div style="min-width:0;">
-          <div style="font-size:10px;font-weight:700;color:#CCC;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.s.name}</div>
-          <div style="font-size:8px;color:#555;font-family:var(--f-mono);">${pending>0?`<span style="color:${badgeColor};">${pending} day${pending>1?'s':''} pending</span>`:' ✓ finance current'}</div>
+    ${past7.slice().reverse().map(dd=>{
+      const locked=storeRows.filter(r=>(sm.finSet[r.s.code+'_'+dd.str]||{}).locked);
+      const open=storeRows.filter(r=>!(sm.finSet[r.s.code+'_'+dd.str]||{}).locked);
+      const isToday=dd.str===todayStr;
+      return `<div style="background:#1A1A1A;border:1px solid #222;border-radius:8px;padding:12px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#CCC;">${dd.label}${isToday?' <span style=\'background:#1A2A3A;color:#6FA8DC;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;letter-spacing:0.5px;margin-left:4px;\'>TODAY</span>':''}</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:2px;">${dd.str}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:var(--f-mono);font-size:14px;font-weight:900;color:#BB88DD;background:#2A1A35;padding:5px 12px;border-radius:8px;display:inline-block;border:1px solid #3A2A45;">${locked.length}/${allStores.length} ✓</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:3px;letter-spacing:0.3px;">FINANCE SUBMITTED</div>
+          </div>
         </div>
-        ${r.finStatus.map(d=>{
-          if(d.locked) return `<div title="Locked ${d.at}" style="background:#1A1A3A;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;">✅</div>`;
-          return `<div style="background:#2A1030;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;border:1px solid #BB88DD55;">📭</div>`;
-        }).join('')}
+        <div style="margin-bottom:10px;">
+          <div style="font-family:var(--f-mono);font-size:9px;color:#666;font-weight:700;margin-bottom:6px;letter-spacing:0.5px;">✅ FINANCE LOCKED (${locked.length}/${allStores.length})</div>
+          ${locked.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${locked.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#1A1A3A;color:#BB88DD;border:1px solid #2A2A5A;border-radius:7px;padding:8px 11px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>✅ ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#444;font-style:italic;padding:8px 10px;background:#0D0D0D;border:1px dashed #2A2A2A;border-radius:6px;\'>No finance submitted yet</div>`}
+        </div>
+        <div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:#666;font-weight:700;margin-bottom:6px;letter-spacing:0.5px;">📭 PENDING (${open.length}/${allStores.length})</div>
+          ${open.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${open.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#3A1A1A;color:#E87070;border:1px solid #5A2A2A;border-radius:7px;padding:8px 11px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>📭 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#6FCF97;padding:8px 10px;background:#1A2A1A;border:1px solid #2A5A2A;border-radius:6px;font-weight:700;\'>✓ All ${allStores.length} stores submitted</div>`}
+        </div>
       </div>`;
     }).join('')}
-    <div style="margin-top:8px;display:flex;gap:12px;font-size:9px;font-family:var(--f-mono);color:#444;">
-      <span>✅ Finance Locked</span><span>📭 Pending / Not submitted</span>
-    </div>
   </div>
 
-  <!-- ── MGR EXPORT PANEL ───────────────────────────────────── -->
+  <!-- ── SECTION 3: STORE RANKINGS — by 6-day units ───────── -->
+  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
+      <div style="font-family:var(--f-mono);font-size:11px;color:#C9A44E;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">🏆 Store Rankings — Last 7 Days</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:#555;">By total units sold · Tap to open</div>
+    </div>
+    ${by7dUnits.slice(0,10).map((r,i)=>{
+      const medalClr=i===0?'#E8C97A':i===1?'#C0C0C0':i===2?'#CD7F32':null;
+      return `<div onclick="mgrJumpToStoreDate('${r.s.code}','${todayStr}')" style="background:#1A1A1A;border:1px solid #222;${medalClr?'border-left:3px solid '+medalClr+';':''}border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;">
+        <div style="background:${medalClr?'linear-gradient(135deg,'+medalClr+'77,'+medalClr+'33)':'#222'};color:${medalClr||'#888'};border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:13px;font-weight:900;border:1px solid ${medalClr?medalClr+'55':'#333'};">#${i+1}</div>
+        <div style="min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:#CCC;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.s.name}</div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:2px;">${r.s.code} · ${r.s.city}${r.s.region?' · '+r.s.region:''}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--f-mono);font-size:16px;font-weight:900;color:#C9A44E;">${r.total7d}u</div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:#555;letter-spacing:0.3px;">7-DAY</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <!-- ── KEPT: Manager Exports ──────────────────────────────── -->
   <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
     <div style="font-family:var(--f-mono);font-size:10px;color:#6FA8DC;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📥 Manager Exports — No Lock Required</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
       <button onclick="mgrExportAllStocksCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
-        📊 All Stores Stock CSV<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">Today · All 27 stores</div>
+        📊 All Stores Stock CSV<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">Today · All ${allStores.length} stores</div>
       </button>
       <button onclick="mgrExportLockReportCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
-        🔒 Lock Status Report<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 6 days</div>
+        🔒 Lock Status Report<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 7 days</div>
       </button>
       <button onclick="mgrExportFinanceReportCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
-        💰 Finance Status Report<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 6 days</div>
+        💰 Finance Status Report<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 7 days</div>
       </button>
       <button onclick="mgrExportSalesSummaryCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
-        📈 Sales Summary CSV<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 6 days</div>
+        📈 Sales Summary CSV<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 7 days</div>
       </button>
     </div>
   </div>
 
-  <!-- ── TODAY PERFORMANCE BAR CHART ───────────────────────── -->
-  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
-    <div style="font-family:var(--f-mono);font-size:10px;color:#C9A44E;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📊 Today's Sales by Store</div>
-    ${byTodaySales.filter(r=>r.todaySold>0||r.todayLocked).map(r=>{
-      const pct=totalSoldToday>0?Math.round((r.todaySold/totalSoldToday)*100):0;
-      const maxSold=byTodaySales[0]?.todaySold||1;
-      const barW=maxSold>0?Math.round((r.todaySold/maxSold)*100):0;
-      return `<div style="margin-bottom:8px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
-          <div style="font-size:11px;font-weight:600;color:#CCC;">${r.s.name}</div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            ${r.todayLocked?`<span style="font-size:9px;color:#6FCF97;font-family:var(--f-mono);">🔒</span>`:'<span style="font-size:9px;color:#E87070;font-family:var(--f-mono);">OPEN</span>'}
-            <span style="font-family:var(--f-mono);font-size:12px;font-weight:800;color:#C9A44E;">${r.todaySold}</span>
-          </div>
-        </div>
-        <div style="height:8px;background:#1A1A1A;border-radius:4px;overflow:hidden;">
-          <div style="height:100%;background:linear-gradient(90deg,#C9A44E,#E8C97A);width:${barW}%;border-radius:4px;"></div>
-        </div>
-        <div style="font-size:9px;color:#444;margin-top:2px;font-family:var(--f-mono);">${r.s.city} · ${pct}% of today's total</div>
-      </div>`;
-    }).join('')||'<div style="color:#333;font-family:var(--f-mono);font-size:11px;text-align:center;padding:20px;">No sales data today yet</div>'}
-  </div>
-
-  <!-- ── STORE SELECTOR FOR EDITING ────────────────────────── -->
+  <!-- ── KEPT: Store Selector ───────────────────────────────── -->
   <div style="padding:12px 14px;background:#0D0D0D;">
     <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">View / Edit a Specific Store — Full Access, No Lock Restrictions</div>
     <div style="display:flex;gap:8px;">
@@ -5558,6 +6106,11 @@ function renderMgrDashboard(){
         Open →
       </button>
     </div>
+  </div>
+
+  <!-- ── Footer with data freshness ─────────────────────────── -->
+  <div style="padding:8px 14px;background:#0A0A0A;text-align:center;font-family:var(--f-mono);font-size:9px;color:#444;">
+    Data refreshed: ${loadedAgo} · Total 7-day units: ${total7dUnits} across ${allStores.length} stores
   </div>`;
   } catch(e) {
     console.error('Manager dashboard error:', e);
@@ -5672,6 +6225,31 @@ function mgrExportSalesSummaryCSV(){
   rows.push(totRow);
   downloadCSV('EP_SalesSummary_'+_localDateStr(new Date())+'.csv',rows);
   toast('📥 Sales Summary downloaded');
+}
+
+// Jump from a chip / ranking row to a specific store/date — OPENS IN NEW TAB.
+// iPad-friendly: keeps the manager dashboard open in the original tab.
+// URL hash carries store+date for visibility (manager logs in with PIN as usual).
+function mgrJumpToStoreDate(code, dateStr){
+  const store=STORES.find(s=>s.code===code);
+  if(!store) return;
+  const base='https://vinayak682.github.io/emirates-pride-inventory-management/stock-register.html';
+  const url=base+'#'+code+'/'+dateStr;
+  // window.open with noopener — opens in a new tab on iPad/desktop browsers
+  const w=window.open(url,'_blank','noopener');
+  if(!w){
+    // Popup blocked — fall back to in-place jump
+    isMgrSession=true; me=store;
+    _sbLoad(store.code).then(()=>{
+      buildGrid(); buildDayTabs(); buildFooter();
+      closeMgrDashboard();
+      const topEl=document.getElementById('topStore');
+      if(topEl) topEl.textContent=store.name+' ← MGR';
+      toast('📋 '+store.name+' · '+dateStr+' — Full access');
+    });
+  } else {
+    toast('🪟 '+store.name+' opened in new tab');
+  }
 }
 
 function mgrSwitchToStore(){
@@ -6663,18 +7241,19 @@ function _expStockDayCSV(date){
   if(db._lockNames?.[me.code+'_'+di]) rows.push(['Locked By:','',db._lockNames[me.code+'_'+di].name]);
   rows.push(['Generated:','',new Date().toLocaleString('en-GB')]);
   rows.push([]);
-  rows.push(['SKU Code','Product Name','Opening','WH In','Store In','Sales','Sent Out','Balance']);
-  let tO=0,tW=0,tI=0,tS=0,tT=0,tB=0;
+  rows.push(['SKU Code','Product Name','Opening','WH In','Store In','Sales','Sent Out','Return to WH','Balance']);
+  let tO=0,tW=0,tI=0,tS=0,tT=0,tR=0,tB=0;
   PRODUCTS.forEach(p=>{
-    if(di<0||di>=DAY_WINDOW){ rows.push([p.code,p.en,'-','-','-','-','-','-']); return; }
+    if(di<0||di>=DAY_WINDOW){ rows.push([p.code,p.en,'-','-','-','-','-','-','-']); return; }
     const o=dbGet(me.code,di,p.code,'open'),w=dbGet(me.code,di,p.code,'wh'),
           i=dbGet(me.code,di,p.code,'inn'),s=dbGet(me.code,di,p.code,'sold'),
-          t=dbGet(me.code,di,p.code,'trf'),b=Math.max(0,o+w+i-s-t);
-    tO+=o;tW+=w;tI+=i;tS+=s;tT+=t;tB+=b;
-    rows.push([p.code,p.en,o||'',w||'',i||'',s||'',t||'',b]);
+          t=dbGet(me.code,di,p.code,'trf'),r=dbGet(me.code,di,p.code,'wrh'),
+          b=Math.max(0,o+w+i-s-t-r);
+    tO+=o;tW+=w;tI+=i;tS+=s;tT+=t;tR+=r;tB+=b;
+    rows.push([p.code,p.en,o||'',w||'',i||'',s||'',t||'',r||'',b]);
   });
   rows.push([]);
-  rows.push(['','TOTALS',tO,tW,tI,tS,tT,tB]);
+  rows.push(['','TOTALS',tO,tW,tI,tS,tT,tR,tB]);
   _downloadCSV(rows,'Stock_'+me.code+'_'+_dateStr(date)+'.csv');
 }
 
@@ -6770,7 +7349,7 @@ function _expStockRangeCSV(from,to){
   rows.push([me.name,_fmtDateShort(from)+' to '+_fmtDateShort(to)]);
   rows.push(['Generated:',new Date().toLocaleString('en-GB')]);
   rows.push([]);
-  rows.push(['Date','Day','SKU','Product','Opening','WH In','Store In','Sales','Sent Out','Balance','Locked']);
+  rows.push(['Date','Day','SKU','Product','Opening','WH In','Store In','Sales','Sent Out','Return to WH','Balance','Locked']);
   const cur=new Date(from); cur.setHours(0,0,0,0);
   while(cur<=to){
     const di=_dateToIdx(new Date(cur));
@@ -6781,9 +7360,10 @@ function _expStockRangeCSV(from,to){
       PRODUCTS.forEach(p=>{
         const o=dbGet(me.code,di,p.code,'open'),w=dbGet(me.code,di,p.code,'wh'),
               i=dbGet(me.code,di,p.code,'inn'),s=dbGet(me.code,di,p.code,'sold'),
-              t=dbGet(me.code,di,p.code,'trf'),b=Math.max(0,o+w+i-s-t);
-        if(o||w||i||s||t)
-          rows.push([_dateStr(cur),dl.full+' '+dl.date,p.code,p.en,o,w,i,s,t,b,locked?(lockInfo?lockInfo.name:'Yes'):'No']);
+              t=dbGet(me.code,di,p.code,'trf'),r=dbGet(me.code,di,p.code,'wrh'),
+              b=Math.max(0,o+w+i-s-t-r);
+        if(o||w||i||s||t||r)
+          rows.push([_dateStr(cur),dl.full+' '+dl.date,p.code,p.en,o,w,i,s,t,r,b,locked?(lockInfo?lockInfo.name:'Yes'):'No']);
       });
     }
     cur.setDate(cur.getDate()+1);
@@ -7237,7 +7817,7 @@ async function _sbLoad(store) {
       if (di < 0 || di >= DAY_WINDOW) return;
       if (!db[store][di]) db[store][di] = {};
       if (!db[store][di][c.prod_code])
-        db[store][di][c.prod_code] = {open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+        db[store][di][c.prod_code] = {open:0,wh:0,inn:0,sold:0,trf:0,wrh:0,locked:false};
       db[store][di][c.prod_code][c.field] = c.value;
       if (c.locked) db[store][di][c.prod_code].locked = true;
     });
@@ -7318,7 +7898,7 @@ function _sbSubscribe(store) {
       if (!db[store]) db[store] = {};
       if (!db[store][di]) db[store][di] = {};
       if (!db[store][di][c.prod_code])
-        db[store][di][c.prod_code] = {open:0,wh:0,inn:0,sold:0,trf:0,locked:false};
+        db[store][di][c.prod_code] = {open:0,wh:0,inn:0,sold:0,trf:0,wrh:0,locked:false};
       db[store][di][c.prod_code][c.field] = c.value;
       if (c.locked) db[store][di][c.prod_code].locked = true;
       saveDB();
@@ -7432,7 +8012,7 @@ function _countLocalCells(store) {
     Object.keys(db[store][d]).forEach(prod => {
       const cell = db[store][d][prod];
       if (!cell) return;
-      ['open','wh','inn','sold','trf'].forEach(f => {
+      ['open','wh','inn','sold','trf','wrh'].forEach(f => {
         if ((cell[f]||0) > 0) count++;
       });
     });
@@ -7459,7 +8039,7 @@ async function _uploadLocalData(store, setMsg) {
     Object.keys(db[store][d]).forEach(prod => {
       const cell = db[store][d][prod];
       if (!cell) return;
-      ['open','wh','inn','sold','trf'].forEach(f => {
+      ['open','wh','inn','sold','trf','wrh'].forEach(f => {
         if ((cell[f]||0) > 0) {
           allWrites.push({ store:store, date:dayDate, prod:prod, field:f, value:cell[f], by:by });
         }
@@ -7722,6 +8302,349 @@ function _addManualSyncBtn(store) {
 }
 // END SYNC ENGINE v4
 // ════════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
+// TESTER GRID — v3: frozen totals + opening creates bottles + lock carry-forward
+// Data model: db.testerBottles[storeCode][skuCode] = [
+//   { id, receivedDate, openedDate, status:'sealed'|'full'|'half'|'empty', returnedDate }
+// ]
+// ════════════════════════════════════════════════════════════════
+
+function _tbStore(){
+  if(!db.testerBottles) db.testerBottles={};
+  if(!db.testerBottles[me.code]) db.testerBottles[me.code]={};
+  return db.testerBottles[me.code];
+}
+
+function _tbGetBottles(skuCode){
+  var s=_tbStore();
+  if(!s[skuCode]) s[skuCode]=[];
+  return s[skuCode];
+}
+
+// Create sealed bottle records from Opening or Received entry
+function _tbSyncBottles(skuCode, field){
+  var bottles=_tbGetBottles(skuCode);
+  var today=_localDateStr(new Date());
+  var val=dbGet(me.code,curDay,skuCode,field)||0;
+  // Tag: 'open' entries get source='open', 'wh' entries get source='wh'
+  var src=field==='open'?'open':'wh';
+  var existing=bottles.filter(function(b){return b.receivedDate===today&&b.source===src&&b.status==='sealed';}).length;
+  var toAdd=Math.max(0,val-existing);
+  for(var i=0;i<toAdd;i++){
+    bottles.push({
+      id:Date.now()+Math.floor(Math.random()*99999)+i,
+      receivedDate:today,
+      openedDate:null,
+      status:'sealed',
+      returnedDate:null,
+      source:src
+    });
+  }
+  // If value decreased, remove excess sealed bottles of this source
+  var excess=existing-val;
+  if(excess>0){
+    var removed=0;
+    bottles=bottles.filter(function(b){
+      if(removed<excess&&b.receivedDate===today&&b.source===src&&b.status==='sealed'){
+        removed++; return false;
+      }
+      return true;
+    });
+    _tbStore()[skuCode]=bottles;
+  }
+  saveDB();
+}
+
+// Called by lock system — carry closing balance → next day opening
+function _tbCarryForward(storeCode){
+  var store=db.testerBottles&&db.testerBottles[storeCode];
+  if(!store) return;
+  var nextDayIdx=curDay+1;
+  var nextDate=_idx2date(nextDayIdx);
+  CATS.forEach(function(cat){
+    cat.products.filter(function(p){return p.isTester;}).forEach(function(p){
+      var bottles=store[p.code]||[];
+      var topen  = dbGet(storeCode,curDay,p.code,'open')||0;
+      var trec   = dbGet(storeCode,curDay,p.code,'wh')||0;
+      var tuse   = bottles.filter(function(b){return b.status==='full'||b.status==='half';}).length;
+      var treturn= bottles.filter(function(b){return b.status==='empty';}).length;
+      var closing= Math.max(0, topen+trec-tuse-treturn);
+      // Set next day opening
+      dbSet(storeCode,nextDayIdx,p.code,'open',closing);
+    });
+  });
+}
+
+function _tbSingleBar(status, bottleNum, skuCode, bottleId, canEdit){
+  var pct={full:100,half:50,empty:0,sealed:0}[status]||0;
+  var col=status==='full'?'#6FCF97':status==='half'?'#F2C94C':status==='empty'?'#EB5757':'#3A3A3A';
+  var label={full:'Full',half:'Half',empty:'Empty',sealed:'Sealed'}[status]||'--';
+  var tapable=(status==='full'||status==='half')&&canEdit;
+  var divOpen=tapable
+    ? '<div onclick="_tbCycleStatus(\''+skuCode+'\','+bottleId+')" style="display:inline-block;margin:2px 3px;vertical-align:top;min-width:52px;text-align:center;cursor:pointer;" title="Tap to update">'
+    : '<div style="display:inline-block;margin:2px 3px;vertical-align:top;min-width:52px;text-align:center;cursor:default;">';
+  return divOpen
+    +'<div style="font-family:var(--f-mono);font-size:8px;color:#555;margin-bottom:2px;font-weight:700;">#'+bottleNum+'</div>'
+    +'<div style="height:10px;width:52px;background:#111;border-radius:5px;overflow:hidden;border:1px solid #2A2A2A;">'
+    +'<div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:5px;transition:width 0.3s;"></div>'
+    +'</div>'
+    +'<div style="font-family:var(--f-mono);font-size:8px;color:'+col+';margin-top:2px;font-weight:700;">'+label+'</div>'
+    +(tapable?'<div style="font-family:var(--f-mono);font-size:7px;color:#444;margin-top:1px;">tap &#8635;</div>':'')
+    +'</div>';
+}
+
+function _tbStatusBars(skuCode, canEdit){
+  var bottles=_tbGetBottles(skuCode);
+  var active=bottles.filter(function(b){return b.status!=='sealed';});
+  if(!active.length){
+    return '<span style="font-family:var(--f-mono);font-size:9px;color:#333;">No open bottles</span>';
+  }
+  var html='<div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:2px;padding:4px 2px;">';
+  active.forEach(function(b,i){
+    html+=_tbSingleBar(b.status,i+1,skuCode,b.id,canEdit);
+  });
+  html+='</div>';
+  return html;
+}
+
+function _tbCycleStatus(skuCode, bottleId){
+  var bottles=_tbGetBottles(skuCode);
+  var b=bottles.find(function(x){return x.id===bottleId;});
+  if(!b||b.status==='sealed') return;
+  var prev=b.status;
+  var cycle={full:'half',half:'empty',empty:'full'};
+  b.status=cycle[b.status]||'full';
+  if(b.status==='empty'&&prev!=='empty'){
+    b.returnedDate=_localDateStr(new Date());
+    var baseCode=skuCode.replace(/-T$/,'');
+    var curTrf=dbGet(me.code,curDay,baseCode,'trf')||0;
+    dbSet(me.code,curDay,baseCode,'trf',curTrf+1);
+    toast('Bottle empty — 1 added to Transfer Out');
+  } else if(b.status!=='empty'&&prev==='empty'){
+    b.returnedDate=null;
+    var baseCode2=skuCode.replace(/-T$/,'');
+    var curTrf2=dbGet(me.code,curDay,baseCode2,'trf')||0;
+    dbSet(me.code,curDay,baseCode2,'trf',Math.max(0,curTrf2-1));
+  } else {
+    toast('Status: '+({full:'Full',half:'Half Used',empty:'Empty'}[b.status]||b.status));
+  }
+  saveDB();
+  buildTesterGrid();
+}
+
+function _tbOpenBottle(skuCode, bottleId){
+  var bottles=_tbGetBottles(skuCode);
+  var b=bottles.find(function(x){return x.id===bottleId;});
+  if(!b||b.status!=='sealed') return;
+  b.status='full';
+  b.openedDate=_localDateStr(new Date());
+  saveDB();
+  buildTesterGrid();
+  toast('Bottle #'+(bottles.indexOf(b)+1)+' opened');
+}
+
+function buildTesterGrid(){
+  if(!me) return;
+  var head=document.getElementById('tstrGridHead');
+  var tbody=document.getElementById('tstrGridBody');
+  var totalsBar=document.getElementById('tstrTotalsBar');
+  if(!head||!tbody) return;
+
+  var locked=isLocked(me.code,curDay);
+  var mgrActive=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
+  var canEdit=!locked||mgrActive;
+
+  // ── Compute grand totals across all tester SKUs ──
+  var grandOpen=0, grandRec=0, grandUse=0, grandReturn=0, grandClose=0;
+  var today=_localDateStr(new Date());
+  CATS.forEach(function(cat){
+    cat.products.filter(function(p){return p.isTester;}).forEach(function(p){
+      _tbSyncBottles(p.code,'open');
+      _tbSyncBottles(p.code,'wh');
+      var bottles=_tbGetBottles(p.code);
+      var topen  = dbGet(me.code,curDay,p.code,'open')||0;
+      var trec   = dbGet(me.code,curDay,p.code,'wh')||0;
+      var tuse   = bottles.filter(function(b){return b.status==='full'||b.status==='half';}).length;
+      var treturn= bottles.filter(function(b){return b.status==='empty'&&b.returnedDate===today;}).length;
+      var tclos  = Math.max(0,topen+trec-tuse-treturn);
+      grandOpen+=topen; grandRec+=trec; grandUse+=tuse; grandReturn+=treturn; grandClose+=tclos;
+    });
+  });
+
+  // ── Frozen totals bar ──
+  if(totalsBar){
+    totalsBar.innerHTML=''
+      +'<div style="display:flex;align-items:center;gap:0;background:#0A0A0A;border-bottom:3px solid #3A1A6A;border-top:3px solid #3A1A6A;font-family:var(--f-mono);">'
+      +'<div style="min-width:200px;width:200px;padding:8px 14px;border-right:2px solid #3A1A6A;background:#110820;">'
+      +'<div style="font-size:9px;color:#9B6FE8;font-weight:700;letter-spacing:1px;">DAILY TOTALS</div>'
+      +'<div style="font-size:8px;color:#5A3A80;margin-top:1px;">مجموع اليوم</div>'
+      +'</div>'
+      +'<div style="flex:0 0 70px;padding:8px 4px;text-align:center;border-right:1px solid #1A1A2A;">'
+      +'<div style="font-size:8px;color:#555;margin-bottom:2px;">Opening</div>'
+      +'<div style="font-size:16px;font-weight:700;color:#6AADDC;">'+( grandOpen||'&mdash;')+'</div>'
+      +'</div>'
+      +'<div style="flex:0 0 70px;padding:8px 4px;text-align:center;border-right:1px solid #1A1A2A;">'
+      +'<div style="font-size:8px;color:#3A7A3A;margin-bottom:2px;">Received</div>'
+      +'<div style="font-size:16px;font-weight:700;color:#6FCF97;">'+( grandRec||'&mdash;')+'</div>'
+      +'</div>'
+      +'<div style="flex:0 0 70px;padding:8px 4px;text-align:center;border-right:1px solid #1A1A2A;background:#1A0808;">'
+      +'<div style="font-size:8px;color:#7A3A3A;margin-bottom:2px;">In Use</div>'
+      +'<div style="font-size:20px;font-weight:700;color:#EB8C8C;">'+grandUse+'</div>'
+      +'</div>'
+      +'<div style="flex:1;padding:8px 16px;border-right:1px solid #1A1A2A;">'
+      +'<div style="font-size:8px;color:#5A3A80;margin-bottom:4px;">Status Summary</div>'
+      +'<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">'
+      +'<span style="font-size:11px;color:#6FCF97;font-weight:700;">🟢 '+_tbCountByStatus('full')+' Full</span>'
+      +'<span style="font-size:11px;color:#F2C94C;font-weight:700;">🟡 '+_tbCountByStatus('half')+' Half</span>'
+      +'<span style="font-size:11px;color:#EB5757;font-weight:700;">🔴 '+_tbCountByStatus('empty')+' Empty</span>'
+      +'<span style="font-size:11px;color:#6AADDC;font-weight:700;">📦 '+_tbCountByStatus('sealed')+' Sealed</span>'
+      +'</div>'
+      +'</div>'
+      +'<div style="flex:0 0 70px;padding:8px 4px;text-align:center;border-right:1px solid #1A1A2A;">'
+      +'<div style="font-size:8px;color:#7A4A00;margin-bottom:2px;">Returned</div>'
+      +'<div style="font-size:16px;font-weight:700;color:#F2994A;">'+( grandReturn||'&mdash;')+'</div>'
+      +'</div>'
+      +'<div style="flex:0 0 70px;padding:8px 4px;text-align:center;">'
+      +'<div style="font-size:8px;color:#555;margin-bottom:2px;">Closing</div>'
+      +'<div style="font-size:16px;font-weight:700;color:#CCC;">'+( grandClose||'&mdash;')+'</div>'
+      +'</div>'
+      +'</div>';
+  }
+
+  // ── Header ──
+  head.innerHTML=''
+    +'<tr class="hdr-group">'
+    +'<th class="prod-th" rowspan="2" style="background:#110820;min-width:200px;width:200px;max-width:200px;border-right:2px solid #3A1A6A;">'
+    +'<div style="font-family:var(--f-mono);font-size:9px;font-weight:700;color:#9B6FE8;letter-spacing:1px;">TESTER BARCODE</div>'
+    +'<div style="font-family:var(--f-mono);font-size:9px;color:#5A3A80;margin-top:2px;">باركود التيستر</div>'
+    +'</th>'
+    +'<th rowspan="2" style="background:#0E1620;border-bottom:2px solid #2A5A8A;min-width:70px;width:70px;">'
+    +'<div class="hdr-en" style="color:#6AADDC;">OPENING</div>'
+    +'<div class="hdr-ar" style="color:#3A6A8A;">رصيد الافتتاح</div>'
+    +'<div class="hdr-sub-lbl">(A)</div>'
+    +'</th>'
+    +'<th rowspan="2" style="background:#0E200E;border-bottom:2px solid #2A7A2A;min-width:70px;width:70px;">'
+    +'<div class="hdr-en" style="color:#6FCF97;">RECEIVED</div>'
+    +'<div class="hdr-ar" style="color:#3A7A3A;">وارد من المستودع</div>'
+    +'<div class="hdr-sub-lbl">(B)</div>'
+    +'</th>'
+    +'<th rowspan="2" style="background:#200E0E;border-bottom:2px solid #8A2A2A;min-width:70px;width:70px;">'
+    +'<div class="hdr-en" style="color:#EB8C8C;">IN USE</div>'
+    +'<div class="hdr-ar" style="color:#8A3A3A;">قيد الاستخدام</div>'
+    +'<div class="hdr-sub-lbl">(C)</div>'
+    +'</th>'
+    +'<th rowspan="2" style="background:#110820;border-bottom:2px solid #5A2A9A;min-width:260px;">'
+    +'<div class="hdr-en" style="color:#9B6FE8;">STATUS — ALL BOTTLES</div>'
+    +'<div class="hdr-ar" style="color:#5A3A80;">حالة كل التيسترات</div>'
+    +'<div class="hdr-sub-lbl">(D) — Tap bar to cycle: Full &rarr; Half &rarr; Empty</div>'
+    +'</th>'
+    +'<th rowspan="2" style="background:#200E00;border-bottom:2px solid #8A4A00;min-width:70px;width:70px;">'
+    +'<div class="hdr-en" style="color:#F2994A;">RETURN WH</div>'
+    +'<div class="hdr-ar" style="color:#7A4A00;">مرتجع المستودع</div>'
+    +'<div class="hdr-sub-lbl">(E)</div>'
+    +'</th>'
+    +'<th rowspan="2" style="background:#0A0A0A;border-bottom:2px solid #4A4A4A;min-width:70px;width:70px;">'
+    +'<div class="hdr-en" style="color:#CCC;">CLOSING</div>'
+    +'<div class="hdr-ar" style="color:#666;">رصيد الإغلاق</div>'
+    +'<div class="hdr-sub-lbl">(F)</div>'
+    +'</th>'
+    +'</tr>';
+
+  tbody.innerHTML='';
+
+  CATS.forEach(function(cat){
+    var tProds=cat.products.filter(function(p){return p.isTester;});
+    if(!tProds.length) return;
+
+    var cr=document.createElement('tr');
+    cr.className='cat-sep';
+    cr.innerHTML='<td colspan="7" style="background:#110820;color:#9B6FE8;border-top:2px solid #3A1A6A;font-family:var(--f-mono);font-size:10px;font-weight:700;letter-spacing:1px;padding:6px 14px;">'+cat.cat+' &mdash; Testers</td>';
+    tbody.appendChild(cr);
+
+    tProds.forEach(function(p, ri){
+      var bottles=_tbGetBottles(p.code);
+      var topen  = dbGet(me.code,curDay,p.code,'open')||0;
+      var trec   = dbGet(me.code,curDay,p.code,'wh')||0;
+      var tuse   = bottles.filter(function(b){return b.status==='full'||b.status==='half';}).length;
+      var treturn= bottles.filter(function(b){return b.status==='empty'&&b.returnedDate===today;}).length;
+      var tclos  = Math.max(0,topen+trec-tuse-treturn);
+      var sealed = bottles.filter(function(b){return b.status==='sealed';});
+
+      var openClickAttr=canEdit
+        ? 'onclick="openNP(\''+p.code+'\',\'open\')"'
+        : 'onclick="toast(\'Day is locked\')"';
+      var recClickAttr=canEdit
+        ? 'onclick="openNP(\''+p.code+'\',\'wh\')"'
+        : 'onclick="toast(\'Day is locked\')"';
+
+      // Sealed bottle open-buttons
+      var sealedHtml='';
+      if(sealed.length){
+        sealedHtml='<div style="margin-top:5px;border-top:1px solid #2A1A4A;padding-top:5px;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;">';
+        if(canEdit){
+          sealed.forEach(function(b){
+            var bnum=bottles.indexOf(b)+1;
+            sealedHtml+='<button onclick="_tbOpenBottle(\''+p.code+'\','+b.id+')" '
+              +'style="background:#0E1A0E;border:1px solid #2A5A2A;border-radius:6px;color:#6FCF97;'
+              +'font-family:var(--f-mono);font-size:9px;font-weight:700;padding:4px 8px;cursor:pointer;white-space:nowrap;">'
+              +'&#9654; Open #'+bnum+'</button>';
+          });
+        } else {
+          sealedHtml+='<span style="font-family:var(--f-mono);font-size:8px;color:#444;">'+sealed.length+' sealed</span>';
+        }
+        sealedHtml+='</div>';
+      }
+
+      var tr=document.createElement('tr');
+      tr.className='prow'+(locked?' row-locked':'');
+      tr.style.background=ri%2===0?'#0C0618':'#100A1C';
+      tr.innerHTML=''
+        +'<td class="prod-td" style="background:#110820;border-right:2px solid #3A1A6A;">'
+        +'<div class="prod-inner"><div class="pname">'+p.en+(p.ar?'<span class="pname-ar">'+p.ar+'</span>':'')+'</div>'
+        +'<span class="pcode" style="color:#9B6FE8;">'+p.code+'</span></div></td>'
+
+        +'<td class="dcell" style="text-align:center;cursor:pointer;" '+openClickAttr+'>'
+        +'<span class="dcell-val'+(topen===0?' empty':'')+'">'+( topen||'&mdash;')+'</span></td>'
+
+        +'<td class="dcell" style="text-align:center;cursor:pointer;" '+recClickAttr+'>'
+        +'<span class="dcell-val'+(trec===0?' empty':'')+'">'+( trec||'&mdash;')+'</span></td>'
+
+        +'<td class="dcell" style="text-align:center;cursor:default;">'
+        +'<span class="dcell-val'+(tuse===0?' empty':'')+'">'+( tuse||'&mdash;')+'</span></td>'
+
+        +'<td class="dcell" style="padding:6px 8px;text-align:center;cursor:default;">'
+        +_tbStatusBars(p.code,canEdit)+sealedHtml+'</td>'
+
+        +'<td class="dcell" style="text-align:center;cursor:default;">'
+        +'<span class="dcell-val'+(treturn===0?' empty':'')+'" style="'+(treturn>0?'color:#F2994A;font-weight:700;':'')+'">'+( treturn||'&mdash;')+'</span></td>'
+
+        +'<td class="dcell" style="text-align:center;cursor:default;font-weight:700;">'
+        +'<span class="dcell-val'+(tclos===0?' empty':'')+'">'+( tclos||'&mdash;')+'</span></td>';
+
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function _tbCountByStatus(status){
+  var count=0;
+  if(!me) return 0;
+  CATS.forEach(function(cat){
+    cat.products.filter(function(p){return p.isTester;}).forEach(function(p){
+      var bottles=_tbGetBottles(p.code);
+      count+=bottles.filter(function(b){return b.status===status;}).length;
+    });
+  });
+  return count;
+}
+
+// END TESTER GRID
+// ════════════════════════════════════════════════════════════════
+
+
+
 
 </script>
 </body>
