@@ -606,12 +606,12 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* ═══════════════ DASHBOARD ═══════════════ */
 #dashPanel{
-  position:fixed;inset:0;background:#0D0D0D;z-index:850;
+  position:fixed;inset:0;background:#F5F8FF;z-index:850;
   display:none;flex-direction:column;
   font-family:var(--f-body);
 }
 .dash-topbar{
-  background:#000;border-bottom:1px solid #222;
+  background:#111;border-bottom:2px solid #1E1E1E;
   padding:0 14px;height:48px;display:flex;align-items:center;gap:10px;
   flex-shrink:0;
 }
@@ -622,22 +622,22 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* Day selector row */
 .dash-day-row{
-  background:#111;border-bottom:1px solid #222;
+  background:#FFFFFF;border-bottom:2px solid #D0D8F0;
   padding:10px 12px;display:flex;align-items:center;gap:6px;
   overflow-x:auto;scrollbar-width:none;flex-shrink:0;
 }
 .dash-day-row::-webkit-scrollbar{display:none;}
 .dd-chip{
   padding:7px 14px;border-radius:20px;font-family:var(--f-mono);font-size:11px;
-  font-weight:500;border:1px solid #2A2A2A;background:transparent;
-  color:#555;cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;
+  font-weight:500;border:1px solid #C8D4EE;background:#F0F4FF;
+  color:#6070A0;cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0;
 }
-.dd-chip.active{background:var(--gold);color:#0D0D0D;border-color:var(--gold);font-weight:700;}
-.dd-chip.has-data{border-color:#3A3A2A;color:#888;}
+.dd-chip.active{background:#1A4AAA;color:#FFFFFF;border-color:#1A4AAA;font-weight:700;}
+.dd-chip.has-data{border-color:#B0C0E0;color:#4060A0;}
 .dd-chip.locked{border-color:#1A3A1A;color:#4A8A4A;}
 
 /* Dashboard body */
-.dash-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;}
+.dash-body{flex:1;overflow-y:auto;padding:0;display:flex;flex-direction:column;gap:0;background:#F5F8FF;}
 
 /* KPI strip */
 .dash-kpi-row{
@@ -656,63 +656,65 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* Activity log */
 .dash-section-title{
-  font-family:var(--f-mono);font-size:10px;font-weight:600;color:#444;
+  font-family:var(--f-mono);font-size:10px;font-weight:800;color:#C9A44E;
   text-transform:uppercase;letter-spacing:1.2px;
-  padding:4px 0 8px;border-bottom:1px solid #1A1A1A;margin-bottom:8px;
+  padding:7px 14px;background:#111;border-bottom:1px solid #222;margin-bottom:0;
+  display:flex;align-items:center;gap:8px;
 }
-.dash-log{background:#111;border:1px solid #1E1E1E;border-radius:10px;overflow:hidden;}
+.dash-log{background:#FFFFFF;border:none;border-radius:0;overflow:hidden;}
 .dl-row{
-  display:flex;align-items:center;gap:10px;padding:10px 12px;
-  border-bottom:1px solid #181818;transition:background 0.1s;
+  display:flex;align-items:center;gap:10px;padding:11px 14px;
+  border-bottom:1px solid #E8EEFF;background:#FFFFFF;transition:background 0.1s;
 }
+.dl-row:nth-child(even){background:#F5F8FF;}
 .dl-row:last-child{border-bottom:none;}
-.dl-row:active{background:#1A1A1A;}
+.dl-row:active{background:#EEF3FF;}
 .dl-icon{
-  width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
+  width:34px;height:34px;border-radius:8px;display:flex;align-items:center;
   justify-content:center;font-size:15px;flex-shrink:0;
 }
-.dl-icon.out{background:rgba(232,112,112,0.12);}
-.dl-icon.in{background:rgba(127,200,96,0.12);}
-.dl-icon.wh{background:rgba(143,200,96,0.12);}
-.dl-icon.tr{background:rgba(201,164,78,0.10);}
-.dl-icon.lock{background:rgba(78,138,74,0.12);}
+.dl-icon.out{background:#FDECEA;border:1px solid #FADBD8;}
+.dl-icon.in{background:#EAFAF1;border:1px solid #D5F5E3;}
+.dl-icon.wh{background:#EAFAF1;border:1px solid #D5F5E3;}
+.dl-icon.tr{background:#FEF9E7;border:1px solid #FAD7A0;}
+.dl-icon.lock{background:#EBF5EB;border:1px solid #C8E6C9;}
 .dl-body{flex:1;min-width:0;}
-.dl-name{font-size:13px;font-weight:500;color:#CCC;
+.dl-name{font-size:13px;font-weight:600;color:#1A2A4A;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.dl-name-ar{font-family:var(--f-ar);font-size:11px;color:#555;direction:rtl;text-align:left;}
-.dl-meta{font-size:10px;color:#444;margin-top:2px;}
+.dl-name-ar{font-family:var(--f-ar);font-size:11px;color:#8090B0;direction:rtl;text-align:left;}
+.dl-meta{font-size:10px;color:#7080A0;margin-top:2px;}
 .dl-right{text-align:right;flex-shrink:0;}
 .dl-qty{font-family:var(--f-mono);font-size:16px;font-weight:700;}
-.dl-qty.neg{color:#E87070;}.dl-qty.pos{color:#7FC860;}.dl-qty.neu{color:var(--gold2);}
-.dl-bal{font-family:var(--f-mono);font-size:10px;color:#444;margin-top:2px;}
+.dl-qty.neg{color:#C0392B;}.dl-qty.pos{color:#1E8449;}.dl-qty.neu{color:#1A4AAA;}
+.dl-bal{font-family:var(--f-mono);font-size:10px;color:#8090B0;margin-top:2px;}
 
 /* SKU snapshot table */
 .dash-sku-table{
-  background:#111;border:1px solid #1E1E1E;border-radius:10px;overflow:hidden;
+  background:#FFFFFF;border:none;border-radius:0;overflow:hidden;
   width:100%;border-collapse:collapse;
 }
 .dash-sku-table thead th{
-  font-family:var(--f-mono);font-size:9px;font-weight:600;color:#444;
-  text-transform:uppercase;letter-spacing:0.8px;padding:8px 10px;
-  background:#0D0D0D;border-bottom:1px solid #1E1E1E;text-align:center;
+  font-family:var(--f-mono);font-size:9px;font-weight:700;color:#FFFFFF;
+  text-transform:uppercase;letter-spacing:0.8px;padding:9px 10px;
+  background:#111;border-bottom:2px solid #1E1E1E;text-align:center;
 }
-.dash-sku-table thead th:first-child{text-align:left;}
-.dash-sku-table tbody tr{border-bottom:1px solid #161616;}
+.dash-sku-table thead th:first-child{text-align:left;color:#C9A44E;}
+.dash-sku-table tbody tr{border-bottom:1px solid #E8EEFF;background:#FFFFFF;}
 .dash-sku-table tbody tr:last-child{border-bottom:none;}
-.dash-sku-table tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
-.dst-name{padding:9px 10px;}
-.dst-name-en{font-size:13px;color:#AAA;font-weight:600;}
-.dst-name-ar{font-family:var(--f-ar);font-size:12px;color:#666;direction:rtl;text-align:left;font-weight:500;}
-.dst-code{font-family:var(--f-mono);font-size:10px;color:#444;margin-top:2px;font-weight:600;letter-spacing:0.3px;}
-.dst-num{font-family:var(--f-mono);font-size:13px;font-weight:600;
+.dash-sku-table tbody tr:nth-child(even){background:#F5F8FF;}
+.dst-name{padding:10px 10px;}
+.dst-name-en{font-size:13px;color:#1A2A4A;font-weight:600;}
+.dst-name-ar{font-family:var(--f-ar);font-size:12px;color:#8090B0;direction:rtl;text-align:left;font-weight:500;}
+.dst-code{font-family:var(--f-mono);font-size:10px;color:#8090B0;margin-top:2px;font-weight:600;letter-spacing:0.3px;}
+.dst-num{font-family:var(--f-mono);font-size:13px;font-weight:700;
   padding:9px 8px;text-align:center;}
-.dst-num.zero{color:#333;}.dst-num.low{color:#E8C97A;}.dst-num.ok{color:#7FC860;}
-.dst-num.moved{color:#E87070;}.dst-num.wh{color:#8FC860;}.dst-num.inn{color:#6FA8DC;}
-.dst-num.bal-neg{color:#E87070;font-weight:800;}
+.dst-num.zero{color:#B0BAD0;}.dst-num.low{color:#D4AC0D;}.dst-num.ok{color:#1E8449;}
+.dst-num.moved{color:#C0392B;}.dst-num.wh{color:#1A7A3A;}.dst-num.inn{color:#2471A3;}
+.dst-num.bal-neg{color:#C0392B;font-weight:800;}
 
 /* Download bar */
 .dash-dl-bar{
-  background:#0D0D0D;border-top:1px solid #222;
+  background:#FFFFFF;border-top:2px solid #D0D8F0;
   padding:10px 12px;display:flex;gap:8px;flex-shrink:0;
 }
 .dl-btn{
@@ -870,17 +872,17 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 /* ── DASHBOARD TABS ── */
 .dash-tab-bar{
   display:flex;flex-shrink:0;
-  border-bottom:1px solid #1E1E1E;background:#111;
+  border-bottom:2px solid #D0D8F0;background:#FFFFFF;
 }
 .dash-tab{
   flex:1;text-align:center;padding:10px 8px;
   font-family:var(--f-mono);font-size:11px;font-weight:600;
-  color:#444;cursor:pointer;letter-spacing:0.5px;
+  color:#8090B0;cursor:pointer;letter-spacing:0.5px;
   border-bottom:2px solid transparent;transition:all 0.15s;
-  text-transform:uppercase;
+  text-transform:uppercase;background:#FFFFFF;
 }
-.dash-tab:active{background:#1A1A1A;}
-.dash-tab.active{color:var(--gold2);border-bottom:2px solid var(--gold);}
+.dash-tab:active{background:#EEF3FF;}
+.dash-tab.active{color:#1A3A7A;border-bottom:2px solid #1A4AAA;font-weight:800;}
 
 /* ── TESTER PANEL ── */
 #dashTesterPanel{background:var(--sheet);}
@@ -1094,18 +1096,18 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* ── TRACKER ── */
 .tracker-sku-header{
-  background:#111;border:1px solid #1E1E1E;border-radius:10px;
-  padding:12px 14px;margin:12px 14px;
+  background:#FFFFFF;border:none;border-bottom:2px solid #D0D8F0;
+  padding:12px 14px;margin:0;
   display:flex;align-items:center;justify-content:space-between;gap:10px;
 }
-.tracker-sku-name{font-size:14px;font-weight:700;color:#E8E0D0;}
-.tracker-sku-ar{font-family:var(--f-ar);font-size:11px;color:#555;direction:rtl;}
-.tracker-sku-code{font-family:var(--f-mono);font-size:10px;color:#444;margin-top:2px;}
-.tracker-net-badge{text-align:right;flex-shrink:0;}
+.tracker-sku-name{font-size:14px;font-weight:700;color:#1A2A4A;}
+.tracker-sku-ar{font-family:var(--f-ar);font-size:11px;color:#7080A0;direction:rtl;}
+.tracker-sku-code{color:#8090B0;font-family:var(--f-mono);font-size:10px;color:#444;margin-top:2px;}
+.tracker-net-badge{text-align:right;flex-shrink:0;background:#F0F4FF;border:1px solid #C0D0EE;border-radius:8px;padding:8px 14px;}
 .tracker-net-val{font-family:var(--f-mono);font-size:20px;font-weight:800;}
-.tracker-net-label{font-size:8px;color:#444;font-family:var(--f-mono);text-transform:uppercase;}
+.tracker-net-label{font-size:8px;color:#8090B0;font-weight:700;font-family:var(--f-mono);text-transform:uppercase;}
 
-.tracker-day-block{margin:0 14px 16px;}
+.tracker-day-block{margin:0 0 0;}
 .tracker-day-hdr{
   display:flex;align-items:center;justify-content:space-between;
   padding:7px 14px;background:#111;border-radius:6px 6px 0 0;
@@ -1141,25 +1143,27 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   font-family:var(--f-mono);font-style:italic;
 }
 .tracker-summary-strip{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
-  margin:12px 14px;padding:10px;
-  background:#0D0D0D;border:1px solid #1E1E1E;border-radius:8px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+  margin:0;padding:0;
+  background:#FFFFFF;border-bottom:2px solid #D0D8F0;
 }
-.tracker-sum-item{text-align:center;}
+.tracker-sum-item{text-align:center;padding:12px 6px;border-right:1px solid #E0E8F8;background:#FFFFFF;}
+.tracker-sum-item:last-child{border-right:none;}
 .tracker-sum-val{font-family:var(--f-mono);font-size:16px;font-weight:800;display:block;}
-.tracker-sum-label{font-size:8px;color:#444;text-transform:uppercase;letter-spacing:0.6px;margin-top:2px;}
+.tracker-sum-label{font-size:8px;color:#8090B0;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-top:3px;}
 
 /* ── DAILY VIEW improvements ── */
 .dash-day-kpi{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
-  padding:10px 14px;background:#0D0D0D;border-bottom:1px solid #1A1A1A;flex-shrink:0;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  background:#FFFFFF;border-bottom:2px solid #D0D8F0;flex-shrink:0;
 }
-.dkpi{text-align:center;padding:6px 4px;background:#111;border-radius:6px;border:1px solid #1E1E1E;}
-.dkpi-val{font-family:var(--f-mono);font-size:18px;font-weight:800;display:block;}
-.dkpi-val.sold{color:#E87070;} .dkpi-val.inn{color:#5DBEA3;}
-.dkpi-val.wh{color:#7FC860;} .dkpi-val.trf{color:#BB88DD;}
-.dkpi-val.bal{color:var(--gold2);} .dkpi-val.open{color:#6FA8DC;}
-.dkpi-label{font-size:8px;color:#444;text-transform:uppercase;font-family:var(--f-mono);margin-top:2px;letter-spacing:0.5px;}
+.dkpi{text-align:center;padding:14px 8px;background:#FFFFFF;border-right:1px solid #E0E8F8;}
+.dkpi:last-child{border-right:none;}
+.dkpi-val{font-family:var(--f-mono);font-size:22px;font-weight:800;display:block;}
+.dkpi-val.sold{color:#C0392B;} .dkpi-val.inn{color:#27AE60;}
+.dkpi-val.wh{color:#1A7A3A;} .dkpi-val.trf{color:#8E44AD;}
+.dkpi-val.bal{color:#1A4AAA;} .dkpi-val.open{color:#2471A3;}
+.dkpi-label{font-size:8px;color:#8090B0;text-transform:uppercase;font-family:var(--f-mono);margin-top:3px;letter-spacing:0.8px;font-weight:600;}
 
 
 /* ── FINANCE TAB ── */
@@ -4098,21 +4102,22 @@ function renderDash(){
 
   // ── STATUS BADGE ──
   const statusDiv = document.createElement('div');
-  statusDiv.style.cssText = 'padding:8px 14px;display:flex;align-items:center;gap:8px;';
+  statusDiv.style.cssText = 'padding:8px 14px;display:flex;align-items:center;gap:8px;background:#FFFFFF;border-bottom:1px solid #E8EEFF;';
   statusDiv.innerHTML = locked
-    ? `<span style="background:#1A3A1A;border:1px solid #2A4A2A;color:#6FCF97;font-size:11px;font-family:var(--f-mono);padding:5px 12px;border-radius:6px;">🔒 ${dl.full} ${dl.date} — Locked & Saved</span>`
-    : `<span style="background:#2A1A00;border:1px solid #3A2A00;color:#E8C97A;font-size:11px;font-family:var(--f-mono);padding:5px 12px;border-radius:6px;">⚠ ${dl.full} ${dl.date} — Not yet locked</span>`;
+    ? `<span style="background:#EBF5EB;border:1px solid #A9DFBF;color:#1A6640;font-size:11px;font-family:var(--f-mono);padding:6px 14px;border-radius:6px;font-weight:700;">🔒 ${dl.full} ${dl.date} — Locked & Saved</span>`
+    : `<span style="background:#FEF9E7;border:1px solid #FAD7A0;color:#7D6608;font-size:11px;font-family:var(--f-mono);padding:6px 14px;border-radius:6px;font-weight:700;">⚠ ${dl.full} ${dl.date} — Not yet locked</span>`;
   body.appendChild(statusDiv);
 
   // ── ACTIVITY LOG ──
   const logSection = document.createElement('div');
+  logSection.style.cssText='background:#FFFFFF;';
   const logTitle = document.createElement('div');
   logTitle.className = 'dash-section-title';
   logTitle.innerHTML = `📋 Activity Log — ${dl.full} ${dl.date} <span style="color:#444;font-size:9px;font-weight:400;">${activities.length+dayTransfers.length} events</span>`;
   logSection.appendChild(logTitle);
 
   if(!activities.length && !dayTransfers.length){
-    logSection.innerHTML += `<div class="dash-empty"><span class="dash-empty-icon">📭</span><div style="color:#333;font-size:13px;">No activity recorded for ${dl.full} ${dl.date}</div></div>`;
+    logSection.innerHTML += `<div class="dash-empty"><span class="dash-empty-icon">📭</span><div style="color:#7090B0;font-size:13px;">No activity recorded for ${dl.full} ${dl.date}</div></div>`;
   } else {
     const logDiv = document.createElement('div');
     logDiv.className = 'dash-log';
@@ -4194,6 +4199,7 @@ function renderDash(){
 
   if(snapshotProds.length>0){
     const snapSection = document.createElement('div');
+    snapSection.style.cssText='background:#FFFFFF;';
     const activeCount = activeProds.length;
     snapSection.innerHTML = `<div class="dash-section-title">📦 SKU Snapshot — ${snapshotProds.length} products <span style="color:#444;font-size:9px;font-weight:400;">${activeCount} with movement today</span></div>`;
 
@@ -4220,12 +4226,12 @@ function renderDash(){
       const bCls=b<0?'bal-neg':b===0?'zero':b<=3?'low':'ok';
       const hasMove=(w>0||i>0||s>0||t>0);
       const tr=document.createElement('tr');
-      if(hasMove) tr.style.borderLeft='2px solid #2A4A2A';
+      if(hasMove) tr.style.borderLeft='3px solid #2471A3';
       tr.innerHTML=`
         <td class="dst-name">
           <div class="dst-name-en">${p.en}</div>
           ${p.ar?`<div class="dst-name-ar">${p.ar}</div>`:''}
-          <div class="dst-code">${p.code}${hasMove?' <span style="color:#4A8A4A;font-size:7px;">● MOVED</span>':''}</div>
+          <div class="dst-code">${p.code}${hasMove?' <span style="background:#E8F4FC;color:#2471A3;font-size:7px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:3px;">MOVED</span>':''}</div>
         </td>
         <td class="dst-num" style="color:#6FA8DC;">${o||'—'}</td>
         <td class="dst-num wh">${w||'—'}</td>
@@ -4238,7 +4244,7 @@ function renderDash(){
 
     // Totals row
     const totRow=document.createElement('tr');
-    totRow.style.cssText='background:#1A1A1A;font-weight:700;border-top:2px solid #333;';
+    totRow.style.cssText='background:#EEF3FF;font-weight:700;border-top:2px solid #C0D0EE;';
     const tO2=snapshotProds.reduce((a,p)=>a+dbGet(me.code,dashDay,p.code,'open'),0);
     const tW2=snapshotProds.reduce((a,p)=>a+dbGet(me.code,dashDay,p.code,'wh'),0);
     const tI2=snapshotProds.reduce((a,p)=>a+dbGet(me.code,dashDay,p.code,'inn'),0);
@@ -4246,7 +4252,7 @@ function renderDash(){
     const tT2=snapshotProds.reduce((a,p)=>a+dbGet(me.code,dashDay,p.code,'trf'),0);
     const tB2=snapshotProds.reduce((a,p)=>a+bal(me.code,dashDay,p.code),0);
     totRow.innerHTML=`
-      <td class="dst-name" style="color:#666;font-family:var(--f-mono);font-size:9px;">TOTALS</td>
+      <td class="dst-name" style="color:#1A3A7A;font-family:var(--f-mono);font-size:9px;font-weight:800;letter-spacing:1px;">TOTALS</td>
       <td class="dst-num" style="color:#6FA8DC;font-weight:800;">${tO2}</td>
       <td class="dst-num wh" style="font-weight:800;">${tW2||'—'}</td>
       <td class="dst-num inn" style="font-weight:800;">${tI2||'—'}</td>
@@ -6781,7 +6787,7 @@ function renderTracker(){
     hasAnyData=true;
 
     const block=document.createElement('div');
-    block.className='tracker-day-block';
+    block.className='tracker-day-block';block.style.cssText='border-bottom:2px solid #D0D8F0;';
 
     // Day header
     const hdr=document.createElement('div');
