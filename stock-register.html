@@ -195,20 +195,21 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* Category separator row */
 .sgrid tr.cat-sep td{
-  background:#EFEFEF;border-top:2px solid var(--border-dark);
-  border-bottom:1px solid var(--border);
+  background:#111;border-top:2px solid #1E1E1E;
+  border-bottom:1px solid #222;
   padding:5px 12px;
-  font-size:10px;font-weight:700;color:#444;
+  font-size:10px;font-weight:800;color:#C9A44E;
   letter-spacing:1.5px;text-transform:uppercase;
 }
 .sgrid tr.cat-sep td:first-child{
-  background:#E8E8E8;color:#333;
+  background:#111;color:#C9A44E;
 }
 
 /* Product rows */
 .sgrid tr.prow{border-bottom:1px solid var(--border);}
-.sgrid tr.prow:hover td{background-color:#F8F4E8!important;}
-.sgrid tr.prow:nth-child(even) td.prod-td{background:#FAFAFA;}
+.sgrid tr.prow:hover td{background-color:#EEF3FF!important;}
+.sgrid tr.prow:nth-child(even) td.prod-td{background:#F5F8FF;}
+.sgrid tr.prow:nth-child(odd) td.prod-td{background:#FFFFFF;}
 
 /* Product name cell */
 .prod-td{padding:0!important;}
@@ -946,9 +947,9 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .tstr-table tr.tstr-prow:hover td{background-color:#F8F4E8!important;}
 /* Category separator — same as .cat-sep */
 .tstr-table tr.tstr-cat td{
-  background:#EFEFEF;border-top:2px solid var(--border-dark);
-  border-bottom:1px solid var(--border);
-  padding:5px 12px;font-size:10px;font-weight:700;color:#444;
+  background:#111;border-top:2px solid #1E1E1E;
+  border-bottom:1px solid #222;
+  padding:5px 12px;font-size:10px;font-weight:800;color:#C9A44E;
   letter-spacing:1.5px;text-transform:uppercase;
 }
 /* Status pill */
@@ -1107,29 +1108,30 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .tracker-day-block{margin:0 14px 16px;}
 .tracker-day-hdr{
   display:flex;align-items:center;justify-content:space-between;
-  padding:6px 10px;background:#161616;border-radius:6px 6px 0 0;
-  border:1px solid #222;border-bottom:none;
+  padding:7px 14px;background:#111;border-radius:6px 6px 0 0;
+  border:1px solid #1E1E1E;border-bottom:2px solid #1E1E1E;
 }
-.tracker-day-date{font-family:var(--f-mono);font-size:10px;font-weight:700;color:#CCC;}
+.tracker-day-date{font-family:var(--f-mono);font-size:10px;font-weight:800;color:#C9A44E;}
 .tracker-day-lock{font-size:9px;color:#4A8A4A;}
 .tracker-day-bal{font-family:var(--f-mono);font-size:11px;font-weight:700;}
 .tracker-events{
-  border:1px solid #1E1E1E;border-radius:0 0 6px 6px;overflow:hidden;
+  border:1px solid #1E1E1E;border-top:none;border-radius:0 0 6px 6px;overflow:hidden;
 }
 .tracker-event{
   display:flex;align-items:center;gap:10px;
-  padding:8px 10px;border-bottom:1px solid #111;
+  padding:8px 10px;border-bottom:1px solid #E8EEFF;
+  background:#FFFFFF;
 }
 .tracker-event:last-child{border-bottom:none;}
-.tracker-event.ev-received{background:#0A1A0A;}
-.tracker-event.ev-wh{background:#0A160A;}
-.tracker-event.ev-sold{background:#1A0A0A;}
-.tracker-event.ev-sent{background:#100A1A;}
-.tracker-event.ev-opening{background:#0A0A1A;}
+.tracker-event.ev-received{background:#F0FFF6;}
+.tracker-event.ev-wh{background:#F0FFF4;}
+.tracker-event.ev-sold{background:#FFF5F5;}
+.tracker-event.ev-sent{background:#FAF5FF;}
+.tracker-event.ev-opening{background:#F5F8FF;}
 .tracker-ev-icon{font-size:14px;flex-shrink:0;width:22px;text-align:center;}
 .tracker-ev-body{flex:1;}
-.tracker-ev-type{font-size:11px;font-weight:700;color:#CCC;}
-.tracker-ev-detail{font-size:9px;color:#444;font-family:var(--f-mono);margin-top:1px;}
+.tracker-ev-type{font-size:11px;font-weight:700;color:#1A1A2E;}
+.tracker-ev-detail{font-size:9px;color:#6070A0;font-family:var(--f-mono);margin-top:1px;}
 .tracker-ev-qty{font-family:var(--f-mono);font-size:14px;font-weight:800;flex-shrink:0;}
 .tracker-ev-qty.pos{color:#6FCF97;}
 .tracker-ev-qty.neg{color:#E87070;}
@@ -3038,7 +3040,7 @@ function buildGrid(){
 
       const tr=document.createElement('tr');
       tr.className='prow'+(locked?' row-locked':'');
-      tr.style.background=ri%2===0?'#fff':'#FAFAFA';
+      tr.style.background=ri%2===0?'#FFFFFF':'#F5F8FF';
 
       const showO=o>0?o:'';
       const showW=w>0?w:'';
