@@ -197,14 +197,64 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* Category separator row */
 .sgrid tr.cat-sep td{
-  background:#111;border-top:2px solid #1E1E1E;
-  border-bottom:1px solid #222;
-  padding:5px 12px;
-  font-size:10px;font-weight:800;color:#C9A44E;
-  letter-spacing:1.5px;text-transform:uppercase;
+  padding:0!important;
+  background:transparent!important;
+}
+/* Premium category separator */
+.cat-sep-inner{
+  display:flex;align-items:center;gap:0;
+  background:linear-gradient(135deg,#0D0B08 0%,#1A1510 40%,#0F0D0A 100%);
+  border-top:1px solid #3A2E1A;
+  border-bottom:2px solid #9A7B4F;
+  padding:0;
+  position:relative;
+  overflow:hidden;
+}
+.cat-sep-inner::before{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(154,123,79,0.12) 0%,rgba(154,123,79,0.04) 60%,transparent 100%);
+  pointer-events:none;
+}
+.cat-sep-icon{
+  font-size:20px;padding:10px 14px;
+  flex-shrink:0;
+  border-right:1px solid rgba(154,123,79,0.25);
+  background:rgba(154,123,79,0.08);
+  display:flex;align-items:center;justify-content:center;
+  min-width:52px;align-self:stretch;
+}
+.cat-sep-body{
+  flex:1;padding:8px 14px;
+}
+.cat-sep-en{
+  font-family:var(--f-mono);font-size:11px;font-weight:800;
+  color:#E8C87A;letter-spacing:2px;text-transform:uppercase;
+  line-height:1.2;
+}
+.cat-sep-sub{
+  font-size:10px;color:#7A6A50;font-style:italic;
+  margin-top:1px;letter-spacing:0.3px;
+}
+.cat-sep-ar{
+  font-family:var(--f-ar);font-size:12px;color:#9A8A6A;
+  direction:rtl;margin-top:2px;
+}
+.cat-sep-right{
+  padding:8px 14px;text-align:right;flex-shrink:0;
+  border-left:1px solid rgba(154,123,79,0.2);
+}
+.cat-sep-count{
+  font-family:var(--f-mono);font-size:18px;font-weight:900;
+  color:rgba(232,200,122,0.5);line-height:1;
+  letter-spacing:-1px;
+}
+.cat-sep-count-lbl{
+  font-family:var(--f-mono);font-size:7px;color:#5A4A2A;
+  text-transform:uppercase;letter-spacing:1px;margin-top:2px;
 }
 .sgrid tr.cat-sep td:first-child{
-  background:#111;color:#C9A44E;
+  background:transparent;
 }
 
 /* Product rows */
@@ -3037,7 +3087,10 @@ function buildGrid(){
     // Category row
     const cr=document.createElement('tr');
     cr.className='cat-sep';
-    cr.innerHTML=`<td colspan="8">${cat.cat}</td>`;
+    const _cm={'Caballo Collection':['🐎','كولكشن كابالو','Signature Equestrian Line'],'Bel Collection':['🌹','كولكشن بيل','Floral Luxury Series'],'Sets & Specials':['✨','مجموعات مميزة','Curated Gift Sets'],'Oud':['🪵','عود','Arabian Oud Essences'],'Dakhoon':['🌿','دخون','Traditional Bakhoor'],'Oils & Gifts':['💎','زيوت وهدايا','Premium Oils & Gifts'],'Accessories':['🎁','إكسسوارات','Fine Accessories'],'Gift Boxes':['📦','صناديق هدايا','Luxury Gift Packaging'],'Heritage Collection':['🏛️','كولكشن التراث','Timeless Heritage Blends'],'Bel Paper Box (Gift Sets)':['🎀','بيل - صناديق هدايا','Bel Signature Gift Sets']};
+    const _cme=_cm[cat.cat]||['◈',cat.cat,''];
+    const _cpCount=cat.products.filter(p=>!p.isTester).length;
+    cr.innerHTML=`<td colspan="8"><div class="cat-sep-inner"><div class="cat-sep-icon">${_cme[0]}</div><div class="cat-sep-body"><div class="cat-sep-en">${cat.cat}</div><div class="cat-sep-sub">${_cme[2]}</div><div class="cat-sep-ar">${_cme[1]}</div></div><div class="cat-sep-right"><div class="cat-sep-count">${_cpCount}</div><div class="cat-sep-count-lbl">SKUs</div></div></div></td>`;
     tbody.appendChild(cr);
 
     let ri_idx=0;
