@@ -1652,11 +1652,11 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <div class="fdiv"></div>
     <div class="fstat"><span class="fstat-label">Warehouse In</span><span class="fstat-val" style="color:#7FC860;" id="ftWh">0</span></div>
     <div class="fdiv"></div>
-    <div class="fstat"><span class="fstat-label">Store In</span><span class="fstat-val fi" id="ftIn">0</span></div>
+    <div class="fstat"><span class="fstat-label">RECV</span><span class="fstat-val fi" id="ftIn">0</span></div>
     <div class="fdiv"></div>
     <div class="fstat"><span class="fstat-label">Sold</span><span class="fstat-val" style="color:#E87070;" id="ftSold">0</span></div>
     <div class="fdiv"></div>
-    <div class="fstat"><span class="fstat-label">Sent Out</span><span class="fstat-val" style="color:#BB88DD;" id="ftTrf">0</span></div>
+    <div class="fstat"><span class="fstat-label">SENT</span><span class="fstat-val" style="color:#BB88DD;" id="ftTrf">0</span></div>
     <div class="fdiv"></div>
     <div class="fstat"><span class="fstat-label">Rtn WH</span><span class="fstat-val" style="color:#E8A040;" id="ftWrh">0</span></div>
     <div class="fdiv"></div>
@@ -2298,10 +2298,10 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Field to Adjust</div>
         <select id="adj-field-sel" style="width:100%;background:#1E1E1E;border:1px solid #333;color:#CCC;border-radius:7px;padding:10px 12px;font-family:var(--f-body);font-size:13px;outline:none;" onchange="adjFieldChanged()">
           <option value="open">Opening Stock</option>
-          <option value="wh">WH Transfer In</option>
-          <option value="inn">Store Transfer In</option>
+          <option value="wh">WH IN</option>
+          <option value="inn">RECV</option>
           <option value="sold">Sales</option>
-          <option value="trf">Transfer Out</option>
+          <option value="trf">SENT</option>
         </select>
       </div>
       <div style="margin-bottom:10px;">
@@ -2996,12 +2996,12 @@ function buildGrid(){
           <div class="bwmp-ar">فخـر الإمارات</div>
         </div>
       </th>
-      <th class="gh-open"><div class="hdr-en">OPENING STOCK</div><div class="hdr-ar">مخزون الافتتاح</div><div class="hdr-sub-lbl">(A)</div></th>
-      <th class="gh-wh"><div class="hdr-en">TRANSFER FROM WAREHOUSE</div><div class="hdr-ar">نقل من المستودع</div><div class="hdr-sub-lbl">(B)</div></th>
-      <th class="gh-in"><div class="hdr-en">TRANSFER FROM STORE</div><div class="hdr-ar">نقل من المتجر</div><div class="hdr-sub-lbl">(C)</div></th>
+      <th class="gh-open"><div class="hdr-en">OPEN</div><div class="hdr-ar">مخزون الافتتاح</div><div class="hdr-sub-lbl">(A)</div></th>
+      <th class="gh-wh"><div class="hdr-en">WH IN</div><div class="hdr-ar">نقل من المستودع</div><div class="hdr-sub-lbl">(B)</div></th>
+      <th class="gh-in"><div class="hdr-en">RECV</div><div class="hdr-ar">نقل من المتجر</div><div class="hdr-sub-lbl">(C)</div></th>
       <th class="gh-sold"><div class="hdr-en">SALES</div><div class="hdr-ar">المبيعات</div><div class="hdr-sub-lbl">(D)</div></th>
-      <th class="gh-trf"><div class="hdr-en">TRANSFER TO STORE</div><div class="hdr-ar">نقل إلى متجر</div><div class="hdr-sub-lbl">(E)</div></th>
-      <th class="gh-wrh"><div class="hdr-en">RETURN TO WAREHOUSE</div><div class="hdr-ar">إرجاع إلى المستودع</div><div class="hdr-sub-lbl">(F)</div></th>
+      <th class="gh-trf"><div class="hdr-en">SENT</div><div class="hdr-ar">نقل إلى متجر</div><div class="hdr-sub-lbl">(E)</div></th>
+      <th class="gh-wrh"><div class="hdr-en">RTW</div><div class="hdr-ar">إرجاع إلى المستودع</div><div class="hdr-sub-lbl">(F)</div></th>
       <th class="gh-bal"><div class="hdr-en">BALANCE</div><div class="hdr-ar">الرصيد</div><div class="hdr-sub-lbl">A+B+C−D−E−F</div></th>
     </tr>
     <tr class="hdr-sub hdr-totals-row">
@@ -3233,7 +3233,7 @@ function openNP(code,field){
   const p=PRODUCTS.find(x=>x.code===code);
   npCtx={code,field};
   npBuf=String(dbGet(me.code,curDay,code,field)||'');
-  const labels={open:'Opening Stock  (A)',wh:'Warehouse IN — From Warehouse  (B)',inn:'Store IN — From Another Store  (C)',sold:'SOLD — To Customer  (D)',trf:'SENT OUT — To Another Store  (E)',wrh:'RETURN TO WAREHOUSE  (F)'};
+  const labels={open:'OPEN — Starting Balance  (A)',wh:'WH IN — From Warehouse  (B)',inn:'RECV — From Another Store  (C)',sold:'SOLD — To Customer  (D)',trf:'SENT — To Another Store  (E)',wrh:'RTW — Return to Warehouse  (F)'};
   const cls={open:'open',wh:'wh',inn:'inn',sold:'sold',trf:'trf',wrh:'wrh'};
   document.getElementById('npProduct').textContent=p?p.en:code;
   const fEl=document.getElementById('npField');
@@ -3248,7 +3248,7 @@ function openNP(code,field){
   if(storeRow&&storeSel){
     if(field==='inn'||field==='trf'){
       storeRow.style.display='block';
-      storeLbl.textContent=field==='inn'?'📥 Transfer FROM which store?':'📤 Transfer TO which store?';
+      storeLbl.textContent=field==='inn'?'📥 RECV — Which store sent this?':'📤 SENT — Which store receives this?';
       storeSel.innerHTML='<option value="">— Select store —</option>';
       // Group by manager
       const mgrs=[...new Set(STORES.filter(s=>s.code!==me.code&&s.code!=='MGR').map(s=>s.mgr||''))];
@@ -4092,12 +4092,12 @@ function renderDash(){
   const kpiEl = document.createElement('div');
   kpiEl.className = 'dash-day-kpi';
   kpiEl.innerHTML = `
-    <div class="dkpi"><span class="dkpi-val open">${totO||'—'}</span><div class="dkpi-label">Opening</div></div>
-    <div class="dkpi"><span class="dkpi-val wh">${totWh||'—'}</span><div class="dkpi-label">WH In</div></div>
-    <div class="dkpi"><span class="dkpi-val inn">${totIn||'—'}</span><div class="dkpi-label">Store In</div></div>
-    <div class="dkpi"><span class="dkpi-val sold">${totSold||'—'}</span><div class="dkpi-label">Sales</div></div>
-    <div class="dkpi"><span class="dkpi-val trf">${totTrf||'—'}</span><div class="dkpi-label">Sent Out</div></div>
-    <div class="dkpi"><span class="dkpi-val bal">${totBal}</span><div class="dkpi-label">Balance</div></div>`;
+    <div class="dkpi"><span class="dkpi-val open">${totO||'—'}</span><div class="dkpi-label">OPEN</div></div>
+    <div class="dkpi"><span class="dkpi-val wh">${totWh||'—'}</span><div class="dkpi-label">WH IN</div></div>
+    <div class="dkpi"><span class="dkpi-val inn">${totIn||'—'}</span><div class="dkpi-label">RECV</div></div>
+    <div class="dkpi"><span class="dkpi-val sold">${totSold||'—'}</span><div class="dkpi-label">SOLD</div></div>
+    <div class="dkpi"><span class="dkpi-val trf">${totTrf||'—'}</span><div class="dkpi-label">SENT</div></div>
+    <div class="dkpi"><span class="dkpi-val bal">${totBal}</span><div class="dkpi-label">BAL</div></div>`;
   body.appendChild(kpiEl);
 
   // ── STATUS BADGE ──
@@ -4145,7 +4145,7 @@ function renderDash(){
       const row = document.createElement('div');
       row.className = 'dl-row';
       const icons = {sold:'💰',trf:'📤',wh:'🏭',inn:'🔄'};
-      const labels = {sold:'Sold to Customer',trf:'Sent to Another Store',wh:'Warehouse Transfer Received',inn:'Store Transfer Received'};
+      const labels = {sold:'SOLD — To Customer',trf:'SENT — To Another Store',wh:'WH IN — From Warehouse',inn:'RECV — From Another Store'};
       // FIXED: correct qty lookup per type
       const qty = type==='sold'?s : type==='trf'?t : type==='wh'?w : i;
       const sign = (type==='sold'||type==='trf')?'-':'+';
@@ -4208,8 +4208,8 @@ function renderDash(){
     table.innerHTML = `<thead><tr>
       <th style="text-align:left;min-width:160px;">Product</th>
       <th style="color:#6FA8DC;">OPEN</th>
-      <th style="color:#7FC860;">WH</th>
-      <th style="color:#5DBEA3;">IN</th>
+      <th style="color:#7FC860;">WH IN</th>
+      <th style="color:#5DBEA3;">RECV</th>
       <th style="color:#E87070;">SOLD</th>
       <th style="color:#BB88DD;">SENT</th>
       <th style="color:var(--gold2);">BAL</th>
@@ -4264,6 +4264,191 @@ function renderDash(){
     snapSection.appendChild(table);
     body.appendChild(snapSection);
   }
+
+  // ════════════════════════════════════════════════════════════
+  // MANAGER-ONLY INTELLIGENCE SECTIONS (isMgrSession only)
+  // ════════════════════════════════════════════════════════════
+  if(isMgrSession){
+
+    // ── 1. DAY vs YESTERDAY COMPARISON ──────────────────────
+    const prevDay = dashDay > 0 ? dashDay - 1 : null;
+    if(prevDay !== null){
+      const yO    = PRODUCTS.reduce((a,p)=>a+dbGet(me.code,prevDay,p.code,'open'),0);
+      const yWh   = PRODUCTS.reduce((a,p)=>a+dbGet(me.code,prevDay,p.code,'wh'),0);
+      const yIn   = PRODUCTS.reduce((a,p)=>a+dbGet(me.code,prevDay,p.code,'inn'),0);
+      const ySold = PRODUCTS.reduce((a,p)=>a+dbGet(me.code,prevDay,p.code,'sold'),0);
+      const yTrf  = PRODUCTS.reduce((a,p)=>a+dbGet(me.code,prevDay,p.code,'trf'),0);
+      const yBal  = PRODUCTS.reduce((a,p)=>a+bal(me.code,prevDay,p.code),0);
+      const prevLabel = getDayLabels()[prevDay];
+
+      const cmpSection = document.createElement('div');
+      cmpSection.style.cssText = 'background:#FFFFFF;';
+
+      const cmpTitle = document.createElement('div');
+      cmpTitle.className = 'dash-section-title';
+      cmpTitle.innerHTML = '📊 Day vs Yesterday <span style="color:#6070A0;font-size:9px;font-weight:400;margin-left:8px;">vs ' + prevLabel.full + ' ' + prevLabel.date + '</span>';
+      cmpSection.appendChild(cmpTitle);
+
+      function delta(today, yesterday){
+        const d = today - yesterday;
+        const pct = yesterday > 0 ? Math.round((d/yesterday)*100) : (today > 0 ? 100 : 0);
+        const col = d > 0 ? '#1E8449' : d < 0 ? '#C0392B' : '#8090B0';
+        const arrow = d > 0 ? '▲' : d < 0 ? '▼' : '●';
+        return `<span style="font-family:var(--f-mono);font-size:11px;color:${col};font-weight:700;">${arrow} ${d >= 0 ? '+' : ''}${d} (${pct >= 0 ? '+' : ''}${pct}%)</span>`;
+      }
+
+      const rows = [
+        {label:'OPEN',   today:totO,    yest:yO,    col:'#2471A3'},
+        {label:'WH IN',  today:totWh,   yest:yWh,   col:'#1A7A3A'},
+        {label:'RECV',   today:totIn,   yest:yIn,   col:'#27AE60'},
+        {label:'SOLD',   today:totSold, yest:ySold, col:'#C0392B'},
+        {label:'SENT',   today:totTrf,  yest:yTrf,  col:'#8E44AD'},
+        {label:'BAL',    today:totBal,  yest:yBal,  col:'#1A4AAA'},
+      ];
+
+      const cmpGrid = document.createElement('div');
+      cmpGrid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);';
+      rows.forEach((r,i) => {
+        const cell = document.createElement('div');
+        cell.style.cssText = `padding:12px 10px;text-align:center;background:${i%2===0?'#FFFFFF':'#F5F8FF'};border-bottom:1px solid #E0E8F8;border-right:${(i+1)%3===0?'none':'1px solid #E0E8F8'};`;
+        cell.innerHTML = `<div style="font-family:var(--f-mono);font-size:20px;font-weight:800;color:${r.col};">${r.today}</div>
+          <div style="font-size:8px;color:#8090B0;font-family:var(--f-mono);letter-spacing:0.8px;font-weight:700;margin:2px 0 4px;">${r.label}</div>
+          ${delta(r.today, r.yest)}`;
+        cmpGrid.appendChild(cell);
+      });
+      cmpSection.appendChild(cmpGrid);
+      body.appendChild(cmpSection);
+    }
+
+    // ── 2. LOW BALANCE ALERTS ────────────────────────────────
+    const LOW_THRESH = 5;
+    const lowProds = PRODUCTS.filter(p => {
+      const b = bal(me.code, dashDay, p.code);
+      const o = dbGet(me.code, dashDay, p.code, 'open');
+      return o > 0 && b >= 0 && b <= LOW_THRESH;
+    }).map(p => ({p, b: bal(me.code, dashDay, p.code), o: dbGet(me.code, dashDay, p.code, 'open')}))
+      .sort((a,b2) => a.b - b2.b);
+
+    if(lowProds.length > 0){
+      const lowSection = document.createElement('div');
+      lowSection.style.cssText = 'background:#FFFFFF;';
+
+      const lowTitle = document.createElement('div');
+      lowTitle.className = 'dash-section-title';
+      lowTitle.style.cssText = 'background:#7D0000;color:#FFCCCC;';
+      lowTitle.innerHTML = `🚨 Low Balance Alert <span style="color:#FFB3B3;font-size:9px;font-weight:400;margin-left:8px;">${lowProds.length} SKU${lowProds.length!==1?'s':''} critically low (BAL ≤ ${LOW_THRESH})</span>`;
+      lowSection.appendChild(lowTitle);
+
+      lowProds.forEach(({p, b, o}, i) => {
+        const row = document.createElement('div');
+        const pct = o > 0 ? Math.round((b/o)*100) : 0;
+        const urgency = b === 0 ? '#C0392B' : b <= 2 ? '#E74C3C' : '#E67E22';
+        const urgencyBg = b === 0 ? '#FEF0F0' : b <= 2 ? '#FEF3F0' : '#FEF9F0';
+        row.style.cssText = `display:flex;align-items:center;gap:12px;padding:10px 14px;background:${i%2===0?'#FFFFFF':urgencyBg};border-bottom:1px solid #FFE0E0;`;
+        row.innerHTML = `
+          <div style="width:36px;height:36px;border-radius:50%;background:${urgencyBg};border:2px solid ${urgency};display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:14px;font-weight:900;color:${urgency};flex-shrink:0;">${b}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:#1A2A4A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.en}</div>
+            <div style="font-family:var(--f-mono);font-size:10px;color:#8090B0;margin-top:1px;">${p.code} · Was ${o} OPEN · ${pct}% remaining</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-family:var(--f-mono);font-size:16px;font-weight:800;color:${urgency};">BAL: ${b}</div>
+            <div style="font-size:9px;color:#8090B0;margin-top:2px;">${b===0?'OUT OF STOCK':b<=2?'CRITICAL':'LOW'}</div>
+          </div>`;
+        lowSection.appendChild(row);
+      });
+      body.appendChild(lowSection);
+    }
+
+    // ── 3. DEAD STOCK — Products with NO movement ────────────
+    // Time brackets: 3wk, 1m, 2m, 6m, 1y (in day-indices)
+    // DAY_WINDOW=15, DAY_PAST=5 → today=index 5
+    // We scan BACKWARDS from today across all days in the rolling window
+    // Dead stock = has opening stock but ZERO sold/wh/inn/trf in last N days
+    const DEAD_BRACKETS = [
+      {label:'3 Weeks',  days:21,  col:'#E67E22', bg:'#FEF9F0'},
+      {label:'1 Month',  days:30,  col:'#D35400', bg:'#FEF3F0'},
+      {label:'2 Months', days:60,  col:'#C0392B', bg:'#FEF0F0'},
+      {label:'6 Months', days:180, col:'#8E44AD', bg:'#FBF0FF'},
+      {label:'1 Year',   days:365, col:'#1A2A4A', bg:'#F0F0FF'},
+    ];
+
+    // For dead stock, we use today's balance and check all 15 days in window for movement
+    // Products dead if: has balance > 0 today AND no sold/wh/inn/trf across ALL loaded days
+    const deadByBracket = {};
+    DEAD_BRACKETS.forEach(br => deadByBracket[br.label] = []);
+
+    PRODUCTS.forEach(p => {
+      const todayBal = bal(me.code, DAY_PAST, p.code);
+      if(todayBal <= 0) return; // no stock, skip
+
+      // Count total movement (sold+sent) across ALL 15 loaded days
+      let lastMoveIdx = -1; // most recent day index with any movement
+      for(let di = DAY_PAST; di >= 0; di--){
+        const s = dbGet(me.code, di, p.code, 'sold');
+        const t = dbGet(me.code, di, p.code, 'trf');
+        if(s > 0 || t > 0){ lastMoveIdx = di; break; }
+      }
+
+      // Estimate days since last move using day index offset
+      // Each index = 1 calendar day; DAY_PAST=5=today
+      const daysSinceMove = lastMoveIdx === -1
+        ? 999 // never moved in loaded window — assume very old
+        : (DAY_PAST - lastMoveIdx);
+
+      // Assign to SMALLEST matching bracket
+      for(let i = DEAD_BRACKETS.length - 1; i >= 0; i--){
+        if(daysSinceMove >= DEAD_BRACKETS[i].days || (lastMoveIdx === -1 && i === DEAD_BRACKETS.length-1)){
+          deadByBracket[DEAD_BRACKETS[i].label].push({p, bal:todayBal, daysSince:daysSinceMove, lastMove:lastMoveIdx});
+          break;
+        }
+      }
+      // Also catch products with no movement at all in window (treat as 3+ weeks)
+      if(lastMoveIdx === -1 && daysSinceMove === 999){
+        if(!deadByBracket['3 Weeks'].find(x=>x.p.code===p.code)){
+          deadByBracket['3 Weeks'].push({p, bal:todayBal, daysSince:999, lastMove:-1});
+        }
+      }
+    });
+
+    const hasDeadStock = DEAD_BRACKETS.some(br => deadByBracket[br.label].length > 0);
+    if(hasDeadStock){
+      const deadSection = document.createElement('div');
+      deadSection.style.cssText = 'background:#FFFFFF;';
+
+      const deadTitle = document.createElement('div');
+      deadTitle.className = 'dash-section-title';
+      deadTitle.innerHTML = '📦 Dead Stock — No Movement <span style="color:#6070A0;font-size:9px;font-weight:400;margin-left:8px;">Products with stock but no sales/transfers</span>';
+      deadSection.appendChild(deadTitle);
+
+      DEAD_BRACKETS.forEach(br => {
+        const items = deadByBracket[br.label];
+        if(!items.length) return;
+
+        const bracketHdr = document.createElement('div');
+        bracketHdr.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:${br.bg};border-bottom:1px solid #E8EEFF;`;
+        bracketHdr.innerHTML = `<span style="font-family:var(--f-mono);font-size:10px;font-weight:800;color:${br.col};">≥ ${br.label} NO MOVEMENT</span><span style="font-family:var(--f-mono);font-size:10px;color:${br.col};">${items.length} SKU${items.length!==1?'s':''}</span>`;
+        deadSection.appendChild(bracketHdr);
+
+        items.sort((a,b2)=>b2.bal-a.bal).forEach((item,i)=>{
+          const row = document.createElement('div');
+          row.style.cssText = `display:flex;align-items:center;gap:12px;padding:9px 14px;background:${i%2===0?'#FFFFFF':br.bg};border-bottom:1px solid #E8EEFF;`;
+          const sinceLabel = item.daysSince === 999 ? 'No data in window' : item.daysSince + 'd ago';
+          row.innerHTML = `
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:600;color:#1A2A4A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.p.en}</div>
+              <div style="font-family:var(--f-mono);font-size:10px;color:#8090B0;margin-top:1px;">${item.p.code} · Last moved: ${sinceLabel}</div>
+            </div>
+            <div style="font-family:var(--f-mono);font-size:15px;font-weight:800;color:${br.col};flex-shrink:0;">BAL: ${item.bal}</div>`;
+          deadSection.appendChild(row);
+        });
+      });
+
+      body.appendChild(deadSection);
+    }
+
+  } // end isMgrSession
+
 }
 
 // ══════════════════════════════════════════
@@ -6763,10 +6948,10 @@ function renderTracker(){
   const strip=document.createElement('div');
   strip.className='tracker-summary-strip';
   strip.innerHTML=`
-    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#7FC860;">${totalWh||'—'}</span><div class="tracker-sum-label">Total WH In</div></div>
-    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#5DBEA3;">${totalIn||'—'}</span><div class="tracker-sum-label">Total Received</div></div>
-    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#E87070;">${totalSold||'—'}</span><div class="tracker-sum-label">Total Sold</div></div>
-    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#BB88DD;">${totalTrf||'—'}</span><div class="tracker-sum-label">Total Sent Out</div></div>`;
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#7FC860;">${totalWh||'—'}</span><div class="tracker-sum-label">WH IN</div></div>
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#5DBEA3;">${totalIn||'—'}</span><div class="tracker-sum-label">RECV</div></div>
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#E87070;">${totalSold||'—'}</span><div class="tracker-sum-label">SOLD</div></div>
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#BB88DD;">${totalTrf||'—'}</span><div class="tracker-sum-label">SENT</div></div>`;
   body.appendChild(strip);
 
   // ── PER-DAY MOVEMENT BLOCKS ──
@@ -6812,7 +6997,7 @@ function renderTracker(){
       ev.innerHTML=`
         <div class="tracker-ev-icon">📂</div>
         <div class="tracker-ev-body">
-          <div class="tracker-ev-type">Opening Stock</div>
+          <div class="tracker-ev-type">OPEN</div>
           <div class="tracker-ev-detail">Starting balance for ${dl.full}</div>
         </div>
         <div class="tracker-ev-qty neu">${o}</div>`;
@@ -7249,7 +7434,7 @@ function _expStockDayCSV(date){
   if(db._lockNames?.[me.code+'_'+di]) rows.push(['Locked By:','',db._lockNames[me.code+'_'+di].name]);
   rows.push(['Generated:','',new Date().toLocaleString('en-GB')]);
   rows.push([]);
-  rows.push(['SKU Code','Product Name','Opening','WH In','Store In','Sales','Sent Out','Return to WH','Balance']);
+  rows.push(['SKU Code','Product Name','OPEN','WH IN','RECV','SOLD','SENT','RTW','BAL']);
   let tO=0,tW=0,tI=0,tS=0,tT=0,tR=0,tB=0;
   PRODUCTS.forEach(p=>{
     if(di<0||di>=DAY_WINDOW){ rows.push([p.code,p.en,'-','-','-','-','-','-','-']); return; }
