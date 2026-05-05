@@ -7660,48 +7660,71 @@ try{
   }
 }catch(e){}
 
-// ── KEYBOARD SUPPORT FOR LOGIN ──────────────────────────────────────
-// Physical keyboard: digits 0-9, Backspace, Delete, Enter, Escape
+// ── GLOBAL KEYBOARD SUPPORT ────────────────────────────────────────
+// Handles ALL numpad contexts: Login PIN, Stock Numpad, Finance Numpad,
+// Transfer Drawer Numpad — plus Escape to close panels.
 document.addEventListener('keydown', function(e){
-  // Only active when login screen is visible
-  const ls = document.getElementById('loginScreen');
-  if(!ls || ls.style.display==='none') return;
-
   const key = e.key;
+  // Normalise numpad row (Numpad1..Numpad9, Numpad0) → digit string
+  const digit = (key.length === 1 && key >= '0' && key <= '9') ? key
+              : (key.startsWith('Numpad') && key.length === 7) ? key[6]
+              : null;
 
-  // Digits 0–9 (main keyboard row + numpad)
-  if((key>='0' && key<='9') || (key>='Numpad0' && key<='Numpad9')){
-    const digit = key.length===1 ? key : key.replace('Numpad','');
-    pk(digit);
-    e.preventDefault();
+  // ── 1. LOGIN SCREEN ─────────────────────────────────────────────
+  const ls = document.getElementById('loginScreen');
+  const loginVisible = ls && ls.style.display !== 'none';
+  if(loginVisible){
+    if(digit !== null){ pk(digit); e.preventDefault(); return; }
+    if(key==='Backspace'||key==='Delete'){ pd(); e.preventDefault(); return; }
+    if(key==='Escape'){ pc(); e.preventDefault(); return; }
+    if(key==='Enter'){
+      const code = document.getElementById('storeSelect').value;
+      if(code && pinBuf.length > 0){ doLogin(); e.preventDefault(); }
+    }
+    return; // don't fall through when login is showing
+  }
+
+  // ── 2. STOCK / FINANCE NUMPAD (shared panel #numpad) ────────────
+  const npPanel = document.getElementById('numpad');
+  const npVisible = npPanel && npPanel.classList.contains('show');
+  if(npVisible){
+    if(digit !== null){ nk(digit); e.preventDefault(); return; }
+    if(key==='Backspace'||key==='Delete'){ nd(); e.preventDefault(); return; }
+    if(key==='Escape'){ closeNP(); e.preventDefault(); return; }
+    if(key==='Enter'){ confirmNP(); e.preventDefault(); return; }
     return;
   }
 
-  // Backspace or Delete → remove last digit
-  if(key==='Backspace' || key==='Delete'){
-    pd();
-    e.preventDefault();
-    return;
-  }
-
-  // Escape → clear PIN
-  if(key==='Escape'){
-    pc();
-    e.preventDefault();
-    return;
-  }
-
-  // Enter → attempt login (only if a store is selected)
-  if(key==='Enter'){
-    const focused = document.activeElement;
-    // If focus is on store dropdown, let browser handle it (open/close dropdown)
-    // but if a store is already selected and we have a PIN, submit
-    const code = document.getElementById('storeSelect').value;
-    if(code && pinBuf.length>0){
-      doLogin();
-      e.preventDefault();
+  // ── 3. TRANSFER DRAWER NUMPAD ────────────────────────────────────
+  const trfDrawer = document.getElementById('trfDrawer');
+  const trfNP     = document.getElementById('trfDrawerNumpad');
+  const trfDrawerVisible = trfDrawer && trfDrawer.style.display !== 'none';
+  const trfNPVisible     = trfNP     && trfNP.style.display     !== 'none';
+  if(trfDrawerVisible){
+    if(trfNPVisible){
+      // Numpad is open inside the drawer — route keys to it
+      if(digit !== null){ trfDrawerKey(digit); e.preventDefault(); return; }
+      if(key==='Backspace'||key==='Delete'){ trfDrawerKey('⌫'); e.preventDefault(); return; }
+      if(key==='Escape'){ trfNP.style.display='none'; e.preventDefault(); return; }
+      if(key==='Enter'){ trfDrawerSaveSplit(); e.preventDefault(); return; }
+    } else {
+      // Drawer open but numpad not shown — Escape closes the drawer
+      if(key==='Escape'){ closeTrfDrawer(); e.preventDefault(); return; }
     }
     return;
+  }
+
+  // ── 4. GLOBAL ESCAPE — close any open panel ──────────────────────
+  if(key==='Escape'){
+    // Export panel
+    const expPanel = document.getElementById('exportPanel');
+    if(expPanel && expPanel.style.display!=='none'){ expPanel.style.display='none'; return; }
+    // Manager dashboard
+    const mgrPanel = document.getElementById('mgrDashboard');
+    if(mgrPanel && mgrPanel.style.display!=='none'){ mgrPanel.style.display='none'; return; }
+    // Stores panel
+    const storesPanel = document.getElementById('storesPanel');
+    if(storesPanel && storesPanel.style.display!=='none'){ storesPanel.style.display='none'; return; }
   }
 });
 // ────────────────────────────────────────────────────────────────────
