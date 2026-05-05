@@ -2346,18 +2346,18 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 </div>
 
 <!-- ══════════ MANAGER DASHBOARD PANEL ══════════ -->
-<div id="mgrDashPanel" style="position:fixed;inset:0;background:#080808;z-index:800;display:none;flex-direction:column;">
-  <div style="background:#111;border-bottom:2px solid #C9A44E;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+<div id="mgrDashPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:800;display:none;flex-direction:column;">
+  <div style="background:#1A1A1A;border-bottom:4px solid #9A7B4F;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
     <div>
-      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#C9A44E;letter-spacing:1px;">EMIRATES PRIDE</div>
-      <div style="font-family:var(--f-mono);font-size:10px;color:#666;margin-top:1px;">Manager Dashboard — All Stores</div>
+      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">EMIRATES PRIDE</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:#AAA;margin-top:2px;letter-spacing:0.5px;">Manager Dashboard — All Stores</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button onclick="renderMgrDashboard()" style="background:#1A1A1A;border:1px solid #333;border-radius:7px;color:#888;font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer;">⇅ Refresh</button>
-      <button onclick="closeMgrDashboard()" style="background:#1A0A0A;border:1px solid #5A1A1A;border-radius:7px;color:#E87070;font-family:var(--f-mono);font-size:11px;padding:6px 12px;cursor:pointer;">✕ Close</button>
+      <button onclick="renderMgrDashboard()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
+      <button onclick="closeMgrDashboard()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
     </div>
   </div>
-  <div id="mgrDashBody" style="flex:1;overflow-y:auto;"></div>
+  <div id="mgrDashBody" style="flex:1;overflow-y:auto;background:#FAFAF8;"></div>
 </div>
 
 <!-- ══════════ TRANSFER DRAWER ══════════ -->
@@ -6095,63 +6095,63 @@ function renderMgrDashboard(){
 
   body.innerHTML=`
   <!-- ── TOP KPI STRIP — today's snapshot ─────────────────── -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 14px;background:#0D0D0D;border-bottom:1px solid #1A1A1A;">
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:0;background:#FFFFFF;border-bottom:2px solid #E8E4DC;">
 
-    <div style="background:#1A1A1A;border:1px solid #222;border-left:3px solid #6FCF97;border-radius:8px;padding:12px 14px;">
+    <div style="background:#FFFFFF;border:none;border-right:1px solid #E8E4DC;padding:16px 14px;border-left:4px solid #1A6A40;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <div style="font-size:18px;">📦</div>
-        <div style="font-family:var(--f-mono);font-size:8px;color:#666;background:#222;padding:3px 7px;border-radius:5px;letter-spacing:0.5px;">TODAY</div>
+        <div style="font-family:var(--f-mono);font-size:8px;color:#888880;background:#E8E4DC;padding:3px 8px;border-radius:4px;letter-spacing:1px;font-weight:700;">TODAY</div>
       </div>
       <div style="display:flex;align-items:baseline;gap:5px;">
-        <span style="font-family:var(--f-mono);font-size:26px;font-weight:900;color:#CCC;line-height:1;">${lockedTodayCount}</span>
-        <span style="font-size:14px;color:#444;font-weight:300;">/</span>
+        <span style="font-family:var(--f-mono);font-size:28px;font-weight:900;color:#1A1A1A;line-height:1;">${lockedTodayCount}</span>
+        <span style="font-size:14px;color:#888880;font-weight:300;">/</span>
         <span style="font-family:var(--f-mono);font-size:14px;color:#666;">${allStores.length}</span>
       </div>
-      <div style="font-size:11px;color:#888;font-weight:700;margin-top:5px;">Stock Locked</div>
+      <div style="font-size:11px;color:#1A1A1A;font-weight:700;margin-top:6px;letter-spacing:0.3px;">Stock Locked</div>
       <div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;">
-        <span style="font-family:var(--f-mono);font-size:9px;background:#1A3A1A;color:#6FCF97;padding:3px 7px;border-radius:5px;font-weight:700;">🔒 ${lockedTodayCount}</span>
-        <span style="font-family:var(--f-mono);font-size:9px;background:#3A1A1A;color:#E87070;padding:3px 7px;border-radius:5px;font-weight:700;">🔓 ${allStores.length-lockedTodayCount}</span>
+        <span style="font-family:var(--f-mono);font-size:9px;background:#EBF5EB;color:#1A6A40;padding:4px 9px;border-radius:5px;font-weight:700;border:1px solid #C8E6C9;">🔒 ${lockedTodayCount}</span>
+        <span style="font-family:var(--f-mono);font-size:9px;background:#FDECEA;color:#B03020;padding:4px 9px;border-radius:5px;font-weight:700;border:1px solid #FADBD8;">🔓 ${allStores.length-lockedTodayCount}</span>
       </div>
     </div>
 
-    <div style="background:#1A1A1A;border:1px solid #222;border-left:3px solid #BB88DD;border-radius:8px;padding:12px 14px;">
+    <div style="background:#FFFFFF;border:none;border-right:1px solid #E8E4DC;padding:16px 14px;border-left:4px solid #8E44AD;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <div style="font-size:18px;">💰</div>
-        <div style="font-family:var(--f-mono);font-size:8px;color:#666;background:#222;padding:3px 7px;border-radius:5px;letter-spacing:0.5px;">TODAY</div>
+        <div style="font-family:var(--f-mono);font-size:8px;color:#888880;background:#E8E4DC;padding:3px 8px;border-radius:4px;letter-spacing:1px;font-weight:700;">TODAY</div>
       </div>
       <div style="display:flex;align-items:baseline;gap:5px;">
-        <span style="font-family:var(--f-mono);font-size:26px;font-weight:900;color:#CCC;line-height:1;">${finLockedTodayCount}</span>
-        <span style="font-size:14px;color:#444;font-weight:300;">/</span>
+        <span style="font-family:var(--f-mono);font-size:28px;font-weight:900;color:#1A1A1A;line-height:1;">${finLockedTodayCount}</span>
+        <span style="font-size:14px;color:#888880;font-weight:300;">/</span>
         <span style="font-family:var(--f-mono);font-size:14px;color:#666;">${allStores.length}</span>
       </div>
-      <div style="font-size:11px;color:#888;font-weight:700;margin-top:5px;">Finance Locked</div>
+      <div style="font-size:11px;color:#1A1A1A;font-weight:700;margin-top:6px;letter-spacing:0.3px;">Finance Locked</div>
       <div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;">
-        <span style="font-family:var(--f-mono);font-size:9px;background:#1A1A3A;color:#BB88DD;padding:3px 7px;border-radius:5px;font-weight:700;">✅ ${finLockedTodayCount}</span>
-        <span style="font-family:var(--f-mono);font-size:9px;background:#3A1A1A;color:#E87070;padding:3px 7px;border-radius:5px;font-weight:700;">📭 ${allStores.length-finLockedTodayCount}</span>
+        <span style="font-family:var(--f-mono);font-size:9px;background:#F5EEF8;color:#6C3483;padding:4px 9px;border-radius:5px;font-weight:700;border:1px solid #D7BDE2;">✅ ${finLockedTodayCount}</span>
+        <span style="font-family:var(--f-mono);font-size:9px;background:#FDECEA;color:#B03020;padding:4px 9px;border-radius:5px;font-weight:700;border:1px solid #FADBD8;">📭 ${allStores.length-finLockedTodayCount}</span>
       </div>
     </div>
 
-    <div style="background:#1A1A1A;border:1px solid #222;border-left:3px solid #C9A44E;border-radius:8px;padding:12px 14px;">
+    <div style="background:#FFFFFF;border:none;border-right:1px solid #E8E4DC;padding:16px 14px;border-left:4px solid #9A7B4F;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <div style="font-size:18px;">📊</div>
-        <div style="font-family:var(--f-mono);font-size:8px;color:#666;background:#222;padding:3px 7px;border-radius:5px;letter-spacing:0.5px;">TODAY</div>
+        <div style="font-family:var(--f-mono);font-size:8px;color:#888880;background:#E8E4DC;padding:3px 8px;border-radius:4px;letter-spacing:1px;font-weight:700;">TODAY</div>
       </div>
       <div style="display:flex;align-items:baseline;gap:5px;">
-        <span style="font-family:var(--f-mono);font-size:26px;font-weight:900;color:#C9A44E;line-height:1;">${totalSoldToday}</span>
-        <span style="font-size:11px;color:#666;font-family:var(--f-mono);">units</span>
+        <span style="font-family:var(--f-mono);font-size:28px;font-weight:900;color:#9A7B4F;line-height:1;">${totalSoldToday}</span>
+        <span style="font-size:11px;color:#888880;font-family:var(--f-mono);">units</span>
       </div>
-      <div style="font-size:11px;color:#888;font-weight:700;margin-top:5px;">Total Units Sold</div>
+      <div style="font-size:11px;color:#1A1A1A;font-weight:700;margin-top:6px;letter-spacing:0.3px;">Total Units Sold</div>
       <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:7px;">All ${allStores.length} stores combined</div>
     </div>
 
-    <div style="background:#1A1A1A;border:1px solid #222;border-left:3px solid #6FA8DC;border-radius:8px;padding:12px 14px;">
+    <div style="background:#FFFFFF;border:none;border-right:none;padding:16px 14px;border-left:4px solid #2471A3;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <div style="font-size:18px;">📅</div>
-        <div style="font-family:var(--f-mono);font-size:8px;color:#666;background:#222;padding:3px 7px;border-radius:5px;letter-spacing:0.5px;">7 DAYS</div>
+        <div style="font-family:var(--f-mono);font-size:8px;color:#888880;background:#E8E4DC;padding:3px 8px;border-radius:4px;letter-spacing:1px;font-weight:700;">7 DAYS</div>
       </div>
       <div style="display:flex;align-items:baseline;gap:5px;">
         <span style="font-family:var(--f-mono);font-size:26px;font-weight:900;color:#6FA8DC;line-height:1;">${total7dUnits}</span>
-        <span style="font-size:11px;color:#666;font-family:var(--f-mono);">units</span>
+        <span style="font-size:11px;color:#888880;font-family:var(--f-mono);">units</span>
       </div>
       <div style="font-size:11px;color:#888;font-weight:700;margin-top:5px;">Total Units · 7-day</div>
       <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:7px;">All stores · last 7 days</div>
@@ -6160,19 +6160,19 @@ function renderMgrDashboard(){
   </div>
 
   <!-- ── WEEK AT A GLANCE — 7-day date strip ──────────────── -->
-  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
-    <div style="font-family:var(--f-mono);font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📅 Week at a Glance — Last 7 Days</div>
+  <div style="padding:0;background:#FFFFFF;border-bottom:2px solid #E8E4DC;">
+    <div style="font-family:var(--f-mono);font-size:10px;color:#FFFFFF;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;padding:10px 14px;background:#1A1A1A;border-bottom:1px solid #222;">📅 Week at a Glance — Last 7 Days</div><div style="padding:12px 14px;">
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
       ${past7.slice().reverse().map(dd=>{
         const total=dayTotals[dd.str];
         const sLocked=storeRows.filter(r=>sm.lockSet[r.s.code+'_'+dd.str]).length;
         const fLocked=storeRows.filter(r=>(sm.finSet[r.s.code+'_'+dd.str]||{}).locked).length;
         const isToday=dd.str===todayStr;
-        const accent=isToday?'#6FA8DC':'#222';
-        const bg=isToday?'#0A1A2A':'#1A1A1A';
+        const accent=isToday?'#9A7B4F':'#E8E4DC';
+        const bg=isToday?'#1A1A1A':'#FAFAF8';
         return `<a href="#stock-day-${dd.str}" onclick="event.preventDefault();const el=document.getElementById('stock-day-${dd.str}');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.boxShadow='0 0 0 2px #6FA8DC';setTimeout(()=>el.style.boxShadow='',1500);}" style="background:${bg};border:1px solid ${accent};border-radius:7px;padding:8px 4px;text-align:center;cursor:pointer;text-decoration:none;display:block;min-height:62px;">
           <div style="font-family:var(--f-mono);font-size:9px;color:${isToday?'#6FA8DC':'#666'};font-weight:700;letter-spacing:0.3px;text-transform:uppercase;">${isToday?'TODAY':dd.label}</div>
-          <div style="font-family:var(--f-mono);font-size:14px;font-weight:900;color:#C9A44E;margin-top:3px;">${total}u</div>
+          <div style="font-family:var(--f-mono);font-size:14px;font-weight:900;color:#9A7B4F;margin-top:3px;">${total}u</div>
           <div style="display:flex;justify-content:center;gap:3px;margin-top:4px;">
             <span style="font-family:var(--f-mono);font-size:8px;color:${sLocked===allStores.length?'#6FCF97':'#888'};">📦${sLocked}</span>
             <span style="font-family:var(--f-mono);font-size:8px;color:${fLocked===allStores.length?'#BB88DD':'#888'};">💰${fLocked}</span>
@@ -6188,34 +6188,34 @@ function renderMgrDashboard(){
   </div>
 
   <!-- ── SECTION 1: STOCK STATUS — last 7 days ────────────── -->
-  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
-      <div style="font-family:var(--f-mono);font-size:11px;color:#C9A44E;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">📦 Stock Status — Last 7 Days</div>
-      <div style="font-family:var(--f-mono);font-size:9px;color:#555;">Tap any chip → switch to that store</div>
+  <div style="padding:0;background:#FAFAF8;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1A1A1A;border-bottom:1px solid #222;">
+      <div style="font-family:var(--f-mono);font-size:10px;color:#FFFFFF;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;">📦 Stock Status — Last 7 Days</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:#AAA;font-weight:600;">Tap any chip → switch to that store</div>
     </div>
     ${past7.slice().reverse().map(dd=>{
       const total=dayTotals[dd.str];
       const locked=storeRows.filter(r=>sm.lockSet[r.s.code+'_'+dd.str]);
       const open=storeRows.filter(r=>!sm.lockSet[r.s.code+'_'+dd.str]);
       const isToday=dd.str===todayStr;
-      return `<div id="stock-day-${dd.str}" style="background:#1A1A1A;border:1px solid #222;border-radius:8px;padding:12px;margin-bottom:10px;transition:box-shadow 0.3s;">
+      return `<div id="stock-day-${dd.str}" style="background:#FFFFFF;border:none;border-bottom:2px solid #E8E4DC;padding:14px 16px;margin-bottom:0;transition:box-shadow 0.3s;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
           <div>
-            <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#CCC;">${dd.label}${isToday?' <span style=\'background:#1A2A3A;color:#6FA8DC;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;letter-spacing:0.5px;margin-left:4px;\'>TODAY</span>':''}</div>
-            <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:2px;">${dd.str}</div>
+            <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#1A1A1A;">${dd.label}${isToday?' <span style=\'background:#1A2A3A;color:#6FA8DC;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;letter-spacing:0.5px;margin-left:4px;\'>TODAY</span>':''}</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:#888880;margin-top:2px;">${dd.str}</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-family:var(--f-mono);font-size:16px;font-weight:900;color:#C9A44E;background:#2A1F00;padding:5px 12px;border-radius:8px;display:inline-block;border:1px solid #3A2F00;">${total}u</div>
-            <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:3px;letter-spacing:0.3px;">UNITS · ALL STORES</div>
+            <div style="font-family:var(--f-mono);font-size:16px;font-weight:900;color:#FFFFFF;background:#9A7B4F;padding:5px 14px;border-radius:6px;display:inline-block;border:none;">${total}u</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:#888880;margin-top:4px;letter-spacing:0.8px;font-weight:700;">UNITS · ALL STORES</div>
           </div>
         </div>
         <div style="margin-bottom:10px;">
-          <div style="font-family:var(--f-mono);font-size:9px;color:#666;font-weight:700;margin-bottom:6px;letter-spacing:0.5px;">🔒 LOCKED (${locked.length}/${allStores.length})</div>
-          ${locked.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${locked.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#1A3A1A;color:#6FCF97;border:1px solid #2A5A2A;border-radius:7px;padding:8px 11px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>🔒 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#444;font-style:italic;padding:8px 10px;background:#0D0D0D;border:1px dashed #2A2A2A;border-radius:6px;\'>No stores locked yet</div>`}
+          <div style="font-family:var(--f-mono);font-size:9px;color:#1A6A40;font-weight:800;margin-bottom:6px;letter-spacing:1px;">🔒 LOCKED (${locked.length}/${allStores.length})</div>
+          ${locked.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${locked.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#1A6A40;color:#FFFFFF;border:none;border-radius:6px;padding:8px 12px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>🔒 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#444;font-style:italic;padding:8px 10px;background:#0D0D0D;border:1px dashed #2A2A2A;border-radius:6px;\'>No stores locked yet</div>`}
         </div>
         <div>
-          <div style="font-family:var(--f-mono);font-size:9px;color:#666;font-weight:700;margin-bottom:6px;letter-spacing:0.5px;">🔓 NOT LOCKED (${open.length}/${allStores.length})</div>
-          ${open.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${open.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#3A1A1A;color:#E87070;border:1px solid #5A2A2A;border-radius:7px;padding:8px 11px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>🔓 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#6FCF97;padding:8px 10px;background:#1A2A1A;border:1px solid #2A5A2A;border-radius:6px;font-weight:700;\'>✓ All ${allStores.length} stores locked</div>`}
+          <div style="font-family:var(--f-mono);font-size:9px;color:#B03020;font-weight:800;margin-bottom:6px;letter-spacing:1px;">🔓 NOT LOCKED (${open.length}/${allStores.length})</div>
+          ${open.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${open.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#B03020;color:#FFFFFF;border:none;border-radius:6px;padding:8px 12px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>🔓 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#6FCF97;padding:8px 10px;background:#1A2A1A;border:1px solid #2A5A2A;border-radius:6px;font-weight:700;\'>✓ All ${allStores.length} stores locked</div>`}
         </div>
       </div>`;
     }).join('')}
@@ -6234,8 +6234,8 @@ function renderMgrDashboard(){
       return `<div style="background:#1A1A1A;border:1px solid #222;border-radius:8px;padding:12px;margin-bottom:10px;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
           <div>
-            <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#CCC;">${dd.label}${isToday?' <span style=\'background:#1A2A3A;color:#6FA8DC;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;letter-spacing:0.5px;margin-left:4px;\'>TODAY</span>':''}</div>
-            <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:2px;">${dd.str}</div>
+            <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#1A1A1A;">${dd.label}${isToday?' <span style=\'background:#1A2A3A;color:#6FA8DC;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;letter-spacing:0.5px;margin-left:4px;\'>TODAY</span>':''}</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:#888880;margin-top:2px;">${dd.str}</div>
           </div>
           <div style="text-align:right;">
             <div style="font-family:var(--f-mono);font-size:14px;font-weight:900;color:#BB88DD;background:#2A1A35;padding:5px 12px;border-radius:8px;display:inline-block;border:1px solid #3A2A45;">${locked.length}/${allStores.length} ✓</div>
@@ -6248,7 +6248,7 @@ function renderMgrDashboard(){
         </div>
         <div>
           <div style="font-family:var(--f-mono);font-size:9px;color:#666;font-weight:700;margin-bottom:6px;letter-spacing:0.5px;">📭 PENDING (${open.length}/${allStores.length})</div>
-          ${open.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${open.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#3A1A1A;color:#E87070;border:1px solid #5A2A2A;border-radius:7px;padding:8px 11px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>📭 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#6FCF97;padding:8px 10px;background:#1A2A1A;border:1px solid #2A5A2A;border-radius:6px;font-weight:700;\'>✓ All ${allStores.length} stores submitted</div>`}
+          ${open.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${open.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#B03020;color:#FFFFFF;border:none;border-radius:6px;padding:8px 12px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>📭 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#6FCF97;padding:8px 10px;background:#1A2A1A;border:1px solid #2A5A2A;border-radius:6px;font-weight:700;\'>✓ All ${allStores.length} stores submitted</div>`}
         </div>
       </div>`;
     }).join('')}
@@ -6266,7 +6266,7 @@ function renderMgrDashboard(){
         <div style="background:${medalClr?'linear-gradient(135deg,'+medalClr+'77,'+medalClr+'33)':'#222'};color:${medalClr||'#888'};border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:13px;font-weight:900;border:1px solid ${medalClr?medalClr+'55':'#333'};">#${i+1}</div>
         <div style="min-width:0;">
           <div style="font-size:13px;font-weight:800;color:#CCC;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.s.name}</div>
-          <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:2px;">${r.s.code} · ${r.s.city}${r.s.region?' · '+r.s.region:''}</div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:#888880;margin-top:2px;">${r.s.code} · ${r.s.city}${r.s.region?' · '+r.s.region:''}</div>
         </div>
         <div style="text-align:right;">
           <div style="font-family:var(--f-mono);font-size:16px;font-weight:900;color:#C9A44E;">${r.total7d}u</div>
