@@ -974,9 +974,9 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sv-low{color:#9A7B4F;font-weight:700;} .sv-empty{color:#B03020;font-weight:700;}
 /* Table — identical structure to .sgrid */
 .tstr-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-.tstr-table{border-collapse:collapse;width:100%;table-layout:fixed;background:var(--sheet);}
+.tstr-table{border-collapse:collapse;width:100%;table-layout:fixed;background:#FFFFFF;}
 .tstr-table th.tstr-prod-th,.tstr-table td.tstr-prod-td{
-  position:sticky;left:0;z-index:10;background:var(--white);
+  position:sticky;left:0;z-index:10;background:#FFFFFF;
   border-right:2px solid var(--border-dark);
   width:200px;min-width:200px;max-width:200px;
 }
@@ -985,9 +985,9 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .tstr-table thead tr.tstr-hdr th{
   font-family:var(--f-mono);font-size:9.5px;font-weight:800;
   letter-spacing:1px;text-transform:uppercase;
-  padding:9px 5px 7px;text-align:center;
+  padding:10px 5px 8px;text-align:center;
   background:#FAFAF8;
-  border:1px solid var(--border);border-bottom:2px solid var(--border-dark);
+  border:1px solid #E8E4DC;border-bottom:2px solid #E8E4DC;
 }
 .tstr-table thead tr.tstr-sub th{
   font-family:var(--f-mono);font-size:9px;font-weight:400;color:var(--muted);
@@ -1004,24 +1004,36 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   padding:0;text-align:center;border:1px solid var(--border);
   vertical-align:middle;
 }
-.tstr-table tr.tstr-prow{border-bottom:1px solid var(--border);}
+.tstr-table tr.tstr-prow{border-bottom:1px solid #E8E4DC;}
+.tstr-table tr.tstr-prow:nth-child(even) td{background:#FAFAF8!important;}
+.tstr-table tr.tstr-prow:nth-child(odd) td{background:#FFFFFF!important;}
 .tstr-table tr.tstr-prow:hover td{background-color:#F5F0E8!important;}
 /* Category separator — same as .cat-sep */
 .tstr-table tr.tstr-cat td{
-  background:#1A1A1A;border-top:2px solid #9A7B4F;
-  border-bottom:1px solid #9A7B4F;
-  padding:6px 14px;font-size:10px;font-weight:800;color:#FFFFFF;
-  letter-spacing:2px;text-transform:uppercase;
+  padding:0!important;background:transparent!important;
 }
+.tstr-cat-inner{
+  display:flex;align-items:center;gap:0;
+  background:linear-gradient(135deg,#0D0B08 0%,#1A1510 40%,#0F0D0A 100%);
+  border-top:1px solid #3A2E1A;border-bottom:2px solid #9A7B4F;
+  position:relative;overflow:hidden;
+}
+.tstr-cat-inner::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(154,123,79,0.12) 0%,rgba(154,123,79,0.04) 60%,transparent 100%);
+  pointer-events:none;
+}
+.tstr-cat-icon{font-size:18px;padding:9px 14px;flex-shrink:0;border-right:1px solid rgba(154,123,79,0.25);background:rgba(154,123,79,0.08);display:flex;align-items:center;justify-content:center;min-width:50px;align-self:stretch;}
+.tstr-cat-name{padding:8px 14px;font-family:var(--f-mono);font-size:11px;font-weight:800;color:#E8C87A;letter-spacing:2px;text-transform:uppercase;}
 /* Status pill */
 .tstr-pill{
   display:inline-block;font-size:9px;font-weight:700;
   padding:3px 9px;border-radius:10px;white-space:nowrap;
 }
-.tstr-pill.p-active{background:#1A3A1A;color:#6FCF97;border:1px solid #2A5A2A;}
-.tstr-pill.p-low   {background:#2A2000;color:var(--gold2);border:1px solid #4A3A00;}
-.tstr-pill.p-empty {background:#2A1010;color:#E87070;border:1px solid #5A2A2A;}
-.tstr-pill.p-sealed{background:#0A1020;color:#6FA8DC;border:1px solid #1A3A6A;}
+.tstr-pill.p-active{background:#EBF5EB;color:#1A6A40;border:1px solid #A9DFBF;}
+.tstr-pill.p-low   {background:#FEF9E7;color:#7D6608;border:1px solid #F9E79F;}
+.tstr-pill.p-empty {background:#FDECEA;color:#B03020;border:1px solid #FADBD8;}
+.tstr-pill.p-sealed{background:#EBF5FB;color:#2471A3;border:1px solid #AED6F1;}
 /* Days active */
 .tstr-days-val{
   font-family:var(--f-mono);font-size:15px;font-weight:600;
@@ -1693,8 +1705,8 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <div id="testerSection" style="margin-top:0;border-top:4px solid #2A2A1A;">
         <!-- Section header -->
         <div style="background:#111;padding:8px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #2A2A1A;flex-shrink:0;">
-          <span style="font-family:var(--f-mono);font-size:10px;font-weight:700;color:var(--gold2);letter-spacing:1.5px;text-transform:uppercase;">🧴 TESTER BOTTLES</span>
-          <span style="font-family:var(--f-mono);font-size:9px;color:#555;">Tap Opening or Received to enter · Tap Status to update bottle condition</span>
+          <span style="font-family:var(--f-mono);font-size:10px;font-weight:800;color:#FFFFFF;letter-spacing:2px;text-transform:uppercase;">🧴 TESTER BOTTLES</span>
+          <span style="font-family:var(--f-mono);font-size:9px;color:#AAA;font-weight:500;">Tap Opening or Received to enter · Tap Status to update bottle condition</span>
         </div>
         <!-- Tester grid -->
         <div id="tstrTotalsBar" style="position:sticky;top:0;z-index:10;"></div>
@@ -8803,35 +8815,35 @@ function buildTesterGrid(){
   // ── Frozen totals bar ──
   if(totalsBar){
     totalsBar.innerHTML=''
-      +'<div style="display:flex;align-items:center;gap:0;background:#0A0A0A;border-bottom:3px solid #3A1A6A;border-top:3px solid #3A1A6A;font-family:var(--f-mono);">'
-      +'<div style="min-width:200px;width:200px;padding:8px 14px;border-right:2px solid #3A1A6A;background:#110820;">'
-      +'<div style="font-size:9px;color:#9B6FE8;font-weight:700;letter-spacing:1px;">DAILY TOTALS</div>'
-      +'<div style="font-size:8px;color:#5A3A80;margin-top:1px;">مجموع اليوم</div>'
+      +'<div style="display:flex;align-items:center;gap:0;background:#FFFFFF;border-bottom:2px solid #E8E4DC;border-top:1px solid #E8E4DC;font-family:var(--f-mono);">'
+      +'<div style="min-width:200px;width:200px;padding:10px 14px;border-right:2px solid #9A7B4F;background:#1A1A1A;">'
+      +'<div style="font-size:9px;color:#FFFFFF;font-weight:800;letter-spacing:1.5px;">DAILY TOTALS</div>'
+      +'<div style="font-family:var(--f-ar);font-size:10px;color:#CCC;margin-top:2px;">مجموع اليوم</div>'
       +'</div>'
-      +'<div style="flex:0 0 70px;padding:8px 4px;text-align:center;border-right:1px solid #1A1A2A;">'
-      +'<div style="font-size:8px;color:#555;margin-bottom:2px;">Opening</div>'
-      +'<div style="font-size:16px;font-weight:700;color:#6AADDC;">'+( grandOpen||'&mdash;')+'</div>'
+      +'<div style="flex:0 0 70px;padding:10px 4px;text-align:center;border-right:1px solid #E8E4DC;">'
+      +'<div style="font-size:8px;color:#888880;font-weight:700;letter-spacing:0.8px;margin-bottom:3px;">OPEN</div>'
+      +'<div style="font-size:18px;font-weight:800;color:#2471A3;">'+( grandOpen||'&mdash;')+'</div>'
       +'</div>'
-      +'<div style="flex:0 0 70px;padding:8px 4px;text-align:center;border-right:1px solid #1A1A2A;">'
-      +'<div style="font-size:8px;color:#3A7A3A;margin-bottom:2px;">Received</div>'
-      +'<div style="font-size:16px;font-weight:700;color:#6FCF97;">'+( grandRec||'&mdash;')+'</div>'
+      +'<div style="flex:0 0 70px;padding:10px 4px;text-align:center;border-right:1px solid #E8E4DC;">'
+      +'<div style="font-size:8px;color:#888880;font-weight:700;letter-spacing:0.8px;margin-bottom:3px;">RECV</div>'
+      +'<div style="font-size:18px;font-weight:800;color:#1A6A40;">'+( grandRec||'&mdash;')+'</div>'
       +'</div>'
-      +'<div style="flex:0 0 70px;padding:8px 4px;text-align:center;border-right:1px solid #1A1A2A;background:#1A0808;">'
-      +'<div style="font-size:8px;color:#7A3A3A;margin-bottom:2px;">In Use</div>'
-      +'<div style="font-size:20px;font-weight:700;color:#EB8C8C;">'+grandUse+'</div>'
+      +'<div style="flex:0 0 70px;padding:10px 4px;text-align:center;border-right:1px solid #E8E4DC;background:#FFF5F5;">'
+      +'<div style="font-size:8px;color:#B03020;font-weight:700;letter-spacing:0.8px;margin-bottom:3px;">IN USE</div>'
+      +'<div style="font-size:20px;font-weight:800;color:#B03020;">'+grandUse+'</div>'
       +'</div>'
-      +'<div style="flex:1;padding:8px 16px;border-right:1px solid #1A1A2A;">'
-      +'<div style="font-size:8px;color:#5A3A80;margin-bottom:4px;">Status Summary</div>'
-      +'<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">'
-      +'<span style="font-size:11px;color:#6FCF97;font-weight:700;">🟢 '+_tbCountByStatus('full')+' Full</span>'
-      +'<span style="font-size:11px;color:#F2C94C;font-weight:700;">🟡 '+_tbCountByStatus('half')+' Half</span>'
-      +'<span style="font-size:11px;color:#EB5757;font-weight:700;">🔴 '+_tbCountByStatus('empty')+' Empty</span>'
-      +'<span style="font-size:11px;color:#6AADDC;font-weight:700;">📦 '+_tbCountByStatus('sealed')+' Sealed</span>'
+      +'<div style="flex:1;padding:10px 16px;border-right:1px solid #E8E4DC;">'
+      +'<div style="font-size:8px;color:#888880;font-weight:700;letter-spacing:1px;margin-bottom:5px;">STATUS SUMMARY</div>'
+      +'<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">'
+      +'<span style="font-size:11px;color:#1A6A40;font-weight:700;background:#EBF5EB;padding:3px 9px;border-radius:10px;border:1px solid #A9DFBF;">● '+_tbCountByStatus('full')+' Full</span>'
+      +'<span style="font-size:11px;color:#7D6608;font-weight:700;background:#FEF9E7;padding:3px 9px;border-radius:10px;border:1px solid #F9E79F;">● '+_tbCountByStatus('half')+' Half</span>'
+      +'<span style="font-size:11px;color:#B03020;font-weight:700;background:#FDECEA;padding:3px 9px;border-radius:10px;border:1px solid #FADBD8;">● '+_tbCountByStatus('empty')+' Empty</span>'
+      +'<span style="font-size:11px;color:#2471A3;font-weight:700;background:#EBF5FB;padding:3px 9px;border-radius:10px;border:1px solid #AED6F1;">📦 '+_tbCountByStatus('sealed')+' Sealed</span>'
       +'</div>'
       +'</div>'
-      +'<div style="flex:0 0 70px;padding:8px 4px;text-align:center;border-right:1px solid #1A1A2A;">'
-      +'<div style="font-size:8px;color:#7A4A00;margin-bottom:2px;">Returned</div>'
-      +'<div style="font-size:16px;font-weight:700;color:#F2994A;">'+( grandReturn||'&mdash;')+'</div>'
+      +'<div style="flex:0 0 70px;padding:10px 4px;text-align:center;border-right:1px solid #E8E4DC;">'
+      +'<div style="font-size:8px;color:#888880;font-weight:700;letter-spacing:0.8px;margin-bottom:3px;">RTW</div>'
+      +'<div style="font-size:18px;font-weight:700;color:#F2994A;">'+( grandReturn||'&mdash;')+'</div>'
       +'</div>'
       +'<div style="flex:0 0 70px;padding:8px 4px;text-align:center;">'
       +'<div style="font-size:8px;color:#555;margin-bottom:2px;">Closing</div>'
@@ -8843,39 +8855,39 @@ function buildTesterGrid(){
   // ── Header ──
   head.innerHTML=''
     +'<tr class="hdr-group">'
-    +'<th class="prod-th" rowspan="2" style="background:#110820;min-width:200px;width:200px;max-width:200px;border-right:2px solid #3A1A6A;">'
-    +'<div style="font-family:var(--f-mono);font-size:9px;font-weight:700;color:#9B6FE8;letter-spacing:1px;">TESTER BARCODE</div>'
-    +'<div style="font-family:var(--f-mono);font-size:9px;color:#5A3A80;margin-top:2px;">باركود التيستر</div>'
+    +'<th class="prod-th" rowspan="2" style="background:#1A1A1A;min-width:200px;width:200px;max-width:200px;border-right:2px solid #9A7B4F;">'
+    +'<div style="font-family:var(--f-mono);font-size:9px;font-weight:800;color:#FFFFFF;letter-spacing:1.5px;">TESTER BOTTLES</div>'
+    +'<div style="font-family:var(--f-ar);font-size:10px;color:#AAA;margin-top:2px;">باركود التيستر</div>'
     +'</th>'
-    +'<th rowspan="2" style="background:#0E1620;border-bottom:2px solid #2A5A8A;min-width:70px;width:70px;">'
-    +'<div class="hdr-en" style="color:#6AADDC;">OPENING</div>'
-    +'<div class="hdr-ar" style="color:#3A6A8A;">رصيد الافتتاح</div>'
+    +'<th rowspan="2" style="background:#E8F4FB;border-bottom:2px solid #2471A3;min-width:70px;width:70px;">'
+    +'<div class="hdr-en" style="color:#2471A3;">OPEN</div>'
+    +'<div class="hdr-ar" style="color:#5A8AB0;">رصيد الافتتاح</div>'
     +'<div class="hdr-sub-lbl">(A)</div>'
     +'</th>'
-    +'<th rowspan="2" style="background:#0E200E;border-bottom:2px solid #2A7A2A;min-width:70px;width:70px;">'
-    +'<div class="hdr-en" style="color:#6FCF97;">RECEIVED</div>'
-    +'<div class="hdr-ar" style="color:#3A7A3A;">وارد من المستودع</div>'
+    +'<th rowspan="2" style="background:#EBF5EB;border-bottom:2px solid #1A6A40;min-width:70px;width:70px;">'
+    +'<div class="hdr-en" style="color:#1A6A40;">RECV</div>'
+    +'<div class="hdr-ar" style="color:#5A8A6A;">وارد من المستودع</div>'
     +'<div class="hdr-sub-lbl">(B)</div>'
     +'</th>'
-    +'<th rowspan="2" style="background:#200E0E;border-bottom:2px solid #8A2A2A;min-width:70px;width:70px;">'
-    +'<div class="hdr-en" style="color:#EB8C8C;">IN USE</div>'
-    +'<div class="hdr-ar" style="color:#8A3A3A;">قيد الاستخدام</div>'
+    +'<th rowspan="2" style="background:#FDECEA;border-bottom:2px solid #B03020;min-width:70px;width:70px;">'
+    +'<div class="hdr-en" style="color:#B03020;">IN USE</div>'
+    +'<div class="hdr-ar" style="color:#A04040;">قيد الاستخدام</div>'
     +'<div class="hdr-sub-lbl">(C)</div>'
     +'</th>'
-    +'<th rowspan="2" style="background:#110820;border-bottom:2px solid #5A2A9A;min-width:260px;">'
-    +'<div class="hdr-en" style="color:#9B6FE8;">STATUS — ALL BOTTLES</div>'
-    +'<div class="hdr-ar" style="color:#5A3A80;">حالة كل التيسترات</div>'
-    +'<div class="hdr-sub-lbl">(D) — Tap bar to cycle: Full &rarr; Half &rarr; Empty</div>'
+    +'<th rowspan="2" style="background:#1A1A1A;border-bottom:2px solid #9A7B4F;min-width:260px;">'
+    +'<div class="hdr-en" style="color:#FFFFFF;">STATUS — ALL BOTTLES</div>'
+    +'<div class="hdr-ar" style="color:#CCC;">حالة كل التيسترات</div>'
+    +'<div class="hdr-sub-lbl" style="color:#9A8A6A;">(D) — Tap bar to cycle: Full &rarr; Half &rarr; Empty</div>'
     +'</th>'
-    +'<th rowspan="2" style="background:#200E00;border-bottom:2px solid #8A4A00;min-width:70px;width:70px;">'
-    +'<div class="hdr-en" style="color:#F2994A;">RETURN WH</div>'
-    +'<div class="hdr-ar" style="color:#7A4A00;">مرتجع المستودع</div>'
+    +'<th rowspan="2" style="background:#FEF5E7;border-bottom:2px solid #9A7B4F;min-width:70px;width:70px;">'
+    +'<div class="hdr-en" style="color:#9A7B4F;">RTW</div>'
+    +'<div class="hdr-ar" style="color:#8A6A30;">مرتجع المستودع</div>'
     +'<div class="hdr-sub-lbl">(E)</div>'
     +'</th>'
-    +'<th rowspan="2" style="background:#0A0A0A;border-bottom:2px solid #4A4A4A;min-width:70px;width:70px;">'
-    +'<div class="hdr-en" style="color:#CCC;">CLOSING</div>'
-    +'<div class="hdr-ar" style="color:#666;">رصيد الإغلاق</div>'
-    +'<div class="hdr-sub-lbl">(F)</div>'
+    +'<th rowspan="2" style="background:#1A1A1A;border-bottom:2px solid #555;min-width:70px;width:70px;">'
+    +'<div class="hdr-en" style="color:#FFFFFF;">CLOSING</div>'
+    +'<div class="hdr-ar" style="color:#AAA;">رصيد الإغلاق</div>'
+    +'<div class="hdr-sub-lbl" style="color:#888;">(F)</div>'
     +'</th>'
     +'</tr>';
 
@@ -8887,7 +8899,9 @@ function buildTesterGrid(){
 
     var cr=document.createElement('tr');
     cr.className='cat-sep';
-    cr.innerHTML='<td colspan="7" style="background:#110820;color:#9B6FE8;border-top:2px solid #3A1A6A;font-family:var(--f-mono);font-size:10px;font-weight:700;letter-spacing:1px;padding:6px 14px;">'+cat.cat+' &mdash; Testers</td>';
+    var _tcm2={'Caballo Collection':['🐎','كولكشن كابالو'],'Bel Collection':['🌹','كولكشن بيل'],'Sets & Specials':['✨','مجموعات مميزة'],'Oud':['🪵','عود'],'Dakhoon':['🌿','دخون'],'Oils & Gifts':['💎','زيوت وهدايا'],'Accessories':['🎁','إكسسوارات'],'Gift Boxes':['📦','صناديق هدايا'],'Heritage Collection':['🏛️','كولكشن التراث'],'Bel Paper Box (Gift Sets)':['🎀','بيل']};
+    var _te=_tcm2[cat.cat]||['◈',''];
+    cr.innerHTML='<td colspan="7"><div class="tstr-cat-inner"><div class="tstr-cat-icon">'+_te[0]+'</div><div class="tstr-cat-name">'+cat.cat+' — TESTERS</div></div></td>';
     tbody.appendChild(cr);
 
     tProds.forEach(function(p, ri){
@@ -8914,23 +8928,23 @@ function buildTesterGrid(){
           sealed.forEach(function(b){
             var bnum=bottles.indexOf(b)+1;
             sealedHtml+='<button onclick="_tbOpenBottle(\''+p.code+'\','+b.id+')" '
-              +'style="background:#0E1A0E;border:1px solid #2A5A2A;border-radius:6px;color:#6FCF97;'
+              +'style="background:#EBF5EB;border:1px solid #A9DFBF;border-radius:6px;color:#1A6A40;'
               +'font-family:var(--f-mono);font-size:9px;font-weight:700;padding:4px 8px;cursor:pointer;white-space:nowrap;">'
               +'&#9654; Open #'+bnum+'</button>';
           });
         } else {
-          sealedHtml+='<span style="font-family:var(--f-mono);font-size:8px;color:#444;">'+sealed.length+' sealed</span>';
+          sealedHtml+='<span style="font-family:var(--f-mono);font-size:8px;color:#888880;font-weight:700;">'+sealed.length+' sealed</span>';
         }
         sealedHtml+='</div>';
       }
 
       var tr=document.createElement('tr');
       tr.className='prow'+(locked?' row-locked':'');
-      tr.style.background=ri%2===0?'#0C0618':'#100A1C';
+      tr.style.background=ri%2===0?'#FFFFFF':'#FAFAF8';
       tr.innerHTML=''
-        +'<td class="prod-td" style="background:#110820;border-right:2px solid #3A1A6A;">'
+        +'<td class="prod-td" style="background:#FFFFFF;border-right:2px solid #9A7B4F;">'
         +'<div class="prod-inner"><div class="pname">'+p.en+(p.ar?'<span class="pname-ar">'+p.ar+'</span>':'')+'</div>'
-        +'<span class="pcode" style="color:#9B6FE8;">'+p.code+'</span></div></td>'
+        +'<span class="pcode" style="color:#888880;">'+p.code+'</span></div></td>'
 
         +'<td class="dcell" style="text-align:center;cursor:pointer;" '+openClickAttr+'>'
         +'<span class="dcell-val'+(topen===0?' empty':'')+'">'+( topen||'&mdash;')+'</span></td>'
