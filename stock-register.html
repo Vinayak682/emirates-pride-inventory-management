@@ -1652,11 +1652,11 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <div class="fdiv"></div>
     <div class="fstat"><span class="fstat-label">Warehouse In</span><span class="fstat-val" style="color:#7FC860;" id="ftWh">0</span></div>
     <div class="fdiv"></div>
-    <div class="fstat"><span class="fstat-label">RECV</span><span class="fstat-val fi" id="ftIn">0</span></div>
+    <div class="fstat"><span class="fstat-label">Store In</span><span class="fstat-val fi" id="ftIn">0</span></div>
     <div class="fdiv"></div>
     <div class="fstat"><span class="fstat-label">Sold</span><span class="fstat-val" style="color:#E87070;" id="ftSold">0</span></div>
     <div class="fdiv"></div>
-    <div class="fstat"><span class="fstat-label">SENT</span><span class="fstat-val" style="color:#BB88DD;" id="ftTrf">0</span></div>
+    <div class="fstat"><span class="fstat-label">Sent Out</span><span class="fstat-val" style="color:#BB88DD;" id="ftTrf">0</span></div>
     <div class="fdiv"></div>
     <div class="fstat"><span class="fstat-label">Rtn WH</span><span class="fstat-val" style="color:#E8A040;" id="ftWrh">0</span></div>
     <div class="fdiv"></div>
@@ -2298,10 +2298,10 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Field to Adjust</div>
         <select id="adj-field-sel" style="width:100%;background:#1E1E1E;border:1px solid #333;color:#CCC;border-radius:7px;padding:10px 12px;font-family:var(--f-body);font-size:13px;outline:none;" onchange="adjFieldChanged()">
           <option value="open">Opening Stock</option>
-          <option value="wh">WH IN</option>
-          <option value="inn">RECV</option>
+          <option value="wh">WH Transfer In</option>
+          <option value="inn">Store Transfer In</option>
           <option value="sold">Sales</option>
-          <option value="trf">SENT</option>
+          <option value="trf">Transfer Out</option>
         </select>
       </div>
       <div style="margin-bottom:10px;">
@@ -2996,12 +2996,12 @@ function buildGrid(){
           <div class="bwmp-ar">فخـر الإمارات</div>
         </div>
       </th>
-      <th class="gh-open"><div class="hdr-en">OPEN</div><div class="hdr-ar">مخزون الافتتاح</div><div class="hdr-sub-lbl">(A)</div></th>
-      <th class="gh-wh"><div class="hdr-en">WH IN</div><div class="hdr-ar">نقل من المستودع</div><div class="hdr-sub-lbl">(B)</div></th>
-      <th class="gh-in"><div class="hdr-en">RECV</div><div class="hdr-ar">نقل من المتجر</div><div class="hdr-sub-lbl">(C)</div></th>
+      <th class="gh-open"><div class="hdr-en">OPENING STOCK</div><div class="hdr-ar">مخزون الافتتاح</div><div class="hdr-sub-lbl">(A)</div></th>
+      <th class="gh-wh"><div class="hdr-en">TRANSFER FROM WAREHOUSE</div><div class="hdr-ar">نقل من المستودع</div><div class="hdr-sub-lbl">(B)</div></th>
+      <th class="gh-in"><div class="hdr-en">TRANSFER FROM STORE</div><div class="hdr-ar">نقل من المتجر</div><div class="hdr-sub-lbl">(C)</div></th>
       <th class="gh-sold"><div class="hdr-en">SALES</div><div class="hdr-ar">المبيعات</div><div class="hdr-sub-lbl">(D)</div></th>
-      <th class="gh-trf"><div class="hdr-en">SENT</div><div class="hdr-ar">نقل إلى متجر</div><div class="hdr-sub-lbl">(E)</div></th>
-      <th class="gh-wrh"><div class="hdr-en">RTW</div><div class="hdr-ar">إرجاع إلى المستودع</div><div class="hdr-sub-lbl">(F)</div></th>
+      <th class="gh-trf"><div class="hdr-en">TRANSFER TO STORE</div><div class="hdr-ar">نقل إلى متجر</div><div class="hdr-sub-lbl">(E)</div></th>
+      <th class="gh-wrh"><div class="hdr-en">RETURN TO WAREHOUSE</div><div class="hdr-ar">إرجاع إلى المستودع</div><div class="hdr-sub-lbl">(F)</div></th>
       <th class="gh-bal"><div class="hdr-en">BALANCE</div><div class="hdr-ar">الرصيد</div><div class="hdr-sub-lbl">A+B+C−D−E−F</div></th>
     </tr>
     <tr class="hdr-sub hdr-totals-row">
@@ -3233,7 +3233,7 @@ function openNP(code,field){
   const p=PRODUCTS.find(x=>x.code===code);
   npCtx={code,field};
   npBuf=String(dbGet(me.code,curDay,code,field)||'');
-  const labels={open:'OPEN — Starting Balance  (A)',wh:'WH IN — From Warehouse  (B)',inn:'RECV — From Another Store  (C)',sold:'SOLD — To Customer  (D)',trf:'SENT — To Another Store  (E)',wrh:'RTW — Return to Warehouse  (F)'};
+  const labels={open:'Opening Stock  (A)',wh:'Warehouse IN — From Warehouse  (B)',inn:'Store IN — From Another Store  (C)',sold:'SOLD — To Customer  (D)',trf:'SENT OUT — To Another Store  (E)',wrh:'RETURN TO WAREHOUSE  (F)'};
   const cls={open:'open',wh:'wh',inn:'inn',sold:'sold',trf:'trf',wrh:'wrh'};
   document.getElementById('npProduct').textContent=p?p.en:code;
   const fEl=document.getElementById('npField');
@@ -3248,7 +3248,7 @@ function openNP(code,field){
   if(storeRow&&storeSel){
     if(field==='inn'||field==='trf'){
       storeRow.style.display='block';
-      storeLbl.textContent=field==='inn'?'📥 RECV — Which store sent this?':'📤 SENT — Which store receives this?';
+      storeLbl.textContent=field==='inn'?'📥 Transfer FROM which store?':'📤 Transfer TO which store?';
       storeSel.innerHTML='<option value="">— Select store —</option>';
       // Group by manager
       const mgrs=[...new Set(STORES.filter(s=>s.code!==me.code&&s.code!=='MGR').map(s=>s.mgr||''))];
@@ -4092,12 +4092,12 @@ function renderDash(){
   const kpiEl = document.createElement('div');
   kpiEl.className = 'dash-day-kpi';
   kpiEl.innerHTML = `
-    <div class="dkpi"><span class="dkpi-val open">${totO||'—'}</span><div class="dkpi-label">OPEN</div></div>
-    <div class="dkpi"><span class="dkpi-val wh">${totWh||'—'}</span><div class="dkpi-label">WH IN</div></div>
-    <div class="dkpi"><span class="dkpi-val inn">${totIn||'—'}</span><div class="dkpi-label">RECV</div></div>
-    <div class="dkpi"><span class="dkpi-val sold">${totSold||'—'}</span><div class="dkpi-label">SOLD</div></div>
-    <div class="dkpi"><span class="dkpi-val trf">${totTrf||'—'}</span><div class="dkpi-label">SENT</div></div>
-    <div class="dkpi"><span class="dkpi-val bal">${totBal}</span><div class="dkpi-label">BAL</div></div>`;
+    <div class="dkpi"><span class="dkpi-val open">${totO||'—'}</span><div class="dkpi-label">Opening</div></div>
+    <div class="dkpi"><span class="dkpi-val wh">${totWh||'—'}</span><div class="dkpi-label">WH In</div></div>
+    <div class="dkpi"><span class="dkpi-val inn">${totIn||'—'}</span><div class="dkpi-label">Store In</div></div>
+    <div class="dkpi"><span class="dkpi-val sold">${totSold||'—'}</span><div class="dkpi-label">Sales</div></div>
+    <div class="dkpi"><span class="dkpi-val trf">${totTrf||'—'}</span><div class="dkpi-label">Sent Out</div></div>
+    <div class="dkpi"><span class="dkpi-val bal">${totBal}</span><div class="dkpi-label">Balance</div></div>`;
   body.appendChild(kpiEl);
 
   // ── STATUS BADGE ──
@@ -4145,7 +4145,7 @@ function renderDash(){
       const row = document.createElement('div');
       row.className = 'dl-row';
       const icons = {sold:'💰',trf:'📤',wh:'🏭',inn:'🔄'};
-      const labels = {sold:'SOLD — To Customer',trf:'SENT — To Another Store',wh:'WH IN — From Warehouse',inn:'RECV — From Another Store'};
+      const labels = {sold:'Sold to Customer',trf:'Sent to Another Store',wh:'Warehouse Transfer Received',inn:'Store Transfer Received'};
       // FIXED: correct qty lookup per type
       const qty = type==='sold'?s : type==='trf'?t : type==='wh'?w : i;
       const sign = (type==='sold'||type==='trf')?'-':'+';
@@ -4208,8 +4208,8 @@ function renderDash(){
     table.innerHTML = `<thead><tr>
       <th style="text-align:left;min-width:160px;">Product</th>
       <th style="color:#6FA8DC;">OPEN</th>
-      <th style="color:#7FC860;">WH IN</th>
-      <th style="color:#5DBEA3;">RECV</th>
+      <th style="color:#7FC860;">WH</th>
+      <th style="color:#5DBEA3;">IN</th>
       <th style="color:#E87070;">SOLD</th>
       <th style="color:#BB88DD;">SENT</th>
       <th style="color:var(--gold2);">BAL</th>
@@ -6948,10 +6948,10 @@ function renderTracker(){
   const strip=document.createElement('div');
   strip.className='tracker-summary-strip';
   strip.innerHTML=`
-    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#7FC860;">${totalWh||'—'}</span><div class="tracker-sum-label">WH IN</div></div>
-    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#5DBEA3;">${totalIn||'—'}</span><div class="tracker-sum-label">RECV</div></div>
-    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#E87070;">${totalSold||'—'}</span><div class="tracker-sum-label">SOLD</div></div>
-    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#BB88DD;">${totalTrf||'—'}</span><div class="tracker-sum-label">SENT</div></div>`;
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#7FC860;">${totalWh||'—'}</span><div class="tracker-sum-label">Total WH In</div></div>
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#5DBEA3;">${totalIn||'—'}</span><div class="tracker-sum-label">Total Received</div></div>
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#E87070;">${totalSold||'—'}</span><div class="tracker-sum-label">Total Sold</div></div>
+    <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#BB88DD;">${totalTrf||'—'}</span><div class="tracker-sum-label">Total Sent Out</div></div>`;
   body.appendChild(strip);
 
   // ── PER-DAY MOVEMENT BLOCKS ──
@@ -6997,7 +6997,7 @@ function renderTracker(){
       ev.innerHTML=`
         <div class="tracker-ev-icon">📂</div>
         <div class="tracker-ev-body">
-          <div class="tracker-ev-type">OPEN</div>
+          <div class="tracker-ev-type">Opening Stock</div>
           <div class="tracker-ev-detail">Starting balance for ${dl.full}</div>
         </div>
         <div class="tracker-ev-qty neu">${o}</div>`;
@@ -7434,7 +7434,7 @@ function _expStockDayCSV(date){
   if(db._lockNames?.[me.code+'_'+di]) rows.push(['Locked By:','',db._lockNames[me.code+'_'+di].name]);
   rows.push(['Generated:','',new Date().toLocaleString('en-GB')]);
   rows.push([]);
-  rows.push(['SKU Code','Product Name','OPEN','WH IN','RECV','SOLD','SENT','RTW','BAL']);
+  rows.push(['SKU Code','Product Name','Opening','WH In','Store In','Sales','Sent Out','Return to WH','Balance']);
   let tO=0,tW=0,tI=0,tS=0,tT=0,tR=0,tB=0;
   PRODUCTS.forEach(p=>{
     if(di<0||di>=DAY_WINDOW){ rows.push([p.code,p.en,'-','-','-','-','-','-','-']); return; }
