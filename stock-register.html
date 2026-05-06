@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="cache-bust" content="v20260506-scroll-fix">
+<meta name="cache-bust" content="v20260506-single-scroll">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -529,8 +529,8 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 }
 .sp-mode-btn.active{color:#1A1A1A;border-bottom-color:#9A7B4F;font-weight:800;}
 
-/* Product lookup panel */
-.avail-panel{display:flex;flex-direction:column;flex:1;min-height:0;}
+/* Product lookup panel — block, spBody does the scrolling */
+.avail-panel{display:block;}
 
 /* Empty state */
 .avail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;}
@@ -556,26 +556,33 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sp-stat-n.g{color:#1A6A40;}.sp-stat-n.r{color:#B03020;}.sp-stat-n.a{color:#C8920A;}
 .sp-stat-l{font-size:8px;color:#888880;text-transform:uppercase;letter-spacing:1px;font-weight:700;}
 
-/* Two-column AM layout */
-.sp-am-panels{display:flex;flex:1;overflow:hidden;min-height:0;}
-.sp-am-panel{flex:1;display:flex;flex-direction:column;border-right:1px solid #E8E4DC;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#FAFAF8;}
-.sp-am-panel:last-child{border-right:none;}
+/* Single unified scroll list — spBody is the scroller */
+.sp-am-panels{display:block;background:#FAFAF8;}
+.sp-am-panel{display:block;border-bottom:3px solid #9A7B4F;}
+.sp-am-panel:last-child{border-bottom:none;}
 
 /* AM header */
-.sp-am-hdr{background:#1A1A1A;border-bottom:3px solid #9A7B4F;padding:8px 12px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
+.sp-am-hdr{background:#1A1A1A;border-bottom:3px solid #9A7B4F;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
 .sp-am-hdr-name{font-family:var(--f-mono);font-size:10px;font-weight:800;color:#FFFFFF;text-transform:uppercase;letter-spacing:1.5px;}
 .sp-am-hdr-sub{font-family:var(--f-mono);font-size:9px;color:#CCA;font-weight:600;letter-spacing:0.5px;}
 
 /* Region header */
-.sp-rgn-hdr{background:#141010;padding:4px 10px;border-bottom:1px solid #1A1A1A;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
+.sp-rgn-hdr{background:#141010;padding:4px 10px;border-bottom:1px solid #1A1A1A;display:flex;align-items:center;justify-content:space-between;}
 .sp-rgn-hdr-name{font-family:var(--f-mono);font-size:8px;font-weight:700;color:#C8A860;text-transform:uppercase;letter-spacing:1px;}
 .sp-rgn-hdr-info{font-family:var(--f-mono);font-size:8px;color:#888;}
 
-/* Store grid within each AM panel */
-.sp-store-grid{display:grid;grid-template-columns:1fr 1fr;flex-shrink:0;}
+/* Store grid — 2 cols per region, full width */
+.sp-store-grid{display:grid;grid-template-columns:1fr 1fr;}
 
-/* Store tile — uniform 38px */
-.sp-tile{display:flex;align-items:center;gap:0;height:42px;border-bottom:1px solid #E8E4DC;border-right:1px solid #E8E4DC;overflow:hidden;background:#FFFFFF;}
+/* Store tile — taller for full-width readability */
+.sp-tile{display:flex;align-items:center;gap:0;height:48px;border-bottom:1px solid #E8E4DC;border-right:1px solid #E8E4DC;overflow:hidden;background:#FFFFFF;}
+.sp-tile:nth-child(even){border-right:none;}
+.sp-tile.hs{background:#F2FBF5;cursor:pointer;}.sp-tile.hs:active{background:#E8F8ED;}
+.sp-tile.ls{background:#FDFBF5;cursor:pointer;}.sp-tile.ls:active{background:#FAF6EC;}
+.sp-tile.zs{background:#FFFFFF;}
+.sp-tile.mine{outline:2px solid #9A7B4F;outline-offset:-2px;z-index:1;position:relative;}
+
+/* Store tile — defined in unified scroll section above */
 .sp-tile:nth-child(even){border-right:none;}
 .sp-tile.hs{background:#F2FBF5;cursor:pointer;}.sp-tile.hs:active{background:#E8F8ED;}
 .sp-tile.ls{background:#FDFBF5;cursor:pointer;}.sp-tile.ls:active{background:#FAF6EC;}
@@ -3668,7 +3675,6 @@ function renderProductMode(body){
         ${prod.ar?`<div class="sp-hero-ar">${prod.ar}</div>`:''}
         <div class="sp-hero-meta">${prod.code} · ${prod.cat||''} · ${myStatus}</div>
       </div>
-
     </div>
     <div class="sp-stats">
       <div class="sp-stat"><span class="sp-stat-n g">${inCnt}</span><span class="sp-stat-l">Stores In Stock</span></div>
