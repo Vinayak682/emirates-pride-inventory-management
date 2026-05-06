@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="cache-bust" content="v20260429-1400">
+<meta name="cache-bust" content="v20260506-scroll-fix">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -390,7 +390,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 /* ─── ALL-STORES PANEL ─── */
 #storesPanel{
   position:fixed;inset:0;background:#FFFFFF;z-index:800;
-  display:none;flex-direction:column;
+  display:none;flex-direction:column;overflow:hidden;
 }
 .sp-header{
   background:#1A1A1A;border-bottom:4px solid #9A7B4F;
@@ -530,7 +530,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sp-mode-btn.active{color:#1A1A1A;border-bottom-color:#9A7B4F;font-weight:800;}
 
 /* Product lookup panel */
-.avail-panel{display:flex;flex-direction:column;height:100%;}
+.avail-panel{display:flex;flex-direction:column;flex:1;min-height:0;}
 
 /* Empty state */
 .avail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;}
@@ -558,7 +558,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* Two-column AM layout */
 .sp-am-panels{display:flex;flex:1;overflow:hidden;min-height:0;}
-.sp-am-panel{flex:1;display:flex;flex-direction:column;border-right:1px solid #E8E4DC;overflow:hidden;background:#FAFAF8;}
+.sp-am-panel{flex:1;display:flex;flex-direction:column;border-right:1px solid #E8E4DC;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#FAFAF8;}
 .sp-am-panel:last-child{border-right:none;}
 
 /* AM header */
@@ -6087,10 +6087,33 @@ async function openMgrDashboard(){
   panel.style.display='flex';
   // Show loading state in body
   const body=document.getElementById('mgrDashBody');
-  if(body) body.innerHTML='<div style="padding:40px;text-align:center;font-family:var(--f-mono);color:#555;font-size:12px;">⇅ Loading all stores data…</div>';
-  // Load fresh data from Supabase
+  if(body) body.innerHTML='<div style="padding:40px;text-align:center;font-family:var(--f-mono);color:#555;font-size:12px;">⇅ Loading all stores data from Supabase…</div>';
+  // Load fresh data from Supabase — summary + all-store stock cells
   try { await _sbLoadMgrSummary(); } catch(e){ console.warn('MGR summary load:', e.message); }
+  try { await _sbLoadAllStoresCells(); } catch(e){ console.warn('MGR cells load:', e.message); }
   renderMgrDashboard();
+}
+
+// ── Load stock_cells for ALL stores in one Supabase query ─────────
+// Populates db[storeCode][dayIdx][prodCode] so balance / Low Balance
+// Alerts / Dead Stock work cross-store in the Manager Dashboard.
+async function _sbLoadAllStoresCells() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const fromD = new Date(today); fromD.setDate(today.getDate() - 14);
+  const fromStr = _localDateStr(fromD);
+  // Single bulk fetch — all stores, last 15 days, all fields
+  const cells = await _sbGet('stock_cells',
+    'day_date=gte.' + fromStr + '&select=store_code,day_date,prod_code,field,value&limit=200000');
+  cells.forEach(row => {
+    const di = _date2idx(row.day_date);
+    if (di < 0 || di >= DAY_WINDOW) return;
+    const s = row.store_code;
+    if (!db[s]) db[s] = {};
+    if (!db[s][di]) db[s][di] = {};
+    if (!db[s][di][row.prod_code]) db[s][di][row.prod_code] = {open:0,wh:0,inn:0,sold:0,trf:0,wrh:0,locked:false};
+    db[s][di][row.prod_code][row.field] = row.value;
+  });
+  console.log('[MGR] All-stores cells loaded:', cells.length, 'rows across', new Set(cells.map(r=>r.store_code)).size, 'stores');
 }
 function closeMgrDashboard(){
   const panel=document.getElementById('mgrDashPanel');
@@ -6522,21 +6545,64 @@ function mgrJumpToStoreDate(code, dateStr){
   }
 }
 
-function mgrSwitchToStore(){
+async function mgrSwitchToStore(){
   const sel=document.getElementById('mgrStoreSelect');
-  if(!sel||!sel.value) return;
+  if(!sel||!sel.value){ toast('⚠ Select a store first'); return; }
   const store=STORES.find(s=>s.code===sel.value);
-  if(!store) return;
-  // Switch context to this store — isMgrSession=true means ALL days/finance editable
-  isMgrSession=true;
-  const prevMe=me; me=store;
-  // Reload data for this store
-  _sbLoad(store.code).then(()=>{
-    buildGrid(); buildDayTabs(); buildFooter();
+  if(!store){ toast('⚠ Store not found'); return; }
+
+  // Show loading overlay — same as normal login
+  let overlay = document.getElementById('_syncOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = '_syncOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:#080808;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;';
+    overlay.innerHTML =
+      '<div style="font-family:monospace;font-size:15px;font-weight:800;color:#C9A44E;letter-spacing:3px;">EMIRATES PRIDE</div>' +
+      '<div style="font-family:monospace;font-size:12px;color:#888;max-width:280px;text-align:center;" id="_syncMsg">Loading store…</div>' +
+      '<div style="width:260px;height:4px;background:#1A1A1A;border-radius:4px;overflow:hidden;">' +
+        '<div id="_syncBar" style="height:100%;background:linear-gradient(90deg,#C9A44E,#E8C97A);width:0%;transition:width 0.3s ease;border-radius:4px;"></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+  }
+  overlay.style.display = 'flex';
+  const setMsg = (msg, pct) => {
+    const el  = document.getElementById('_syncMsg');
+    const bar = document.getElementById('_syncBar');
+    if(el)  el.textContent  = msg;
+    if(bar) bar.style.width = pct + '%';
+  };
+
+  try {
+    setMsg('Loading ' + store.name + '…', 30);
+    // Switch session context BEFORE load
+    isMgrSession = true;
+    me = store;
+    // Load this store's data from Supabase — await properly
+    await _sbLoad(store.code);
+    setMsg('Building grid…', 85);
     closeMgrDashboard();
-    document.getElementById('topStore').textContent=store.name+' ← MGR';
-    toast('📋 Viewing: '+store.name+' — Full edit access (no lock restrictions)');
-  });
+    // Update top bar
+    const topEl = document.getElementById('topStore');
+    if(topEl) topEl.textContent = store.name + ' ← MGR';
+    // Rebuild entire UI for the new store
+    buildDayTabs();
+    buildGrid();
+    buildFooter();
+    try { buildSpSkuSel(); } catch(e){}
+    setMsg('✓ ' + store.name + ' loaded', 100);
+    toast('📋 Viewing: ' + store.name + ' — Full edit access');
+  } catch(err) {
+    console.error('[MGR switch] error:', err);
+    // Still show store with local data
+    closeMgrDashboard();
+    const topEl = document.getElementById('topStore');
+    if(topEl) topEl.textContent = store.name + ' ← MGR (offline)';
+    try { buildDayTabs(); buildGrid(); buildFooter(); } catch(e2){}
+    toast('⚠ ' + store.name + ' loaded from local data — check connection');
+  } finally {
+    setTimeout(() => { if(overlay) overlay.style.display = 'none'; }, 500);
+  }
 }
 
 
@@ -6770,6 +6836,27 @@ function confirmAdj(){
   dbSet(me.code, day, prodCode, field, newVal, true);
   saveDB();
 
+  // ── Sync adjustment to Supabase adjustments table ──────────────
+  const adjRow = {
+    store_code: me.code,
+    day_date:   _idx2date(day),
+    prod_code:  prodCode,
+    orig_val:   origVal,
+    new_val:    newVal,
+    reason:     (reason||'') + (note ? ' · ' + note : ''),
+    approved_by:'Manager Override',
+    adjusted_by: me ? me.name : 'MGR',
+    ts:          new Date().toISOString()
+  };
+  fetch(_SB_URL + '/rest/v1/adjustments', {
+    method: 'POST',
+    headers: Object.assign({}, _SBH, {'Prefer':'return=minimal'}),
+    body: JSON.stringify(adjRow)
+  }).then(r => {
+    if (!r.ok) r.text().then(t => console.error('[Adj] sync failed:', t));
+    else console.log('[Adj] synced to Supabase:', prodCode, field, origVal, '→', newVal);
+  }).catch(e => console.error('[Adj] sync error:', e.message));
+
   closeAdjModal();
   buildGrid(); updateTotalsRow(); buildFooter();
   const delta = newVal - origVal;
@@ -6784,33 +6871,106 @@ function finUploadReceipt(type, input){
   if(!file) return;
   if(file.size > 3*1024*1024){ toast('⚠ Image too large — max 3MB'); return; }
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = async e => {
     const b64 = e.target.result;
+    // ── Show immediately from base64 while upload happens ──────
     if(type==='bank'){
       finData.bankReceiptPhoto = b64;
       const thumb = document.getElementById('fin-bank-receipt-thumb');
       const txt   = document.getElementById('fin-bank-receipt-txt');
       if(thumb){ thumb.style.display='block'; thumb.style.backgroundImage=`url(${b64})`; }
-      if(txt)   txt.textContent = '✓ Receipt attached';
+      if(txt)   txt.textContent = '⇅ Uploading…';
     } else {
       finData.expenseReceiptPhoto = b64;
       const thumb = document.getElementById('fin-exp-receipt-thumb');
       const txt   = document.getElementById('fin-exp-receipt-txt');
       if(thumb){ thumb.style.display='block'; thumb.style.backgroundImage=`url(${b64})`; }
-      if(txt)   txt.textContent = '✓ Bill attached';
+      if(txt)   txt.textContent = '⇅ Uploading…';
     }
     finMarkUnsaved();
-    toast('📎 Receipt saved — will export with Finance PDF');
+
+    // ── Upload to Supabase Storage ──────────────────────────────
+    try {
+      const ext   = file.type.includes('png') ? 'png' : 'jpg';
+      const store = me ? me.code : 'UNKNOWN';
+      const finDay = typeof dashDay !== 'undefined' ? dashDay : DAY_PAST;
+      const date  = _idx2date(finDay);
+      const ts    = Date.now();
+      const path  = `${store}/${date}/${type}_${ts}.${ext}`;
+      // Convert base64 to binary blob for upload
+      const base64Data = b64.split(',')[1];
+      const binaryStr  = atob(base64Data);
+      const bytes      = new Uint8Array(binaryStr.length);
+      for(let i=0;i<binaryStr.length;i++) bytes[i]=binaryStr.charCodeAt(i);
+      const blob = new Blob([bytes], {type: file.type});
+      // Upload via Supabase Storage REST API
+      const uploadResp = await fetch(
+        `${_SB_URL}/storage/v1/object/receipts/${path}`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey':        _SB_KEY,
+            'Authorization': 'Bearer ' + _SB_KEY,
+            'Content-Type':  file.type,
+            'x-upsert':      'true'
+          },
+          body: blob
+        }
+      );
+      if(uploadResp.ok){
+        // Build public URL and swap out base64 — saves bandwidth on next sync
+        const publicUrl = `${_SB_URL}/storage/v1/object/public/receipts/${path}`;
+        if(type==='bank'){
+          finData.bankReceiptPhoto      = publicUrl;
+          finData.bankReceiptPhotoLocal = b64; // keep local copy for offline viewing
+          const txt = document.getElementById('fin-bank-receipt-txt');
+          if(txt) txt.textContent = '✓ Receipt uploaded';
+        } else {
+          finData.expenseReceiptPhoto      = publicUrl;
+          finData.expenseReceiptPhotoLocal = b64;
+          const txt = document.getElementById('fin-exp-receipt-txt');
+          if(txt) txt.textContent = '✓ Bill uploaded';
+        }
+        console.log('[Receipt] uploaded:', path);
+        toast('📎 Receipt uploaded to cloud — synced across all devices');
+      } else {
+        const errTxt = await uploadResp.text();
+        // Check if it's a missing bucket error
+        if(uploadResp.status === 400 && errTxt.includes('Bucket not found')){
+          console.warn('[Receipt] bucket "receipts" not found — using local storage only');
+          const txt = document.getElementById(type==='bank'?'fin-bank-receipt-txt':'fin-exp-receipt-txt');
+          if(txt) txt.textContent = '✓ Receipt saved (local only — ask admin to create receipts bucket)';
+          toast('📎 Receipt saved locally — cloud bucket not set up yet');
+        } else {
+          console.error('[Receipt] upload failed:', uploadResp.status, errTxt.slice(0,100));
+          const txt = document.getElementById(type==='bank'?'fin-bank-receipt-txt':'fin-exp-receipt-txt');
+          if(txt) txt.textContent = '✓ Receipt saved (local — cloud upload failed)';
+          toast('📎 Receipt saved locally — cloud sync failed, will retry on save');
+        }
+      }
+    } catch(uploadErr) {
+      console.error('[Receipt] upload error:', uploadErr.message);
+      // b64 already stored — just update label
+      const txt = document.getElementById(type==='bank'?'fin-bank-receipt-txt':'fin-exp-receipt-txt');
+      if(txt) txt.textContent = '✓ Receipt attached (offline)';
+      toast('📎 Receipt saved locally — will sync when online');
+    }
+    finMarkUnsaved();
+    saveFinanceData(); // persist updated finData (with URL or b64) immediately
   };
   reader.readAsDataURL(file);
 }
 
 function finRestoreReceipts(){
+  // Helper: pick best src — prefer local b64 for display (instant), fall back to URL
+  function _bestSrc(photo, photoLocal){ return photoLocal || photo || ''; }
   if(finData.bankReceiptPhoto){
     const thumb = document.getElementById('fin-bank-receipt-thumb');
     const txt   = document.getElementById('fin-bank-receipt-txt');
-    if(thumb){ thumb.style.display='block'; thumb.style.backgroundImage=`url(${finData.bankReceiptPhoto})`; }
-    if(txt)   txt.textContent = '✓ Receipt attached';
+    const src   = _bestSrc(finData.bankReceiptPhoto, finData.bankReceiptPhotoLocal);
+    if(thumb){ thumb.style.display='block'; thumb.style.backgroundImage=`url(${src})`; }
+    const isCloud = finData.bankReceiptPhoto && finData.bankReceiptPhoto.startsWith('http');
+    if(txt) txt.textContent = isCloud ? '✓ Receipt (cloud)' : '✓ Receipt attached';
   } else {
     const thumb = document.getElementById('fin-bank-receipt-thumb');
     const txt   = document.getElementById('fin-bank-receipt-txt');
@@ -6820,8 +6980,10 @@ function finRestoreReceipts(){
   if(finData.expenseReceiptPhoto){
     const thumb = document.getElementById('fin-exp-receipt-thumb');
     const txt   = document.getElementById('fin-exp-receipt-txt');
-    if(thumb){ thumb.style.display='block'; thumb.style.backgroundImage=`url(${finData.expenseReceiptPhoto})`; }
-    if(txt)   txt.textContent = '✓ Bill attached';
+    const src   = _bestSrc(finData.expenseReceiptPhoto, finData.expenseReceiptPhotoLocal);
+    if(thumb){ thumb.style.display='block'; thumb.style.backgroundImage=`url(${src})`; }
+    const isCloud = finData.expenseReceiptPhoto && finData.expenseReceiptPhoto.startsWith('http');
+    if(txt) txt.textContent = isCloud ? '✓ Bill (cloud)' : '✓ Bill attached';
   } else {
     const thumb = document.getElementById('fin-exp-receipt-thumb');
     const txt   = document.getElementById('fin-exp-receipt-txt');
@@ -6831,7 +6993,10 @@ function finRestoreReceipts(){
 }
 
 function finViewReceipt(type){
-  const src = type==='bank' ? finData.bankReceiptPhoto : finData.expenseReceiptPhoto;
+  // Prefer local b64 for instant display; fall back to cloud URL
+  const photo      = type==='bank' ? finData.bankReceiptPhoto      : finData.expenseReceiptPhoto;
+  const photoLocal = type==='bank' ? finData.bankReceiptPhotoLocal : finData.expenseReceiptPhotoLocal;
+  const src = photoLocal || photo;
   if(!src) return;
   const lb = document.getElementById('receiptLightbox');
   const img= document.getElementById('receiptLightboxImg');
@@ -6846,7 +7011,7 @@ function closeReceiptLightbox(){
 // (Patched into the existing nk/nc/nd flow)
 const _origNK = nk;
 window.nk = function(k){
-  if((finNPCtx==='__mtd__' || finNPCtx==='__adj__') && !npCtx){
+  if((finNPCtx==='__mtd__' || finNPCtx==='__adj__' || finNPCtx==='__tstr_rtw__') && !npCtx){
     if(finNPBuf===''||finNPBuf==='0') finNPBuf=k; else finNPBuf+=k;
     if(parseInt(finNPBuf)>9999) finNPBuf='9999';
     document.getElementById('npVal').textContent=finNPBuf||'0';
@@ -6856,14 +7021,14 @@ window.nk = function(k){
 };
 const _origNC = nc;
 window.nc = function(){
-  if(finNPCtx==='__mtd__'||finNPCtx==='__adj__'){
+  if(finNPCtx==='__mtd__'||finNPCtx==='__adj__'||finNPCtx==='__tstr_rtw__'){
     finNPBuf=''; document.getElementById('npVal').textContent='0'; return;
   }
   _origNC();
 };
 const _origND = nd;
 window.nd = function(){
-  if(finNPCtx==='__mtd__'||finNPCtx==='__adj__'){
+  if(finNPCtx==='__mtd__'||finNPCtx==='__adj__'||finNPCtx==='__tstr_rtw__'){
     finNPBuf=finNPBuf.slice(0,-1)||'';
     document.getElementById('npVal').textContent=finNPBuf||'0'; return;
   }
@@ -6885,6 +7050,26 @@ window.confirmNP = function(){
     _adjNewVal = parseInt(finNPBuf)||0;
     document.getElementById('adj-new-val-display').textContent = _adjNewVal;
     finNPCtx=null; finNPBuf='';
+    document.getElementById('numpad').classList.remove('show');
+    return;
+  }
+  if(finNPCtx==='__tstr_rtw__' && !npCtx){
+    var rtwVal = parseInt(finNPBuf)||0;
+    var maxRTW = window._tstrRtwMax || 999;
+    if(rtwVal > maxRTW){
+      toast('⚠ Cannot return more than ' + maxRTW + ' bottles (available stock)');
+      rtwVal = maxRTW;
+    }
+    var skuCode = window._tstrRtwSku;
+    if(skuCode){
+      dbSet(me.code, curDay, skuCode, 'wrh', rtwVal);
+      _qWrite(me.code, curDay, skuCode, 'wrh', rtwVal);
+      saveDB();
+      buildTesterGrid();
+      toast('✓ RTW set to ' + rtwVal + ' bottles');
+    }
+    finNPCtx=null; finNPBuf='';
+    window._tstrRtwSku = null;
     document.getElementById('numpad').classList.remove('show');
     return;
   }
@@ -8663,36 +8848,67 @@ function _tbGetBottles(skuCode){
 }
 
 // Create sealed bottle records from Opening or Received entry
+// RULE: total sealed bottles can never exceed open + wh for today.
+// Old sealed bottles from previous days are removed on sync.
 function _tbSyncBottles(skuCode, field){
   var bottles=_tbGetBottles(skuCode);
   var today=_localDateStr(new Date());
-  var val=dbGet(me.code,curDay,skuCode,field)||0;
-  // Tag: 'open' entries get source='open', 'wh' entries get source='wh'
-  var src=field==='open'?'open':'wh';
-  var existing=bottles.filter(function(b){return b.receivedDate===today&&b.source===src&&b.status==='sealed';}).length;
-  var toAdd=Math.max(0,val-existing);
-  for(var i=0;i<toAdd;i++){
+  var topen = dbGet(me.code,curDay,skuCode,'open')||0;
+  var trec  = dbGet(me.code,curDay,skuCode,'wh')||0;
+  var maxTotal = topen + trec; // hard cap on total sealed bottles
+
+  var src = field==='open' ? 'open' : 'wh';
+  var val = dbGet(me.code,curDay,skuCode,field)||0;
+
+  // Step 1: Remove sealed bottles from PREVIOUS days (stale records)
+  // Keep only: opened/half/empty bottles (they persist) + sealed from today
+  bottles = bottles.filter(function(b){
+    if(b.status === 'sealed') return b.receivedDate === today;
+    return true; // keep full/half/empty regardless of date
+  });
+
+  // Step 2: Reconcile sealed count for this source against the entered value
+  var existingThisSrc = bottles.filter(function(b){
+    return b.status==='sealed' && b.receivedDate===today && b.source===src;
+  }).length;
+
+  var toAdd = Math.max(0, val - existingThisSrc);
+  for(var i=0; i<toAdd; i++){
     bottles.push({
-      id:Date.now()+Math.floor(Math.random()*99999)+i,
-      receivedDate:today,
-      openedDate:null,
-      status:'sealed',
-      returnedDate:null,
-      source:src
+      id: Date.now()+Math.floor(Math.random()*99999)+i,
+      receivedDate: today,
+      openedDate:   null,
+      status:       'sealed',
+      returnedDate: null,
+      source:       src
     });
   }
   // If value decreased, remove excess sealed bottles of this source
-  var excess=existing-val;
-  if(excess>0){
-    var removed=0;
-    bottles=bottles.filter(function(b){
-      if(removed<excess&&b.receivedDate===today&&b.source===src&&b.status==='sealed'){
+  var excess = existingThisSrc - val;
+  if(excess > 0){
+    var removed = 0;
+    bottles = bottles.filter(function(b){
+      if(removed < excess && b.status==='sealed' && b.receivedDate===today && b.source===src){
         removed++; return false;
       }
       return true;
     });
-    _tbStore()[skuCode]=bottles;
   }
+
+  // Step 3: Hard cap — if total sealed > open+wh, remove oldest sealed bottles
+  var totalSealed = bottles.filter(function(b){ return b.status==='sealed'; }).length;
+  if(totalSealed > maxTotal){
+    var overCount = totalSealed - maxTotal;
+    var removed2 = 0;
+    bottles = bottles.filter(function(b){
+      if(removed2 < overCount && b.status==='sealed'){
+        removed2++; return false;
+      }
+      return true;
+    });
+  }
+
+  _tbStore()[skuCode] = bottles;
   saveDB();
 }
 
@@ -8755,17 +8971,12 @@ function _tbCycleStatus(skuCode, bottleId){
   var prev=b.status;
   var cycle={full:'half',half:'empty',empty:'full'};
   b.status=cycle[b.status]||'full';
-  if(b.status==='empty'&&prev!=='empty'){
-    b.returnedDate=_localDateStr(new Date());
-    var baseCode=skuCode.replace(/-T$/,'');
-    var curTrf=dbGet(me.code,curDay,baseCode,'trf')||0;
-    dbSet(me.code,curDay,baseCode,'trf',curTrf+1);
-    toast('Bottle empty — 1 added to Transfer Out');
-  } else if(b.status!=='empty'&&prev==='empty'){
-    b.returnedDate=null;
-    var baseCode2=skuCode.replace(/-T$/,'');
-    var curTrf2=dbGet(me.code,curDay,baseCode2,'trf')||0;
-    dbSet(me.code,curDay,baseCode2,'trf',Math.max(0,curTrf2-1));
+  if(b.status==='empty' && prev!=='empty'){
+    b.returnedDate = _localDateStr(new Date());
+    toast('Bottle empty — tap RTW column (E) to record return to warehouse');
+  } else if(b.status!=='empty' && prev==='empty'){
+    b.returnedDate = null;
+    toast('Status updated: ' + ({full:'Full',half:'Half Used'}[b.status]||b.status));
   } else {
     toast('Status: '+({full:'Full',half:'Half Used',empty:'Empty'}[b.status]||b.status));
   }
@@ -8784,6 +8995,44 @@ function _tbOpenBottle(skuCode, bottleId){
   toast('Bottle #'+(bottles.indexOf(b)+1)+' opened');
 }
 
+
+// ── Tester RTW numpad — manual Return to Warehouse entry ─────────
+function openTstrRTW(skuCode){
+  if(!me) return;
+  if(isLocked(me.code,curDay)){
+    var ok=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
+    if(!ok){ toast('🔒 Day locked — Manager Override required'); return; }
+  }
+  var p = PRODUCTS.find(function(x){ return x.code===skuCode; });
+  var topen  = dbGet(me.code,curDay,skuCode,'open')||0;
+  var trec   = dbGet(me.code,curDay,skuCode,'wh')||0;
+  var bottles = _tbGetBottles(skuCode);
+  var tuse   = bottles.filter(function(b){ return b.status==='full'||b.status==='half'; }).length;
+  var maxRTW = Math.max(0, topen + trec - tuse); // can't return more than available
+  var curRTW = dbGet(me.code,curDay,skuCode,'wrh')||0;
+
+  // Use existing numpad — set up context
+  finNPCtx = '__tstr_rtw__';
+  finNPBuf = String(curRTW||'');
+  npCtx = null;
+  document.getElementById('npProduct').textContent = (p ? p.en : skuCode) + ' — TESTER';
+  var fEl = document.getElementById('npField');
+  fEl.textContent = 'RETURN TO WAREHOUSE (E) — max ' + maxRTW;
+  fEl.className = 'np-field wrh';
+  document.getElementById('npCurLabel').textContent = 'BOTTLES RETURNED';
+  document.getElementById('npVal').textContent = curRTW || '0';
+  document.getElementById('npNote').textContent =
+    'Open ' + topen + ' + Recv ' + trec + ' − In Use ' + tuse + ' = ' + maxRTW + ' available to return';
+  var sr = document.getElementById('npStoreRow'); if(sr) sr.style.display='none';
+  var sl = document.getElementById('npSplitList'); if(sl){ sl.style.display='none'; sl.innerHTML=''; }
+  var ra = document.getElementById('npRemark'); if(ra){ ra.style.display='none'; ra.value=''; }
+  var ab = document.getElementById('npAddSplitBtn'); if(ab) ab.style.display='none';
+  document.getElementById('numpad').classList.add('show');
+
+  // Store skuCode for confirmNP to use
+  window._tstrRtwSku = skuCode;
+  window._tstrRtwMax = maxRTW;
+}
 function buildTesterGrid(){
   if(!me) return;
   var head=document.getElementById('tstrGridHead');
@@ -8806,7 +9055,7 @@ function buildTesterGrid(){
       var topen  = dbGet(me.code,curDay,p.code,'open')||0;
       var trec   = dbGet(me.code,curDay,p.code,'wh')||0;
       var tuse   = bottles.filter(function(b){return b.status==='full'||b.status==='half';}).length;
-      var treturn= bottles.filter(function(b){return b.status==='empty'&&b.returnedDate===today;}).length;
+      var treturn= dbGet(me.code,curDay,p.code,'wrh')||0; // MANUAL RTW entry
       var tclos  = Math.max(0,topen+trec-tuse-treturn);
       grandOpen+=topen; grandRec+=trec; grandUse+=tuse; grandReturn+=treturn; grandClose+=tclos;
     });
@@ -8909,7 +9158,7 @@ function buildTesterGrid(){
       var topen  = dbGet(me.code,curDay,p.code,'open')||0;
       var trec   = dbGet(me.code,curDay,p.code,'wh')||0;
       var tuse   = bottles.filter(function(b){return b.status==='full'||b.status==='half';}).length;
-      var treturn= bottles.filter(function(b){return b.status==='empty'&&b.returnedDate===today;}).length;
+      var treturn= dbGet(me.code,curDay,p.code,'wrh')||0; // MANUAL RTW entry — numpad
       var tclos  = Math.max(0,topen+trec-tuse-treturn);
       var sealed = bottles.filter(function(b){return b.status==='sealed';});
 
@@ -8958,8 +9207,13 @@ function buildTesterGrid(){
         +'<td class="dcell" style="padding:6px 8px;text-align:center;cursor:default;">'
         +_tbStatusBars(p.code,canEdit)+sealedHtml+'</td>'
 
-        +'<td class="dcell" style="text-align:center;cursor:default;">'
-        +'<span class="dcell-val'+(treturn===0?' empty':'')+'" style="'+(treturn>0?'color:#F2994A;font-weight:700;':'')+'">'+( treturn||'&mdash;')+'</span></td>'
+        +(canEdit
+          ? '<td class="dcell" style="text-align:center;cursor:pointer;border:1px dashed #F2994A;background:#FFFBF5;" onclick="openTstrRTW(\'' + p.code + '\')" title="Tap to enter Return to Warehouse">'
+          : '<td class="dcell" style="text-align:center;cursor:default;">')
+        + (treturn > 0
+          ? '<span class="dcell-val" style="color:#F2994A;font-weight:800;">' + treturn + '</span>'
+          : '<span style="font-family:var(--f-mono);font-size:8px;color:#B8860B;font-weight:700;">TAP</span>')
+        + '</td>'
 
         +'<td class="dcell" style="text-align:center;cursor:default;font-weight:700;">'
         +'<span class="dcell-val'+(tclos===0?' empty':'')+'">'+( tclos||'&mdash;')+'</span></td>';
