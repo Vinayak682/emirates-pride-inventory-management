@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="cache-bust" content="v20260506-single-scroll">
+<meta name="cache-bust" content="v20260506-mgr-only-ux">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -400,21 +400,24 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sp-close{background:transparent;border:1px solid #555;color:#BBB;
   border-radius:6px;padding:6px 14px;cursor:pointer;font-size:12px;margin-left:auto;font-weight:600;letter-spacing:0.5px;}
 .sp-search{
-  background:#FFFFFF;border-bottom:1px solid #E8E4DC;
-  padding:10px 14px;display:flex;gap:8px;
+  background:#FFFFFF;border-bottom:2px solid #E8E4DC;
+  padding:10px 14px;display:flex;gap:6px;
 }
 .sp-input{
-  flex:1;background:#FAFAF8;border:1.5px solid #E8E4DC;border-radius:8px;
-  padding:10px 14px;font-family:var(--f-body);font-size:14px;color:#1A1A1A;outline:none;
+  width:100%;background:#FAFAF8;border:1.5px solid #E8E4DC;border-radius:8px;
+  padding:9px 12px;font-family:var(--f-body);font-size:14px;color:#1A1A1A;outline:none;
+  box-sizing:border-box;
 }
 .sp-input:focus{border-color:#9A7B4F;}
 .sp-sku-sel{
-  background:#FAFAF8;border:1.5px solid #E8E4DC;border-radius:8px;
-  padding:10px 12px;font-family:var(--f-body);font-size:13px;color:#1A1A1A;
-  outline:none;appearance:none;cursor:pointer;min-width:130px;
+  width:100%;background:#FAFAF8;border:1.5px solid #E8E4DC;border-radius:8px;
+  padding:9px 12px;font-family:var(--f-body);font-size:13px;color:#1A1A1A;
+  outline:none;appearance:none;cursor:pointer;box-sizing:border-box;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239A7B4F' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;
 }
 .sp-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;background:#FAFAF8;}
-[data-sp-mode="store"] .sp-search{display:none!important;}
+[data-sp-mode="store"] #spSearchBar{display:none!important;}
 .store-card{
   background:#FFFFFF;border:1px solid #E8E4DC;border-radius:10px;overflow:hidden;
   box-shadow:0 1px 4px rgba(0,0,0,0.06);
@@ -1681,7 +1684,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <div class="top-spacer"></div>
     <button class="top-btn" onclick="openDash()" style="border-color:rgba(201,164,78,0.3);color:var(--gold2);">📊 Dashboard</button>
     <button class="top-btn" onclick="openExport()" style="border-color:rgba(127,200,96,0.3);color:#7FC860;">📥 Export</button>
-    <button class="top-btn stores-btn" onclick="openStores()">🏪 All Stores</button>
+    <button class="top-btn stores-btn" id="allStoresBtn" onclick="openStores()" style="display:none;">🏪 All Stores</button>
     <button class="top-btn logout" onclick="doLogout()">Logout</button>
   </div>
 
@@ -2197,19 +2200,17 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <div class="sp-mode-btn active" id="modeProduct" onclick="setSpMode('product')">🔍 Find a Product</div>
     <div class="sp-mode-btn" id="modeStore" onclick="setSpMode('store')">🏪 Browse by Store</div>
   </div>
-  <!-- Search (always shown) -->
-  <div class="sp-search">
-    <input class="sp-input" id="spSearch" placeholder="Type product name or code…" oninput="onSpSearch()">
-  </div>
-  <!-- Product dropdown (grouped, all products) -->
-  <div id="spDropWrap" style="background:#FFFFFF;border-bottom:1px solid #E8E4DC;padding:0 14px 10px;">
-    <select class="sp-sku-sel" id="spSku" onchange="onSpSkuChange()" style="width:100%;margin-top:8px;">
-      <option value="">— Select a product to check availability —</option>
-    </select>
+  <!-- Combined search + dropdown in one compact bar -->
+  <div class="sp-search" id="spSearchBar">
+    <div style="display:flex;flex-direction:column;gap:6px;width:100%;">
+      <input class="sp-input" id="spSearch" placeholder="Type product name or code to filter…" oninput="onSpSearch()" autocomplete="off" style="width:100%;">
+      <select class="sp-sku-sel" id="spSku" onchange="onSpSkuChange()" style="width:100%;margin:0;">
+        <option value="">— or select from list —</option>
+      </select>
+    </div>
   </div>
   <!-- Body -->
   <div class="sp-body" id="spBody" style="flex:1;overflow-y:auto;"></div>
-
 </div>
 
 <!-- REQUEST SHEET -->
@@ -2990,9 +2991,12 @@ function doLogin(){
   buildSpSkuSel();
   // startSync shows loading overlay, loads server data, then rebuilds grid
   startSync(store.code);
-  // If MGR login — show manager dashboard button in top bar
+  // If MGR login — show manager dashboard button and All Stores button in top bar
   if(store.code==='MGR'){ isMgrSession=true;
     setTimeout(()=>{
+      // Show the All Stores visibility button
+      const allStoresBtn=document.getElementById('allStoresBtn');
+      if(allStoresBtn) allStoresBtn.style.display='';
       const tb=document.querySelector('.app-topbar');
       if(tb&&!document.getElementById('mgrDashBtn')){
         const btn=document.createElement('button');
@@ -3016,6 +3020,11 @@ function doLogout(){
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('appShell').style.display='none';
   document.getElementById('dashPanel').style.display='none';
+  // Hide MGR-only buttons
+  const allStoresBtn=document.getElementById('allStoresBtn');
+  if(allStoresBtn) allStoresBtn.style.display='none';
+  const mgrDashBtn=document.getElementById('mgrDashBtn');
+  if(mgrDashBtn) mgrDashBtn.remove();
 }
 
 // ── DAY TABS ──
@@ -3536,11 +3545,9 @@ function setSpMode(mode){
   spMode=mode;
   document.getElementById('modeProduct').classList.toggle('active',mode==='product');
   document.getElementById('modeStore').classList.toggle('active',mode==='store');
-  const dropWrap=document.getElementById('spDropWrap');
-  dropWrap.style.display=mode==='product'?'block':'none';
-  // Hide search bar in Browse by Store mode — not needed there
-  const spSearch=document.getElementById('spSearch');
-  if(spSearch) spSearch.closest('.sp-search').style.display=mode==='product'?'':'none';
+  // Show/hide combined search bar only in product mode
+  const searchBar=document.getElementById('spSearchBar');
+  if(searchBar) searchBar.style.display=mode==='product'?'':'none';
   renderStores();
 }
 
