@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="cache-bust" content="v20260506-mgr-only-ux">
+<meta name="cache-bust" content="v20260506-mgr-dash-only">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -1684,7 +1684,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <div class="top-spacer"></div>
     <button class="top-btn" onclick="openDash()" style="border-color:rgba(201,164,78,0.3);color:var(--gold2);">📊 Dashboard</button>
     <button class="top-btn" onclick="openExport()" style="border-color:rgba(127,200,96,0.3);color:#7FC860;">📥 Export</button>
-    <button class="top-btn stores-btn" id="allStoresBtn" onclick="openStores()" style="display:none;">🏪 All Stores</button>
+    <button class="top-btn stores-btn" id="allStoresBtn" onclick="openStores()">🏪 All Stores</button>
     <button class="top-btn logout" onclick="doLogout()">Logout</button>
   </div>
 
@@ -2991,12 +2991,9 @@ function doLogin(){
   buildSpSkuSel();
   // startSync shows loading overlay, loads server data, then rebuilds grid
   startSync(store.code);
-  // If MGR login — show manager dashboard button and All Stores button in top bar
+  // If MGR login — show manager dashboard button in top bar
   if(store.code==='MGR'){ isMgrSession=true;
     setTimeout(()=>{
-      // Show the All Stores visibility button
-      const allStoresBtn=document.getElementById('allStoresBtn');
-      if(allStoresBtn) allStoresBtn.style.display='';
       const tb=document.querySelector('.app-topbar');
       if(tb&&!document.getElementById('mgrDashBtn')){
         const btn=document.createElement('button');
@@ -3020,9 +3017,7 @@ function doLogout(){
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('appShell').style.display='none';
   document.getElementById('dashPanel').style.display='none';
-  // Hide MGR-only buttons
-  const allStoresBtn=document.getElementById('allStoresBtn');
-  if(allStoresBtn) allStoresBtn.style.display='none';
+  // Hide MGR-only dashboard button
   const mgrDashBtn=document.getElementById('mgrDashBtn');
   if(mgrDashBtn) mgrDashBtn.remove();
 }
