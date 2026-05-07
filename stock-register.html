@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="cache-bust" content="v20260507-hotfix">
+<meta name="cache-bust" content="v20260507-dp-embedded">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -1634,6 +1634,25 @@ input[type="date"]::-webkit-calendar-picker-indicator{
   filter:invert(0.7);cursor:pointer;
 }
 input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
+/* Demand Planning tabs */
+.dp-tab{padding:10px 16px;font-size:12px;font-weight:600;color:#888;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:var(--f-body);}
+.dp-tab:hover{color:#1A1A1A;}
+.dp-tab.active{color:#9A7B4F;border-bottom-color:#9A7B4F;}
+.dp-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;}
+.dp-kpi-card{background:#fff;border:1px solid #E8E4DC;border-radius:10px;padding:14px;}
+.dp-kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#888;margin-bottom:6px;}
+.dp-kpi-val{font-size:28px;font-weight:700;font-family:var(--f-mono);}
+.dp-kpi-sub{font-size:11px;color:#888;margin-top:4px;}
+.dp-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border:1px solid #E8E4DC;border-radius:10px;overflow:hidden;}
+.dp-table thead{background:#1A1A1A;color:#fff;}
+.dp-table th{padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;}
+.dp-table th.r{text-align:right;}
+.dp-table td{padding:10px 12px;border-bottom:1px solid #E8E4DC;}
+.dp-table td.r{text-align:right;font-family:var(--f-mono);font-size:11px;}
+.dp-table tr:hover{background:rgba(0,0,0,0.02);}
+.dp-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;}
+.dp-badge-red{background:#FEE2E2;color:#991B1B;}.dp-badge-orange{background:#FFEDD5;color:#9A3412;}
+.dp-badge-amber{background:#FEF3C7;color:#92400E;}.dp-badge-green{background:#D1FAE5;color:#065F46;}
 </style>
 </head>
 <body>
@@ -2435,6 +2454,29 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   <div id="mgrDashBody" style="flex:1;overflow-y:auto;background:#FAFAF8;"></div>
 </div>
 
+<!-- ══════════ DEMAND PLANNING PANEL ══════════ -->
+<div id="dpPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:810;display:none;flex-direction:column;">
+  <div style="background:#1A1A1A;border-bottom:4px solid #9A7B4F;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+    <div>
+      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">📈 DEMAND PLANNING</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:#AAA;margin-top:2px;">Benchmarks · Overstock · Reorder Priority · Store Performance</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="loadDPData()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;">⇅ Refresh</button>
+      <button onclick="closeDPPanel()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">✕ Close</button>
+    </div>
+  </div>
+  <!-- DP tabs -->
+  <div style="background:#fff;border-bottom:2px solid #E8E4DC;display:flex;gap:0;padding:0 16px;overflow-x:auto;flex-shrink:0;" id="dpTabs">
+    <div class="dp-tab active" data-tab="dpOverview" onclick="switchDPTab(this)">📈 Overview</div>
+    <div class="dp-tab" data-tab="dpOverstock" onclick="switchDPTab(this)">🔴 Overstock</div>
+    <div class="dp-tab" data-tab="dpReorder" onclick="switchDPTab(this)">🟢 Reorder</div>
+    <div class="dp-tab" data-tab="dpStores" onclick="switchDPTab(this)">🏪 Stores</div>
+  </div>
+  <!-- DP body -->
+  <div id="dpBody" style="flex:1;overflow-y:auto;padding:16px;"></div>
+</div>
+
 <!-- ══════════ TRANSFER DRAWER ══════════ -->
 <div id="trfDrawer" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);
   display:none;align-items:flex-end;justify-content:center;z-index:960;
@@ -3009,7 +3051,7 @@ function doLogin(){
         dpBtn.id='dpDashBtn';
         dpBtn.textContent='📈 Demand Planning';
         dpBtn.style.cssText='background:#2A1800;border:1px solid #C9A44E;color:#C9A44E;font-family:var(--f-body);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;';
-        dpBtn.onclick=()=>window.open('demand-planning-dashboard.html','_blank');
+        dpBtn.onclick=()=>{openDPPanel();};
         if(logoutBtn) tb.insertBefore(dpBtn,logoutBtn);
       }
       openMgrDashboard();
@@ -6138,6 +6180,150 @@ async function _sbLoadAllStoresCells() {
 function closeMgrDashboard(){
   const panel=document.getElementById('mgrDashPanel');
   if(panel) panel.style.display='none';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── DEMAND PLANNING PANEL (embedded, uses existing _SBC) ──────
+// ═══════════════════════════════════════════════════════════════
+let _dpBenchmarks=null;
+
+async function openDPPanel(){
+  document.getElementById('dpPanel').style.display='flex';
+  document.getElementById('dpBody').innerHTML='<div style="padding:60px;text-align:center;font-family:var(--f-mono);color:#888;">⇅ Loading benchmarks from Supabase…</div>';
+  await loadDPData();
+}
+
+function closeDPPanel(){
+  document.getElementById('dpPanel').style.display='none';
+}
+
+async function loadDPData(){
+  const body=document.getElementById('dpBody');
+  try{
+    // Use existing Supabase client from stock register
+    const resp=await fetch(_SB_URL+'/rest/v1/benchmarks_cache?select=*&limit=5000',{headers:_SBH});
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    _dpBenchmarks=await resp.json();
+    console.log('DP: Loaded',_dpBenchmarks.length,'benchmarks');
+    renderDPOverview();
+  }catch(e){
+    console.error('DP load error:',e);
+    body.innerHTML='<div style="padding:40px;text-align:center;color:#C00;font-family:var(--f-mono);">❌ Failed to load: '+e.message+'</div>';
+  }
+}
+
+function switchDPTab(el){
+  document.querySelectorAll('.dp-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const tab=el.dataset.tab;
+  if(tab==='dpOverview') renderDPOverview();
+  else if(tab==='dpOverstock') renderDPOverstock();
+  else if(tab==='dpReorder') renderDPReorder();
+  else if(tab==='dpStores') renderDPStores();
+}
+
+function _dpStoreInfo(code){
+  const s=STORES.find(x=>x.code===code);
+  return s?{name:s.name,mgr:s.mgr}:{name:code,mgr:'—'};
+}
+
+function renderDPOverview(){
+  if(!_dpBenchmarks||!_dpBenchmarks.length) return;
+  const b=_dpBenchmarks;
+  // Calculate KPIs
+  let overstock=0,reorder=0,slow=0,totalVel=0;
+  const storeVel={};
+  b.forEach(r=>{
+    const cs=r.l30d_qty*3; // simulated current stock
+    const cw=r.weekly_avg>0?cs/r.weekly_avg:999;
+    if(cw>12&&cs>0) overstock++;
+    if(r.weekly_avg>5&&cw<4&&cs>0) reorder++;
+    if(r.weekly_avg<0.5) slow++;
+    totalVel+=r.weekly_avg;
+    if(!storeVel[r.store_code]) storeVel[r.store_code]={vel:0,fast:0,slow:0,os:0,skus:0};
+    storeVel[r.store_code].vel+=r.weekly_avg;
+    storeVel[r.store_code].skus++;
+    if(r.weekly_avg>5) storeVel[r.store_code].fast++;
+    if(r.weekly_avg<0.5) storeVel[r.store_code].slow++;
+    if(cw>12&&cs>0) storeVel[r.store_code].os++;
+  });
+  // Top stores
+  const topStores=Object.entries(storeVel).sort((a,b)=>b[1].vel-a[1].vel).slice(0,10);
+  const body=document.getElementById('dpBody');
+  body.innerHTML=`
+    <div class="dp-kpi">
+      <div class="dp-kpi-card"><div class="dp-kpi-label">Overstock Items</div><div class="dp-kpi-val" style="color:#EF4444;">${overstock}</div><div class="dp-kpi-sub">>12 weeks cover</div></div>
+      <div class="dp-kpi-card"><div class="dp-kpi-label">Reorder Priority</div><div class="dp-kpi-val" style="color:#22C55E;">${reorder}</div><div class="dp-kpi-sub">Fast movers <4w cover</div></div>
+      <div class="dp-kpi-card"><div class="dp-kpi-label">Slow Movers</div><div class="dp-kpi-val" style="color:#F59E0B;">${slow}</div><div class="dp-kpi-sub"><0.5 units/week</div></div>
+      <div class="dp-kpi-card"><div class="dp-kpi-label">Network Velocity</div><div class="dp-kpi-val">${Math.round(totalVel)}</div><div class="dp-kpi-sub">units/week across UAE</div></div>
+    </div>
+    <div style="background:#1A1A1A;border-radius:10px;overflow:hidden;">
+      <div style="padding:12px 16px;color:#fff;font-family:var(--f-mono);font-size:12px;font-weight:700;">🏆 Top Performing Stores</div>
+      <table class="dp-table">
+        <thead><tr><th>Rank</th><th>Store</th><th>Manager</th><th class="r">Weekly Vel</th><th class="r">Fast</th><th class="r">Slow</th><th class="r">Overstock</th><th>Health</th></tr></thead>
+        <tbody>${topStores.map(([code,m],i)=>{
+          const info=_dpStoreInfo(code);
+          const h=m.os<10&&m.fast>5?'green':m.os>30?'red':'amber';
+          return `<tr><td><strong>${i+1}</strong></td><td style="font-family:var(--f-mono);font-size:11px;">${code}</td><td>${info.mgr}</td><td class="r"><strong>${m.vel.toFixed(1)}</strong></td><td class="r">${m.fast}</td><td class="r">${m.slow}</td><td class="r">${m.os}</td><td><span class="dp-badge dp-badge-${h}">${h}</span></td></tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderDPOverstock(){
+  if(!_dpBenchmarks) return;
+  const items=[];
+  _dpBenchmarks.forEach(r=>{
+    const cs=r.l30d_qty*3;
+    const cw=r.weekly_avg>0?cs/r.weekly_avg:999;
+    if(cw>12&&cs>0) items.push({...r,cs,cw:Math.round(cw*10)/10});
+  });
+  items.sort((a,b)=>b.cw-a.cw);
+  const body=document.getElementById('dpBody');
+  body.innerHTML=`<div style="margin-bottom:12px;font-family:var(--f-mono);font-size:12px;color:#888;">${items.length} overstock items (>12 weeks cover)</div>
+    <table class="dp-table"><thead><tr><th>SKU</th><th>Store</th><th class="r">Stock</th><th class="r">Wk Avg</th><th class="r">L30D</th><th class="r">L90D Avg</th><th class="r">Cover</th><th>Severity</th></tr></thead>
+    <tbody>${items.slice(0,100).map(r=>{
+      const sev=r.cw>24?'red':'orange';
+      return `<tr><td style="font-family:var(--f-mono);font-size:11px;">${r.sku_code}</td><td style="font-family:var(--f-mono);font-size:11px;">${r.store_code}</td><td class="r">${r.cs}</td><td class="r">${r.weekly_avg.toFixed(2)}</td><td class="r">${r.l30d_qty}</td><td class="r">${r.l90d_avg.toFixed(1)}</td><td class="r"><strong>${r.cw}w</strong></td><td><span class="dp-badge dp-badge-${sev}">${r.cw>24?'EXTREME':'HIGH'}</span></td></tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+function renderDPReorder(){
+  if(!_dpBenchmarks) return;
+  const items=[];
+  _dpBenchmarks.forEach(r=>{
+    const cs=r.l30d_qty*3;
+    const cw=r.weekly_avg>0?cs/r.weekly_avg:999;
+    if(r.weekly_avg>5&&cw<4&&cs>0) items.push({...r,cs,cw:Math.round(cw*10)/10,order:Math.ceil(r.weekly_avg*4)});
+  });
+  items.sort((a,b)=>a.cw-b.cw);
+  const body=document.getElementById('dpBody');
+  body.innerHTML=`<div style="margin-bottom:12px;font-family:var(--f-mono);font-size:12px;color:#888;">${items.length} fast movers need reorder (<4 weeks cover)</div>
+    <table class="dp-table"><thead><tr><th>#</th><th>SKU</th><th>Store</th><th class="r">Stock</th><th class="r">Wk Avg</th><th class="r">Cover</th><th class="r">Suggested Order</th></tr></thead>
+    <tbody>${items.map((r,i)=>`<tr><td><strong>${i+1}</strong></td><td style="font-family:var(--f-mono);font-size:11px;">${r.sku_code}</td><td style="font-family:var(--f-mono);font-size:11px;">${r.store_code}</td><td class="r">${r.cs}</td><td class="r">${r.weekly_avg.toFixed(2)}</td><td class="r"><span class="dp-badge dp-badge-red">${r.cw}w</span></td><td class="r"><strong>${r.order} units</strong></td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderDPStores(){
+  if(!_dpBenchmarks) return;
+  const sv={};
+  _dpBenchmarks.forEach(r=>{
+    if(!sv[r.store_code]) sv[r.store_code]={vel:0,fast:0,slow:0,os:0,skus:0};
+    sv[r.store_code].vel+=r.weekly_avg; sv[r.store_code].skus++;
+    if(r.weekly_avg>5) sv[r.store_code].fast++;
+    if(r.weekly_avg<0.5) sv[r.store_code].slow++;
+    const cs=r.l30d_qty*3;
+    if(cs>0&&r.weekly_avg>0&&cs/r.weekly_avg>12) sv[r.store_code].os++;
+  });
+  const stores=Object.entries(sv).sort((a,b)=>b[1].vel-a[1].vel);
+  const body=document.getElementById('dpBody');
+  body.innerHTML=`<div style="margin-bottom:12px;font-family:var(--f-mono);font-size:12px;color:#888;">${stores.length} stores tracked</div>
+    <table class="dp-table"><thead><tr><th>#</th><th>Store</th><th>Manager</th><th class="r">SKUs</th><th class="r">Fast</th><th class="r">Slow</th><th class="r">Overstock</th><th class="r">Weekly Vel</th><th>Performance</th></tr></thead>
+    <tbody>${stores.map(([code,m],i)=>{
+      const info=_dpStoreInfo(code);
+      const p=m.vel>200?'green':m.vel>100?'amber':'red';
+      const pl=m.vel>200?'STRONG':m.vel>100?'FAIR':'WEAK';
+      return `<tr><td><strong>${i+1}</strong></td><td style="font-family:var(--f-mono);font-size:11px;">${code}</td><td>${info.mgr}</td><td class="r">${m.skus}</td><td class="r">${m.fast}</td><td class="r">${m.slow}</td><td class="r">${m.os}</td><td class="r"><strong>${m.vel.toFixed(1)}</strong></td><td><span class="dp-badge dp-badge-${p}">${pl}</span></td></tr>`;
+    }).join('')}</tbody></table>`;
 }
 
 function renderMgrDashboard(){
