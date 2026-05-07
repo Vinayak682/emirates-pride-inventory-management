@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demand Planning Dashboard — Emirates Pride Perfumes</title>
+<meta name="cache-bust" content="v20260507-dp-v1">
+<style>
+:root {
+  --color-bg: #FAFAF8;
+  --color-card: #FFFFFF;
+  --color-border: #E8E4DC;
+  --color-text: #1A1A1A;
+  --color-text-muted: #6B6B6B;
+  --color-gold: #C9A44E;
+  --color-dark: #2A1800;
+  --color-green: #22C55E;
+  --color-amber: #F59E0B;
+  --color-orange: #F97316;
+  --color-red: #EF4444;
+  --f-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --f-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: var(--f-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Header */
+.header {
+  background: var(--color-dark);
+  color: #FFFFFF;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--color-gold);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.header-subtitle {
+  font-size: 11px;
+  color: #CCA;
+  font-family: var(--f-mono);
+  margin-top: 2px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn {
+  background: var(--color-gold);
+  color: var(--color-dark);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-family: var(--f-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  background: #D4AF5E;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--color-gold);
+  color: var(--color-gold);
+}
+
+.btn-secondary:hover {
+  background: rgba(201, 164, 78, 0.1);
+}
+
+/* Tabs */
+.tabs {
+  background: var(--color-card);
+  border-bottom: 2px solid var(--color-border);
+  display: flex;
+  gap: 0;
+  padding: 0 20px;
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--color-text);
+  background: rgba(0,0,0,0.02);
+}
+
+.tab.active {
+  color: var(--color-gold);
+  border-bottom-color: var(--color-gold);
+}
+
+/* Content */
+.content {
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* KPI Cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-size: 32px;
+  font-weight: 700;
+  font-family: var(--f-mono);
+  color: var(--color-text);
+}
+
+.kpi-subtitle {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.kpi-card.red .kpi-value { color: var(--color-red); }
+.kpi-card.orange .kpi-value { color: var(--color-orange); }
+.kpi-card.amber .kpi-value { color: var(--color-amber); }
+.kpi-card.green .kpi-value { color: var(--color-green); }
+
+/* Tables */
+.table-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.table-header {
+  padding: 14px 18px;
+  background: var(--color-dark);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.table-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.table-count {
+  font-size: 11px;
+  font-family: var(--f-mono);
+  color: #CCA;
+}
+
+.table-body {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead {
+  background: #F8F7F5;
+  border-bottom: 2px solid var(--color-border);
+}
+
+th {
+  text-align: left;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+}
+
+th.text-right { text-align: right; }
+
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+td.text-right { text-align: right; font-family: var(--f-mono); }
+
+tr:hover {
+  background: rgba(0,0,0,0.02);
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-red { background: #FEE2E2; color: #991B1B; }
+.badge-orange { background: #FFEDD5; color: #9A3412; }
+.badge-amber { background: #FEF3C7; color: #92400E; }
+.badge-green { background: #D1FAE5; color: #065F46; }
+
+.mono {
+  font-family: var(--f-mono);
+  font-size: 12px;
+}
+
+/* Filters */
+.filters {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-right: 8px;
+}
+
+select, input[type="text"] {
+  padding: 7px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 6px;
+  font-family: var(--f-body);
+  font-size: 13px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+}
+
+select:focus, input:focus {
+  border-color: var(--color-gold);
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-text-muted);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-border);
+  border-top-color: var(--color-gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <div class="header-title">📊 Demand Planning Dashboard</div>
+    <div class="header-subtitle">Emirates Pride Perfumes — Manager View</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
+    <button class="btn" onclick="exportReport()">📥 Export Report</button>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('overview')">📈 Overview</div>
+  <div class="tab" onclick="switchTab('overstock')">🔴 Overstock</div>
+  <div class="tab" onclick="switchTab('reorder')">🟢 Reorder Priority</div>
+  <div class="tab" onclick="switchTab('slow')">🟡 Slow Movers</div>
+  <div class="tab" onclick="switchTab('stores')">🏪 Store Performance</div>
+  <div class="tab" onclick="switchTab('sku')">📦 SKU Analysis</div>
+</div>
+
+<!-- Content -->
+<div class="content">
+  
+  <!-- OVERVIEW TAB -->
+  <div id="tab-overview" class="tab-panel active">
+    <div class="kpi-grid">
+      <div class="kpi-card red">
+        <div class="kpi-label">Overstock Items</div>
+        <div class="kpi-value" id="kpi-overstock">—</div>
+        <div class="kpi-subtitle">>12 weeks cover</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Reorder Priority</div>
+        <div class="kpi-value" id="kpi-reorder">—</div>
+        <div class="kpi-subtitle">Fast movers <4w cover</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Slow Movers</div>
+        <div class="kpi-value" id="kpi-slow">—</div>
+        <div class="kpi-subtitle"><0.5 units/week</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Network Velocity</div>
+        <div class="kpi-value" id="kpi-velocity">—</div>
+        <div class="kpi-subtitle">units/week across UAE</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">🏆 Top Performing Stores</div>
+        <div class="table-count" id="store-count">—</div>
+      </div>
+      <div class="table-body">
+        <table id="table-top-stores">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Store</th>
+              <th>Manager</th>
+              <th class="text-right">Weekly Velocity</th>
+              <th class="text-right">Fast Movers</th>
+              <th class="text-right">Overstock</th>
+              <th>Health</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERSTOCK TAB -->
+  <div id="tab-overstock" class="tab-panel">
+    <div class="filters">
+      <span class="filter-label">Filter:</span>
+      <select id="filter-overstock-store">
+        <option value="">All Stores</option>
+      </select>
+      <select id="filter-overstock-severity">
+        <option value="">All Severities</option>
+        <option value="extreme">>24 weeks (Extreme)</option>
+        <option value="high">12-24 weeks (High)</option>
+      </select>
+      <input type="text" id="search-overstock" placeholder="Search SKU...">
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">🔴 Overstock Items</div>
+        <div class="table-count" id="overstock-count">—</div>
+      </div>
+      <div class="table-body">
+        <table id="table-overstock">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Store</th>
+              <th class="text-right">Current Stock</th>
+              <th class="text-right">Weekly Avg</th>
+              <th class="text-right">L30D Sold</th>
+              <th class="text-right">L90D Avg</th>
+              <th class="text-right">Cover Weeks</th>
+              <th>Severity</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- REORDER TAB -->
+  <div id="tab-reorder" class="tab-panel">
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">🟢 Reorder Priority — Fast Movers Low Stock</div>
+        <div class="table-count" id="reorder-count">—</div>
+      </div>
+      <div class="table-body">
+        <table id="table-reorder">
+          <thead>
+            <tr>
+              <th>Priority</th>
+              <th>SKU</th>
+              <th>Store</th>
+              <th class="text-right">Current Stock</th>
+              <th class="text-right">Weekly Avg</th>
+              <th class="text-right">Cover Weeks</th>
+              <th class="text-right">Suggested Order</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLOW MOVERS TAB -->
+  <div id="tab-slow" class="tab-panel">
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">🟡 Slow Movers</div>
+        <div class="table-count" id="slow-count">—</div>
+      </div>
+      <div class="table-body">
+        <table id="table-slow">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Store</th>
+              <th class="text-right">Weekly Avg</th>
+              <th class="text-right">L30D Sold</th>
+              <th class="text-right">L90D Avg</th>
+              <th>Last Sale</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORES TAB -->
+  <div id="tab-stores" class="tab-panel">
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">🏪 Store Performance Scorecard</div>
+        <div class="table-count" id="stores-count">—</div>
+      </div>
+      <div class="table-body">
+        <table id="table-stores">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Store</th>
+              <th>Manager</th>
+              <th class="text-right">Total SKUs</th>
+              <th class="text-right">Fast Movers</th>
+              <th class="text-right">Slow Movers</th>
+              <th class="text-right">Overstock</th>
+              <th class="text-right">Weekly Velocity</th>
+              <th>Performance</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SKU ANALYSIS TAB -->
+  <div id="tab-sku" class="tab-panel">
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <p>SKU-level analysis coming soon...</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Data will be loaded from JSON
+let reportsData = null;
+
+async function loadData() {
+  try {
+    // In production, this will load from Supabase or API
+    // For now, simulating with the generated reports
+    const response = await fetch('demand_planning_reports.json');
+    reportsData = await response.json();
+    renderDashboard();
+  } catch (err) {
+    console.error('Failed to load data:', err);
+    alert('Failed to load dashboard data');
+  }
+}
+
+function renderDashboard() {
+  if (!reportsData) return;
+  
+  // KPIs
+  document.getElementById('kpi-overstock').textContent = reportsData.overstock.length;
+  document.getElementById('kpi-reorder').textContent = reportsData.fast_movers_low_stock.length;
+  document.getElementById('kpi-slow').textContent = reportsData.slow_movers.length;
+  
+  const totalVelocity = Object.values(reportsData.store_metrics)
+    .reduce((sum, m) => sum + m.total_weekly_velocity, 0);
+  document.getElementById('kpi-velocity').textContent = Math.round(totalVelocity);
+  
+  // Render tables
+  renderTopStores();
+  renderOverstockTable();
+  renderReorderTable();
+  renderSlowMoversTable();
+  renderStoresTable();
+}
+
+function renderTopStores() {
+  const stores = Object.entries(reportsData.store_metrics)
+    .map(([code, m]) => ({ code, ...m }))
+    .sort((a, b) => b.total_weekly_velocity - a.total_weekly_velocity);
+  
+  document.getElementById('store-count').textContent = `${stores.length} stores`;
+  
+  const tbody = document.querySelector('#table-top-stores tbody');
+  tbody.innerHTML = stores.slice(0, 10).map((s, i) => {
+    const health = s.overstock_items < 10 && s.fast_movers > 5 ? 'green' : 
+                   s.overstock_items > 30 ? 'red' : 'amber';
+    return `
+      <tr>
+        <td><strong>${i + 1}</strong></td>
+        <td class="mono">${s.code}</td>
+        <td>—</td>
+        <td class="text-right"><strong>${s.total_weekly_velocity.toFixed(1)}</strong></td>
+        <td class="text-right">${s.fast_movers}</td>
+        <td class="text-right">${s.overstock_items}</td>
+        <td><span class="badge badge-${health}">${health}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderOverstockTable() {
+  const data = reportsData.overstock;
+  document.getElementById('overstock-count').textContent = `${data.length} items`;
+  
+  const tbody = document.querySelector('#table-overstock tbody');
+  tbody.innerHTML = data.slice(0, 50).map(item => {
+    const severity = item.cover_weeks > 24 ? 'red' : 'orange';
+    const severityLabel = item.cover_weeks > 24 ? 'EXTREME' : 'HIGH';
+    return `
+      <tr>
+        <td class="mono">${item.sku_code}</td>
+        <td class="mono">${item.store_code}</td>
+        <td class="text-right">${item.current_stock}</td>
+        <td class="text-right">${item.weekly_avg.toFixed(2)}</td>
+        <td class="text-right">${item.l30d}</td>
+        <td class="text-right">${item.l90d_avg.toFixed(1)}</td>
+        <td class="text-right"><strong>${item.cover_weeks}w</strong></td>
+        <td><span class="badge badge-${severity}">${severityLabel}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderReorderTable() {
+  const data = reportsData.fast_movers_low_stock;
+  document.getElementById('reorder-count').textContent = `${data.length} items`;
+  
+  const tbody = document.querySelector('#table-reorder tbody');
+  tbody.innerHTML = data.map((item, i) => {
+    const suggestedOrder = Math.ceil(item.weekly_avg * 4); // 4 weeks cover
+    return `
+      <tr>
+        <td><strong>${i + 1}</strong></td>
+        <td class="mono">${item.sku_code}</td>
+        <td class="mono">${item.store_code}</td>
+        <td class="text-right">${item.current_stock}</td>
+        <td class="text-right">${item.weekly_avg.toFixed(2)}</td>
+        <td class="text-right"><span class="badge badge-red">${item.cover_weeks}w</span></td>
+        <td class="text-right"><strong>${suggestedOrder} units</strong></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderSlowMoversTable() {
+  const data = reportsData.slow_movers;
+  document.getElementById('slow-count').textContent = `${data.length} items`;
+  
+  const tbody = document.querySelector('#table-slow tbody');
+  tbody.innerHTML = data.slice(0, 50).map(item => {
+    return `
+      <tr>
+        <td class="mono">${item.sku_code}</td>
+        <td class="mono">${item.store_code}</td>
+        <td class="text-right">${item.weekly_avg.toFixed(2)}</td>
+        <td class="text-right">${item.l30d}</td>
+        <td class="text-right">${item.l90d_avg.toFixed(2)}</td>
+        <td>${item.last_sale}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderStoresTable() {
+  const stores = Object.entries(reportsData.store_metrics)
+    .map(([code, m]) => ({ code, ...m }))
+    .sort((a, b) => b.total_weekly_velocity - a.total_weekly_velocity);
+  
+  document.getElementById('stores-count').textContent = `${stores.length} stores`;
+  
+  const tbody = document.querySelector('#table-stores tbody');
+  tbody.innerHTML = stores.map((s, i) => {
+    const performance = s.total_weekly_velocity > 200 ? 'green' :
+                       s.total_weekly_velocity > 100 ? 'amber' : 'red';
+    const perfLabel = s.total_weekly_velocity > 200 ? 'STRONG' :
+                     s.total_weekly_velocity > 100 ? 'FAIR' : 'WEAK';
+    return `
+      <tr>
+        <td><strong>${i + 1}</strong></td>
+        <td class="mono">${s.code}</td>
+        <td>—</td>
+        <td class="text-right">${s.total_skus}</td>
+        <td class="text-right">${s.fast_movers}</td>
+        <td class="text-right">${s.slow_movers}</td>
+        <td class="text-right">${s.overstock_items}</td>
+        <td class="text-right"><strong>${s.total_weekly_velocity.toFixed(1)}</strong></td>
+        <td><span class="badge badge-${performance}">${perfLabel}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function switchTab(tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Update panels
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+}
+
+function refreshData() {
+  loadData();
+}
+
+function exportReport() {
+  alert('Export feature coming soon — will export to Excel');
+}
+
+// Initialize
+loadData();
+</script>
+
+</body>
+</html>

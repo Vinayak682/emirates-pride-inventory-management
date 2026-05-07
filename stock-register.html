@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="cache-bust" content="v20260506-mgr-dash-only">
+<meta name="cache-bust" content="v20260507-dp-dash">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -2192,21 +2192,17 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 <div id="storesPanel">
   <div class="sp-header">
     <span style="font-size:18px;">🏪</span>
-    <span class="sp-title">Stock Visibility — All Stores</span>
-    <button class="sp-close" onclick="closeStores()">✕ Close</button>
+    <span class="sp-title">Stock Visibility</span>
+    <button class="sp-close" onclick="closeStores()">✕</button>
   </div>
-  <!-- Mode tabs -->
-  <div class="sp-mode-bar">
-    <div class="sp-mode-btn active" id="modeProduct" onclick="setSpMode('product')">🔍 Find a Product</div>
-    <div class="sp-mode-btn" id="modeStore" onclick="setSpMode('store')">🏪 Browse by Store</div>
-  </div>
-  <!-- Combined search + dropdown in one compact bar -->
-  <div class="sp-search" id="spSearchBar">
-    <div style="display:flex;flex-direction:column;gap:6px;width:100%;">
-      <input class="sp-input" id="spSearch" placeholder="Type product name or code to filter…" oninput="onSpSearch()" autocomplete="off" style="width:100%;">
-      <select class="sp-sku-sel" id="spSku" onchange="onSpSkuChange()" style="width:100%;margin:0;">
-        <option value="">— or select from list —</option>
-      </select>
+  <!-- Combined: mode tabs + search in one bar -->
+  <div class="sp-unified-bar">
+    <div class="sp-mode-tabs">
+      <div class="sp-mode-btn active" id="modeProduct" onclick="setSpMode('product')">🔍 Product</div>
+      <div class="sp-mode-btn" id="modeStore" onclick="setSpMode('store')">🏪 Store</div>
+    </div>
+    <div class="sp-search-wrap" id="spSearchWrap">
+      <input class="sp-input-unified" id="spSearch" placeholder="Type product name or code…" oninput="onSpSearch()" autocomplete="off">
     </div>
   </div>
   <!-- Body -->
@@ -3003,6 +2999,14 @@ function doLogin(){
         btn.onclick=openMgrDashboard;
         const logoutBtn=tb.querySelector('.top-btn.logout');
         if(logoutBtn) tb.insertBefore(btn,logoutBtn);
+        
+        // Add Demand Planning Dashboard button
+        const dpBtn=document.createElement('button');
+        dpBtn.id='dpDashBtn';
+        dpBtn.textContent='📈 Demand Planning';
+        dpBtn.style.cssText='background:#2A1800;border:1px solid #C9A44E;color:#C9A44E;font-family:var(--f-body);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;';
+        dpBtn.onclick=()=>window.open('demand-planning-dashboard.html','_blank');
+        if(logoutBtn) tb.insertBefore(dpBtn,logoutBtn);
       }
       openMgrDashboard();
     },1500);
@@ -3017,9 +3021,11 @@ function doLogout(){
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('appShell').style.display='none';
   document.getElementById('dashPanel').style.display='none';
-  // Hide MGR-only dashboard button
+  // Hide MGR-only dashboard buttons
   const mgrDashBtn=document.getElementById('mgrDashBtn');
   if(mgrDashBtn) mgrDashBtn.remove();
+  const dpDashBtn=document.getElementById('dpDashBtn');
+  if(dpDashBtn) dpDashBtn.remove();
 }
 
 // ── DAY TABS ──
