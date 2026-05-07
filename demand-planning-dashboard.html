@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Demand Planning Dashboard — Emirates Pride Perfumes</title>
-<meta name="cache-bust" content="v20260507-dp-v1">
+<meta name="cache-bust" content="v20260507-supabase">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --color-bg: #FAFAF8;
@@ -534,31 +535,188 @@ select:focus, input:focus {
 </div>
 
 <script>
-// Data will be loaded from JSON
-let reportsData = null;
+// Supabase client
+const supabase = window.supabase.createClient(
+  'https://ncszurcrkngjcjqsowln.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25nampjanNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI2OTAyNTksImV4cCI6MjA0ODI2NjI1OX0.DcHGX_p5b4zpXLy89BvGx1rPVQLUf4QLvX9Rc6gfkrc'
+);
+
+// Store master data
+const STORES = [
+  {code:'A0001', name:'Bawabat al Sharq Mall Shop',  mgr:'Mohamed Hessin'},
+  {code:'A0002', name:'Bawabat al Sharq Mall Kiosk', mgr:'Mohamed Hessin'},
+  {code:'BAS001',name:'Bawabat al Sharq Kiosk ASL',  mgr:'Mohamed Hessin'},
+  {code:'A0003', name:'Dalma Mall Shop',             mgr:'Mohamed Hessin'},
+  {code:'A0004', name:'Dalma Mall Kiosk',            mgr:'Mohamed Hessin'},
+  {code:'A0005', name:'Deerfield Mall Kiosk',        mgr:'Mohamed Hessin'},
+  {code:'A0009', name:'Yas Mall Podium',             mgr:'Mohamed Hessin'},
+  {code:'A0007', name:'Yas Mall Kiosk 2',            mgr:'Mohamed Hessin'},
+  {code:'A0008', name:'Yas Mall Kiosk 3',            mgr:'Mohamed Hessin'},
+  {code:'YMK001',name:'Yas Mall ASL',                mgr:'Mohamed Hessin'},
+  {code:'AL001', name:'Al Ain Mall Kiosk',           mgr:'Mohamed Hessin'},
+  {code:'AL002', name:'Bawadi Mall Kiosk 1',         mgr:'Mohamed Hessin'},
+  {code:'AL003', name:'Bawadi Mall Kiosk 2',         mgr:'Mohamed Hessin'},
+  {code:'BAW001',name:'Bawadi Mall ASL',             mgr:'Mohamed Hessin'},
+  {code:'AL004', name:'Jimi Mall Shop',              mgr:'Mohamed Hessin'},
+  {code:'AL006', name:'Makhani Zakhar Mall Shop',    mgr:'Mohamed Hessin'},
+  {code:'MAK001',name:'Makhani Zakhar Mall ASL',     mgr:'Mohamed Hessin'},
+  {code:'FJ001A',name:'Fujairah City Centre ASL',    mgr:'Mohamed Hessin'},
+  {code:'DX001', name:'Dubai Mall Shop',             mgr:'Mohammed Elmatloub'},
+  {code:'DX004', name:'Mall of the Emirates Kiosk',  mgr:'Mohammed Elmatloub'},
+  {code:'DX005', name:'Mirdif City Centre Kiosk',    mgr:'Mohammed Elmatloub'},
+  {code:'DX006', name:'Dubai Hills Mall Shop',       mgr:'Mohammed Elmatloub'},
+  {code:'RK001', name:'Manar Mall Shop',             mgr:'Mohammed Elmatloub'},
+  {code:'RK002', name:'Manar Mall Kiosk',            mgr:'Mohammed Elmatloub'},
+  {code:'FJ001', name:'Fujairah City Centre Kiosk',  mgr:'Mohammed Elmatloub'},
+  {code:'SH001', name:'Zahia City Centre Kiosk',     mgr:'Mohammed Elmatloub'},
+  {code:'AJ001', name:'Ajman City Centre Kiosk',     mgr:'Mohammed Elmatloub'},
+];
+
+let benchmarksData = null;
+let currentStockData = {};
 
 async function loadData() {
   try {
-    // In production, this will load from Supabase or API
-    // For now, simulating with the generated reports
-    const response = await fetch('demand_planning_reports.json');
-    reportsData = await response.json();
+    showLoading(true);
+    
+    // Load benchmarks from Supabase
+    const { data: benchmarks, error } = await supabase
+      .from('benchmarks_cache')
+      .select('*');
+    
+    if (error) {
+      console.error('Supabase error:', error);
+      alert('Failed to load benchmark data from Supabase. Please ensure tables are created.');
+      showLoading(false);
+      return;
+    }
+    
+    if (!benchmarks || benchmarks.length === 0) {
+      alert('No benchmark data found. Please upload sales history first.');
+      showLoading(false);
+      return;
+    }
+    
+    // Transform to dashboard format
+    benchmarksData = {
+      benchmarks: benchmarks,
+      overstock: [],
+      fast_movers_low_stock: [],
+      slow_movers: [],
+      store_metrics: {},
+    };
+    
+    // Calculate derived reports
+    calculateReports();
     renderDashboard();
+    showLoading(false);
+    
   } catch (err) {
-    console.error('Failed to load data:', err);
-    alert('Failed to load dashboard data');
+    console.error('Load error:', err);
+    alert('Failed to load data: ' + err.message);
+    showLoading(false);
   }
 }
 
+function calculateReports() {
+  const benchmarks = benchmarksData.benchmarks;
+  const overstock = [];
+  const fastMoversLowStock = [];
+  const slowMovers = [];
+  const storeMetrics = {};
+  
+  // Initialize store metrics
+  STORES.forEach(s => {
+    storeMetrics[s.code] = {
+      total_skus: 0,
+      fast_movers: 0,
+      slow_movers: 0,
+      overstock_items: 0,
+      total_weekly_velocity: 0,
+    };
+  });
+  
+  benchmarks.forEach(b => {
+    // Simulate current stock (3x L30D) until we integrate real stock data
+    const currentStock = b.l30d_qty * 3;
+    const coverWeeks = b.weekly_avg > 0 ? currentStock / b.weekly_avg : 999;
+    
+    // Update store metrics
+    if (storeMetrics[b.store_code]) {
+      storeMetrics[b.store_code].total_skus++;
+      storeMetrics[b.store_code].total_weekly_velocity += b.weekly_avg;
+      
+      if (b.weekly_avg > 5) {
+        storeMetrics[b.store_code].fast_movers++;
+      }
+      
+      if (b.weekly_avg < 0.5) {
+        storeMetrics[b.store_code].slow_movers++;
+      }
+      
+      if (coverWeeks > 12) {
+        storeMetrics[b.store_code].overstock_items++;
+      }
+    }
+    
+    // Overstock (>12 weeks)
+    if (coverWeeks > 12 && currentStock > 0) {
+      overstock.push({
+        sku_code: b.sku_code,
+        store_code: b.store_code,
+        current_stock: currentStock,
+        weekly_avg: b.weekly_avg,
+        l30d: b.l30d_qty,
+        l90d_avg: b.l90d_avg,
+        cover_weeks: Math.round(coverWeeks * 10) / 10,
+      });
+    }
+    
+    // Fast movers low stock (<4 weeks, >5/week)
+    if (b.weekly_avg > 5 && coverWeeks < 4 && currentStock > 0) {
+      fastMoversLowStock.push({
+        sku_code: b.sku_code,
+        store_code: b.store_code,
+        current_stock: currentStock,
+        weekly_avg: b.weekly_avg,
+        cover_weeks: Math.round(coverWeeks * 10) / 10,
+        l30d: b.l30d_qty,
+      });
+    }
+    
+    // Slow movers (<0.5/week, <1/month L90D)
+    if (b.weekly_avg < 0.5 && b.l90d_avg < 1) {
+      slowMovers.push({
+        sku_code: b.sku_code,
+        store_code: b.store_code,
+        weekly_avg: b.weekly_avg,
+        l30d: b.l30d_qty,
+        l90d_avg: b.l90d_avg,
+        last_sale: b.last_sale_month || 'Unknown',
+      });
+    }
+  });
+  
+  // Sort
+  overstock.sort((a, b) => b.cover_weeks - a.cover_weeks);
+  fastMoversLowStock.sort((a, b) => a.cover_weeks - b.cover_weeks);
+  slowMovers.sort((a, b) => a.weekly_avg - b.weekly_avg);
+  
+  benchmarksData.overstock = overstock;
+  benchmarksData.fast_movers_low_stock = fastMoversLowStock;
+  benchmarksData.slow_movers = slowMovers;
+  benchmarksData.store_metrics = storeMetrics;
+}
+
 function renderDashboard() {
-  if (!reportsData) return;
+  if (!benchmarksData) return;
   
   // KPIs
-  document.getElementById('kpi-overstock').textContent = reportsData.overstock.length;
-  document.getElementById('kpi-reorder').textContent = reportsData.fast_movers_low_stock.length;
-  document.getElementById('kpi-slow').textContent = reportsData.slow_movers.length;
+  document.getElementById('kpi-overstock').textContent = benchmarksData.overstock.length;
+  document.getElementById('kpi-reorder').textContent = benchmarksData.fast_movers_low_stock.length;
+  document.getElementById('kpi-slow').textContent = benchmarksData.slow_movers.length;
   
-  const totalVelocity = Object.values(reportsData.store_metrics)
+  const totalVelocity = Object.values(benchmarksData.store_metrics)
     .reduce((sum, m) => sum + m.total_weekly_velocity, 0);
   document.getElementById('kpi-velocity').textContent = Math.round(totalVelocity);
   
@@ -571,8 +729,11 @@ function renderDashboard() {
 }
 
 function renderTopStores() {
-  const stores = Object.entries(reportsData.store_metrics)
-    .map(([code, m]) => ({ code, ...m }))
+  const stores = Object.entries(benchmarksData.store_metrics)
+    .map(([code, m]) => {
+      const store = STORES.find(s => s.code === code);
+      return { code, ...m, mgr: store ? store.mgr : '—' };
+    })
     .sort((a, b) => b.total_weekly_velocity - a.total_weekly_velocity);
   
   document.getElementById('store-count').textContent = `${stores.length} stores`;
@@ -585,18 +746,18 @@ function renderTopStores() {
       <tr>
         <td><strong>${i + 1}</strong></td>
         <td class="mono">${s.code}</td>
-        <td>—</td>
+        <td>${s.mgr}</td>
         <td class="text-right"><strong>${s.total_weekly_velocity.toFixed(1)}</strong></td>
         <td class="text-right">${s.fast_movers}</td>
         <td class="text-right">${s.overstock_items}</td>
-        <td><span class="badge badge-${health}">${health}</span></td>
+        <td><span class="badge badge-${health}">${health.toUpperCase()}</span></td>
       </tr>
     `;
   }).join('');
 }
 
 function renderOverstockTable() {
-  const data = reportsData.overstock;
+  const data = benchmarksData.overstock;
   document.getElementById('overstock-count').textContent = `${data.length} items`;
   
   const tbody = document.querySelector('#table-overstock tbody');
@@ -619,7 +780,7 @@ function renderOverstockTable() {
 }
 
 function renderReorderTable() {
-  const data = reportsData.fast_movers_low_stock;
+  const data = benchmarksData.fast_movers_low_stock;
   document.getElementById('reorder-count').textContent = `${data.length} items`;
   
   const tbody = document.querySelector('#table-reorder tbody');
@@ -640,7 +801,7 @@ function renderReorderTable() {
 }
 
 function renderSlowMoversTable() {
-  const data = reportsData.slow_movers;
+  const data = benchmarksData.slow_movers;
   document.getElementById('slow-count').textContent = `${data.length} items`;
   
   const tbody = document.querySelector('#table-slow tbody');
@@ -659,8 +820,11 @@ function renderSlowMoversTable() {
 }
 
 function renderStoresTable() {
-  const stores = Object.entries(reportsData.store_metrics)
-    .map(([code, m]) => ({ code, ...m }))
+  const stores = Object.entries(benchmarksData.store_metrics)
+    .map(([code, m]) => {
+      const store = STORES.find(s => s.code === code);
+      return { code, ...m, mgr: store ? store.mgr : '—' };
+    })
     .sort((a, b) => b.total_weekly_velocity - a.total_weekly_velocity);
   
   document.getElementById('stores-count').textContent = `${stores.length} stores`;
@@ -675,7 +839,7 @@ function renderStoresTable() {
       <tr>
         <td><strong>${i + 1}</strong></td>
         <td class="mono">${s.code}</td>
-        <td>—</td>
+        <td>${s.mgr}</td>
         <td class="text-right">${s.total_skus}</td>
         <td class="text-right">${s.fast_movers}</td>
         <td class="text-right">${s.slow_movers}</td>
@@ -697,12 +861,19 @@ function switchTab(tabName) {
   document.getElementById(`tab-${tabName}`).classList.add('active');
 }
 
+function showLoading(show) {
+  // Toggle loading state on tables
+  document.querySelectorAll('.table-body').forEach(tb => {
+    tb.style.opacity = show ? '0.5' : '1';
+  });
+}
+
 function refreshData() {
   loadData();
 }
 
 function exportReport() {
-  alert('Export feature coming soon — will export to Excel');
+  alert('Export feature coming soon — will export to Excel with all reports');
 }
 
 // Initialize
