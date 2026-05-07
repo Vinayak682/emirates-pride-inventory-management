@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Demand Planning Dashboard — Emirates Pride Perfumes</title>
-<meta name="cache-bust" content="v20260507-supabase-live">
+<meta name="cache-bust" content="v20260507-key-fix">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
@@ -538,7 +538,7 @@ select:focus, input:focus {
 // Supabase client
 const supabase = window.supabase.createClient(
   'https://ncszurcrkngjcjqsowln.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25nampjanNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI2OTAyNTksImV4cCI6MjA0ODI2NjI1OX0.DcHGX_p5b4zpXLy89BvGx1rPVQLUf4QLvX9Rc6gfkrc'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM'
 );
 
 // Store master data
@@ -579,23 +579,30 @@ async function loadData() {
   try {
     showLoading(true);
     
-    // Load benchmarks from Supabase
+    // Load benchmarks from Supabase (fetch all — default limit is 1000, we have 1458)
     const { data: benchmarks, error } = await supabase
       .from('benchmarks_cache')
-      .select('*');
+      .select('*')
+      .limit(5000);
+    
+    console.log('Supabase response:', { rows: benchmarks?.length, error });
     
     if (error) {
       console.error('Supabase error:', error);
-      alert('Failed to load benchmark data from Supabase. Please ensure tables are created.');
+      document.getElementById('kpi-overstock').textContent = 'ERR';
+      document.getElementById('kpi-reorder').textContent = error.message || 'Connection failed';
       showLoading(false);
       return;
     }
     
     if (!benchmarks || benchmarks.length === 0) {
-      alert('No benchmark data found. Please upload sales history first.');
+      document.getElementById('kpi-overstock').textContent = '0';
+      document.getElementById('kpi-reorder').textContent = 'No data';
       showLoading(false);
       return;
     }
+    
+    console.log('Loaded', benchmarks.length, 'benchmarks. Sample:', benchmarks[0]);
     
     // Transform to dashboard format
     benchmarksData = {
