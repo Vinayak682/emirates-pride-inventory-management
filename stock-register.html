@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="cache-bust" content="v20260507-dp-dash">
+<meta name="cache-bust" content="v20260507-hotfix">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -2192,18 +2192,22 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 <div id="storesPanel">
   <div class="sp-header">
     <span style="font-size:18px;">🏪</span>
-    <span class="sp-title">Stock Visibility</span>
-    <button class="sp-close" onclick="closeStores()">✕</button>
+    <span class="sp-title">Stock Visibility — All Stores</span>
+    <button class="sp-close" onclick="closeStores()">✕ Close</button>
   </div>
-  <!-- Combined: mode tabs + search in one bar -->
-  <div class="sp-unified-bar">
-    <div class="sp-mode-tabs">
-      <div class="sp-mode-btn active" id="modeProduct" onclick="setSpMode('product')">🔍 Product</div>
-      <div class="sp-mode-btn" id="modeStore" onclick="setSpMode('store')">🏪 Store</div>
-    </div>
-    <div class="sp-search-wrap" id="spSearchWrap">
-      <input class="sp-input-unified" id="spSearch" placeholder="Type product name or code…" oninput="onSpSearch()" autocomplete="off">
-    </div>
+  <!-- Mode tabs -->
+  <div class="sp-mode-bar">
+    <div class="sp-mode-btn active" id="modeProduct" onclick="setSpMode('product')">🔍 Find a Product</div>
+    <div class="sp-mode-btn" id="modeStore" onclick="setSpMode('store')">🏪 Browse by Store</div>
+  </div>
+  <!-- Search + dropdown combined -->
+  <div class="sp-search" id="spSearchBar">
+    <input class="sp-input" id="spSearch" placeholder="Type product name or code…" oninput="onSpSearch()" autocomplete="off" style="flex:1;">
+  </div>
+  <div id="spDropWrap" style="background:#FFFFFF;border-bottom:1px solid #E8E4DC;padding:0 14px 10px;">
+    <select class="sp-sku-sel" id="spSku" onchange="onSpSkuChange()" style="width:100%;margin-top:4px;">
+      <option value="">— Select a product to check availability —</option>
+    </select>
   </div>
   <!-- Body -->
   <div class="sp-body" id="spBody" style="flex:1;overflow-y:auto;"></div>
@@ -3546,9 +3550,11 @@ function setSpMode(mode){
   spMode=mode;
   document.getElementById('modeProduct').classList.toggle('active',mode==='product');
   document.getElementById('modeStore').classList.toggle('active',mode==='store');
-  // Show/hide combined search bar only in product mode
+  // Show/hide search + dropdown in product mode
   const searchBar=document.getElementById('spSearchBar');
   if(searchBar) searchBar.style.display=mode==='product'?'':'none';
+  const dropWrap=document.getElementById('spDropWrap');
+  if(dropWrap) dropWrap.style.display=mode==='product'?'':'none';
   renderStores();
 }
 
