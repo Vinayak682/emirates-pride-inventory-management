@@ -6385,7 +6385,7 @@ function renderDPOverview(){
         storeCode:r.store_code,
         stock:cs,
         weeklyAvg:r.weekly_avg,
-        cover:cw,
+        cover:cw.toFixed(1),
         message:`${cw.toFixed(1)} weeks cover remaining`,
         urgency:3,
         action:`Schedule order: ${Math.ceil(r.weekly_avg*8)} units`
@@ -6410,8 +6410,11 @@ function renderDPOverview(){
       });
     }
     
-    // 📊 ANOMALY: Sales velocity dropped suddenly
+    // ── MANAGEMENT INTELLIGENCE METRICS ──
+    
+    // 1. VELOCITY DROP: Sales declining — needs investigation
     if(r.l30d_qty>0 && r.l90d_avg>0 && (r.l30d_qty/r.l90d_avg)<0.5){
+      const dropPct=Math.round((1-(r.l30d_qty/r.l90d_avg))*100);
       warnings.push({
         severity:'ANOMALY',
         type:'📉 VELOCITY DROP',
@@ -6421,11 +6424,93 @@ function renderDPOverview(){
         storeCode:r.store_code,
         stock:cs,
         weeklyAvg:r.weekly_avg,
+        cover:cw>50?'50+':cw.toFixed(1),
         l30d:r.l30d_qty,
         l90d:r.l90d_avg,
-        message:`L30D sales 50% below L90D average — investigate cause`,
+        dropPct,
+        message:`Sales down ${dropPct}% (L30D: ${r.l30d_qty} vs L90D avg: ${r.l90d_avg.toFixed(0)})`,
         urgency:3,
-        action:`Check: Price change? Competition? Display issue?`
+        action:`Investigate: Display moved? Competitor opened? Tester empty?`
+      });
+    }
+    
+    // 2. SALES SPIKE: Sudden increase — may need urgent replenishment
+    if(r.l30d_qty>0 && r.l90d_avg>0 && (r.l30d_qty/r.l90d_avg)>1.8){
+      const spikePct=Math.round(((r.l30d_qty/r.l90d_avg)-1)*100);
+      warnings.push({
+        severity:'SPIKE',
+        type:'📈 SALES SURGE',
+        product:prodName,
+        sku:r.sku_code,
+        store:storeName,
+        storeCode:r.store_code,
+        stock:cs,
+        weeklyAvg:r.weekly_avg,
+        cover:cw>50?'50+':cw.toFixed(1),
+        spikePct,
+        message:`Sales up ${spikePct}% vs 90-day avg — check if sustainable`,
+        urgency:2,
+        action:`Increase next WH order by ${Math.ceil(r.weekly_avg*2)} units`
+      });
+    }
+    
+    // 3. ZERO MOVEMENT: No sales but stock on hand — display issue?
+    if(r.weekly_avg===0 && cs>5 && r.l90d_avg>0){
+      warnings.push({
+        severity:'ZERO',
+        type:'🚫 ZERO SALES',
+        product:prodName,
+        sku:r.sku_code,
+        store:storeName,
+        storeCode:r.store_code,
+        stock:cs,
+        weeklyAvg:0,
+        cover:'∞',
+        l90d:r.l90d_avg,
+        message:`${cs} units on shelf, zero sales in 30 days (was selling ${r.l90d_avg.toFixed(1)}/wk)`,
+        urgency:1,
+        action:`Visit store: Check display, tester bottle, shelf position`
+      });
+    }
+    
+    // 4. WAREHOUSE DEPENDENCY: Store getting frequent WH transfers but low opening stock
+    // (indicates store not maintaining buffer — relying on daily WH runs)
+    
+    // 5. IMBALANCED NETWORK: Same SKU overstocked in one store, understocked in another
+  });
+  
+  // ── BUILD IMBALANCED NETWORK ALERTS (cross-store comparison) ──
+  const skuByStore={};
+  b.forEach(r=>{
+    if(!skuByStore[r.sku_code]) skuByStore[r.sku_code]=[];
+    const cs=r.l30d_qty*3;
+    const cw=r.weekly_avg>0?cs/r.weekly_avg:999;
+    const store=STORES.find(s=>s.code===r.store_code);
+    const benchmark=_dpGetBenchmark(r.store_code,r.sku_code);
+    skuByStore[r.sku_code].push({
+      storeCode:r.store_code,
+      storeName:store?store.name:r.store_code,
+      stock:cs,cover:cw,weeklyAvg:r.weekly_avg,
+      min:benchmark?benchmark.min:0,
+      max:benchmark?benchmark.max:0
+    });
+  });
+  
+  const imbalanced=[];
+  Object.entries(skuByStore).forEach(([sku,stores])=>{
+    const overStores=stores.filter(s=>s.stock>s.max&&s.max>0);
+    const underStores=stores.filter(s=>s.stock<s.min&&s.min>0&&s.weeklyAvg>3);
+    if(overStores.length>0 && underStores.length>0){
+      const prod=PRODUCTS.find(p=>p.code===sku);
+      imbalanced.push({
+        sku,
+        product:prod?prod.en:sku,
+        overStores:overStores.map(s=>`${s.storeName} (${s.stock}u)`).join(', '),
+        underStores:underStores.map(s=>`${s.storeName} (${s.stock}u)`).join(', '),
+        transferQty:Math.min(
+          overStores.reduce((s,x)=>s+x.stock-x.max,0),
+          underStores.reduce((s,x)=>s+x.min-x.stock,0)
+        )
       });
     }
   });
@@ -6473,31 +6558,71 @@ function renderDPOverview(){
     </div>
     `:''}
     
-    <!-- WARNINGS SECTION -->
+    <!-- MANAGEMENT INTELLIGENCE SECTION -->
     ${warnings.length>0?`
     <div style="background:#FFFBF0;border:2px solid #FAAD14;border-radius:12px;padding:16px;margin-bottom:16px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:20px;">⚠️</span>
+        <span style="font-size:20px;">🔍</span>
         <div>
-          <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#E65100;text-transform:uppercase;letter-spacing:1px;">WARNINGS & ANOMALIES</div>
-          <div style="font-family:var(--f-mono);font-size:10px;color:#666;margin-top:2px;">${warnings.length} items require attention within 7 days</div>
+          <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#E65100;text-transform:uppercase;letter-spacing:1px;">MANAGEMENT INTELLIGENCE</div>
+          <div style="font-family:var(--f-mono);font-size:10px;color:#666;margin-top:2px;">${warnings.length} items need investigation — velocity drops, sales surges, zero movement</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:10px;">
-        ${warnings.slice(0,12).map(w=>`
+        ${warnings.slice(0,18).map(w=>{
+          const badgeColors={'WARNING':'background:#FFA940;','ANOMALY':'background:#FF6B6B;','SPIKE':'background:#27AE60;','ZERO':'background:#1A1A1A;'};
+          const badgeStyle=(badgeColors[w.severity]||'background:#FFA940;')+'color:#FFF;font-family:var(--f-mono);font-size:7px;font-weight:700;padding:3px 6px;border-radius:3px;white-space:nowrap;';
+          const coverVal=w.cover!==undefined?w.cover+'w':'—';
+          return `
           <div style="background:#FFFFFF;border:1px solid #FFE0B2;border-radius:8px;padding:10px;">
             <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px;">
               <div style="flex:1;">
                 <div style="font-size:12px;font-weight:600;color:#1A1A1A;">${w.product}</div>
-                <div style="font-family:var(--f-mono);font-size:9px;color:#888;">${w.store}</div>
+                <div style="font-family:var(--f-mono);font-size:9px;color:#888;">${w.sku} @ ${w.store}</div>
               </div>
-              <div style="background:#FFA940;color:#FFF;font-family:var(--f-mono);font-size:8px;font-weight:700;padding:3px 6px;border-radius:3px;">${w.cover}w</div>
+              <div style="${badgeStyle}">${w.type}</div>
             </div>
-            <div style="font-size:11px;color:#555;margin-bottom:6px;">${w.message}</div>
-            <div style="font-family:var(--f-mono);font-size:10px;color:#1A6A40;font-weight:600;">→ ${w.action}</div>
-          </div>
-        `).join('')}
+            <div style="font-size:11px;color:#555;margin-bottom:4px;">${w.message}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-family:var(--f-mono);font-size:10px;color:#1A6A40;font-weight:600;">→ ${w.action}</div>
+              <div style="font-family:var(--f-mono);font-size:8px;color:#999;">Stock: ${w.stock} · Cover: ${coverVal}</div>
+            </div>
+          </div>`;
+        }).join('')}
       </div>
+    </div>
+    `:''}
+    
+    <!-- NETWORK IMBALANCE SECTION -->
+    ${imbalanced.length>0?`
+    <div style="background:#F5F0FF;border:2px solid #5B21B6;border-radius:12px;padding:16px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:20px;">🔄</span>
+        <div>
+          <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#5B21B6;text-transform:uppercase;letter-spacing:1px;">TRANSFER OPPORTUNITIES — NETWORK IMBALANCE</div>
+          <div style="font-family:var(--f-mono);font-size:10px;color:#666;margin-top:2px;">${imbalanced.length} SKUs overstocked at one store, understocked at another — transfer instead of ordering</div>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;background:#FFF;border-radius:8px;overflow:hidden;">
+        <thead>
+          <tr style="background:#EDE9FE;border-bottom:2px solid #5B21B6;">
+            <th style="padding:8px 10px;text-align:left;font-family:var(--f-mono);font-size:10px;color:#5B21B6;font-weight:700;">PRODUCT</th>
+            <th style="padding:8px 10px;text-align:left;font-family:var(--f-mono);font-size:10px;color:#E65100;font-weight:700;">⬆ HAS EXCESS AT</th>
+            <th style="padding:8px 10px;text-align:left;font-family:var(--f-mono);font-size:10px;color:#B03020;font-weight:700;">⬇ NEEDS STOCK AT</th>
+            <th style="padding:8px 10px;text-align:right;font-family:var(--f-mono);font-size:10px;color:#5B21B6;font-weight:700;">TRANSFER</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${imbalanced.slice(0,12).map((item,i)=>`
+            <tr style="border-bottom:1px solid #EDE9FE;${i%2===0?'background:#FAFAFF':''}">
+              <td style="padding:8px 10px;font-size:11px;font-weight:600;">${item.product}<br><span style="font-family:var(--f-mono);font-size:9px;color:#888;">${item.sku}</span></td>
+              <td style="padding:8px 10px;font-size:10px;color:#E65100;">${item.overStores}</td>
+              <td style="padding:8px 10px;font-size:10px;color:#B03020;">${item.underStores}</td>
+              <td style="padding:8px 10px;text-align:right;font-family:var(--f-mono);font-size:12px;font-weight:900;color:#5B21B6;">${item.transferQty} units</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
     </div>
     `:''}
     
