@@ -6999,106 +6999,104 @@ function exportDPReport(period,format){
   
   setTimeout(()=>{
     try{
-      // Collect all critical/urgent/warning items across all stores
-      const allAlerts=[];
-      const allOpportunities=[];
-      const allStoreHealth=[];
+      // Collect ALL SKU data across ALL stores with REAL current stock
+      const allItems=[];
+      
+      // Get current day for balance calculation
+      const currentDay=DAY_PAST;
       
       _dpBenchmarks.forEach(r=>{
-        const cs=r.l30d_qty*3; // simulated current stock
-        const cw=r.weekly_avg>0?cs/r.weekly_avg:999;
         const prod=PRODUCTS.find(p=>p.code===r.sku_code);
         const store=STORES.find(s=>s.code===r.store_code);
-        const prodName=prod?prod.en:r.sku_code;
-        const storeName=store?store.name:r.store_code;
-        const storeCity=store?store.city:'—';
+        
+        if(!prod||!store||store.code==='MGR') return; // Skip MGR
+        
+        // Get REAL current stock from balance
+        const currentStock=bal(r.store_code,currentDay,r.sku_code);
+        
+        const prodName=prod.en;
+        const storeName=store.name;
+        const storeCity=store.city||'UAE';
+        const weeklyAvg=r.weekly_avg||0;
+        const cover=weeklyAvg>0?(currentStock/weeklyAvg):999;
+        
         const benchmark=_dpGetBenchmark(r.store_code,r.sku_code);
         const min=benchmark?benchmark.min:0;
         const max=benchmark?benchmark.max:0;
         
         // Determine status
         let status='Healthy';
-        let statusColor='#27AE60';
-        if(cs<min){
-          status='⚠ REORDER NOW';
-          statusColor='#FF4D4F';
-          allAlerts.push({
-            severity:'URGENT',
-            sku:r.sku_code,
-            product:prodName,
-            store:storeName,
-            storeCode:r.store_code,
-            city:storeCity,
-            currentStock:cs,
-            min,
-            max,
-            weeklyAvg:r.weekly_avg.toFixed(1),
-            cover:cw.toFixed(1)+'w',
-            status,
-            action:`Order ${Math.ceil(r.weekly_avg*4)} units`,
-            statusColor
-          });
-        } else if(cs>max){
-          status='⚠ OVERSTOCK';
-          statusColor='#FFA500';
-          allOpportunities.push({
-            sku:r.sku_code,
-            product:prodName,
-            store:storeName,
-            storeCode:r.store_code,
-            city:storeCity,
-            currentStock:cs,
-            min,
-            max,
-            weeklyAvg:r.weekly_avg.toFixed(1),
-            cover:cw.toFixed(1)+'w',
-            status,
-            action:'Transfer to high-velocity store',
-            statusColor
-          });
+        let severity='OK';
+        let action='—';
+        
+        if(currentStock<min){
+          status='REORDER';
+          severity=weeklyAvg>10?'URGENT':'WARNING';
+          action=`Order ${Math.ceil(weeklyAvg*4)} units`;
+        } else if(currentStock>max){
+          status='OVERSTOCK';
+          severity='OPPORTUNITY';
+          action='Transfer or discount';
         }
-      });
-      
-      // Calculate store-level health
-      const storeGroups={};
-      _dpBenchmarks.forEach(r=>{
-        const sc=r.store_code;
-        if(!storeGroups[sc]) storeGroups[sc]={critical:0,urgent:0,overstock:0,healthy:0,total:0};
-        const cs=r.l30d_qty*3;
-        const benchmark=_dpGetBenchmark(sc,r.sku_code);
-        const min=benchmark?benchmark.min:0;
-        const max=benchmark?benchmark.max:0;
-        storeGroups[sc].total++;
-        if(cs<min && r.weekly_avg>5) storeGroups[sc].critical++;
-        else if(cs<min) storeGroups[sc].urgent++;
-        else if(cs>max) storeGroups[sc].overstock++;
-        else storeGroups[sc].healthy++;
-      });
-      
-      Object.keys(storeGroups).forEach(sc=>{
-        const g=storeGroups[sc];
-        const store=STORES.find(s=>s.code===sc);
-        const healthScore=Math.max(0,100-(g.critical*15+g.urgent*5+g.overstock*2));
-        allStoreHealth.push({
-          store:store?store.name:sc,
-          storeCode:sc,
-          city:store?store.city:'—',
-          critical:g.critical,
-          urgent:g.urgent,
-          overstock:g.overstock,
-          healthy:g.healthy,
-          total:g.total,
-          healthScore
+        
+        allItems.push({
+          sku:r.sku_code,
+          product:prodName,
+          category:prod.cat||'—',
+          store:storeName,
+          storeCode:r.store_code,
+          city:storeCity,
+          currentStock,
+          min,
+          max,
+          weeklyAvg:weeklyAvg.toFixed(1),
+          cover:cover.toFixed(1),
+          status,
+          severity,
+          action,
+          l30d:r.l30d_qty||0,
+          l90d:r.l90d_avg||0
         });
       });
       
-      allStoreHealth.sort((a,b)=>a.healthScore-b.healthScore); // Worst first
+      // Split into categories
+      const alerts=allItems.filter(i=>i.status==='REORDER').sort((a,b)=>parseFloat(a.cover)-parseFloat(b.cover));
+      const opps=allItems.filter(i=>i.status==='OVERSTOCK').sort((a,b)=>b.currentStock-a.currentStock);
+      const healthy=allItems.filter(i=>i.status==='Healthy');
       
-      // Generate report based on format
+      // Calculate store-level health
+      const storeGroups={};
+      allItems.forEach(i=>{
+        const sc=i.storeCode;
+        if(!storeGroups[sc]){
+          storeGroups[sc]={
+            store:i.store,
+            storeCode:sc,
+            city:i.city,
+            critical:0,
+            urgent:0,
+            overstock:0,
+            healthy:0,
+            total:0
+          };
+        }
+        storeGroups[sc].total++;
+        if(i.status==='REORDER'&&i.severity==='URGENT') storeGroups[sc].critical++;
+        else if(i.status==='REORDER') storeGroups[sc].urgent++;
+        else if(i.status==='OVERSTOCK') storeGroups[sc].overstock++;
+        else storeGroups[sc].healthy++;
+      });
+      
+      const storeHealth=Object.values(storeGroups).map(s=>{
+        const healthScore=Math.max(0,100-(s.critical*15+s.urgent*5+s.overstock*2));
+        return {...s,healthScore};
+      }).sort((a,b)=>a.healthScore-b.healthScore); // Worst first
+      
+      // Generate report
       if(format==='excel'){
-        _exportDPExcel(period,allAlerts,allOpportunities,allStoreHealth);
+        _exportDPExcel(period,allItems,alerts,opps,storeHealth);
       } else {
-        _exportDPPDF(period,allAlerts,allOpportunities,allStoreHealth);
+        _exportDPPDF(period,allItems,alerts,opps,storeHealth);
       }
       
       hideOverlay();
@@ -7106,126 +7104,159 @@ function exportDPReport(period,format){
     }catch(err){
       console.error('Export error:',err);
       hideOverlay();
-      toast('❌ Export failed');
+      toast('❌ Export failed - '+err.message);
     }
   },100);
 }
 
-function _exportDPExcel(period,alerts,opps,storeHealth){
+function _exportDPExcel(period,allItems,alerts,opps,storeHealth){
   const today=new Date().toLocaleDateString('en-GB');
   const reportTitle=`Emirates Pride Perfumes - ${period.toUpperCase()} Demand Planning Report`;
   const generatedAt=new Date().toLocaleString('en-GB');
   
   let csv='';
   
-  // === SHEET 1: EXECUTIVE SUMMARY ===
-  csv+=`${reportTitle}
-Generated: ${generatedAt}
-Report Period: ${period==='weekly'?'Last 7 Days':'Last 30 Days'}
-
-EXECUTIVE SUMMARY
-Critical Reorders Required,${alerts.length}
-Overstock Opportunities,${opps.length}
-Stores Requiring Attention,${storeHealth.filter(s=>s.healthScore<70).length}
-Network Health Score,${(storeHealth.reduce((sum,s)=>sum+s.healthScore,0)/storeHealth.length).toFixed(0)}%
-
-`;
+  // === EXECUTIVE SUMMARY ===
+  csv+=`${reportTitle}\n`;
+  csv+=`Generated,${generatedAt}\n`;
+  csv+=`Report Period,${period==='weekly'?'Last 7 Days':'Last 30 Days'}\n`;
+  csv+=`Total SKUs Tracked,${allItems.length}\n`;
+  csv+=`\n`;
+  csv+=`EXECUTIVE SUMMARY\n`;
+  csv+=`Metric,Count\n`;
+  csv+=`Critical Reorders Required,${alerts.length}\n`;
+  csv+=`Overstock Items,${opps.length}\n`;
+  csv+=`Stores Below 70% Health,${storeHealth.filter(s=>s.healthScore<70).length}\n`;
+  csv+=`Network Health Score,${(storeHealth.reduce((sum,s)=>sum+s.healthScore,0)/storeHealth.length).toFixed(0)}%\n`;
+  csv+=`\n\n`;
   
-  // === SHEET 2: URGENT REORDERS ===
-  csv+=`
-
-URGENT REORDERS (${alerts.length} items)
-SKU,Product,Store,City,Current Stock,MIN,MAX,Weekly Avg,Cover,Action
-`;
+  // === URGENT REORDERS ===
+  csv+=`URGENT REORDERS - ${alerts.length} ITEMS REQUIRING IMMEDIATE ACTION\n`;
+  csv+=`SKU,Product,Category,Store,City,Current Stock,MIN Benchmark,MAX Benchmark,Weekly Avg,Weeks Cover,Severity,Recommended Action\n`;
   alerts.forEach(a=>{
-    csv+=`${a.sku},"${a.product}","${a.store}",${a.city},${a.currentStock},${a.min},${a.max},${a.weeklyAvg},${a.cover},"${a.action}"
-`;
+    csv+=`${a.sku},"${a.product}","${a.category}","${a.store}",${a.city},${a.currentStock},${a.min},${a.max},${a.weeklyAvg},${a.cover},${a.severity},"${a.action}"\n`;
   });
+  csv+=`\n\n`;
   
-  // === SHEET 3: OVERSTOCK OPPORTUNITIES ===
-  csv+=`
-
-OVERSTOCK OPPORTUNITIES (${opps.length} items)
-SKU,Product,Store,City,Current Stock,MIN,MAX,Weekly Avg,Cover,Recommended Action
-`;
+  // === OVERSTOCK OPPORTUNITIES ===
+  csv+=`OVERSTOCK OPPORTUNITIES - ${opps.length} ITEMS ABOVE MAX BENCHMARK\n`;
+  csv+=`SKU,Product,Category,Store,City,Current Stock,MIN Benchmark,MAX Benchmark,Weekly Avg,Weeks Cover,Recommended Action\n`;
   opps.forEach(o=>{
-    csv+=`${o.sku},"${o.product}","${o.store}",${o.city},${o.currentStock},${o.min},${o.max},${o.weeklyAvg},${o.cover},"${o.action}"
-`;
+    csv+=`${o.sku},"${o.product}","${o.category}","${o.store}",${o.city},${o.currentStock},${o.min},${o.max},${o.weeklyAvg},${o.cover},"${o.action}"\n`;
   });
+  csv+=`\n\n`;
   
-  // === SHEET 4: STORE HEALTH ===
-  csv+=`
-
-STORE HEALTH SCORECARD
-Store,City,Health Score,Critical,Urgent,Overstock,Healthy,Total SKUs
-`;
+  // === STORE HEALTH SCORECARD ===
+  csv+=`STORE HEALTH SCORECARD - ${storeHealth.length} STORES\n`;
+  csv+=`Store,City,Health Score,Critical Items,Urgent Items,Overstock Items,Healthy Items,Total SKUs\n`;
   storeHealth.forEach(s=>{
-    csv+=`"${s.store}",${s.city},${s.healthScore}%,${s.critical},${s.urgent},${s.overstock},${s.healthy},${s.total}
-`;
+    csv+=`"${s.store}",${s.city},${s.healthScore}%,${s.critical},${s.urgent},${s.overstock},${s.healthy},${s.total}\n`;
+  });
+  csv+=`\n\n`;
+  
+  // === ALL ITEMS DETAIL (STORE-WISE, SORTED) ===
+  csv+=`COMPLETE INVENTORY ANALYSIS - ALL ${allItems.length} SKUs\n`;
+  csv+=`Store,City,SKU,Product,Category,Current Stock,MIN,MAX,Weekly Avg,Cover (weeks),Status,L30D Sales,L90D Avg\n`;
+  
+  // Sort by Store → Status (Reorder first) → Cover
+  const sortedAll=[...allItems].sort((a,b)=>{
+    if(a.store!==b.store) return a.store.localeCompare(b.store);
+    if(a.status!==b.status){
+      const order={REORDER:1,OVERSTOCK:2,Healthy:3};
+      return (order[a.status]||9)-(order[b.status]||9);
+    }
+    return parseFloat(a.cover)-parseFloat(b.cover);
   });
   
-  csv+=`
-
-LEGEND
-Critical: High-velocity SKUs below MIN (stockout risk within 1 week)
-Urgent: Fast movers below MIN (reorder recommended)
-Overstock: SKUs above MAX (transfer or discount recommended)
-Healthy: Stock between MIN and MAX benchmarks
-Health Score: 100 - (15×critical + 5×urgent + 2×overstock)
-
-MIN/MAX BENCHMARKS (Region-Specific)
-Dubai (2-3x/week delivery): MIN=0.5w, MAX=1.5w
-Abu Dhabi/Al Ain (2x/week): MIN=1.0w, MAX=2.0w
-RAK/Fujairah/Sharjah/Ajman (1x/week): MIN=1.5w, MAX=4.0w
-`;
+  sortedAll.forEach(i=>{
+    csv+=`"${i.store}",${i.city},${i.sku},"${i.product}","${i.category}",${i.currentStock},${i.min},${i.max},${i.weeklyAvg},${i.cover},${i.status},${i.l30d},${i.l90d}\n`;
+  });
+  csv+=`\n\n`;
+  
+  // === LEGEND ===
+  csv+=`LEGEND & METHODOLOGY\n`;
+  csv+=`\n`;
+  csv+=`Status Definitions:\n`;
+  csv+=`REORDER,Stock below MIN benchmark - order recommended\n`;
+  csv+=`OVERSTOCK,Stock above MAX benchmark - transfer or discount\n`;
+  csv+=`Healthy,Stock between MIN and MAX benchmarks\n`;
+  csv+=`\n`;
+  csv+=`Severity Levels:\n`;
+  csv+=`URGENT,High-velocity SKU (>10/week) below MIN - stockout risk\n`;
+  csv+=`WARNING,Standard SKU below MIN - reorder recommended\n`;
+  csv+=`OPPORTUNITY,Overstock - transfer or promotion recommended\n`;
+  csv+=`\n`;
+  csv+=`Regional Benchmarks:\n`;
+  csv+=`Region,Shipment Frequency,MIN (weeks),MAX (weeks)\n`;
+  csv+=`Dubai,2-3x per week,0.5,1.5\n`;
+  csv+=`Abu Dhabi / Al Ain,2x per week,1.0,2.0\n`;
+  csv+=`RAK / Fujairah / Sharjah / Ajman,1x per week,1.5,4.0\n`;
+  csv+=`\n`;
+  csv+=`Health Score Calculation:\n`;
+  csv+=`"Formula: 100 - (15 × critical items) - (5 × urgent items) - (2 × overstock items)"\n`;
+  csv+=`"80-100%: Excellent | 60-79%: Good | 40-59%: Needs Attention | <40%: Critical"\n`;
   
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const link=document.createElement('a');
   link.href=url;
-  link.download=`EPP_DemandPlanning_${period}_${_localDateStr(new Date())}.csv`;
+  link.download=`EPP_DemandPlanning_${period}_${_localDateStr(new Date()).replace(/-/g,'')}.csv`;
   link.click();
+  URL.revokeObjectURL(url);
 }
 
-function _exportDPPDF(period,alerts,opps,storeHealth){
+function _exportDPPDF(period,allItems,alerts,opps,storeHealth){
   const today=new Date().toLocaleDateString('en-GB');
   const generatedAt=new Date().toLocaleString('en-GB');
   const reportTitle=`Emirates Pride Perfumes - ${period.toUpperCase()} Demand Planning Report`;
+  const networkHealth=(storeHealth.reduce((sum,s)=>sum+s.healthScore,0)/storeHealth.length).toFixed(0);
   
   let html=`<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>${reportTitle}</title>
 <style>
-body{font-family:Arial,sans-serif;margin:40px;font-size:11px;color:#1A1A1A;}
-h1{font-size:20px;margin:0 0 5px 0;color:#9A7B4F;font-weight:900;letter-spacing:1px;}
-h2{font-size:14px;margin:25px 0 10px 0;color:#1A1A1A;font-weight:700;border-bottom:2px solid #9A7B4F;padding-bottom:5px;}
-h3{font-size:12px;margin:15px 0 8px 0;color:#333;font-weight:700;}
-.meta{font-size:9px;color:#666;margin-bottom:15px;}
-.summary{background:#FAFAF8;border:2px solid #E8E4DC;border-radius:8px;padding:15px;margin:15px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
-.summary-box{text-align:center;padding:10px;border-radius:6px;background:#FFF;}
-.summary-num{font-size:24px;font-weight:900;color:#9A7B4F;margin-bottom:3px;}
-.summary-label{font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.5px;}
-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:10px;}
-th{background:#1A1A1A;color:#C9A44E;padding:8px 6px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
-td{padding:7px 6px;border-bottom:1px solid #E8E4DC;}
+@page{size:A4 landscape;margin:15mm;}
+body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:20px;font-size:9px;color:#1A1A1A;background:#fff;}
+h1{font-size:18px;margin:0 0 5px 0;color:#9A7B4F;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;}
+h2{font-size:13px;margin:20px 0 8px 0;color:#1A1A1A;font-weight:700;border-bottom:2px solid #9A7B4F;padding-bottom:4px;}
+.meta{font-size:8px;color:#666;margin-bottom:12px;line-height:1.4;}
+.summary{background:#FAFAF8;border:2px solid #E8E4DC;border-radius:6px;padding:12px;margin:12px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.summary-box{text-align:center;padding:8px;border-radius:4px;background:#FFF;border:1px solid #E8E4DC;}
+.summary-num{font-size:20px;font-weight:900;color:#9A7B4F;margin-bottom:2px;}
+.summary-label{font-size:7px;color:#666;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:8px;}
+th{background:#1A1A1A;color:#C9A44E;padding:5px 4px;text-align:left;font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;white-space:nowrap;}
+td{padding:4px;border-bottom:1px solid #E8E4DC;vertical-align:top;}
 tr:nth-child(even){background:#FAFAF8;}
-.critical{background:#FFF1F0;font-weight:700;}
-.overstock{background:#FFF4E6;}
+.num{text-align:right;font-family:'Courier New',monospace;font-weight:600;}
+.critical{background:#FFF1F0;border-left:3px solid #FF4D4F;}
+.overstock{background:#FFF4E6;border-left:3px solid #FFA500;}
+.store-name{font-weight:700;color:#1A1A1A;}
 .health-good{color:#27AE60;font-weight:700;}
 .health-warn{color:#FFA500;font-weight:700;}
 .health-bad{color:#FF4D4F;font-weight:700;}
-.footer{margin-top:30px;padding-top:15px;border-top:1px solid #DDD;font-size:8px;color:#999;}
-@media print{body{margin:15px;}}
+.footer{margin-top:20px;padding-top:10px;border-top:1px solid #DDD;font-size:7px;color:#999;text-align:center;}
+.section-break{page-break-before:always;}
+@media print{body{padding:10px;}.no-print{display:none;}}
 </style>
 </head><body>
 
-<h1>🏺 ${reportTitle}</h1>
-<div class="meta">Generated: ${generatedAt} | Period: ${period==='weekly'?'Last 7 Days':'Last 30 Days'}</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+  <div>
+    <h1>🏺 ${reportTitle}</h1>
+    <div class="meta">
+      <strong>Generated:</strong> ${generatedAt} | 
+      <strong>Period:</strong> ${period==='weekly'?'Last 7 Days':'Last 30 Days'} | 
+      <strong>Total SKUs:</strong> ${allItems.length}
+    </div>
+  </div>
+  <button class="no-print" onclick="window.print()" style="background:#9A7B4F;color:#FFF;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-weight:700;font-size:10px;">🖨 Print / Save PDF</button>
+</div>
 
 <h2>📊 EXECUTIVE SUMMARY</h2>
 <div class="summary">
   <div class="summary-box">
     <div class="summary-num">${alerts.length}</div>
-    <div class="summary-label">Critical Reorders</div>
+    <div class="summary-label">Urgent Reorders</div>
   </div>
   <div class="summary-box">
     <div class="summary-num">${opps.length}</div>
@@ -7236,106 +7267,137 @@ tr:nth-child(even){background:#FAFAF8;}
     <div class="summary-label">Stores at Risk</div>
   </div>
   <div class="summary-box">
-    <div class="summary-num">${(storeHealth.reduce((sum,s)=>sum+s.healthScore,0)/storeHealth.length).toFixed(0)}%</div>
+    <div class="summary-num">${networkHealth}%</div>
     <div class="summary-label">Network Health</div>
   </div>
 </div>
 
 <h2>🚨 URGENT REORDERS (${alerts.length} items)</h2>
+${alerts.length>0?`
 <table>
 <thead><tr>
-  <th>SKU</th><th>Product</th><th>Store</th><th>City</th>
-  <th style="text-align:right">Stock</th><th style="text-align:right">MIN</th><th style="text-align:right">MAX</th>
-  <th style="text-align:right">Wk Avg</th><th style="text-align:right">Cover</th><th>Action</th>
+  <th>SKU</th><th>Product</th><th>Category</th><th>Store</th><th>City</th>
+  <th class="num">Stock</th><th class="num">MIN</th><th class="num">MAX</th>
+  <th class="num">Wk Avg</th><th class="num">Cover</th><th>Action</th>
 </tr></thead>
 <tbody>
-${alerts.slice(0,50).map(a=>`<tr class="critical">
-  <td>${a.sku}</td><td>${a.product}</td><td>${a.store}</td><td>${a.city}</td>
-  <td style="text-align:right;font-weight:700">${a.currentStock}</td>
-  <td style="text-align:right">${a.min}</td><td style="text-align:right">${a.max}</td>
-  <td style="text-align:right">${a.weeklyAvg}</td><td style="text-align:right">${a.cover}</td>
-  <td style="font-weight:700;color:#B03020">${a.action}</td>
+${alerts.slice(0,60).map(a=>`<tr class="critical">
+  <td style="font-family:monospace;font-size:7px;">${a.sku}</td>
+  <td style="font-weight:600;">${a.product}</td>
+  <td style="font-size:7px;color:#666;">${a.category}</td>
+  <td>${a.store}</td>
+  <td>${a.city}</td>
+  <td class="num" style="font-weight:700;color:#B03020;">${a.currentStock}</td>
+  <td class="num">${a.min}</td>
+  <td class="num">${a.max}</td>
+  <td class="num">${a.weeklyAvg}</td>
+  <td class="num">${a.cover}w</td>
+  <td style="font-weight:700;color:#B03020;font-size:7px;">${a.action}</td>
 </tr>`).join('')}
-${alerts.length>50?`<tr><td colspan="10" style="text-align:center;font-style:italic;color:#999;">+ ${alerts.length-50} more items (see Excel for full list)</td></tr>`:''}
+${alerts.length>60?`<tr><td colspan="11" style="text-align:center;font-style:italic;color:#999;padding:8px;">+ ${alerts.length-60} more items (see Excel export for complete list)</td></tr>`:''}
 </tbody>
 </table>
+`:'<p style="color:#999;font-style:italic;margin:10px 0;">No urgent reorders required. All stores are stocked above MIN benchmarks.</p>'}
+
+<div class="section-break"></div>
 
 <h2>💰 OVERSTOCK OPPORTUNITIES (${opps.length} items)</h2>
+${opps.length>0?`
 <table>
 <thead><tr>
-  <th>SKU</th><th>Product</th><th>Store</th><th>City</th>
-  <th style="text-align:right">Stock</th><th style="text-align:right">MIN</th><th style="text-align:right">MAX</th>
-  <th style="text-align:right">Wk Avg</th><th style="text-align:right">Cover</th><th>Recommended Action</th>
+  <th>SKU</th><th>Product</th><th>Category</th><th>Store</th><th>City</th>
+  <th class="num">Stock</th><th class="num">MIN</th><th class="num">MAX</th>
+  <th class="num">Wk Avg</th><th class="num">Cover</th><th>Recommended Action</th>
 </tr></thead>
 <tbody>
-${opps.slice(0,30).map(o=>`<tr class="overstock">
-  <td>${o.sku}</td><td>${o.product}</td><td>${o.store}</td><td>${o.city}</td>
-  <td style="text-align:right;font-weight:700">${o.currentStock}</td>
-  <td style="text-align:right">${o.min}</td><td style="text-align:right">${o.max}</td>
-  <td style="text-align:right">${o.weeklyAvg}</td><td style="text-align:right">${o.cover}</td>
-  <td style="color:#E65100">${o.action}</td>
+${opps.slice(0,40).map(o=>`<tr class="overstock">
+  <td style="font-family:monospace;font-size:7px;">${o.sku}</td>
+  <td style="font-weight:600;">${o.product}</td>
+  <td style="font-size:7px;color:#666;">${o.category}</td>
+  <td>${o.store}</td>
+  <td>${o.city}</td>
+  <td class="num" style="font-weight:700;color:#E65100;">${o.currentStock}</td>
+  <td class="num">${o.min}</td>
+  <td class="num">${o.max}</td>
+  <td class="num">${o.weeklyAvg}</td>
+  <td class="num">${o.cover}w</td>
+  <td style="color:#E65100;font-size:7px;">${o.action}</td>
 </tr>`).join('')}
-${opps.length>30?`<tr><td colspan="10" style="text-align:center;font-style:italic;color:#999;">+ ${opps.length-30} more items (see Excel for full list)</td></tr>`:''}
+${opps.length>40?`<tr><td colspan="11" style="text-align:center;font-style:italic;color:#999;padding:8px;">+ ${opps.length-40} more items (see Excel export for complete list)</td></tr>`:''}
 </tbody>
 </table>
+`:'<p style="color:#999;font-style:italic;margin:10px 0;">No overstock issues. All stores are within MAX benchmark limits.</p>'}
 
-<h2>🏪 STORE HEALTH SCORECARD</h2>
+<div class="section-break"></div>
+
+<h2>🏪 STORE HEALTH SCORECARD (${storeHealth.length} stores)</h2>
 <table>
 <thead><tr>
-  <th>Store</th><th>City</th><th style="text-align:center">Health Score</th>
-  <th style="text-align:center">Critical</th><th style="text-align:center">Urgent</th>
-  <th style="text-align:center">Overstock</th><th style="text-align:center">Healthy</th>
-  <th style="text-align:center">Total SKUs</th>
+  <th>Store</th><th>City</th><th class="num">Health</th>
+  <th class="num">Critical</th><th class="num">Urgent</th>
+  <th class="num">Overstock</th><th class="num">Healthy</th>
+  <th class="num">Total</th>
 </tr></thead>
 <tbody>
 ${storeHealth.map(s=>{
   const hClass=s.healthScore>=80?'health-good':(s.healthScore>=60?'health-warn':'health-bad');
   return `<tr>
-  <td style="font-weight:700">${s.store}</td><td>${s.city}</td>
-  <td style="text-align:center" class="${hClass}">${s.healthScore}%</td>
-  <td style="text-align:center">${s.critical}</td><td style="text-align:center">${s.urgent}</td>
-  <td style="text-align:center">${s.overstock}</td><td style="text-align:center">${s.healthy}</td>
-  <td style="text-align:center">${s.total}</td>
+  <td class="store-name">${s.store}</td>
+  <td>${s.city}</td>
+  <td class="num ${hClass}">${s.healthScore}%</td>
+  <td class="num">${s.critical}</td>
+  <td class="num">${s.urgent}</td>
+  <td class="num">${s.overstock}</td>
+  <td class="num">${s.healthy}</td>
+  <td class="num">${s.total}</td>
 </tr>`;
 }).join('')}
 </tbody>
 </table>
 
-<h2>📋 LEGEND & METHODOLOGY</h2>
-<h3>Status Definitions</h3>
-<ul style="margin:5px 0;padding-left:20px;line-height:1.6">
-<li><strong>Critical:</strong> High-velocity SKUs below MIN benchmark (stockout risk within 1 week)</li>
-<li><strong>Urgent:</strong> Fast movers below MIN (reorder recommended within 48 hours)</li>
-<li><strong>Overstock:</strong> SKUs above MAX benchmark (transfer or discount recommended)</li>
-<li><strong>Healthy:</strong> Stock levels between MIN and MAX regional benchmarks</li>
-</ul>
-
-<h3>MIN/MAX Benchmarks (Region-Specific)</h3>
-<table style="width:auto;margin:10px 0;">
-<thead><tr><th>Region</th><th>Shipment Frequency</th><th>MIN</th><th>MAX</th></tr></thead>
-<tbody>
-<tr><td>Dubai</td><td>2-3x per week</td><td>0.5 weeks</td><td>1.5 weeks</td></tr>
-<tr><td>Abu Dhabi / Al Ain</td><td>2x per week</td><td>1.0 week</td><td>2.0 weeks</td></tr>
-<tr><td>RAK / Fujairah / Sharjah / Ajman</td><td>1x per week</td><td>1.5 weeks</td><td>4.0 weeks</td></tr>
-</tbody>
-</table>
-
-<h3>Health Score Calculation</h3>
-<p style="margin:5px 0;line-height:1.6">Health Score = 100 − (15 × critical items) − (5 × urgent items) − (2 × overstock items)</p>
-<p style="margin:5px 0;line-height:1.6;font-size:9px;color:#666;">• 80-100%: Excellent | 60-79%: Good | 40-59%: Needs Attention | Below 40%: Critical</p>
+<h2>📋 METHODOLOGY & BENCHMARKS</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:10px 0;">
+  <div>
+    <h3 style="font-size:10px;margin:0 0 6px 0;color:#333;">Regional Benchmarks</h3>
+    <table style="width:100%;font-size:8px;">
+    <thead><tr><th>Region</th><th>Ship Freq</th><th class="num">MIN</th><th class="num">MAX</th></tr></thead>
+    <tbody>
+    <tr><td>Dubai</td><td>2-3x/week</td><td class="num">0.5w</td><td class="num">1.5w</td></tr>
+    <tr><td>Abu Dhabi / Al Ain</td><td>2x/week</td><td class="num">1.0w</td><td class="num">2.0w</td></tr>
+    <tr><td>RAK/Fujairah/Sharjah/Ajman</td><td>1x/week</td><td class="num">1.5w</td><td class="num">4.0w</td></tr>
+    </tbody>
+    </table>
+  </div>
+  <div>
+    <h3 style="font-size:10px;margin:0 0 6px 0;color:#333;">Health Score Formula</h3>
+    <p style="margin:4px 0;line-height:1.5;font-size:8px;">
+      <strong>Score = 100 − (15 × critical) − (5 × urgent) − (2 × overstock)</strong>
+    </p>
+    <ul style="margin:4px 0;padding-left:15px;line-height:1.6;font-size:8px;">
+      <li><strong class="health-good">80-100%:</strong> Excellent inventory management</li>
+      <li><strong class="health-warn">60-79%:</strong> Good, minor issues</li>
+      <li><strong style="color:#FFA500;">40-59%:</strong> Needs attention</li>
+      <li><strong class="health-bad">Below 40%:</strong> Critical, immediate action required</li>
+    </ul>
+  </div>
+</div>
 
 <div class="footer">
   <strong>Emirates Pride Perfumes</strong> | JAFZA, Dubai, UAE<br>
-  Demand Planning & Inventory Management System v1.0<br>
-  Report generated by: ${currentUser||'System'} on ${generatedAt}
+  Demand Planning & Inventory Management System | Report generated: ${generatedAt}
 </div>
 
 </body></html>`;
   
   const blob=new Blob([html],{type:'text/html'});
   const url=URL.createObjectURL(blob);
-  const w=window.open(url,'_blank');
-  setTimeout(()=>w.print(),500);
+  const w=window.open(url,'_blank','width=1200,height=800');
+  if(w){
+    setTimeout(()=>{
+      try{w.print();}catch(e){console.warn('Print blocked:',e);}
+    },800);
+  }
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
 }
 
 function renderMgrDashboard(){
