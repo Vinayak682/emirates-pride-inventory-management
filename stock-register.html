@@ -2447,6 +2447,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <div style="font-family:var(--f-mono);font-size:10px;color:#AAA;margin-top:2px;letter-spacing:0.5px;">Manager Dashboard — All Stores</div>
     </div>
     <div style="display:flex;gap:8px;">
+      <button onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:1px solid #A78BFA;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.3);">📈 Demand Planning</button>
       <button onclick="renderMgrDashboard()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
       <button onclick="closeMgrDashboard()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
     </div>
@@ -3055,7 +3056,7 @@ function doLogin(){
         const dpBtn=document.createElement('button');
         dpBtn.id='dpDashBtn';
         dpBtn.textContent='📈 Demand Planning';
-        dpBtn.style.cssText='background:#2A1800;border:1px solid #C9A44E;color:#C9A44E;font-family:var(--f-body);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;';
+        dpBtn.style.cssText='background:linear-gradient(135deg,#6B21A8,#7C3AED);border:1px solid #A78BFA;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:6px 14px;border-radius:6px;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.3);';
         dpBtn.onclick=()=>{openDPPanel();};
         if(logoutBtn) tb.insertBefore(dpBtn,logoutBtn);
       }
@@ -6213,6 +6214,10 @@ async function _sbLoadAllStoresCells() {
 function closeMgrDashboard(){
   const panel=document.getElementById('mgrDashPanel');
   if(panel) panel.style.display='none';
+  // If MGR session, go back to login screen (MGR has no real stock grid)
+  if(isMgrSession){
+    doLogout();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
