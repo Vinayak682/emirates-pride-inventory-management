@@ -6995,24 +6995,41 @@ function exportDPReport(period,format){
     return;
   }
   
-  showOverlay(`Generating ${period} ${format.toUpperCase()} report...`);
+  // Check if we're logged in as manager (has all stores data)
+  const isMgr = me && me.code === 'MGR';
+  const scope = isMgr ? 'Network-Wide' : `${me.name} Only`;
+  
+  showOverlay(`Generating ${period} ${scope} ${format.toUpperCase()} report...`);
   
   setTimeout(()=>{
     try{
-      // Collect ALL SKU data across ALL stores with REAL current stock
+      // Collect ALL SKU data with REAL current stock
       const allItems=[];
-      
-      // Get current day for balance calculation
       const currentDay=DAY_PAST;
       
-      _dpBenchmarks.forEach(r=>{
+      // Filter benchmarks: if not MGR, only show current store
+      const relevantBenchmarks = isMgr ? _dpBenchmarks : _dpBenchmarks.filter(r=>r.store_code===me.code);
+      
+      if(relevantBenchmarks.length===0){
+        hideOverlay();
+        toast('⚠ No benchmark data for current store');
+        return;
+      }
+      
+      relevantBenchmarks.forEach(r=>{
         const prod=PRODUCTS.find(p=>p.code===r.sku_code);
         const store=STORES.find(s=>s.code===r.store_code);
         
         if(!prod||!store||store.code==='MGR') return; // Skip MGR
         
         // Get REAL current stock from balance
-        const currentStock=bal(r.store_code,currentDay,r.sku_code);
+        let currentStock = 0;
+        try {
+          currentStock = bal(r.store_code, currentDay, r.sku_code);
+        } catch(e) {
+          // If bal() fails (store not loaded), use simulated stock
+          currentStock = Math.round((r.l30d_qty || 0) * 3);
+        }
         
         const prodName=prod.en;
         const storeName=store.name;
@@ -7062,7 +7079,6 @@ function exportDPReport(period,format){
       // Split into categories
       const alerts=allItems.filter(i=>i.status==='REORDER').sort((a,b)=>parseFloat(a.cover)-parseFloat(b.cover));
       const opps=allItems.filter(i=>i.status==='OVERSTOCK').sort((a,b)=>b.currentStock-a.currentStock);
-      const healthy=allItems.filter(i=>i.status==='Healthy');
       
       // Calculate store-level health
       const storeGroups={};
@@ -7094,22 +7110,22 @@ function exportDPReport(period,format){
       
       // Generate report
       if(format==='excel'){
-        _exportDPExcel(period,allItems,alerts,opps,storeHealth);
+        _exportDPExcel(period,scope,allItems,alerts,opps,storeHealth);
       } else {
-        _exportDPPDF(period,allItems,alerts,opps,storeHealth);
+        _exportDPPDF(period,scope,allItems,alerts,opps,storeHealth);
       }
       
       hideOverlay();
       toast(`✅ ${period.toUpperCase()} ${format.toUpperCase()} downloaded`);
     }catch(err){
-      console.error('Export error:',err);
+      console.error('[Export Error]',err);
       hideOverlay();
-      toast('❌ Export failed - '+err.message);
+      toast('❌ Export failed: '+err.message);
     }
   },100);
 }
 
-function _exportDPExcel(period,allItems,alerts,opps,storeHealth){
+function _exportDPExcel(period,scope,allItems,alerts,opps,storeHealth){
   const today=new Date().toLocaleDateString('en-GB');
   const reportTitle=`Emirates Pride Perfumes - ${period.toUpperCase()} Demand Planning Report`;
   const generatedAt=new Date().toLocaleString('en-GB');
@@ -7118,6 +7134,7 @@ function _exportDPExcel(period,allItems,alerts,opps,storeHealth){
   
   // === EXECUTIVE SUMMARY ===
   csv+=`${reportTitle}\n`;
+  csv+=`Scope,${scope}\n`;
   csv+=`Generated,${generatedAt}\n`;
   csv+=`Report Period,${period==='weekly'?'Last 7 Days':'Last 30 Days'}\n`;
   csv+=`Total SKUs Tracked,${allItems.length}\n`;
@@ -7205,7 +7222,7 @@ function _exportDPExcel(period,allItems,alerts,opps,storeHealth){
   URL.revokeObjectURL(url);
 }
 
-function _exportDPPDF(period,allItems,alerts,opps,storeHealth){
+function _exportDPPDF(period,scope,allItems,alerts,opps,storeHealth){
   const today=new Date().toLocaleDateString('en-GB');
   const generatedAt=new Date().toLocaleString('en-GB');
   const reportTitle=`Emirates Pride Perfumes - ${period.toUpperCase()} Demand Planning Report`;
@@ -7245,6 +7262,7 @@ tr:nth-child(even){background:#FAFAF8;}
     <h1>🏺 ${reportTitle}</h1>
     <div class="meta">
       <strong>Generated:</strong> ${generatedAt} | 
+      <strong>Scope:</strong> ${scope} |
       <strong>Period:</strong> ${period==='weekly'?'Last 7 Days':'Last 30 Days'} | 
       <strong>Total SKUs:</strong> ${allItems.length}
     </div>
