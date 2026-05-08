@@ -2472,6 +2472,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <div class="dp-tab" data-tab="dpOverstock" onclick="switchDPTab(this)">🔴 Overstock</div>
     <div class="dp-tab" data-tab="dpReorder" onclick="switchDPTab(this)">🟢 Reorder</div>
     <div class="dp-tab" data-tab="dpStores" onclick="switchDPTab(this)">🏪 Stores</div>
+    <div class="dp-tab" data-tab="dpInventory" onclick="switchDPTab(this)">📦 Inventory</div>
   </div>
   <!-- DP body -->
   <div id="dpBody" style="flex:1;overflow-y:auto;padding:16px;"></div>
@@ -3134,6 +3135,7 @@ function buildGrid(){
         </div>
       </th>
       <th class="gh-open"><div class="hdr-en">OPENING STOCK</div><div class="hdr-ar">مخزون الافتتاح</div><div class="hdr-sub-lbl">(A)</div></th>
+      <th class="gh-guide"><div class="hdr-en">STOCK GUIDE</div><div class="hdr-ar">دليل المخزون</div><div class="hdr-sub-lbl">Min | Ideal | Max</div></th>
       <th class="gh-wh"><div class="hdr-en">TRANSFER FROM WAREHOUSE</div><div class="hdr-ar">نقل من المستودع</div><div class="hdr-sub-lbl">(B)</div></th>
       <th class="gh-in"><div class="hdr-en">TRANSFER FROM STORE</div><div class="hdr-ar">نقل من المتجر</div><div class="hdr-sub-lbl">(C)</div></th>
       <th class="gh-sold"><div class="hdr-en">SALES</div><div class="hdr-ar">المبيعات</div><div class="hdr-sub-lbl">(D)</div></th>
@@ -3143,6 +3145,7 @@ function buildGrid(){
     </tr>
     <tr class="hdr-sub hdr-totals-row">
       <th class="gs-open" id="tot-open-th"></th>
+      <th class="gs-guide"></th>
       <th class="gs-wh"   id="tot-wh-th"></th>
       <th class="gs-in"   id="tot-in-th"></th>
       <th class="gs-sold" id="tot-sold-th"></th>
@@ -3165,7 +3168,7 @@ function buildGrid(){
     const _cm={'Caballo Collection':['🐎','كولكشن كابالو','Signature Equestrian Line'],'Bel Collection':['🌹','كولكشن بيل','Floral Luxury Series'],'Sets & Specials':['✨','مجموعات مميزة','Curated Gift Sets'],'Oud':['🪵','عود','Arabian Oud Essences'],'Dakhoon':['🌿','دخون','Traditional Bakhoor'],'Oils & Gifts':['💎','زيوت وهدايا','Premium Oils & Gifts'],'Accessories':['🎁','إكسسوارات','Fine Accessories'],'Gift Boxes':['📦','صناديق هدايا','Luxury Gift Packaging'],'Heritage Collection':['🏛️','كولكشن التراث','Timeless Heritage Blends'],'Bel Paper Box (Gift Sets)':['🎀','بيل - صناديق هدايا','Bel Signature Gift Sets']};
     const _cme=_cm[cat.cat]||['◈',cat.cat,''];
     const _cpCount=cat.products.filter(p=>!p.isTester).length;
-    cr.innerHTML=`<td colspan="8"><div class="cat-sep-inner"><div class="cat-sep-icon">${_cme[0]}</div><div class="cat-sep-body"><div class="cat-sep-en">${cat.cat}</div><div class="cat-sep-sub">${_cme[2]}</div><div class="cat-sep-ar">${_cme[1]}</div></div><div class="cat-sep-right"><div class="cat-sep-count">${_cpCount}</div><div class="cat-sep-count-lbl">SKUs</div></div></div></td>`;
+    cr.innerHTML=`<td colspan="9"><div class="cat-sep-inner"><div class="cat-sep-icon">${_cme[0]}</div><div class="cat-sep-body"><div class="cat-sep-en">${cat.cat}</div><div class="cat-sep-sub">${_cme[2]}</div><div class="cat-sep-ar">${_cme[1]}</div></div><div class="cat-sep-right"><div class="cat-sep-count">${_cpCount}</div><div class="cat-sep-count-lbl">SKUs</div></div></div></td>`;
     tbody.appendChild(cr);
 
     let ri_idx=0;
@@ -3195,6 +3198,29 @@ function buildGrid(){
 
       const mgrActive=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
       const canEdit=!locked||mgrActive;
+      
+      // Get benchmark data for this SKU at this store
+      const benchmark=_dpGetBenchmark(me.code,p.code);
+      let guideHTML='<span style="font-size:9px;color:#888;">—</span>';
+      let guideBg='transparent';
+      
+      if(benchmark){
+        const {min,ideal,max}=benchmark;
+        // Determine status color based on current opening stock
+        if(o<min){
+          guideBg='#FDECEA'; // understocked - red tint
+        } else if(o>max){
+          guideBg='#FFF4E6'; // overstocked - orange tint
+        } else {
+          guideBg='#EBF5EB'; // optimal - green tint
+        }
+        guideHTML=`<div style="font-family:var(--f-mono);font-size:9px;line-height:1.3;color:#333;">
+          <span style="color:#B03020;font-weight:700;">${min}</span> | 
+          <span style="color:#1A6A40;font-weight:700;">${ideal}</span> | 
+          <span style="color:#E65100;font-weight:700;">${max}</span>
+        </div>`;
+      }
+      
       tr.innerHTML=`
         <td class="prod-td">
           <div class="prod-inner">
@@ -3206,6 +3232,9 @@ function buildGrid(){
             onclick="${canEdit?'openNP(\''+p.code+'\',\'open\')':'toast(\'🔒 Day locked\')'}"
             data-code="${p.code}" data-field="open">
           <span class="dcell-val${showO===''?' empty':''}">${showO===''?'—':showO}</span>
+        </td>
+        <td class="dcell guide" style="background:${guideBg};padding:6px;text-align:center;border-left:1px solid #E8E4DC;border-right:1px solid #E8E4DC;">
+          ${guideHTML}
         </td>
         <td class="dcell wh" onclick="${canEdit?'openNP(\''+p.code+'\',\'wh\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showW===''?' empty':''}">${showW===''?'—':showW}</span>
@@ -3237,6 +3266,7 @@ function buildGrid(){
   tot.innerHTML=`
     <td class="prod-td">TOTALS — ${DAY_FULL[curDay]}</td>
     <td class="open">${totO}</td>
+    <td class="guide" style="background:#FAFAF8;"></td>
     <td class="wh">${totW}</td>
     <td class="inn">${totI}</td>
     <td class="sold">${totS}</td>
@@ -6205,6 +6235,12 @@ async function loadDPData(){
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     _dpBenchmarks=await resp.json();
     console.log('DP: Loaded',_dpBenchmarks.length,'benchmarks');
+    
+    // Refresh grid to show Stock Guide column data
+    if(typeof buildGrid==='function'){
+      buildGrid();
+    }
+    
     renderDPOverview();
   }catch(e){
     console.error('DP load error:',e);
@@ -6220,6 +6256,7 @@ function switchDPTab(el){
   else if(tab==='dpOverstock') renderDPOverstock();
   else if(tab==='dpReorder') renderDPReorder();
   else if(tab==='dpStores') renderDPStores();
+  else if(tab==='dpInventory') renderDPInventory();
 }
 
 function _dpStoreInfo(code){
@@ -6227,47 +6264,284 @@ function _dpStoreInfo(code){
   return s?{name:s.name,mgr:s.mgr}:{name:code,mgr:'—'};
 }
 
+// Get benchmark Min/Max/Ideal for a specific SKU at a specific store
+function _dpGetBenchmark(storeCode, skuCode){
+  if(!_dpBenchmarks) return null;
+  const bench=_dpBenchmarks.find(r=>r.store_code===storeCode&&r.sku_code===skuCode);
+  if(!bench) return null;
+  
+  const weeklyAvg=bench.weekly_avg||0;
+  
+  // ══════════════════════════════════════════════════════════════
+  // REGION-SPECIFIC MULTIPLIERS - Based on Actual Shipment Frequency
+  // ══════════════════════════════════════════════════════════════
+  // Remote stores (1x/week): Need more safety stock (7-day gap between shipments)
+  // Abu Dhabi/Al Ain (2x/week): Moderate safety stock (3.5-day gap)
+  // Dubai (2-3x/week): Lean inventory, can react fast (2-3 day gap)
+  
+  let minMult, idealMult, maxMult;
+  
+  if(['RK001','RK002','FJ001','FJ001A','SH001','AJ001'].includes(storeCode)){
+    // RAK, Fujairah, Sharjah, Ajman - 1x per week shipment
+    minMult = 1.0;   // 1 week minimum (until next shipment)
+    idealMult = 2.0; // 2 weeks optimal
+    maxMult = 4.0;   // 4 weeks = overstocked
+  } 
+  else if(['A0001','A0002','A0003','A0004','A0005','A0006','A0007','A0008','A0009','YMK001','BAS001',
+           'AL001','AL002','AL003','AL004','AL005','AL006','BAW001','MAK001'].includes(storeCode)){
+    // Abu Dhabi + Al Ain - 2x per week shipment
+    minMult = 0.5;   // 3.5 days minimum
+    idealMult = 1.0; // 1 week optimal
+    maxMult = 2.0;   // 2 weeks = overstocked
+  } 
+  else if(['DX001','DX004','DX005','DX006'].includes(storeCode)){
+    // Dubai - 2-3x per week shipment (most frequent)
+    minMult = 0.4;   // 2-3 days minimum
+    idealMult = 0.8; // 5-6 days optimal
+    maxMult = 1.5;   // 1.5 weeks = overstocked
+  } 
+  else {
+    // Default fallback for any unlisted stores (treat as remote)
+    minMult = 1.0;
+    idealMult = 2.0;
+    maxMult = 4.0;
+  }
+  
+  const min=Math.ceil(weeklyAvg*minMult);
+  const ideal=Math.ceil(weeklyAvg*idealMult);
+  const max=Math.ceil(weeklyAvg*maxMult);
+  
+  return {min,ideal,max,weeklyAvg};
+}
+
+
 function renderDPOverview(){
   if(!_dpBenchmarks||!_dpBenchmarks.length) return;
   const b=_dpBenchmarks;
-  // Calculate KPIs
-  let overstock=0,reorder=0,slow=0,totalVel=0;
-  const storeVel={};
+  
+  // ═══════════════════════════════════════════════════════════════
+  // INTELLIGENT ANALYSIS — 30 Years Demand Planning Experience
+  // ═══════════════════════════════════════════════════════════════
+  
+  const criticalAlerts=[];
+  const opportunities=[];
+  const warnings=[];
+  
   b.forEach(r=>{
     const cs=r.l30d_qty*3; // simulated current stock
     const cw=r.weekly_avg>0?cs/r.weekly_avg:999;
-    if(cw>12&&cs>0) overstock++;
-    if(r.weekly_avg>5&&cw<4&&cs>0) reorder++;
-    if(r.weekly_avg<0.5) slow++;
-    totalVel+=r.weekly_avg;
-    if(!storeVel[r.store_code]) storeVel[r.store_code]={vel:0,fast:0,slow:0,os:0,skus:0};
-    storeVel[r.store_code].vel+=r.weekly_avg;
-    storeVel[r.store_code].skus++;
-    if(r.weekly_avg>5) storeVel[r.store_code].fast++;
-    if(r.weekly_avg<0.5) storeVel[r.store_code].slow++;
-    if(cw>12&&cs>0) storeVel[r.store_code].os++;
+    const prod=PRODUCTS.find(p=>p.code===r.sku_code);
+    const store=STORES.find(s=>s.code===r.store_code);
+    const prodName=prod?prod.en:r.sku_code;
+    const storeName=store?store.name:r.store_code;
+    
+    // 🚨 CRITICAL: High velocity product running dangerously low
+    if(r.weekly_avg>15 && cw<1){
+      criticalAlerts.push({
+        severity:'CRITICAL',
+        type:'🚨 STOCKOUT RISK',
+        product:prodName,
+        sku:r.sku_code,
+        store:storeName,
+        storeCode:r.store_code,
+        stock:cs,
+        weeklyAvg:r.weekly_avg,
+        cover:cw,
+        message:`High-velocity item (${r.weekly_avg.toFixed(1)} units/wk) with only ${cw.toFixed(1)} weeks cover — STOCKOUT IMMINENT`,
+        urgency:1,
+        action:`EMERGENCY ORDER: ${Math.ceil(r.weekly_avg*4)} units immediately`
+      });
+    }
+    
+    // 🔴 URGENT: Fast mover below 2 weeks cover
+    else if(r.weekly_avg>10 && cw<2){
+      criticalAlerts.push({
+        severity:'URGENT',
+        type:'🔴 LOW STOCK',
+        product:prodName,
+        sku:r.sku_code,
+        store:storeName,
+        storeCode:r.store_code,
+        stock:cs,
+        weeklyAvg:r.weekly_avg,
+        cover:cw,
+        message:`Fast mover (${r.weekly_avg.toFixed(1)}/wk) dropping below safe levels`,
+        urgency:2,
+        action:`Order ${Math.ceil(r.weekly_avg*6)} units within 48hrs`
+      });
+    }
+    
+    // 🟠 WARNING: Medium velocity, trending towards stockout
+    else if(r.weekly_avg>5 && cw<3){
+      warnings.push({
+        severity:'WARNING',
+        type:'🟠 REORDER SOON',
+        product:prodName,
+        sku:r.sku_code,
+        store:storeName,
+        storeCode:r.store_code,
+        stock:cs,
+        weeklyAvg:r.weekly_avg,
+        cover:cw,
+        message:`${cw.toFixed(1)} weeks cover remaining`,
+        urgency:3,
+        action:`Schedule order: ${Math.ceil(r.weekly_avg*8)} units`
+      });
+    }
+    
+    // 💰 OPPORTUNITY: Dead stock tying up cash
+    if(r.weekly_avg<0.3 && cs>20){
+      opportunities.push({
+        severity:'OPPORTUNITY',
+        type:'💰 DEAD STOCK',
+        product:prodName,
+        sku:r.sku_code,
+        store:storeName,
+        storeCode:r.store_code,
+        stock:cs,
+        weeklyAvg:r.weekly_avg,
+        cover:cw>50?'50+':cw.toFixed(0),
+        message:`Slow mover (${r.weekly_avg.toFixed(1)}/wk) with ${cs} units on hand`,
+        urgency:4,
+        action:`Transfer to high-velocity store OR promotional discount`
+      });
+    }
+    
+    // 📊 ANOMALY: Sales velocity dropped suddenly
+    if(r.l30d_qty>0 && r.l90d_avg>0 && (r.l30d_qty/r.l90d_avg)<0.5){
+      warnings.push({
+        severity:'ANOMALY',
+        type:'📉 VELOCITY DROP',
+        product:prodName,
+        sku:r.sku_code,
+        store:storeName,
+        storeCode:r.store_code,
+        stock:cs,
+        weeklyAvg:r.weekly_avg,
+        l30d:r.l30d_qty,
+        l90d:r.l90d_avg,
+        message:`L30D sales 50% below L90D average — investigate cause`,
+        urgency:3,
+        action:`Check: Price change? Competition? Display issue?`
+      });
+    }
   });
-  // Top stores
-  const topStores=Object.entries(storeVel).sort((a,b)=>b[1].vel-a[1].vel).slice(0,10);
+  
+  // Sort by urgency
+  criticalAlerts.sort((a,b)=>a.urgency-b.urgency);
+  warnings.sort((a,b)=>a.urgency-b.urgency);
+  opportunities.sort((a,b)=>b.stock-a.stock); // Highest stock first
+  
   const body=document.getElementById('dpBody');
   body.innerHTML=`
-    <div class="dp-kpi">
-      <div class="dp-kpi-card"><div class="dp-kpi-label">Overstock Items</div><div class="dp-kpi-val" style="color:#EF4444;">${overstock}</div><div class="dp-kpi-sub">>12 weeks cover</div></div>
-      <div class="dp-kpi-card"><div class="dp-kpi-label">Reorder Priority</div><div class="dp-kpi-val" style="color:#22C55E;">${reorder}</div><div class="dp-kpi-sub">Fast movers <4w cover</div></div>
-      <div class="dp-kpi-card"><div class="dp-kpi-label">Slow Movers</div><div class="dp-kpi-val" style="color:#F59E0B;">${slow}</div><div class="dp-kpi-sub"><0.5 units/week</div></div>
-      <div class="dp-kpi-card"><div class="dp-kpi-label">Network Velocity</div><div class="dp-kpi-val">${Math.round(totalVel)}</div><div class="dp-kpi-sub">units/week across UAE</div></div>
+    <!-- CRITICAL ALERTS SECTION -->
+    ${criticalAlerts.length>0?`
+    <div style="background:#FFF1F0;border:2px solid #FF4D4F;border-radius:12px;padding:16px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:20px;">🚨</span>
+        <div>
+          <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#B03020;text-transform:uppercase;letter-spacing:1px;">CRITICAL ACTIONS REQUIRED</div>
+          <div style="font-family:var(--f-mono);font-size:10px;color:#666;margin-top:2px;">${criticalAlerts.length} items need immediate attention</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${criticalAlerts.slice(0,10).map(a=>`
+          <div style="background:#FFFFFF;border:1px solid #FADBD8;border-radius:8px;padding:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px;">
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:700;color:#1A1A1A;margin-bottom:3px;">${a.product}</div>
+                <div style="font-family:var(--f-mono);font-size:10px;color:#666;">${a.sku} @ ${a.store}</div>
+              </div>
+              <div style="background:#FF4D4F;color:#FFF;font-family:var(--f-mono);font-size:9px;font-weight:700;padding:4px 8px;border-radius:4px;">${a.type}</div>
+            </div>
+            <div style="font-size:12px;color:#444;margin-bottom:8px;">${a.message}</div>
+            <div style="display:flex;gap:12px;font-family:var(--f-mono);font-size:11px;margin-bottom:8px;">
+              <div><span style="color:#888;">Stock:</span> <strong style="color:#B03020;">${a.stock}</strong></div>
+              <div><span style="color:#888;">Velocity:</span> <strong>${a.weeklyAvg.toFixed(1)}/wk</strong></div>
+              <div><span style="color:#888;">Cover:</span> <strong style="color:#B03020;">${a.cover.toFixed(1)}w</strong></div>
+            </div>
+            <div style="background:#FFF9E6;border-left:3px solid #FAAD14;padding:8px;border-radius:4px;">
+              <div style="font-family:var(--f-mono);font-size:10px;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">→ ACTION</div>
+              <div style="font-size:12px;font-weight:600;color:#1A1A1A;">${a.action}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
     </div>
-    <div style="background:#1A1A1A;border-radius:10px;overflow:hidden;">
-      <div style="padding:12px 16px;color:#fff;font-family:var(--f-mono);font-size:12px;font-weight:700;">🏆 Top Performing Stores</div>
-      <table class="dp-table">
-        <thead><tr><th>Rank</th><th>Store</th><th>Manager</th><th class="r">Weekly Vel</th><th class="r">Fast</th><th class="r">Slow</th><th class="r">Overstock</th><th>Health</th></tr></thead>
-        <tbody>${topStores.map(([code,m],i)=>{
-          const info=_dpStoreInfo(code);
-          const h=m.os<10&&m.fast>5?'green':m.os>30?'red':'amber';
-          return `<tr><td><strong>${i+1}</strong></td><td style="font-family:var(--f-mono);font-size:11px;">${code}</td><td>${info.mgr}</td><td class="r"><strong>${m.vel.toFixed(1)}</strong></td><td class="r">${m.fast}</td><td class="r">${m.slow}</td><td class="r">${m.os}</td><td><span class="dp-badge dp-badge-${h}">${h}</span></td></tr>`;
-        }).join('')}</tbody>
+    `:''}
+    
+    <!-- WARNINGS SECTION -->
+    ${warnings.length>0?`
+    <div style="background:#FFFBF0;border:2px solid #FAAD14;border-radius:12px;padding:16px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:20px;">⚠️</span>
+        <div>
+          <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#E65100;text-transform:uppercase;letter-spacing:1px;">WARNINGS & ANOMALIES</div>
+          <div style="font-family:var(--f-mono);font-size:10px;color:#666;margin-top:2px;">${warnings.length} items require attention within 7 days</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:10px;">
+        ${warnings.slice(0,12).map(w=>`
+          <div style="background:#FFFFFF;border:1px solid #FFE0B2;border-radius:8px;padding:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px;">
+              <div style="flex:1;">
+                <div style="font-size:12px;font-weight:600;color:#1A1A1A;">${w.product}</div>
+                <div style="font-family:var(--f-mono);font-size:9px;color:#888;">${w.store}</div>
+              </div>
+              <div style="background:#FFA940;color:#FFF;font-family:var(--f-mono);font-size:8px;font-weight:700;padding:3px 6px;border-radius:3px;">${w.cover}w</div>
+            </div>
+            <div style="font-size:11px;color:#555;margin-bottom:6px;">${w.message}</div>
+            <div style="font-family:var(--f-mono);font-size:10px;color:#1A6A40;font-weight:600;">→ ${w.action}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    `:''}
+    
+    <!-- OPPORTUNITIES SECTION -->
+    ${opportunities.length>0?`
+    <div style="background:#F0F9FF;border:2px solid #2471A3;border-radius:12px;padding:16px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:20px;">💰</span>
+        <div>
+          <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#2471A3;text-transform:uppercase;letter-spacing:1px;">CASH OPTIMIZATION OPPORTUNITIES</div>
+          <div style="font-family:var(--f-mono);font-size:10px;color:#666;margin-top:2px;">${opportunities.length} items with capital tied up in slow-moving inventory</div>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;background:#FFF;border-radius:8px;overflow:hidden;">
+        <thead>
+          <tr style="background:#E6F4FF;border-bottom:2px solid #2471A3;">
+            <th style="padding:8px 10px;text-align:left;font-family:var(--f-mono);font-size:10px;color:#2471A3;font-weight:700;">PRODUCT</th>
+            <th style="padding:8px 10px;text-align:left;font-family:var(--f-mono);font-size:10px;color:#2471A3;font-weight:700;">STORE</th>
+            <th style="padding:8px 10px;text-align:right;font-family:var(--f-mono);font-size:10px;color:#2471A3;font-weight:700;">STOCK</th>
+            <th style="padding:8px 10px;text-align:right;font-family:var(--f-mono);font-size:10px;color:#2471A3;font-weight:700;">VELOCITY</th>
+            <th style="padding:8px 10px;text-align:left;font-family:var(--f-mono);font-size:10px;color:#2471A3;font-weight:700;">RECOMMENDED ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${opportunities.slice(0,15).map((o,i)=>`
+            <tr style="border-bottom:1px solid #E6F4FF;${i%2===0?'background:#FAFAFA':''}">
+              <td style="padding:8px 10px;font-size:11px;font-weight:600;">${o.product}</td>
+              <td style="padding:8px 10px;font-size:10px;color:#666;">${o.store}</td>
+              <td style="padding:8px 10px;text-align:right;font-family:var(--f-mono);font-size:12px;font-weight:700;color:#B03020;">${o.stock}</td>
+              <td style="padding:8px 10px;text-align:right;font-family:var(--f-mono);font-size:11px;color:#888;">${o.weeklyAvg.toFixed(1)}/wk</td>
+              <td style="padding:8px 10px;font-size:11px;color:#2471A3;">${o.action}</td>
+            </tr>
+          `).join('')}
+        </tbody>
       </table>
-    </div>`;
+    </div>
+    `:''}
+    
+    <!-- ALL CLEAR MESSAGE -->
+    ${criticalAlerts.length===0&&warnings.length===0?`
+    <div style="background:#F0FFF4;border:2px solid #1A6A40;border-radius:12px;padding:32px;text-align:center;">
+      <div style="font-size:48px;margin-bottom:12px;">✅</div>
+      <div style="font-family:var(--f-mono);font-size:16px;font-weight:800;color:#1A6A40;margin-bottom:8px;">ALL SYSTEMS OPTIMAL</div>
+      <div style="font-size:13px;color:#666;">No critical stockout risks or urgent reorders detected across the network.</div>
+    </div>
+    `:''}
+  `;
 }
 
 function renderDPOverstock(){
@@ -6276,15 +6550,19 @@ function renderDPOverstock(){
   _dpBenchmarks.forEach(r=>{
     const cs=r.l30d_qty*3;
     const cw=r.weekly_avg>0?cs/r.weekly_avg:999;
-    if(cw>12&&cs>0) items.push({...r,cs,cw:Math.round(cw*10)/10});
+    if(cw>12&&cs>0){
+      const prod=PRODUCTS.find(p=>p.code===r.sku_code);
+      const store=STORES.find(s=>s.code===r.store_code);
+      items.push({...r,cs,cw:Math.round(cw*10)/10,prodName:prod?prod.en:r.sku_code,storeName:store?store.name:r.store_code});
+    }
   });
   items.sort((a,b)=>b.cw-a.cw);
   const body=document.getElementById('dpBody');
   body.innerHTML=`<div style="margin-bottom:12px;font-family:var(--f-mono);font-size:12px;color:#888;">${items.length} overstock items (>12 weeks cover)</div>
-    <table class="dp-table"><thead><tr><th>SKU</th><th>Store</th><th class="r">Stock</th><th class="r">Wk Avg</th><th class="r">L30D</th><th class="r">L90D Avg</th><th class="r">Cover</th><th>Severity</th></tr></thead>
+    <table class="dp-table"><thead><tr><th>SKU</th><th>Product</th><th>Store</th><th class="r">Stock</th><th class="r">Wk Avg</th><th class="r">L30D</th><th class="r">L90D Avg</th><th class="r">Cover</th><th>Severity</th></tr></thead>
     <tbody>${items.slice(0,100).map(r=>{
       const sev=r.cw>24?'red':'orange';
-      return `<tr><td style="font-family:var(--f-mono);font-size:11px;">${r.sku_code}</td><td style="font-family:var(--f-mono);font-size:11px;">${r.store_code}</td><td class="r">${r.cs}</td><td class="r">${r.weekly_avg.toFixed(2)}</td><td class="r">${r.l30d_qty}</td><td class="r">${r.l90d_avg.toFixed(1)}</td><td class="r"><strong>${r.cw}w</strong></td><td><span class="dp-badge dp-badge-${sev}">${r.cw>24?'EXTREME':'HIGH'}</span></td></tr>`;
+      return `<tr><td style="font-family:var(--f-mono);font-size:11px;">${r.sku_code}</td><td style="font-size:12px;">${r.prodName}</td><td style="font-size:12px;">${r.storeName}</td><td class="r">${r.cs}</td><td class="r">${r.weekly_avg.toFixed(2)}</td><td class="r">${r.l30d_qty}</td><td class="r">${r.l90d_avg.toFixed(1)}</td><td class="r"><strong>${r.cw}w</strong></td><td><span class="dp-badge dp-badge-${sev}">${r.cw>24?'EXTREME':'HIGH'}</span></td></tr>`;
     }).join('')}</tbody></table>`;
 }
 
@@ -6294,36 +6572,425 @@ function renderDPReorder(){
   _dpBenchmarks.forEach(r=>{
     const cs=r.l30d_qty*3;
     const cw=r.weekly_avg>0?cs/r.weekly_avg:999;
-    if(r.weekly_avg>5&&cw<4&&cs>0) items.push({...r,cs,cw:Math.round(cw*10)/10,order:Math.ceil(r.weekly_avg*4)});
+    if(r.weekly_avg>5&&cw<4&&cs>0){
+      const prod=PRODUCTS.find(p=>p.code===r.sku_code);
+      const store=STORES.find(s=>s.code===r.store_code);
+      items.push({...r,cs,cw:Math.round(cw*10)/10,order:Math.ceil(r.weekly_avg*4),prodName:prod?prod.en:r.sku_code,storeName:store?store.name:r.store_code});
+    }
   });
   items.sort((a,b)=>a.cw-b.cw);
   const body=document.getElementById('dpBody');
   body.innerHTML=`<div style="margin-bottom:12px;font-family:var(--f-mono);font-size:12px;color:#888;">${items.length} fast movers need reorder (<4 weeks cover)</div>
-    <table class="dp-table"><thead><tr><th>#</th><th>SKU</th><th>Store</th><th class="r">Stock</th><th class="r">Wk Avg</th><th class="r">Cover</th><th class="r">Suggested Order</th></tr></thead>
-    <tbody>${items.map((r,i)=>`<tr><td><strong>${i+1}</strong></td><td style="font-family:var(--f-mono);font-size:11px;">${r.sku_code}</td><td style="font-family:var(--f-mono);font-size:11px;">${r.store_code}</td><td class="r">${r.cs}</td><td class="r">${r.weekly_avg.toFixed(2)}</td><td class="r"><span class="dp-badge dp-badge-red">${r.cw}w</span></td><td class="r"><strong>${r.order} units</strong></td></tr>`).join('')}</tbody></table>`;
+    <table class="dp-table"><thead><tr><th>#</th><th>SKU</th><th>Product</th><th>Store</th><th class="r">Stock</th><th class="r">Wk Avg</th><th class="r">Cover</th><th class="r">Suggested Order</th></tr></thead>
+    <tbody>${items.map((r,i)=>`<tr><td><strong>${i+1}</strong></td><td style="font-family:var(--f-mono);font-size:11px;">${r.sku_code}</td><td style="font-size:12px;">${r.prodName}</td><td style="font-size:12px;">${r.storeName}</td><td class="r">${r.cs}</td><td class="r">${r.weekly_avg.toFixed(2)}</td><td class="r"><span class="dp-badge dp-badge-red">${r.cw}w</span></td><td class="r"><strong>${r.order} units</strong></td></tr>`).join('')}</tbody></table>`;
 }
 
 function renderDPStores(){
   if(!_dpBenchmarks) return;
-  const sv={};
+  
+  // Build intelligent store profiles
+  const storeProfiles=[];
+  const storeData={};
+  
   _dpBenchmarks.forEach(r=>{
-    if(!sv[r.store_code]) sv[r.store_code]={vel:0,fast:0,slow:0,os:0,skus:0};
-    sv[r.store_code].vel+=r.weekly_avg; sv[r.store_code].skus++;
-    if(r.weekly_avg>5) sv[r.store_code].fast++;
-    if(r.weekly_avg<0.5) sv[r.store_code].slow++;
+    if(!storeData[r.store_code]){
+      const store=STORES.find(s=>s.code===r.store_code);
+      storeData[r.store_code]={
+        code:r.store_code,
+        name:store?store.name:r.store_code,
+        manager:store?store.mgr:'—',
+        criticalStockouts:[],
+        urgentReorders:[],
+        deadStock:[],
+        totalVelocity:0,
+        skuCount:0
+      };
+    }
+    
     const cs=r.l30d_qty*3;
-    if(cs>0&&r.weekly_avg>0&&cs/r.weekly_avg>12) sv[r.store_code].os++;
+    const cw=r.weekly_avg>0?cs/r.weekly_avg:999;
+    const prod=PRODUCTS.find(p=>p.code===r.sku_code);
+    const prodName=prod?prod.en:r.sku_code;
+    
+    storeData[r.store_code].totalVelocity+=r.weekly_avg;
+    storeData[r.store_code].skuCount++;
+    
+    // CRITICAL: High velocity + imminent stockout
+    if(r.weekly_avg>10 && cw<1.5){
+      storeData[r.store_code].criticalStockouts.push({
+        product:prodName,
+        sku:r.sku_code,
+        velocity:r.weekly_avg,
+        stock:cs,
+        cover:cw,
+        urgency:1
+      });
+    }
+    // URGENT: Fast mover needs reorder
+    else if(r.weekly_avg>5 && cw<3){
+      storeData[r.store_code].urgentReorders.push({
+        product:prodName,
+        sku:r.sku_code,
+        velocity:r.weekly_avg,
+        stock:cs,
+        cover:cw,
+        urgency:2
+      });
+    }
+    
+    // DEAD STOCK: Slow + High inventory
+    if(r.weekly_avg<0.5 && cs>15){
+      storeData[r.store_code].deadStock.push({
+        product:prodName,
+        sku:r.sku_code,
+        velocity:r.weekly_avg,
+        stock:cs,
+        cover:cw>50?'50+':Math.round(cw)
+      });
+    }
   });
-  const stores=Object.entries(sv).sort((a,b)=>b[1].vel-a[1].vel);
+  
+  // Convert to array and calculate health score
+  Object.values(storeData).forEach(s=>{
+    s.criticalStockouts.sort((a,b)=>a.urgency-b.urgency);
+    s.urgentReorders.sort((a,b)=>a.cover-b.cover);
+    s.deadStock.sort((a,b)=>b.stock-a.stock);
+    
+    // Health score: penalize stockouts, reward balanced inventory
+    s.healthScore=100;
+    s.healthScore-=(s.criticalStockouts.length*15); // -15 per critical
+    s.healthScore-=(s.urgentReorders.length*5);     // -5 per urgent
+    s.healthScore-=(Math.min(s.deadStock.length,10)*2); // -2 per dead stock (capped)
+    s.healthScore=Math.max(0,s.healthScore);
+    
+    // Action priority
+    if(s.criticalStockouts.length>0) s.priority='CRITICAL';
+    else if(s.urgentReorders.length>3) s.priority='URGENT';
+    else if(s.deadStock.length>10) s.priority='REVIEW';
+    else s.priority='STABLE';
+    
+    storeProfiles.push(s);
+  });
+  
+  // Sort by priority then health score
+  const priorityOrder={CRITICAL:1,URGENT:2,REVIEW:3,STABLE:4};
+  storeProfiles.sort((a,b)=>{
+    if(a.priority!==b.priority) return priorityOrder[a.priority]-priorityOrder[b.priority];
+    return a.healthScore-b.healthScore;
+  });
+  
   const body=document.getElementById('dpBody');
-  body.innerHTML=`<div style="margin-bottom:12px;font-family:var(--f-mono);font-size:12px;color:#888;">${stores.length} stores tracked</div>
-    <table class="dp-table"><thead><tr><th>#</th><th>Store</th><th>Manager</th><th class="r">SKUs</th><th class="r">Fast</th><th class="r">Slow</th><th class="r">Overstock</th><th class="r">Weekly Vel</th><th>Performance</th></tr></thead>
-    <tbody>${stores.map(([code,m],i)=>{
-      const info=_dpStoreInfo(code);
-      const p=m.vel>200?'green':m.vel>100?'amber':'red';
-      const pl=m.vel>200?'STRONG':m.vel>100?'FAIR':'WEAK';
-      return `<tr><td><strong>${i+1}</strong></td><td style="font-family:var(--f-mono);font-size:11px;">${code}</td><td>${info.mgr}</td><td class="r">${m.skus}</td><td class="r">${m.fast}</td><td class="r">${m.slow}</td><td class="r">${m.os}</td><td class="r"><strong>${m.vel.toFixed(1)}</strong></td><td><span class="dp-badge dp-badge-${p}">${pl}</span></td></tr>`;
-    }).join('')}</tbody></table>`;
+  body.innerHTML=`
+    <div style="margin-bottom:16px;">
+      <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#1A1A1A;margin-bottom:8px;">📊 STORE PERFORMANCE INTELLIGENCE</div>
+      <div style="font-size:12px;color:#666;">Real-time analysis of ${storeProfiles.length} stores across the UAE network</div>
+    </div>
+    
+    ${storeProfiles.map(s=>{
+      let priorityColor='#1A6A40';
+      let priorityBg='#EBF5EB';
+      let priorityIcon='✅';
+      
+      if(s.priority==='CRITICAL'){
+        priorityColor='#B03020';
+        priorityBg='#FDECEA';
+        priorityIcon='🚨';
+      } else if(s.priority==='URGENT'){
+        priorityColor='#E65100';
+        priorityBg='#FFF4E6';
+        priorityIcon='⚠️';
+      } else if(s.priority==='REVIEW'){
+        priorityColor='#2471A3';
+        priorityBg='#E6F4FF';
+        priorityIcon='💰';
+      }
+      
+      return `
+        <div style="background:#FFFFFF;border:2px solid ${s.priority==='CRITICAL'?'#FF4D4F':s.priority==='URGENT'?'#FAAD14':s.priority==='REVIEW'?'#2471A3':'#E8E4DC'};border-radius:12px;padding:16px;margin-bottom:12px;">
+          
+          <!-- Store Header -->
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span style="font-size:20px;">${priorityIcon}</span>
+                <div style="font-size:16px;font-weight:700;color:#1A1A1A;">${s.name}</div>
+              </div>
+              <div style="display:flex;gap:12px;font-family:var(--f-mono);font-size:11px;color:#666;">
+                <div>Code: <strong>${s.code}</strong></div>
+                <div>Manager: <strong>${s.manager}</strong></div>
+                <div>SKUs: <strong>${s.skuCount}</strong></div>
+                <div>Velocity: <strong>${s.totalVelocity.toFixed(1)}/wk</strong></div>
+              </div>
+            </div>
+            <div style="background:${priorityBg};border:2px solid ${priorityColor};color:${priorityColor};font-family:var(--f-mono);font-size:11px;font-weight:800;padding:6px 12px;border-radius:6px;text-align:center;">
+              <div style="font-size:18px;line-height:1;">${s.healthScore}</div>
+              <div style="font-size:9px;margin-top:2px;">${s.priority}</div>
+            </div>
+          </div>
+          
+          <!-- Critical Stockouts -->
+          ${s.criticalStockouts.length>0?`
+            <div style="background:#FFF1F0;border-left:4px solid #FF4D4F;padding:10px;margin-bottom:10px;border-radius:6px;">
+              <div style="font-family:var(--f-mono);font-size:10px;font-weight:800;color:#B03020;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+                🚨 CRITICAL STOCKOUTS (${s.criticalStockouts.length})
+              </div>
+              ${s.criticalStockouts.slice(0,3).map(item=>`
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #FADBD8;">
+                  <div>
+                    <div style="font-size:12px;font-weight:600;color:#1A1A1A;">${item.product}</div>
+                    <div style="font-family:var(--f-mono);font-size:10px;color:#666;">${item.velocity.toFixed(1)}/wk velocity</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-family:var(--f-mono);font-size:13px;font-weight:900;color:#B03020;">${item.stock} units</div>
+                    <div style="font-family:var(--f-mono);font-size:9px;color:#B03020;font-weight:700;">${item.cover.toFixed(1)}w cover</div>
+                  </div>
+                </div>
+              `).join('')}
+              <div style="margin-top:8px;padding:8px;background:#FFFFFF;border-radius:4px;">
+                <div style="font-family:var(--f-mono);font-size:10px;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">→ MANAGER ACTION</div>
+                <div style="font-size:12px;font-weight:700;color:#B03020;">Call ${s.manager} NOW — Emergency orders required for ${s.criticalStockouts.length} products</div>
+              </div>
+            </div>
+          `:''}
+          
+          <!-- Urgent Reorders -->
+          ${s.urgentReorders.length>0?`
+            <div style="background:#FFFBF0;border-left:4px solid #FAAD14;padding:10px;margin-bottom:10px;border-radius:6px;">
+              <div style="font-family:var(--f-mono);font-size:10px;font-weight:800;color:#E65100;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+                ⚠️ URGENT REORDERS (${s.urgentReorders.length})
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;">
+                ${s.urgentReorders.slice(0,6).map(item=>`
+                  <div style="background:#FFF;padding:6px;border-radius:4px;border:1px solid #FFE0B2;">
+                    <div style="font-size:11px;font-weight:600;color:#1A1A1A;margin-bottom:2px;">${item.product}</div>
+                    <div style="display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:9px;">
+                      <span style="color:#666;">${item.velocity.toFixed(1)}/wk</span>
+                      <span style="color:#E65100;font-weight:700;">${item.cover.toFixed(1)}w</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              ${s.urgentReorders.length>6?`<div style="margin-top:6px;font-size:10px;color:#888;">+ ${s.urgentReorders.length-6} more items</div>`:''}
+            </div>
+          `:''}
+          
+          <!-- Dead Stock -->
+          ${s.deadStock.length>5?`
+            <div style="background:#F0F9FF;border-left:4px solid #2471A3;padding:10px;border-radius:6px;">
+              <div style="font-family:var(--f-mono);font-size:10px;font-weight:800;color:#2471A3;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+                💰 CASH TIED UP (${s.deadStock.length} slow movers)
+              </div>
+              <div style="font-size:11px;color:#666;margin-bottom:6px;">
+                Top dead stock items: ${s.deadStock.slice(0,3).map(i=>i.product).join(', ')}
+              </div>
+              <div style="font-size:11px;font-weight:600;color:#2471A3;">
+                → Consider: Transfer to high-velocity stores OR run promotional campaign
+              </div>
+            </div>
+          `:''}
+          
+          <!-- All Clear -->
+          ${s.priority==='STABLE'?`
+            <div style="background:#F0FFF4;border-left:4px solid #1A6A40;padding:10px;border-radius:6px;">
+              <div style="font-family:var(--f-mono);font-size:11px;font-weight:700;color:#1A6A40;">
+                ✅ OPTIMAL — No urgent actions required
+              </div>
+            </div>
+          `:''}
+          
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+// ── NEW: Inventory Management Tab ──────────────────────────────────
+function renderDPInventory(){
+  if(!_dpBenchmarks||!_dpBenchmarks.length){
+    document.getElementById('dpBody').innerHTML='<div style="padding:40px;text-align:center;color:#888;">No benchmark data available</div>';
+    return;
+  }
+  
+  // Build store selector
+  const allStores=STORES.filter(s=>s.code!=='MGR').sort((a,b)=>a.name.localeCompare(b.name));
+  const selectedStore=window._dpInvStore||allStores[0].code;
+  
+  // Get benchmarks for selected store
+  const storeBench=_dpBenchmarks.filter(r=>r.store_code===selectedStore);
+  
+  // Get store info
+  const storeInfo=_dpStoreInfo(selectedStore);
+  
+  // Calculate Min/Ideal/Max for each SKU using region-specific logic
+  const inventory=storeBench.map(r=>{
+    const weeklyAvg=r.weekly_avg||0;
+    
+    // Use _dpGetBenchmark for region-specific Min/Ideal/Max
+    const benchmark=_dpGetBenchmark(selectedStore, r.sku_code);
+    const min=benchmark?benchmark.min:0;
+    const ideal=benchmark?benchmark.ideal:0;
+    const max=benchmark?benchmark.max:0;
+    
+    const current=r.l30d_qty*3; // simulated current stock (will pull from stock_cells later)
+    
+    // Determine status
+    let status='optimal';
+    let statusLabel='🟢 Optimal';
+    let statusColor='#EBF5EB';
+    let statusBorder='#C8E6C9';
+    let statusText='#1A6A40';
+    
+    if(current<min){
+      status='understocked';
+      statusLabel='🔴 Understocked';
+      statusColor='#FDECEA';
+      statusBorder='#FADBD8';
+      statusText='#B03020';
+    } else if(current>max){
+      status='overstocked';
+      statusLabel='🟠 Overstocked';
+      statusColor='#FFF4E6';
+      statusBorder='#FFE0B2';
+      statusText='#E65100';
+    }
+    
+    // Get product info
+    const prod=PRODUCTS.find(p=>p.code===r.sku_code);
+    const prodName=prod?prod.en:r.sku_code;
+    const catName=prod?prod.cat:'—';
+    
+    return {
+      sku:r.sku_code,
+      name:prodName,
+      cat:catName,
+      weeklyAvg,
+      l30d:r.l30d_qty||0,
+      l90dAvg:r.l90d_avg||0,
+      min,
+      ideal,
+      max,
+      current,
+      status,
+      statusLabel,
+      statusColor,
+      statusBorder,
+      statusText,
+      lastSale:r.last_sale_month||'—'
+    };
+  });
+  
+  // Sort by status (understocked first, then overstocked, then optimal)
+  const sortedInv=inventory.sort((a,b)=>{
+    const order={understocked:1,overstocked:2,optimal:3};
+    return order[a.status]-order[b.status];
+  });
+  
+  // Count by status
+  const understockedCount=sortedInv.filter(i=>i.status==='understocked').length;
+  const overstockedCount=sortedInv.filter(i=>i.status==='overstocked').length;
+  const optimalCount=sortedInv.filter(i=>i.status==='optimal').length;
+  
+  const body=document.getElementById('dpBody');
+  body.innerHTML=`
+    <!-- Store selector header -->
+    <div style="background:#FFFFFF;border:2px solid #E8E4DC;border-radius:12px;padding:16px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div style="font-family:var(--f-mono);font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Store Selection</div>
+          <div style="font-size:18px;font-weight:700;color:#1A1A1A;">${storeInfo.name}</div>
+          <div style="font-family:var(--f-mono);font-size:11px;color:#666;margin-top:2px;">Manager: ${storeInfo.mgr}</div>
+        </div>
+        <select id="dpInvStoreSelect" onchange="window._dpInvStore=this.value;renderDPInventory();" 
+          style="background:#FAFAF8;border:2px solid #9A7B4F;border-radius:8px;padding:10px 14px;font-family:var(--f-body);font-size:13px;color:#1A1A1A;font-weight:600;cursor:pointer;outline:none;">
+          ${allStores.map(s=>`<option value="${s.code}" ${s.code===selectedStore?'selected':''}>${s.code} — ${s.name}</option>`).join('')}
+        </select>
+      </div>
+      
+      <!-- Status summary badges -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="background:#FDECEA;border:1px solid #FADBD8;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:16px;">🔴</span>
+          <div>
+            <div style="font-family:var(--f-mono);font-size:18px;font-weight:900;color:#B03020;">${understockedCount}</div>
+            <div style="font-size:10px;color:#B03020;font-weight:600;">Understocked</div>
+          </div>
+        </div>
+        <div style="background:#FFF4E6;border:1px solid #FFE0B2;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:16px;">🟠</span>
+          <div>
+            <div style="font-family:var(--f-mono);font-size:18px;font-weight:900;color:#E65100;">${overstockedCount}</div>
+            <div style="font-size:10px;color:#E65100;font-weight:600;">Overstocked</div>
+          </div>
+        </div>
+        <div style="background:#EBF5EB;border:1px solid #C8E6C9;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:16px;">🟢</span>
+          <div>
+            <div style="font-family:var(--f-mono);font-size:18px;font-weight:900;color:#1A6A40;">${optimalCount}</div>
+            <div style="font-size:10px;color:#1A6A40;font-weight:600;">Optimal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Inventory table -->
+    <div style="background:#FFFFFF;border:2px solid #E8E4DC;border-radius:12px;overflow:hidden;">
+      <div style="background:#1A1A1A;border-bottom:2px solid #9A7B4F;padding:12px 16px;">
+        <div style="font-family:var(--f-mono);font-size:11px;font-weight:700;color:#C9A44E;text-transform:uppercase;letter-spacing:1px;">SKU Inventory Benchmarks</div>
+        <div style="font-family:var(--f-mono);font-size:9px;color:#888;margin-top:2px;">${sortedInv.length} SKUs tracked</div>
+      </div>
+      
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#FAFAF8;border-bottom:1px solid #E8E4DC;">
+              <th style="padding:10px 12px;text-align:left;font-family:var(--f-mono);font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">SKU</th>
+              <th style="padding:10px 12px;text-align:left;font-family:var(--f-mono);font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Product</th>
+              <th style="padding:10px 12px;text-align:left;font-family:var(--f-mono);font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Category</th>
+              <th style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Weekly Avg</th>
+              <th style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">L30D</th>
+              <th style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Min</th>
+              <th style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Ideal</th>
+              <th style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Max</th>
+              <th style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Current</th>
+              <th style="padding:10px 12px;text-align:center;font-family:var(--f-mono);font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sortedInv.map((item,idx)=>`
+              <tr style="border-bottom:1px solid #E8E4DC;${idx%2===0?'background:#FFFFFF':'background:#FAFAF8'}">
+                <td style="padding:10px 12px;font-family:var(--f-mono);font-size:11px;color:#1A1A1A;font-weight:600;">${item.sku}</td>
+                <td style="padding:10px 12px;font-size:12px;color:#1A1A1A;">${item.name}</td>
+                <td style="padding:10px 12px;font-size:11px;color:#666;">${item.cat}</td>
+                <td style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:12px;color:#1A1A1A;font-weight:600;">${item.weeklyAvg.toFixed(1)}</td>
+                <td style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:12px;color:#666;">${item.l30d}</td>
+                <td style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:12px;color:#B03020;font-weight:700;">${item.min}</td>
+                <td style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:12px;color:#1A6A40;font-weight:700;">${item.ideal}</td>
+                <td style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:12px;color:#E65100;font-weight:700;">${item.max}</td>
+                <td style="padding:10px 12px;text-align:right;font-family:var(--f-mono);font-size:13px;color:#1A1A1A;font-weight:900;">${item.current}</td>
+                <td style="padding:10px 12px;text-align:center;">
+                  <span style="display:inline-block;background:${item.statusColor};border:1px solid ${item.statusBorder};color:${item.statusText};padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap;">${item.statusLabel}</span>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Legend footer -->
+      <div style="background:#FAFAF8;border-top:2px solid #E8E4DC;padding:12px 16px;">
+        <div style="font-family:var(--f-mono);font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Benchmark Logic — Region-Specific</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;font-size:10px;color:#666;line-height:1.5;">
+          <div><strong style="color:#B03020;">Min:</strong> 1w (remote) | 0.5w (ABD/AIN) | 0.4w (DXB)</div>
+          <div><strong style="color:#1A6A40;">Ideal:</strong> 2w (remote) | 1w (ABD/AIN) | 0.8w (DXB)</div>
+          <div><strong style="color:#E65100;">Max:</strong> 4w (remote) | 2w (ABD/AIN) | 1.5w (DXB)</div>
+          <div><strong style="color:#1A1A1A;">Current:</strong> Simulated stock (L30D × 3)</div>
+        </div>
+        <div style="margin-top:8px;font-size:9px;color:#999;font-style:italic;">
+          Based on actual UAE shipment frequency: Remote stores 1x/wk • ABD/AIN 2x/wk • Dubai 2-3x/wk
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function renderMgrDashboard(){
@@ -8941,6 +9608,11 @@ async function startSync(store) {
     const ok = await Promise.race([loadPromise, timeoutPromise]);
 
     setMsg(ok ? 'Building grid…' : 'Offline — using local data', 90);
+    
+    // Load benchmarks in background (for Stock Guide column)
+    if(ok){
+      loadDPData().catch(e=>console.warn('Benchmark load failed:',e.message));
+    }
 
     buildDayTabs();
     buildGrid();
