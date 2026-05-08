@@ -3204,25 +3204,68 @@ function buildGrid(){
       const mgrActive=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
       const canEdit=!locked||mgrActive;
       
-      // Get benchmark data for this SKU at this store
-      const benchmark=_dpGetBenchmark(me.code,p.code);
-      let guideHTML='<span style="font-size:9px;color:#888;">—</span>';
-      let guideBg='transparent';
+      // Get benchmark data for this SKU at this store (enhanced with diagnostics)
+      const benchmark = _dpGetBenchmarkEnhanced(me.code, p.code);
+      let guideHTML = '<span style="font-size:9px;color:#888;">—</span>';
+      let guideBg = 'transparent';
       
-      if(benchmark){
-        const {min,max}=benchmark;
-        // Determine status color based on current BALANCE (not opening)
-        if(b<min){
-          guideBg='#FDECEA'; // understocked - red tint
-        } else if(b>max){
-          guideBg='#FFF4E6'; // overstocked - orange tint
+      if (benchmark) {
+        const {min, max, source} = benchmark;
+        
+        // Determine status color based on current BALANCE
+        let statusIcon = '';
+        let minColor, maxColor;
+        
+        if (b < min) {
+          guideBg = '#FDECEA'; // understocked - red tint
+          minColor = '#EB5757';
+          maxColor = '#EB5757';
+          statusIcon = '<span style="color:#EB5757;font-size:14px;margin-left:4px;">⚠</span>';
+        } else if (b > max) {
+          guideBg = '#FFF4E6'; // overstocked - orange tint
+          minColor = '#F2C94C';
+          maxColor = '#F2C94C';
+          statusIcon = '<span style="color:#F2C94C;font-size:14px;margin-left:4px;">⬆</span>';
         } else {
-          guideBg='#EBF5EB'; // healthy - green tint
+          guideBg = '#EBF5EB'; // healthy - green tint
+          minColor = '#6FCF97';
+          maxColor = '#6FCF97';
+          statusIcon = '<span style="color:#6FCF97;font-size:14px;margin-left:4px;">✓</span>';
         }
-        guideHTML=`<div style="font-family:var(--f-mono);font-size:11px;line-height:1.4;color:#333;white-space:nowrap;">
-          <span style="color:#B03020;font-weight:700;">${min}</span><span style="color:#999;"> | </span><span style="color:#E65100;font-weight:700;">${max}</span>
+        
+        let actionButton = '';
+        
+        if (source === 'auto_calc') {
+          actionButton = `<button onclick="showMinMaxInfo('${p.code}','auto_calc')" 
+                                  style="background:none;border:none;color:#F2C94C;cursor:pointer;font-size:11px;padding:0 3px;margin-left:2px;" 
+                                  title="Auto-calculated from sales">ⓘ</button>`;
+        } else if (source === 'new_sku') {
+          actionButton = `<button onclick="openMinMaxEditor('${p.code}','new_sku')" 
+                                  style="background:#2A5A2A;border:1px solid #3A7A3A;border-radius:3px;color:#6FCF97;
+                                         font-size:9px;padding:1px 5px;cursor:pointer;margin-left:3px;">SET</button>`;
+        } else if (source === 'dead_stock') {
+          actionButton = `<button onclick="showDeadStockOptions('${p.code}')" 
+                                  style="background:#3A1A1A;border:1px solid #5A2A2A;border-radius:3px;color:#EB5757;
+                                         font-size:9px;padding:1px 5px;cursor:pointer;margin-left:3px;">⚠</button>`;
+        } else if (source === 'override') {
+          actionButton = `<button onclick="openMinMaxEditor('${p.code}','override')" 
+                                  style="background:none;border:none;color:#888;cursor:pointer;font-size:11px;padding:0 3px;margin-left:2px;" 
+                                  title="Manual override">✎</button>`;
+        }
+        
+        guideHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:4px;font-family:var(--f-mono);font-size:11px;line-height:1.4;color:#333;white-space:nowrap;">
+          <span style="color:${minColor};font-weight:700;">${min}</span>
+          <span style="color:#999;">|</span>
+          <span style="color:${maxColor};font-weight:700;">${max}</span>
+          ${statusIcon}
+          ${actionButton}
         </div>
         <div style="font-family:var(--f-mono);font-size:8px;color:#999;letter-spacing:0.5px;margin-top:1px;">MIN &nbsp; MAX</div>`;
+      } else {
+        // Truly no data available - show manual entry button
+        guideHTML = `<button onclick="openMinMaxEditor('${p.code}','unknown')" 
+                             style="background:#1A2A1A;border:1px solid #2A5A2A;border-radius:4px;color:#6FCF97;
+                                    font-size:10px;padding:4px 8px;cursor:pointer;">+ SET</button>`;
       }
       
       tr.innerHTML=`
@@ -6316,6 +6359,472 @@ function _dpGetBenchmark(storeCode, skuCode){
   
   return {min,max,weeklyAvg};
 }
+
+
+// ══════════════════════════════════════════════════════════════
+// MIN/MAX DIAGNOSTIC & OVERRIDE SYSTEM
+// ══════════════════════════════════════════════════════════════
+
+// Helper: Get sales for last 90 days at THIS store
+function getSalesLast90Days(skuCode, storeCode) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const from90 = new Date(today); from90.setDate(today.getDate() - 90);
+  
+  let total = 0;
+  
+  for (let dayIdx = 0; dayIdx < DAY_WINDOW; dayIdx++) {
+    const dateStr = _idx2date(dayIdx);
+    const dt = new Date(dateStr);
+    
+    if (dt >= from90 && dt <= today) {
+      const sold = dbGet(storeCode, dayIdx, skuCode, 'sold') || 0;
+      total += sold;
+    }
+  }
+  
+  return total;
+}
+
+// Helper: Get transfers OUT for last 90 days (for hub stores)
+function getTransfersOutLast90Days(skuCode, storeCode) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const from90 = new Date(today); from90.setDate(today.getDate() - 90);
+  
+  const log = getTransferLog();
+  
+  const transfersOut = log.filter(t => {
+    const tDate = new Date(t.date || _idx2date(t.day));
+    return t.prodCode === skuCode &&
+           t.fromStore === storeCode &&
+           tDate >= from90 &&
+           tDate <= today;
+  });
+  
+  return transfersOut.reduce((sum, t) => sum + t.qty, 0);
+}
+
+// Helper: Get SKU age (days since added to system)
+function getSkuAgeDays(skuCode) {
+  // Hardcoded list of new SKUs (in production, pull from metadata table)
+  const newSkus = {
+    'CB-NEW-001': '2026-04-15',
+    'WD-NEW-002': '2026-04-20'
+  };
+  
+  if (newSkus[skuCode]) {
+    const launchDate = new Date(newSkus[skuCode]);
+    return Math.floor((new Date() - launchDate) / (1000*60*60*24));
+  }
+  
+  // Default: assume SKU is old (>90 days)
+  return 120;
+}
+
+// Helper: Get category average MIN/MAX for this store
+function getCategoryAvgForStore(skuCode, storeCode) {
+  const product = PRODUCTS.find(p => p.code === skuCode);
+  if (!product) return {min: 10, max: 30};
+  
+  const category = CATS.find(cat => 
+    cat.products.some(p => p.code === skuCode)
+  );
+  
+  if (!category) return {min: 10, max: 30};
+  
+  const sameCatSkus = category.products.map(p => p.code);
+  
+  // Try store-specific category average first
+  const benchmarksInCat = (_dpBenchmarks || []).filter(b => 
+    b.store_code === storeCode &&
+    sameCatSkus.includes(b.sku_code) &&
+    (b.min_stock || 0) > 0
+  );
+  
+  if (benchmarksInCat.length > 0) {
+    const avgMin = benchmarksInCat.reduce((sum, b) => sum + (b.min_stock || 0), 0) / benchmarksInCat.length;
+    const avgMax = benchmarksInCat.reduce((sum, b) => sum + (b.max_stock || 0), 0) / benchmarksInCat.length;
+    return {min: Math.ceil(avgMin), max: Math.ceil(avgMax)};
+  }
+  
+  // Fallback: global category average
+  const globalCatBenchmarks = (_dpBenchmarks || []).filter(b =>
+    sameCatSkus.includes(b.sku_code) && (b.min_stock || 0) > 0
+  );
+  
+  if (globalCatBenchmarks.length > 0) {
+    const avgMin = globalCatBenchmarks.reduce((sum, b) => sum + (b.min_stock || 0), 0) / globalCatBenchmarks.length;
+    const avgMax = globalCatBenchmarks.reduce((sum, b) => sum + (b.max_stock || 0), 0) / globalCatBenchmarks.length;
+    return {min: Math.ceil(avgMin), max: Math.ceil(avgMax)};
+  }
+  
+  return {min: 10, max: 30};
+}
+
+// Core diagnostic function
+function diagnoseMissingMinMax(skuCode, storeCode) {
+  const sales90d = getSalesLast90Days(skuCode, storeCode);
+  const transfers90d = getTransfersOutLast90Days(skuCode, storeCode);
+  const totalDemand90d = sales90d + transfers90d;
+  const skuAge = getSkuAgeDays(skuCode);
+  
+  if (totalDemand90d > 0) {
+    // HAS SALES/TRANSFERS → calculate from actuals
+    const weeklyAvg = totalDemand90d / 13;
+    return {
+      status: 'auto_calc',
+      reason: 'Benchmark missing but sales data exists',
+      sales90d,
+      transfers90d,
+      weeklyAvg,
+      suggestedMin: Math.ceil(weeklyAvg * 2),
+      suggestedMax: Math.ceil(weeklyAvg * 4),
+      action: 'use_suggested'
+    };
+  } else if (skuAge < 30) {
+    // NEW SKU → use category default
+    const categoryAvg = getCategoryAvgForStore(skuCode, storeCode);
+    return {
+      status: 'new_sku',
+      reason: 'Launched <30 days ago, no sales history yet',
+      categoryMin: categoryAvg.min,
+      categoryMax: categoryAvg.max,
+      action: 'use_category_default_or_manual'
+    };
+  } else {
+    // DEAD STOCK → flag for discontinuation
+    return {
+      status: 'dead_stock',
+      reason: 'No sales in 90+ days',
+      suggestedMin: 0,
+      suggestedMax: 0,
+      action: 'discontinue_or_override'
+    };
+  }
+}
+
+// Enhanced _dpGetBenchmark with fallback logic
+function _dpGetBenchmarkEnhanced(storeCode, skuCode) {
+  // Check for manual override first
+  const override = (db._minMaxOverrides || []).find(o => 
+    o.store === storeCode && o.sku === skuCode
+  );
+  
+  if (override) {
+    return {
+      min: override.min,
+      max: override.max,
+      weeklyAvg: (override.min / 2), // Reverse-calculate
+      source: 'override',
+      overrideReason: override.reason
+    };
+  }
+  
+  // Check benchmark table
+  const bench = (_dpBenchmarks || []).find(r => 
+    r.store_code === storeCode && r.sku_code === skuCode
+  );
+  
+  if (bench && (bench.min_stock || 0) > 0) {
+    return {
+      min: bench.min_stock,
+      max: bench.max_stock,
+      weeklyAvg: bench.weekly_avg || 0,
+      source: 'benchmark'
+    };
+  }
+  
+  // No benchmark, no override → diagnose and auto-calculate
+  const diag = diagnoseMissingMinMax(skuCode, storeCode);
+  
+  if (diag.status === 'auto_calc') {
+    return {
+      min: diag.suggestedMin,
+      max: diag.suggestedMax,
+      weeklyAvg: diag.weeklyAvg,
+      source: 'auto_calc',
+      diagnostic: diag
+    };
+  } else if (diag.status === 'new_sku') {
+    return {
+      min: diag.categoryMin,
+      max: diag.categoryMax,
+      weeklyAvg: (diag.categoryMin / 2),
+      source: 'new_sku',
+      diagnostic: diag
+    };
+  } else {
+    // Dead stock
+    return {
+      min: 0,
+      max: 0,
+      weeklyAvg: 0,
+      source: 'dead_stock',
+      diagnostic: diag
+    };
+  }
+}
+
+// MIN/MAX Editor Modal Context
+let _minMaxEditorCtx = null;
+
+function openMinMaxEditor(skuCode, reason) {
+  const p = PRODUCTS.find(pr => pr.code === skuCode);
+  if (!p) {
+    toast('⚠️ SKU not found');
+    return;
+  }
+  
+  const diag = diagnoseMissingMinMax(skuCode, me.code);
+  
+  _minMaxEditorCtx = {skuCode, reason, diag, product: p};
+  
+  let modal = document.getElementById('minMaxEditorModal');
+  if (!modal) {
+    const div = document.createElement('div');
+    div.id = 'minMaxEditorModal';
+    div.innerHTML = `
+      <div style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;
+                  display:none;align-items:center;justify-content:center;" 
+           onclick="if(event.target===this) closeMinMaxEditor()">
+        <div style="background:#0A0A0A;border:1px solid #2A2A2A;border-radius:12px;
+                    width:90%;max-width:500px;padding:24px;" 
+             onclick="event.stopPropagation()">
+          
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:20px;">
+            <div>
+              <div style="font-family:var(--f-mono);font-size:16px;font-weight:700;color:#C9A44E;" 
+                   id="mmEditorTitle">Set MIN/MAX</div>
+              <div style="font-family:var(--f-body);font-size:13px;color:#888;margin-top:4px;" 
+                   id="mmEditorSubtitle">—</div>
+            </div>
+            <button onclick="closeMinMaxEditor()" 
+                    style="background:none;border:none;color:#666;font-size:24px;cursor:pointer;line-height:1;">×</button>
+          </div>
+          
+          <div id="mmEditorDiagnostic" style="margin-bottom:20px;"></div>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+            <div>
+              <label style="font-family:var(--f-mono);font-size:11px;color:#888;
+                            text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;">
+                MIN Stock (2-week cover)
+              </label>
+              <input type="number" id="mmEditorMin" 
+                     style="width:100%;background:#1A1A1A;border:1px solid #2A5A2A;border-radius:6px;
+                            color:#C9A44E;font-family:var(--f-mono);font-size:18px;font-weight:700;
+                            padding:10px;text-align:center;" 
+                     placeholder="0" />
+            </div>
+            <div>
+              <label style="font-family:var(--f-mono);font-size:11px;color:#888;
+                            text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;">
+                MAX Stock (4-week cover)
+              </label>
+              <input type="number" id="mmEditorMax" 
+                     style="width:100%;background:#1A1A1A;border:1px solid #2A5A2A;border-radius:6px;
+                            color:#6FCF97;font-family:var(--f-mono);font-size:18px;font-weight:700;
+                            padding:10px;text-align:center;" 
+                     placeholder="0" />
+            </div>
+          </div>
+          
+          <div style="display:flex;gap:10px;">
+            <button onclick="closeMinMaxEditor()" 
+                    style="flex:1;background:#1A1A1A;border:1px solid #2A2A2A;border-radius:6px;
+                           color:#888;font-family:var(--f-body);font-size:13px;padding:10px;cursor:pointer;">
+              Cancel
+            </button>
+            <button onclick="saveMinMaxOverride()" 
+                    style="flex:1;background:#2A5A2A;border:1px solid #3A7A3A;border-radius:6px;
+                           color:#6FCF97;font-family:var(--f-body);font-size:13px;font-weight:700;
+                           padding:10px;cursor:pointer;">
+              Save Override
+            </button>
+          </div>
+          
+        </div>
+      </div>
+    `;
+    document.body.appendChild(div);
+    modal = div;
+  }
+  
+  // Populate modal
+  document.getElementById('mmEditorTitle').textContent = p.en;
+  document.getElementById('mmEditorSubtitle').textContent = p.code + ' · ' + me.name;
+  
+  const diagDiv = document.getElementById('mmEditorDiagnostic');
+  
+  if (diag.status === 'auto_calc') {
+    diagDiv.innerHTML = `
+      <div style="background:#1A2A1A;border:1px solid #2A5A2A;border-radius:8px;padding:12px;">
+        <div style="font-family:var(--f-mono);font-size:12px;color:#F2C94C;margin-bottom:6px;">
+          📊 Auto-Calculated from Sales History
+        </div>
+        <div style="font-family:var(--f-body);font-size:12px;color:#888;line-height:1.6;">
+          Last 90 days: <strong style="color:#fff;">${diag.sales90d || 0} units sold</strong><br>
+          Transfers OUT: <strong style="color:#fff;">${diag.transfers90d || 0} units</strong><br>
+          Weekly average: <strong style="color:#fff;">${diag.weeklyAvg.toFixed(1)} units/week</strong><br>
+          Suggested MIN (2 weeks): <strong style="color:#C9A44E;">${diag.suggestedMin}</strong><br>
+          Suggested MAX (4 weeks): <strong style="color:#6FCF97;">${diag.suggestedMax}</strong>
+        </div>
+      </div>
+    `;
+    document.getElementById('mmEditorMin').value = diag.suggestedMin;
+    document.getElementById('mmEditorMax').value = diag.suggestedMax;
+    
+  } else if (diag.status === 'new_sku') {
+    diagDiv.innerHTML = `
+      <div style="background:#1A2A1A;border:1px solid #2A5A2A;border-radius:8px;padding:12px;">
+        <div style="font-family:var(--f-mono);font-size:12px;color:#888;margin-bottom:6px;">
+          🆕 New SKU (Launched <30 days ago)
+        </div>
+        <div style="font-family:var(--f-body);font-size:12px;color:#888;line-height:1.6;">
+          No sales history yet. Using category average for initial MIN/MAX.<br>
+          Category average MIN: <strong style="color:#C9A44E;">${diag.categoryMin || '—'}</strong><br>
+          Category average MAX: <strong style="color:#6FCF97;">${diag.categoryMax || '—'}</strong>
+        </div>
+      </div>
+    `;
+    document.getElementById('mmEditorMin').value = diag.categoryMin || '';
+    document.getElementById('mmEditorMax').value = diag.categoryMax || '';
+    
+  } else if (diag.status === 'dead_stock') {
+    diagDiv.innerHTML = `
+      <div style="background:#3A1A1A;border:1px solid #5A2A2A;border-radius:8px;padding:12px;">
+        <div style="font-family:var(--f-mono);font-size:12px;color:#EB5757;margin-bottom:6px;">
+          ⚠️ Dead Stock (0 sales in 90+ days)
+        </div>
+        <div style="font-family:var(--f-body);font-size:12px;color:#888;line-height:1.6;">
+          Recommendation: Set MIN/MAX to 0 and discontinue at this store.<br>
+          Or: Set a promo MIN/MAX if you plan to push a clearance campaign.
+        </div>
+      </div>
+    `;
+    document.getElementById('mmEditorMin').value = 0;
+    document.getElementById('mmEditorMax').value = 0;
+  }
+  
+  modal.style.display = 'flex';
+}
+
+function closeMinMaxEditor() {
+  const modal = document.getElementById('minMaxEditorModal');
+  if (modal) modal.style.display = 'none';
+  _minMaxEditorCtx = null;
+}
+
+async function saveMinMaxOverride() {
+  if (!_minMaxEditorCtx) return;
+  
+  const minVal = +document.getElementById('mmEditorMin').value || 0;
+  const maxVal = +document.getElementById('mmEditorMax').value || 0;
+  
+  if (maxVal < minVal) {
+    toast('⚠️ MAX must be ≥ MIN');
+    return;
+  }
+  
+  if (minVal < 0 || maxVal < 0) {
+    toast('⚠️ MIN/MAX cannot be negative');
+    return;
+  }
+  
+  // Save to local override table
+  if (!db._minMaxOverrides) db._minMaxOverrides = [];
+  
+  const override = {
+    store: me.code,
+    sku: _minMaxEditorCtx.skuCode,
+    min: minVal,
+    max: maxVal,
+    reason: _minMaxEditorCtx.reason,
+    set_by: me.name || me.code,
+    set_at: new Date().toISOString()
+  };
+  
+  const existingIdx = db._minMaxOverrides.findIndex(o => 
+    o.store === me.code && o.sku === _minMaxEditorCtx.skuCode
+  );
+  
+  if (existingIdx >= 0) {
+    db._minMaxOverrides[existingIdx] = override;
+  } else {
+    db._minMaxOverrides.push(override);
+  }
+  
+  saveDB();
+  
+  // Sync to Supabase min_max_overrides table
+  try {
+    const response = await fetch(_SB_URL + '/rest/v1/min_max_overrides', {
+      method: 'POST',
+      headers: {
+        ..._SBH,
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({
+        store_code: me.code,
+        sku_code: _minMaxEditorCtx.skuCode,
+        min_qty: minVal,
+        max_qty: maxVal,
+        reason: _minMaxEditorCtx.reason,
+        set_by: me.name || me.code
+      })
+    });
+    
+    if (!response.ok) {
+      console.warn('[MinMax Override] Supabase sync failed:', await response.text());
+    } else {
+      console.log('[MinMax Override] Synced to Supabase');
+    }
+  } catch (e) {
+    console.warn('[MinMax Override] Sync error:', e.message);
+  }
+  
+  toast(`✓ MIN/MAX set: ${minVal} | ${maxVal}`);
+  closeMinMaxEditor();
+  buildGrid(); // Refresh grid to show new values
+}
+
+function showMinMaxInfo(skuCode, source) {
+  const diag = diagnoseMissingMinMax(skuCode, me.code);
+  const p = PRODUCTS.find(pr => pr.code === skuCode);
+  
+  let msg = `${p.en} (${skuCode})\n\n`;
+  
+  if (source === 'auto_calc') {
+    msg += `📊 Auto-Calculated from Sales\n\n`;
+    msg += `L90D Sales: ${diag.sales90d || 0} units\n`;
+    msg += `L90D Transfers: ${diag.transfers90d || 0} units\n`;
+    msg += `Weekly Avg: ${diag.weeklyAvg.toFixed(1)} units\n\n`;
+    msg += `MIN = ${diag.suggestedMin} (2-week cover)\n`;
+    msg += `MAX = ${diag.suggestedMax} (4-week cover)\n\n`;
+    msg += `Click to set manual override →`;
+  }
+  
+  if (confirm(msg)) {
+    openMinMaxEditor(skuCode, source);
+  }
+}
+
+function showDeadStockOptions(skuCode) {
+  const p = PRODUCTS.find(pr => pr.code === skuCode);
+  
+  const choice = confirm(
+    `${p.en} (${skuCode})\n\n` +
+    `⚠️ No sales in 90+ days\n\n` +
+    `Options:\n` +
+    `• OK → Set promo MIN/MAX (clearance)\n` +
+    `• Cancel → Keep at 0 (discontinue)`
+  );
+  
+  if (choice) {
+    openMinMaxEditor(skuCode, 'dead_stock');
+  }
+}
+
+
 
 
 function renderDPOverview(){
