@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="cache-bust" content="v20260507-warehouse-v1">
+<meta name="cache-bust" content="v20260507-wh-docs">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -2525,6 +2525,10 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       
       <label style="font-size:12px;font-weight:600;color:#888;display:block;margin-bottom:4px;">Request Document Ref (optional)</label>
       <input type="text" id="whReqDoc" placeholder="e.g., REQ-2026-0501" style="width:100%;padding:10px;border:1.5px solid #E8E4DC;border-radius:8px;font-size:13px;margin-bottom:14px;background:#FAFAF8;box-sizing:border-box;">
+      
+      <label style="font-size:12px;font-weight:600;color:#888;display:block;margin-bottom:4px;">📎 Attach Store Request (PDF/Image)</label>
+      <input type="file" id="whReqFile" accept="image/*,.pdf" style="width:100%;padding:8px;border:1.5px dashed #E8E4DC;border-radius:8px;font-size:12px;margin-bottom:6px;background:#FAFAF8;box-sizing:border-box;">
+      <div id="whReqFileStatus" style="font-size:10px;color:#888;margin-bottom:14px;"></div>
     </div>
     <div style="padding:14px 18px;border-top:1px solid #E8E4DC;display:flex;gap:10px;">
       <button onclick="whCloseReqModal()" style="flex:1;padding:10px;border:1px solid #E8E4DC;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">Cancel</button>
@@ -8090,9 +8094,12 @@ function whRenderCard(r,isResolved){
       </div>
     </div>
     ${r.remarks?`<div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:6px;padding:8px;font-size:11px;margin-bottom:8px;">📝 ${r.remarks}</div>`:''}
-    ${r.request_doc?`<div style="font-size:10px;color:#888;">📄 Req: ${r.request_doc}</div>`:''}
-    ${r.issue_doc?`<div style="font-size:10px;color:#888;">📄 Issue: ${r.issue_doc}</div>`:''}
-    ${!isResolved?`<div style="display:flex;gap:8px;margin-top:10px;">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center;">
+      ${r.request_doc?`<span style="font-size:10px;color:#888;background:#F5F5F0;border-radius:4px;padding:2px 6px;">📄 ${r.request_doc}</span>`:''}
+      ${r.request_file_url?`<a href="${r.request_file_url}" target="_blank" style="font-size:10px;color:#9A7B4F;text-decoration:none;font-weight:600;background:#FFF8ED;border:1px solid #E8D5A8;border-radius:4px;padding:2px 6px;">📎 Request Doc ↗</a>`:`<button onclick="whAttachFile(${r.id},'request')" style="font-size:10px;color:#9A7B4F;background:#fff;border:1px dashed #CCA;border-radius:4px;padding:2px 6px;cursor:pointer;">+ Attach Request</button>`}
+      ${r.issue_doc?`<span style="font-size:10px;color:#888;background:#F5F5F0;border-radius:4px;padding:2px 6px;">📄 ${r.issue_doc}</span>`:''}
+      ${r.issue_file_url?`<a href="${r.issue_file_url}" target="_blank" style="font-size:10px;color:#9A7B4F;text-decoration:none;font-weight:600;background:#FFF8ED;border:1px solid #E8D5A8;border-radius:4px;padding:2px 6px;">📎 DN Doc ↗</a>`:(r.status!=='open'?`<button onclick="whAttachFile(${r.id},'issue')" style="font-size:10px;color:#9A7B4F;background:#fff;border:1px dashed #CCA;border-radius:4px;padding:2px 6px;cursor:pointer;">+ Attach DN</button>`:'')}
+    </div>    ${!isResolved?`<div style="display:flex;gap:8px;margin-top:10px;">
       ${r.status==='open'?`<button onclick="whIssue(${r.id})" style="flex:1;padding:8px;border:none;border-radius:6px;background:#9A7B4F;color:#fff;font-size:11px;font-weight:600;cursor:pointer;">📦 Mark Issued</button>`:''}
       ${r.status==='issued'?`<button onclick="whVerify(${r.id})" style="flex:1;padding:8px;border:none;border-radius:6px;background:#22C55E;color:#fff;font-size:11px;font-weight:600;cursor:pointer;">✅ Verify Return</button>`:''}
       <button onclick="whAddRemarks(${r.id})" style="padding:8px 12px;border:1px solid #E8E4DC;border-radius:6px;background:#fff;font-size:11px;cursor:pointer;">📝 Remarks</button>
@@ -8111,16 +8118,39 @@ function whCloseReqModal(){
   document.getElementById('whReqModal').style.display='none';
 }
 
+async function _whUploadFile(file, txId, docType){
+  // Upload to Supabase Storage: tester-docs/{txId}_{docType}_{filename}
+  const ext=file.name.split('.').pop();
+  const path=`${txId}_${docType}_${Date.now()}.${ext}`;
+  const resp=await fetch(_SB_URL+'/storage/v1/object/tester-docs/'+path,{
+    method:'POST',
+    headers:{
+      'apikey':_SB_KEY,
+      'Authorization':'Bearer '+_SB_KEY,
+      'Content-Type':file.type,
+      'x-upsert':'true'
+    },
+    body:file
+  });
+  if(!resp.ok) throw new Error('Upload failed: '+resp.status);
+  // Return public URL
+  return _SB_URL+'/storage/v1/object/public/tester-docs/'+path;
+}
+
 async function whSubmitRequest(){
   const store=document.getElementById('whReqStore').value;
   const sku=document.getElementById('whReqSku').value;
   const qty=parseInt(document.getElementById('whReqQty').value)||1;
   const doc=document.getElementById('whReqDoc').value.trim();
   const date=document.getElementById('whDate').value;
+  const fileInput=document.getElementById('whReqFile');
   
   if(!store){alert('Select a store');return;}
   if(!sku){alert('Select a tester SKU');return;}
   if(!date){alert('Select a date');return;}
+  
+  // Show uploading state
+  const statusEl=document.getElementById('whReqFileStatus');
   
   const record={
     day_date:date,
@@ -8133,10 +8163,13 @@ async function whSubmitRequest(){
     status:'open',
     remarks:'',
     request_doc:doc,
-    issue_doc:''
+    issue_doc:'',
+    request_file_url:'',
+    issue_file_url:''
   };
   
   try{
+    // Create the record first
     const resp=await fetch(_SB_URL+'/rest/v1/tester_transactions',{
       method:'POST',
       headers:{..._SBH,'Prefer':'return=representation'},
@@ -8148,11 +8181,28 @@ async function whSubmitRequest(){
       else throw new Error(err);
       return;
     }
+    const created=await resp.json();
+    const txId=created[0]?.id||created.id||'new';
+    
+    // Upload file if selected
+    if(fileInput.files&&fileInput.files[0]){
+      statusEl.textContent='⏳ Uploading document…';
+      statusEl.style.color='#9A7B4F';
+      const fileUrl=await _whUploadFile(fileInput.files[0],txId,'request');
+      // Update the record with file URL
+      await fetch(_SB_URL+'/rest/v1/tester_transactions?id=eq.'+txId,{
+        method:'PATCH',
+        headers:_SBH,
+        body:JSON.stringify({request_file_url:fileUrl})
+      });
+    }
+    
     whCloseReqModal();
     await whLoadDay();
   }catch(e){
     console.error('WH submit:',e);
     alert('Error: '+e.message);
+    if(statusEl) statusEl.textContent='';
   }
 }
 
@@ -8172,11 +8222,56 @@ async function whUpdateRecord(id,updates){
   }
 }
 
-function whIssue(id){
+async function whIssue(id){
   const rec=_whData.find(r=>r.id===id);
   if(!rec) return;
   const issueDoc=prompt('Issue Document Ref (optional):','');
-  whUpdateRecord(id,{qty_issued:rec.qty_requested,status:'issued',issue_doc:issueDoc||''});
+  if(issueDoc===null) return; // cancelled
+  
+  const wantFile=confirm('Attach DN document (PDF/Image)?');
+  
+  if(wantFile){
+    const input=document.createElement('input');
+    input.type='file';
+    input.accept='image/*,.pdf';
+    input.onchange=async()=>{
+      if(!input.files||!input.files[0]){
+        await whUpdateRecord(id,{qty_issued:rec.qty_requested,status:'issued',issue_doc:issueDoc||''});
+        return;
+      }
+      try{
+        const fileUrl=await _whUploadFile(input.files[0],id,'issue');
+        await whUpdateRecord(id,{qty_issued:rec.qty_requested,status:'issued',issue_doc:issueDoc||'',issue_file_url:fileUrl});
+      }catch(e){
+        console.error('Issue upload:',e);
+        alert('File upload failed but issue recorded.');
+        await whUpdateRecord(id,{qty_issued:rec.qty_requested,status:'issued',issue_doc:issueDoc||''});
+      }
+    };
+    input.click();
+  }else{
+    await whUpdateRecord(id,{qty_issued:rec.qty_requested,status:'issued',issue_doc:issueDoc||''});
+  }
+}
+
+// Attach file to existing record (for adding docs later)
+function whAttachFile(id,docType){
+  const input=document.createElement('input');
+  input.type='file';
+  input.accept='image/*,.pdf';
+  input.onchange=async()=>{
+    if(!input.files||!input.files[0]) return;
+    try{
+      const fileUrl=await _whUploadFile(input.files[0],id,docType);
+      const update={};
+      update[docType+'_file_url']=fileUrl;
+      await whUpdateRecord(id,update);
+    }catch(e){
+      console.error('Attach upload:',e);
+      alert('Upload failed: '+e.message);
+    }
+  };
+  input.click();
 }
 
 function whVerify(id){
