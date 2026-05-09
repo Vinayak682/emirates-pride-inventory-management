@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="cache-bust" content="v20260507-dp-embedded">
+<meta name="cache-bust" content="v20260507-warehouse-v1">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -2483,6 +2483,56 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   <div id="dpBody" style="flex:1;overflow-y:auto;padding:16px;"></div>
 </div>
 
+<!-- ══════════ WAREHOUSE PANEL (Tester Tracker) ══════════ -->
+<div id="whPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:700;display:none;flex-direction:column;">
+  <!-- Header -->
+  <div style="background:#1A1A1A;border-bottom:4px solid #9A7B4F;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+    <div>
+      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">🏭 WAREHOUSE — TESTER TRACKER</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:#AAA;margin-top:2px;">Emirates Pride Perfumes · JAFZA</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="whRefresh()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;">⇅ Refresh</button>
+      <button onclick="doLogout()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">⏻ Logout</button>
+    </div>
+  </div>
+  <!-- Date bar -->
+  <div style="background:#fff;border-bottom:2px solid #E8E4DC;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
+    <span style="font-family:var(--f-mono);font-size:11px;font-weight:600;color:#888;">DATE:</span>
+    <input type="date" id="whDate" style="background:#1A1A1A;color:#E8E4DC;border:1px solid #555;border-radius:6px;padding:6px 12px;font-family:var(--f-mono);font-size:13px;" onchange="whLoadDay()">
+    <button onclick="whNewRequest()" style="background:#9A7B4F;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-family:var(--f-body);font-size:12px;font-weight:600;cursor:pointer;margin-left:auto;">+ New Request</button>
+  </div>
+  <!-- Body -->
+  <div id="whBody" style="flex:1;overflow-y:auto;padding:16px;"></div>
+</div>
+
+<!-- Warehouse: New Request Modal -->
+<div id="whReqModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:950;display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;width:92%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="background:#1A1A1A;border-radius:12px 12px 0 0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:#fff;">New Tester Request</span>
+      <button onclick="whCloseReqModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:18px;overflow-y:auto;flex:1;">
+      <label style="font-size:12px;font-weight:600;color:#888;display:block;margin-bottom:4px;">Store</label>
+      <select id="whReqStore" style="width:100%;padding:10px;border:1.5px solid #E8E4DC;border-radius:8px;font-size:13px;margin-bottom:14px;background:#FAFAF8;"></select>
+      
+      <label style="font-size:12px;font-weight:600;color:#888;display:block;margin-bottom:4px;">Tester SKU</label>
+      <select id="whReqSku" style="width:100%;padding:10px;border:1.5px solid #E8E4DC;border-radius:8px;font-size:13px;margin-bottom:14px;background:#FAFAF8;"></select>
+      
+      <label style="font-size:12px;font-weight:600;color:#888;display:block;margin-bottom:4px;">Quantity Requested</label>
+      <input type="number" id="whReqQty" value="1" min="1" max="20" style="width:100%;padding:10px;border:1.5px solid #E8E4DC;border-radius:8px;font-size:13px;margin-bottom:14px;background:#FAFAF8;box-sizing:border-box;">
+      
+      <label style="font-size:12px;font-weight:600;color:#888;display:block;margin-bottom:4px;">Request Document Ref (optional)</label>
+      <input type="text" id="whReqDoc" placeholder="e.g., REQ-2026-0501" style="width:100%;padding:10px;border:1.5px solid #E8E4DC;border-radius:8px;font-size:13px;margin-bottom:14px;background:#FAFAF8;box-sizing:border-box;">
+    </div>
+    <div style="padding:14px 18px;border-top:1px solid #E8E4DC;display:flex;gap:10px;">
+      <button onclick="whCloseReqModal()" style="flex:1;padding:10px;border:1px solid #E8E4DC;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">Cancel</button>
+      <button onclick="whSubmitRequest()" style="flex:1;padding:10px;border:none;border-radius:8px;background:#9A7B4F;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Create Request</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════ TRANSFER DRAWER ══════════ -->
 <div id="trfDrawer" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);
   display:none;align-items:flex-end;justify-content:center;z-index:960;
@@ -2682,6 +2732,7 @@ const STORES=[
   {code:'SH001', name:'Zahia City Centre Kiosk',      city:'Sharjah',   region:'Sharjah',    mgr:'Mohammed Elmatloub', pin:'6601'},
   {code:'AJ001', name:'Ajman City Centre Kiosk',      city:'Ajman',     region:'Ajman',      mgr:'Mohammed Elmatloub', pin:'7701'},
   {code:'MGR',   name:'Manager (All Access)',          city:'Head Office',region:'HQ',        mgr:'',                   pin:'9999'},
+  {code:'WH001', name:'Warehouse',                    city:'JAFZA',      region:'HQ',        mgr:'',                   pin:'8888'},
 ];
 
 const CATS=[
@@ -3003,7 +3054,10 @@ function buildStoreSelect(){
   });
   const og2=document.createElement('optgroup'); og2.label='── Head Office ──';
   const o2=document.createElement('option'); o2.value='MGR'; o2.textContent='Manager (All Access)';
-  og2.appendChild(o2); sel.appendChild(og2);
+  og2.appendChild(o2);
+  const oWH=document.createElement('option'); oWH.value='WH001'; oWH.textContent='Warehouse';
+  og2.appendChild(oWH);
+  sel.appendChild(og2);
 }
 
 function pk(k){
@@ -3032,6 +3086,15 @@ function doLogin(){
   try{ localStorage.setItem('ep_last_store_v7',code); }catch(e){}
   me=store;
   curDay=DAY_PAST;
+  
+  // ── WAREHOUSE LOGIN → show warehouse panel instead of stock grid
+  if(store.code==='WH001'){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('whPanel').style.display='flex';
+    whInit();
+    return;
+  }
+  
   document.getElementById('loginScreen').style.display='none';
   const app=document.getElementById('appShell');
   app.style.display='flex';
@@ -3073,6 +3136,7 @@ function doLogout(){
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('appShell').style.display='none';
   document.getElementById('dashPanel').style.display='none';
+  document.getElementById('whPanel').style.display='none';
   // Hide MGR-only dashboard buttons
   const mgrDashBtn=document.getElementById('mgrDashBtn');
   if(mgrDashBtn) mgrDashBtn.remove();
@@ -7909,6 +7973,244 @@ ${storeHealth.map(s=>{
 </body></html>`);
   
   w.document.close();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── WAREHOUSE TESTER TRACKER ──────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+let _whData=[];
+const TESTER_SKUS=PRODUCTS.filter(p=>p.code.endsWith('-T'));
+
+function whInit(){
+  // Set date to today
+  const d=document.getElementById('whDate');
+  const today=new Date();
+  d.value=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  // Populate store dropdown in modal
+  const sel=document.getElementById('whReqStore');
+  sel.innerHTML='<option value="">— Select Store —</option>';
+  STORES.filter(s=>s.code!=='MGR'&&s.code!=='WH001').forEach(s=>{
+    sel.innerHTML+=`<option value="${s.code}">${s.name}</option>`;
+  });
+  // Populate SKU dropdown
+  const sku=document.getElementById('whReqSku');
+  sku.innerHTML='<option value="">— Select Tester SKU —</option>';
+  TESTER_SKUS.forEach(p=>{
+    sku.innerHTML+=`<option value="${p.code}">${p.code} — ${p.en}</option>`;
+  });
+  whLoadDay();
+}
+
+async function whLoadDay(){
+  const date=document.getElementById('whDate').value;
+  if(!date) return;
+  const body=document.getElementById('whBody');
+  body.innerHTML='<div style="padding:40px;text-align:center;font-family:var(--f-mono);color:#888;">Loading…</div>';
+  try{
+    const resp=await fetch(_SB_URL+'/rest/v1/tester_transactions?day_date=eq.'+date+'&select=*&order=balance.desc,created_at.desc',{headers:_SBH});
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    _whData=await resp.json();
+  }catch(e){
+    console.error('WH load:',e);
+    _whData=[];
+  }
+  whRender();
+}
+
+function whRender(){
+  const body=document.getElementById('whBody');
+  const date=document.getElementById('whDate').value;
+  if(!_whData.length){
+    body.innerHTML=`<div style="padding:60px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:12px;">📋</div>
+      <div style="font-family:var(--f-mono);font-size:13px;color:#888;">No tester transactions for ${date}</div>
+      <div style="font-size:12px;color:#AAA;margin-top:8px;">Click <strong>+ New Request</strong> to create one</div>
+    </div>`;
+    return;
+  }
+  // Split: open (balance=1) first, resolved (balance=0) collapsed
+  const open=_whData.filter(r=>r.balance===1);
+  const resolved=_whData.filter(r=>r.balance===0);
+  
+  let html='';
+  
+  // Open issues first
+  if(open.length){
+    html+=`<div style="font-family:var(--f-mono);font-size:11px;font-weight:700;color:#EF4444;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">⚠️ Open Issues (${open.length})</div>`;
+    html+=open.map(r=>whRenderCard(r,false)).join('');
+  }
+  
+  // Resolved — collapsed
+  if(resolved.length){
+    html+=`<div style="margin-top:20px;font-family:var(--f-mono);font-size:11px;font-weight:700;color:#22C55E;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';">✅ Resolved (${resolved.length}) — tap to expand</div>`;
+    html+=`<div style="display:none;">`;
+    html+=resolved.map(r=>whRenderCard(r,true)).join('');
+    html+=`</div>`;
+  }
+  
+  body.innerHTML=html;
+}
+
+function whRenderCard(r,isResolved){
+  const store=STORES.find(s=>s.code===r.store_code);
+  const storeName=store?store.name:r.store_code;
+  const prod=TESTER_SKUS.find(p=>p.code===r.sku_code);
+  const prodName=prod?prod.en:r.sku_code;
+  const borderColor=isResolved?'#D1FAE5':'#FEE2E2';
+  const bgColor=isResolved?'#F0FDF4':'#FFF5F5';
+  
+  const statusBadge=r.status==='open'?'<span class="dp-badge dp-badge-red">OPEN</span>'
+    :r.status==='issued'?'<span class="dp-badge dp-badge-amber">ISSUED</span>'
+    :r.status==='verified'?'<span class="dp-badge dp-badge-green">VERIFIED</span>'
+    :'<span class="dp-badge dp-badge-orange">'+r.status.toUpperCase()+'</span>';
+  
+  return `<div style="background:${bgColor};border:1.5px solid ${borderColor};border-radius:10px;padding:14px;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div>
+        <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;">${prodName}</div>
+        <div style="font-family:var(--f-mono);font-size:10px;color:#888;margin-top:2px;">${r.sku_code} · ${storeName}</div>
+      </div>
+      <div style="text-align:right;">
+        ${statusBadge}
+        <div style="font-family:var(--f-mono);font-size:20px;font-weight:800;color:${r.balance===1?'#EF4444':'#22C55E'};margin-top:4px;">BAL: ${r.balance}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px;font-family:var(--f-mono);margin-bottom:8px;">
+      <div style="background:#fff;border:1px solid #E8E4DC;border-radius:6px;padding:8px;text-align:center;">
+        <div style="color:#888;font-size:9px;">REQUESTED</div>
+        <div style="font-size:16px;font-weight:700;">${r.qty_requested}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E8E4DC;border-radius:6px;padding:8px;text-align:center;">
+        <div style="color:#888;font-size:9px;">ISSUED</div>
+        <div style="font-size:16px;font-weight:700;color:${r.qty_issued>0?'#9A7B4F':'#CCC'}">${r.qty_issued}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E8E4DC;border-radius:6px;padding:8px;text-align:center;">
+        <div style="color:#888;font-size:9px;">RETURNED</div>
+        <div style="font-size:16px;font-weight:700;color:${r.qty_returned>0?'#22C55E':'#CCC'}">${r.qty_returned}</div>
+      </div>
+    </div>
+    ${r.remarks?`<div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:6px;padding:8px;font-size:11px;margin-bottom:8px;">📝 ${r.remarks}</div>`:''}
+    ${r.request_doc?`<div style="font-size:10px;color:#888;">📄 Req: ${r.request_doc}</div>`:''}
+    ${r.issue_doc?`<div style="font-size:10px;color:#888;">📄 Issue: ${r.issue_doc}</div>`:''}
+    ${!isResolved?`<div style="display:flex;gap:8px;margin-top:10px;">
+      ${r.status==='open'?`<button onclick="whIssue(${r.id})" style="flex:1;padding:8px;border:none;border-radius:6px;background:#9A7B4F;color:#fff;font-size:11px;font-weight:600;cursor:pointer;">📦 Mark Issued</button>`:''}
+      ${r.status==='issued'?`<button onclick="whVerify(${r.id})" style="flex:1;padding:8px;border:none;border-radius:6px;background:#22C55E;color:#fff;font-size:11px;font-weight:600;cursor:pointer;">✅ Verify Return</button>`:''}
+      <button onclick="whAddRemarks(${r.id})" style="padding:8px 12px;border:1px solid #E8E4DC;border-radius:6px;background:#fff;font-size:11px;cursor:pointer;">📝 Remarks</button>
+      ${r.balance===1&&r.status!=='open'?`<button onclick="whResolve(${r.id})" style="padding:8px 12px;border:none;border-radius:6px;background:#065F46;color:#fff;font-size:11px;font-weight:600;cursor:pointer;">☑ Resolve</button>`:''}
+    </div>`:''}
+  </div>`;
+}
+
+function whNewRequest(){
+  document.getElementById('whReqModal').style.display='flex';
+  document.getElementById('whReqQty').value='1';
+  document.getElementById('whReqDoc').value='';
+}
+
+function whCloseReqModal(){
+  document.getElementById('whReqModal').style.display='none';
+}
+
+async function whSubmitRequest(){
+  const store=document.getElementById('whReqStore').value;
+  const sku=document.getElementById('whReqSku').value;
+  const qty=parseInt(document.getElementById('whReqQty').value)||1;
+  const doc=document.getElementById('whReqDoc').value.trim();
+  const date=document.getElementById('whDate').value;
+  
+  if(!store){alert('Select a store');return;}
+  if(!sku){alert('Select a tester SKU');return;}
+  if(!date){alert('Select a date');return;}
+  
+  const record={
+    day_date:date,
+    store_code:store,
+    sku_code:sku,
+    qty_requested:qty,
+    qty_issued:0,
+    qty_returned:0,
+    balance:1,
+    status:'open',
+    remarks:'',
+    request_doc:doc,
+    issue_doc:''
+  };
+  
+  try{
+    const resp=await fetch(_SB_URL+'/rest/v1/tester_transactions',{
+      method:'POST',
+      headers:{..._SBH,'Prefer':'return=representation'},
+      body:JSON.stringify(record)
+    });
+    if(!resp.ok){
+      const err=await resp.text();
+      if(err.includes('duplicate key')) alert('This SKU already has a request for this store on this date.');
+      else throw new Error(err);
+      return;
+    }
+    whCloseReqModal();
+    await whLoadDay();
+  }catch(e){
+    console.error('WH submit:',e);
+    alert('Error: '+e.message);
+  }
+}
+
+async function whUpdateRecord(id,updates){
+  try{
+    updates.updated_at=new Date().toISOString();
+    const resp=await fetch(_SB_URL+'/rest/v1/tester_transactions?id=eq.'+id,{
+      method:'PATCH',
+      headers:{..._SBH,'Prefer':'return=representation'},
+      body:JSON.stringify(updates)
+    });
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    await whLoadDay();
+  }catch(e){
+    console.error('WH update:',e);
+    alert('Error: '+e.message);
+  }
+}
+
+function whIssue(id){
+  const rec=_whData.find(r=>r.id===id);
+  if(!rec) return;
+  const issueDoc=prompt('Issue Document Ref (optional):','');
+  whUpdateRecord(id,{qty_issued:rec.qty_requested,status:'issued',issue_doc:issueDoc||''});
+}
+
+function whVerify(id){
+  const rec=_whData.find(r=>r.id===id);
+  if(!rec) return;
+  const retQty=prompt('How many empties returned?',String(rec.qty_issued));
+  if(retQty===null) return;
+  const qty=parseInt(retQty)||0;
+  const match=qty===rec.qty_issued;
+  const newBalance=match?0:1;
+  const remarks=match?'':'Qty mismatch: issued '+rec.qty_issued+', returned '+qty;
+  whUpdateRecord(id,{
+    qty_returned:qty,
+    balance:newBalance,
+    status:match?'verified':'issue',
+    remarks:rec.remarks?(rec.remarks+'; '+remarks):remarks
+  });
+}
+
+function whAddRemarks(id){
+  const rec=_whData.find(r=>r.id===id);
+  if(!rec) return;
+  const text=prompt('Add remarks:',rec.remarks||'');
+  if(text===null) return;
+  whUpdateRecord(id,{remarks:text});
+}
+
+function whResolve(id){
+  if(!confirm('Mark as resolved? (Balance → 0)')) return;
+  whUpdateRecord(id,{balance:0,status:'verified'});
+}
+
+function whRefresh(){
+  whLoadDay();
 }
 
 function renderMgrDashboard(){
