@@ -3,689 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>FG Converted to Tester — Emirates Pride Perfumes</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<title>FG to Tester Conversion</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --gold: #C9A44E;
-  --dark: #1A1A1A;
-  --bg: #FAFAF8;
-  --card: #FFFFFF;
-  --border: #E8E4DC;
-  --muted: #888;
-  --red: #D94040;
-  --green: #1B8C4E;
-}
-
-* { margin:0; padding:0; box-sizing:border-box; }
-
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--dark);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Header */
-.header {
-  background: var(--dark);
-  border-bottom: 4px solid var(--gold);
-  padding: 20px 24px;
-  text-align: center;
-}
-
-.header-logo {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--gold);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.header-title {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: #FFFFFF;
-  margin-bottom: 4px;
-}
-
-.header-sub {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: #999;
-  letter-spacing: 0.5px;
-}
-
-/* Container */
-.container {
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 20px 16px 40px;
-}
-
-/* Info banner */
-.info-banner {
-  background: linear-gradient(135deg, #FFF9ED 0%, #FFF5E0 100%);
-  border: 1px solid #E8D5A8;
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 24px;
-  font-size: 13px;
-  color: #7A6530;
-  line-height: 1.5;
-}
-
-.info-banner strong {
-  color: var(--dark);
-}
-
-/* Form */
-.field {
-  margin-bottom: 20px;
-}
-
-.field-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-}
-
-.field-required::after {
-  content: ' *';
-  color: var(--red);
-}
-
-select, input[type="text"], input[type="number"] {
-  width: 100%;
-  padding: 14px 16px;
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
-  color: var(--dark);
-  background: var(--card);
-  outline: none;
-  transition: border-color 0.2s;
-  -webkit-appearance: none;
-}
-
-select:focus, input:focus {
-  border-color: var(--gold);
-}
-
-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23C9A44E' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  padding-right: 36px;
-}
-
-/* Items table */
-.items-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.items-title {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.add-btn {
-  background: var(--gold);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.add-btn:hover { background: #B8933F; }
-
-.item-card {
-  background: var(--card);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 10px;
-  position: relative;
-}
-
-.item-card-row {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-}
-
-.item-card-row .field {
-  flex: 1;
-  margin-bottom: 0;
-}
-
-.item-card-row .field.qty {
-  flex: 0 0 80px;
-}
-
-.remove-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: none;
-  border: none;
-  color: #CCC;
-  font-size: 18px;
-  cursor: pointer;
-  line-height: 1;
-  padding: 4px;
-}
-
-.remove-btn:hover { color: var(--red); }
-
-/* Remarks */
-textarea {
-  width: 100%;
-  padding: 14px 16px;
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  color: var(--dark);
-  background: var(--card);
-  outline: none;
-  resize: vertical;
-  min-height: 80px;
-  transition: border-color 0.2s;
-}
-
-textarea:focus { border-color: var(--gold); }
-
-/* Submit */
-.submit-btn {
-  width: 100%;
-  padding: 16px;
-  border: none;
-  border-radius: 12px;
-  background: var(--dark);
-  color: #FFFFFF;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 24px;
-  transition: all 0.2s;
-  letter-spacing: 0.5px;
-}
-
-.submit-btn:hover { background: #333; transform: translateY(-1px); }
-.submit-btn:active { transform: translateY(0); }
-.submit-btn:disabled { background: #CCC; cursor: not-allowed; transform: none; }
-
-/* Timestamp preview */
-.timestamp {
-  text-align: center;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 12px;
-}
-
-/* Success screen */
-.success {
-  display: none;
-  text-align: center;
-  padding: 60px 20px;
-}
-
-.success-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.success-title {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.success-sub {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.6;
-  margin-bottom: 24px;
-}
-
-.new-btn {
-  background: var(--gold);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 14px 28px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#F5F3EF;color:#1A1A1A;min-height:100vh;-webkit-tap-highlight-color:transparent;}
+.hdr{background:#1A1A1A;border-bottom:3px solid #C9A44E;padding:16px 20px;text-align:center;}
+.hdr h1{color:#fff;font-size:17px;font-weight:700;margin-bottom:2px;}
+.hdr p{color:#C9A44E;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;}
+.wrap{max-width:500px;margin:0 auto;padding:16px 14px 60px;}
+.note{background:#FFF9ED;border:1px solid #E8D5A8;border-radius:10px;padding:12px 14px;font-size:12px;color:#7A6530;line-height:1.5;margin-bottom:20px;}
+.note b{color:#1A1A1A;}
+.lbl{display:block;font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;}
+.req{color:#D94040;}
+.fld{margin-bottom:18px;}
+select,input[type="text"],input[type="number"],textarea{width:100%;padding:13px 14px;border:2px solid #E0DDD6;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;color:#1A1A1A;background:#FFFFFF;outline:none;-webkit-appearance:none;appearance:none;transition:border-color 0.15s;}
+select:focus,input:focus,textarea:focus{border-color:#C9A44E;}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A44E' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:34px;}
+textarea{resize:vertical;min-height:70px;}
+input[type="number"]{text-align:center;}
+.items-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.items-hdr h2{font-size:15px;font-weight:700;}
+.add{background:#C9A44E;color:#fff;border:none;border-radius:8px;padding:9px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+.item{background:#fff;border:1.5px solid #E0DDD6;border-radius:10px;padding:12px;margin-bottom:10px;position:relative;}
+.item-row{display:flex;gap:10px;align-items:flex-end;}
+.item-row .fld{flex:1;margin-bottom:0;}
+.item-row .fld.q{flex:0 0 72px;}
+.del{position:absolute;top:6px;right:8px;background:none;border:none;color:#CCC;font-size:22px;cursor:pointer;padding:4px 8px;line-height:1;}
+.del:hover{color:#D94040;}
+.btn{width:100%;padding:16px;border:none;border-radius:12px;background:#1A1A1A;color:#FFFFFF;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;}
+.btn:active{background:#333;transform:scale(0.98);}
+.btn:disabled{background:#BBB;cursor:not-allowed;transform:none;}
+.btn.gold{background:#C9A44E;color:#fff;}
+.ts{text-align:center;font-size:10px;color:#AAA;margin-top:10px;font-family:monospace;}
+.ok{display:none;text-align:center;padding:50px 20px;}
+.ok-icon{font-size:56px;margin-bottom:14px;}
+.ok h2{font-size:20px;margin-bottom:8px;}
+.ok p{font-size:13px;color:#888;line-height:1.6;margin-bottom:20px;}
+.step2{display:none;}
+.preview{background:#fff;border:1.5px solid #E0DDD6;border-radius:10px;padding:16px;margin-bottom:20px;font-size:13px;line-height:1.7;}
+.preview .row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #F0EDE6;}
+.preview .row:last-child{border-bottom:none;}
+.preview .row b{color:#1A1A1A;}
+.preview .row span{color:#888;}
+.preview .section{font-weight:700;font-size:11px;color:#C9A44E;text-transform:uppercase;letter-spacing:1px;margin-top:12px;margin-bottom:4px;}
 </style>
 </head>
 <body>
-
-<div class="header">
-  <div class="header-logo">Emirates Pride Perfumes</div>
-  <div class="header-title">FG Converted to Tester</div>
-  <div class="header-sub">Store Conversion Request Form</div>
+<div class="hdr">
+  <p>Emirates Pride Perfumes</p>
+  <h1>FG Converted to Tester</h1>
 </div>
-
-<div class="container">
-
-  <!-- Form -->
-  <div id="formSection">
-    <div class="info-banner">
-      <strong>When to use this form:</strong> When a tester cannot be sent from the warehouse and your store needs to convert a Finished Good (FG) unit from store stock into a tester. Fill this form for every conversion — it will be documented and sent to the Demand Planning team.
-    </div>
-
-    <div class="field">
-      <label class="field-label field-required">Store Name</label>
-      <select id="storeName">
-        <option value="">— Select your store —</option>
-        <optgroup label="── ABU DHABI ──">
-          <option>Bawabat al Sharq Mall Shop</option>
-          <option>Bawabat al Sharq Mall Kiosk</option>
-          <option>Bawabat al Sharq Kiosk ASL</option>
-          <option>Dalma Mall Shop</option>
-          <option>Dalma Mall Kiosk</option>
-          <option>Deerfield Mall Kiosk</option>
-          <option>Yas Mall Podium</option>
-          <option>Yas Mall Kiosk 2</option>
-          <option>Yas Mall Kiosk 3</option>
-          <option>Yas Mall ASL</option>
-        </optgroup>
-        <optgroup label="── AL AIN ──">
-          <option>Al Ain Mall Kiosk</option>
-          <option>Bawadi Mall Kiosk 1</option>
-          <option>Bawadi Mall Kiosk 2</option>
-          <option>Bawadi Mall ASL</option>
-          <option>Jimi Mall Shop</option>
-          <option>Makhani Zakhar Mall Shop</option>
-          <option>Makhani Zakhar Mall ASL</option>
-        </optgroup>
-        <optgroup label="── DUBAI ──">
-          <option>Dubai Mall Shop</option>
-          <option>Mall of the Emirates Kiosk</option>
-          <option>Mirdif City Centre Kiosk</option>
-          <option>Dubai Hills Mall Shop</option>
-        </optgroup>
-        <optgroup label="── RAK ──">
-          <option>Manar Mall Shop</option>
-          <option>Manar Mall Kiosk</option>
-        </optgroup>
-        <optgroup label="── FUJAIRAH ──">
-          <option>Fujairah City Centre Kiosk</option>
-          <option>Fujairah City Centre ASL</option>
-        </optgroup>
-        <optgroup label="── SHARJAH ──">
-          <option>Zahia City Centre Kiosk</option>
-        </optgroup>
-        <optgroup label="── AJMAN ──">
-          <option>Ajman City Centre Kiosk</option>
-        </optgroup>
+<div class="wrap">
+  <div id="step1">
+    <div class="note"><b>When to use:</b> When a tester cannot be sent from the warehouse and your store converts a Finished Good (FG) into a tester. Fill this form for every conversion.</div>
+    <div class="fld"><label class="lbl">Store Name <span class="req">*</span></label>
+      <select id="f_store"><option value="">Tap to select your store</option>
+        <optgroup label="── ABU DHABI ──"><option>Bawabat al Sharq Mall Shop</option><option>Bawabat al Sharq Mall Kiosk</option><option>Bawabat al Sharq Kiosk ASL</option><option>Dalma Mall Shop</option><option>Dalma Mall Kiosk</option><option>Deerfield Mall Kiosk</option><option>Yas Mall Podium</option><option>Yas Mall Kiosk 2</option><option>Yas Mall Kiosk 3</option><option>Yas Mall ASL</option></optgroup>
+        <optgroup label="── AL AIN ──"><option>Al Ain Mall Kiosk</option><option>Bawadi Mall Kiosk 1</option><option>Bawadi Mall Kiosk 2</option><option>Bawadi Mall ASL</option><option>Jimi Mall Shop</option><option>Makhani Zakhar Mall Shop</option><option>Makhani Zakhar Mall ASL</option></optgroup>
+        <optgroup label="── DUBAI ──"><option>Dubai Mall Shop</option><option>Mall of the Emirates Kiosk</option><option>Mirdif City Centre Kiosk</option><option>Dubai Hills Mall Shop</option></optgroup>
+        <optgroup label="── RAK ──"><option>Manar Mall Shop</option><option>Manar Mall Kiosk</option></optgroup>
+        <optgroup label="── FUJAIRAH ──"><option>Fujairah City Centre Kiosk</option><option>Fujairah City Centre ASL</option></optgroup>
+        <optgroup label="── SHARJAH ──"><option>Zahia City Centre Kiosk</option></optgroup>
+        <optgroup label="── AJMAN ──"><option>Ajman City Centre Kiosk</option></optgroup>
       </select>
     </div>
-
-    <div class="field">
-      <label class="field-label field-required">Submitted By (Your Name)</label>
-      <input type="text" id="submittedBy" placeholder="e.g., Ahmed">
-    </div>
-
-    <!-- Line items -->
-    <div class="items-header">
-      <div class="items-title">Products Converted</div>
-      <button class="add-btn" onclick="addItem()">+ Add Product</button>
-    </div>
-
-    <div id="itemsContainer">
-      <!-- Items will be added here -->
-    </div>
-
-    <div class="field" style="margin-top:20px;">
-      <label class="field-label">Remarks (optional)</label>
-      <textarea id="remarks" placeholder="e.g., Tester for Maroon was cracked, converted FG as replacement"></textarea>
-    </div>
-
-    <button class="submit-btn" id="submitBtn" onclick="submitForm()">Submit & Generate PDF</button>
-    <div class="timestamp" id="timestampPreview"></div>
+    <div class="fld"><label class="lbl">Your Name <span class="req">*</span></label><input type="text" id="f_name" placeholder="e.g., Ahmed"></div>
+    <div class="items-hdr"><h2>Products Converted</h2><button class="add" onclick="addRow()">+ Add</button></div>
+    <div id="rows"></div>
+    <div class="fld" style="margin-top:18px;"><label class="lbl">Reason / Remarks</label><textarea id="f_remarks" placeholder="e.g., Maroon tester cracked, converted FG as replacement"></textarea></div>
+    <button class="btn" onclick="goPreview()">Review & Submit →</button>
+    <div class="ts" id="ts1"></div>
   </div>
-
-  <!-- Success -->
-  <div id="successSection" class="success">
-    <div class="success-icon">✅</div>
-    <div class="success-title">Submitted Successfully</div>
-    <div class="success-sub">PDF has been generated and sent to the Demand Planning team.<br>A copy has been downloaded to your device.</div>
-    <button class="new-btn" onclick="resetForm()">Submit Another</button>
+  <div id="step2" class="step2">
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Confirm Details</div>
+    <div class="preview" id="previewBox"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn" style="background:#E0DDD6;color:#1A1A1A;flex:1;" onclick="backToForm()">← Edit</button>
+      <button class="btn gold" style="flex:2;" id="confirmBtn" onclick="doSubmit()">✓ Submit & Send</button>
+    </div>
+    <div class="ts" id="ts2"></div>
   </div>
-
+  <div id="step3" class="ok">
+    <div class="ok-icon">✅</div>
+    <h2>Submitted!</h2>
+    <p>PDF downloaded to your device.<br>Email opened to <b>demand.planner@emiratespride.ae</b><br>Please attach the PDF and tap Send.</p>
+    <button class="btn gold" onclick="resetAll()">Submit Another</button>
+  </div>
 </div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-// Products list (non-tester FG products that could be converted)
-const PRODUCTS = [
-  "White 100ml Perfume","Maroon 100ml Perfume","Navy Perfume 100ml","Violet 100ml Perfume",
-  "Maroon Intense","White Overdose","Caballo Green","No.4","Black Perfume 100ml",
-  "Bergamot bel Amber","Jasmine bel Musk","Amber Bel Oud","Peaceful Life","Midnight Glow",
-  "Midnight Bloom 100ml","Golden Chance","Meydan","Mystery","Mersal","Sakura","Vetiveria",
-  "Ambergris","Arabica","Firewood","Hidden Leather","Mysterious Rose","Thekrayat",
-  "Hidden Tobacco","Masters Perfume 100ml","Master Signature",
-  "Oud Amiri","Oud Meydan","Oud Al Emarat","Oud Al Fakhamah",
-  "Oud Hindi Malaki — White Box","Oud Hindi Khas — Black Box",
-  "Dakhoon Al Emarat","Dakhoon Badia","Dakhoon Al Marasim","Dakhoon Al Dar",
-  "Dakhoon Al Barzah","Dakhoon Retaj",
-  "Hindi Special","Seufi Special","White Oil 8ml","Maroon Oil 8ml","No.4 Oil 8ml","Musk Oil 8ml",
-  "Future Bakhoor 100ml","Future Oud 100ml","Reflection",
-  "More of Oud","White Oud Set Box (NEW)","Discovery Set"
-];
-
-let itemCount = 0;
-
-function addItem() {
-  itemCount++;
-  const id = itemCount;
-  const container = document.getElementById('itemsContainer');
-  
-  const card = document.createElement('div');
-  card.className = 'item-card';
-  card.id = 'item-' + id;
-  
-  let opts = '<option value="">— Select Product —</option>';
-  PRODUCTS.forEach(p => {
-    opts += `<option value="${p}">${p}</option>`;
-  });
-  
-  card.innerHTML = `
-    <button class="remove-btn" onclick="removeItem(${id})" title="Remove">&times;</button>
-    <div class="item-card-row">
-      <div class="field">
-        <label class="field-label field-required">Product</label>
-        <select id="product-${id}" style="font-size:13px;padding:12px;">${opts}</select>
-      </div>
-      <div class="field qty">
-        <label class="field-label field-required">Qty</label>
-        <input type="number" id="qty-${id}" value="1" min="1" max="50" style="text-align:center;padding:12px 8px;">
-      </div>
-    </div>
-  `;
-  
-  container.appendChild(card);
-}
-
-function removeItem(id) {
-  const card = document.getElementById('item-' + id);
-  if (card) card.remove();
-}
-
-function getTimestamp() {
-  const now = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-}
-
-// Update timestamp preview
-setInterval(() => {
-  const el = document.getElementById('timestampPreview');
-  if (el) el.textContent = 'Timestamp: ' + getTimestamp() + ' (UAE Time)';
-}, 1000);
-
-function collectFormData() {
-  const store = document.getElementById('storeName').value;
-  const submittedBy = document.getElementById('submittedBy').value.trim();
-  const remarks = document.getElementById('remarks').value.trim();
-  
-  if (!store) { alert('Please select your store'); return null; }
-  if (!submittedBy) { alert('Please enter your name'); return null; }
-  
-  // Collect items
-  const items = [];
-  document.querySelectorAll('.item-card').forEach(card => {
-    const id = card.id.replace('item-', '');
-    const product = document.getElementById('product-' + id)?.value;
-    const qty = parseInt(document.getElementById('qty-' + id)?.value) || 0;
-    if (product && qty > 0) {
-      items.push({ product, qty });
-    }
-  });
-  
-  if (items.length === 0) { alert('Please add at least one product'); return null; }
-  
-  return {
-    store,
-    submittedBy,
-    items,
-    remarks,
-    timestamp: getTimestamp(),
-    refNo: 'FGT-' + Date.now().toString(36).toUpperCase()
-  };
-}
-
-function generatePDF(data) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p', 'mm', 'a4');
-  const W = 210;
-  let y = 15;
-  
-  // Header bar
-  doc.setFillColor(26, 26, 26);
-  doc.rect(0, 0, W, 32, 'F');
-  doc.setFillColor(201, 164, 78);
-  doc.rect(0, 32, W, 2, 'F');
-  
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(201, 164, 78);
-  doc.setFontSize(8);
-  doc.text('EMIRATES PRIDE PERFUMES', W/2, 10, { align: 'center' });
-  
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(16);
-  doc.text('FG CONVERTED TO TESTER', W/2, 19, { align: 'center' });
-  
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text('Store Conversion Documentation', W/2, 27, { align: 'center' });
-  
-  y = 42;
-  
-  // Reference and timestamp
-  doc.setFillColor(250, 248, 245);
-  doc.rect(15, y - 4, W - 30, 20, 'F');
-  doc.setDrawColor(232, 228, 220);
-  doc.rect(15, y - 4, W - 30, 20, 'S');
-  
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(26, 26, 26);
-  doc.setFontSize(9);
-  doc.text('Ref No:', 20, y + 2);
-  doc.setFont('helvetica', 'normal');
-  doc.text(data.refNo, 42, y + 2);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Date/Time:', 110, y + 2);
-  doc.setFont('helvetica', 'normal');
-  doc.text(data.timestamp + ' (UAE)', 135, y + 2);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Store:', 20, y + 10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(data.store, 42, y + 10);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Submitted By:', 110, y + 10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(data.submittedBy, 143, y + 10);
-  
-  y += 26;
-  
-  // Products table header
-  doc.setFillColor(26, 26, 26);
-  doc.rect(15, y, W - 30, 8, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(8);
-  doc.text('#', 20, y + 5.5);
-  doc.text('PRODUCT NAME', 30, y + 5.5);
-  doc.text('QTY', 170, y + 5.5, { align: 'center' });
-  
-  y += 8;
-  
-  // Products rows
-  let totalQty = 0;
-  data.items.forEach((item, i) => {
-    const bg = i % 2 === 0 ? [255, 255, 255] : [250, 248, 245];
-    doc.setFillColor(...bg);
-    doc.rect(15, y, W - 30, 8, 'F');
-    doc.setDrawColor(232, 228, 220);
-    doc.line(15, y + 8, W - 15, y + 8);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(26, 26, 26);
-    doc.setFontSize(9);
-    doc.text(String(i + 1), 20, y + 5.5);
-    doc.text(item.product, 30, y + 5.5);
-    doc.setFont('helvetica', 'bold');
-    doc.text(String(item.qty), 170, y + 5.5, { align: 'center' });
-    
-    totalQty += item.qty;
-    y += 8;
-  });
-  
-  // Total row
-  doc.setFillColor(26, 26, 26);
-  doc.rect(15, y, W - 30, 8, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(201, 164, 78);
-  doc.setFontSize(9);
-  doc.text('TOTAL', 30, y + 5.5);
-  doc.text(String(totalQty), 170, y + 5.5, { align: 'center' });
-  
-  y += 16;
-  
-  // Remarks
-  if (data.remarks) {
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(26, 26, 26);
-    doc.setFontSize(9);
-    doc.text('REMARKS:', 20, y);
-    y += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(80, 80, 80);
-    const lines = doc.splitTextToSize(data.remarks, W - 40);
-    doc.text(lines, 20, y);
-    y += lines.length * 5 + 8;
-  }
-  
-  // Signature area
-  y = Math.max(y, 200);
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.3);
-  
-  // Left: Store signature
-  doc.line(20, y + 15, 90, y + 15);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(150, 150, 150);
-  doc.setFontSize(8);
-  doc.text('Store Staff Signature', 55, y + 20, { align: 'center' });
-  
-  // Right: Warehouse signature
-  doc.line(120, y + 15, 190, y + 15);
-  doc.text('Warehouse Verification', 155, y + 20, { align: 'center' });
-  
-  // Footer
-  doc.setFillColor(250, 248, 245);
-  doc.rect(0, 277, W, 20, 'F');
-  doc.setDrawColor(232, 228, 220);
-  doc.line(0, 277, W, 277);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(150, 150, 150);
-  doc.setFontSize(7);
-  doc.text('Emirates Pride Perfumes · JAFZA · This document is auto-generated for inventory audit purposes', W/2, 283, { align: 'center' });
-  doc.text('Ref: ' + data.refNo + ' · Generated: ' + data.timestamp, W/2, 288, { align: 'center' });
-  
-  return doc;
-}
-
-async function submitForm() {
-  const data = collectFormData();
-  if (!data) return;
-  
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = 'Generating PDF…';
-  
-  try {
-    // Generate PDF
-    const pdf = generatePDF(data);
-    const filename = `FG_Converted_to_Tester_${data.store.replace(/\s+/g, '_')}_${data.timestamp.split(' ')[0]}.pdf`;
-    
-    // Download PDF
-    pdf.save(filename);
-    
-    // Send email via EmailJS or mailto fallback
-    const subject = encodeURIComponent(`FG Converted to Tester — ${data.store} — ${data.timestamp.split(' ')[0]}`);
-    const body = encodeURIComponent(
-      `FG Converted to Tester\n` +
-      `Ref: ${data.refNo}\n` +
-      `Store: ${data.store}\n` +
-      `Submitted By: ${data.submittedBy}\n` +
-      `Date/Time: ${data.timestamp}\n\n` +
-      `Products:\n` +
-      data.items.map((item, i) => `${i+1}. ${item.product} — Qty: ${item.qty}`).join('\n') +
-      `\n\nTotal Qty: ${data.items.reduce((s, i) => s + i.qty, 0)}` +
-      (data.remarks ? `\n\nRemarks: ${data.remarks}` : '') +
-      `\n\n—\nPDF attached separately (downloaded to device).`
-    );
-    
-    // Open email client with pre-filled data
-    window.location.href = `mailto:vinayak.bhadani@emiratespride.com?subject=${subject}&body=${body}`;
-    
-    // Show success
-    document.getElementById('formSection').style.display = 'none';
-    document.getElementById('successSection').style.display = 'block';
-    
-  } catch (e) {
-    console.error('Submit error:', e);
-    alert('Error: ' + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Submit & Generate PDF';
-  }
-}
-
-function resetForm() {
-  document.getElementById('formSection').style.display = 'block';
-  document.getElementById('successSection').style.display = 'none';
-  document.getElementById('storeName').value = '';
-  document.getElementById('submittedBy').value = '';
-  document.getElementById('remarks').value = '';
-  document.getElementById('itemsContainer').innerHTML = '';
-  itemCount = 0;
-  addItem(); // Start with one item
-}
-
-// Initialize with one item row
-addItem();
+const PRODUCTS=["White 100ml Perfume","Maroon 100ml Perfume","Navy Perfume 100ml","Violet 100ml Perfume","Maroon Intense","White Overdose","Caballo Green","No.4","Black Perfume 100ml","Bergamot bel Amber","Jasmine bel Musk","Amber Bel Oud","Peaceful Life","Midnight Glow","Midnight Bloom 100ml","Golden Chance","Meydan","Mystery","Mersal","Sakura","Vetiveria","Ambergris","Arabica","Firewood","Hidden Leather","Mysterious Rose","Thekrayat","Hidden Tobacco","Masters Perfume 100ml","Master Signature","Oud Amiri","Oud Meydan","Oud Al Emarat","Oud Al Fakhamah","Oud Hindi Malaki","Oud Hindi Khas","Dakhoon Al Emarat","Dakhoon Badia","Dakhoon Al Marasim","Dakhoon Al Dar","Dakhoon Al Barzah","Dakhoon Retaj","Hindi Special","Seufi Special","White Oil 8ml","Maroon Oil 8ml","No.4 Oil 8ml","Musk Oil 8ml","Future Bakhoor 100ml","Future Oud 100ml","Reflection","More of Oud","White Oud Set Box","Discovery Set"];
+let n=0,formData=null;
+function opts(){let h='<option value="">Select product</option>';PRODUCTS.forEach(p=>{h+='<option value="'+p+'">'+p+'</option>';});return h;}
+function addRow(){n++;const d=document.createElement('div');d.className='item';d.id='r'+n;d.innerHTML='<button class="del" onclick="this.parentElement.remove()">&times;</button><div class="item-row"><div class="fld"><label class="lbl">Product <span class="req">*</span></label><select id="p'+n+'" style="font-size:14px;padding:11px 14px;">'+opts()+'</select></div><div class="fld q"><label class="lbl">Qty <span class="req">*</span></label><input type="number" id="q'+n+'" value="1" min="1" max="50"></div></div>';document.getElementById('rows').appendChild(d);}
+function now(){const d=new Date(),p=x=>String(x).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
+setInterval(()=>{const t=now()+' UAE';const e1=document.getElementById('ts1');if(e1)e1.textContent=t;const e2=document.getElementById('ts2');if(e2)e2.textContent=t;},1000);
+function collectItems(){const items=[];document.querySelectorAll('.item').forEach(card=>{const id=card.id.replace('r','');const p=document.getElementById('p'+id);const q=document.getElementById('q'+id);if(p&&p.value&&q)items.push({product:p.value,qty:parseInt(q.value)||1});});return items;}
+function goPreview(){const store=document.getElementById('f_store').value;const name=document.getElementById('f_name').value.trim();const items=collectItems();const remarks=document.getElementById('f_remarks').value.trim();if(!store){alert('Please select your store');return;}if(!name){alert('Please enter your name');return;}if(!items.length){alert('Please add at least one product');return;}const ref='FGT-'+Date.now().toString(36).toUpperCase();formData={store,name,items,remarks,ref,timestamp:now()};let total=0;let html='<div class="row"><span>Ref No</span><b>'+ref+'</b></div><div class="row"><span>Store</span><b>'+store+'</b></div><div class="row"><span>Submitted By</span><b>'+name+'</b></div><div class="row"><span>Date/Time</span><b>'+formData.timestamp+' UAE</b></div><div class="section" style="margin-top:14px;">Products</div>';items.forEach((item,i)=>{total+=item.qty;html+='<div class="row"><span>'+(i+1)+'. '+item.product+'</span><b>&times;'+item.qty+'</b></div>';});html+='<div class="row" style="border-top:2px solid #E0DDD6;margin-top:6px;padding-top:8px;"><span style="font-weight:700;color:#1A1A1A;">Total</span><b style="color:#C9A44E;font-size:16px;">'+total+'</b></div>';if(remarks)html+='<div class="section" style="margin-top:14px;">Remarks</div><div style="color:#666;font-size:12px;">'+remarks+'</div>';document.getElementById('previewBox').innerHTML=html;document.getElementById('step1').style.display='none';document.getElementById('step2').style.display='block';window.scrollTo(0,0);}
+function backToForm(){document.getElementById('step1').style.display='block';document.getElementById('step2').style.display='none';window.scrollTo(0,0);}
+function makePDF(d){const{jsPDF}=window.jspdf;const doc=new jsPDF('p','mm','a4');const W=210;let y=15;doc.setFillColor(26,26,26);doc.rect(0,0,W,30,'F');doc.setFillColor(201,164,78);doc.rect(0,30,W,2,'F');doc.setFont('helvetica','bold');doc.setTextColor(201,164,78);doc.setFontSize(8);doc.text('EMIRATES PRIDE PERFUMES',W/2,10,{align:'center'});doc.setTextColor(255,255,255);doc.setFontSize(15);doc.text('FG CONVERTED TO TESTER',W/2,19,{align:'center'});doc.setFontSize(8);doc.setTextColor(150,150,150);doc.text('Store Conversion Documentation',W/2,26,{align:'center'});y=40;doc.setFillColor(250,248,245);doc.setDrawColor(232,228,220);doc.roundedRect(15,y-4,(W-30),22,3,3,'FD');doc.setFont('helvetica','bold');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text('Ref:',20,y+2);doc.setFont('helvetica','normal');doc.text(d.ref,32,y+2);doc.setFont('helvetica','bold');doc.text('Date/Time:',110,y+2);doc.setFont('helvetica','normal');doc.text(d.timestamp+' UAE',140,y+2);doc.setFont('helvetica','bold');doc.text('Store:',20,y+12);doc.setFont('helvetica','normal');doc.text(d.store,36,y+12);doc.setFont('helvetica','bold');doc.text('Submitted By:',110,y+12);doc.setFont('helvetica','normal');doc.text(d.name,143,y+12);y+=28;doc.setFillColor(26,26,26);doc.rect(15,y,W-30,9,'F');doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);doc.setFontSize(8);doc.text('#',20,y+6);doc.text('PRODUCT NAME',30,y+6);doc.text('QTY',175,y+6,{align:'center'});y+=9;let total=0;d.items.forEach((item,i)=>{const bg=i%2===0?[255,255,255]:[250,248,245];doc.setFillColor(...bg);doc.rect(15,y,W-30,9,'F');doc.setDrawColor(232,228,220);doc.line(15,y+9,W-15,y+9);doc.setFont('helvetica','normal');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text(String(i+1),20,y+6);doc.text(item.product,30,y+6);doc.setFont('helvetica','bold');doc.text(String(item.qty),175,y+6,{align:'center'});total+=item.qty;y+=9;});doc.setFillColor(26,26,26);doc.rect(15,y,W-30,9,'F');doc.setFont('helvetica','bold');doc.setTextColor(201,164,78);doc.setFontSize(9);doc.text('TOTAL',30,y+6);doc.text(String(total),175,y+6,{align:'center'});y+=18;if(d.remarks){doc.setFont('helvetica','bold');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text('REMARKS:',20,y);y+=5;doc.setFont('helvetica','normal');doc.setTextColor(80,80,80);doc.setFontSize(9);const lines=doc.splitTextToSize(d.remarks,W-40);doc.text(lines,20,y);y+=lines.length*5+10;}y=Math.max(y+10,210);doc.setDrawColor(200,200,200);doc.setLineWidth(0.3);doc.line(20,y,90,y);doc.line(120,y,190,y);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.setFontSize(8);doc.text('Store Staff Signature',55,y+5,{align:'center'});doc.text('Warehouse Verification',155,y+5,{align:'center'});doc.setFillColor(250,248,245);doc.rect(0,280,W,17,'F');doc.setDrawColor(232,228,220);doc.line(0,280,W,280);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.setFontSize(7);doc.text('Emirates Pride Perfumes \u00B7 JAFZA \u00B7 Auto-generated for inventory audit',W/2,286,{align:'center'});doc.text('Ref: '+d.ref+' \u00B7 Generated: '+d.timestamp+' UAE',W/2,291,{align:'center'});return doc;}
+function doSubmit(){const btn=document.getElementById('confirmBtn');btn.disabled=true;btn.textContent='Generating PDF...';setTimeout(()=>{try{const d=formData;const pdf=makePDF(d);const fname='FG_to_Tester_'+d.store.replace(/\s+/g,'_')+'_'+d.timestamp.split(' ')[0]+'.pdf';pdf.save(fname);let total=0;let itemsText=d.items.map((it,i)=>{total+=it.qty;return(i+1)+'. '+it.product+' - Qty: '+it.qty;}).join('\n');const subject='FG Converted to Tester - '+d.store+' - '+d.timestamp.split(' ')[0];const body='FG CONVERTED TO TESTER\n========================\n\nRef: '+d.ref+'\nStore: '+d.store+'\nSubmitted By: '+d.name+'\nDate/Time: '+d.timestamp+' UAE\n\nPRODUCTS CONVERTED:\n'+itemsText+'\n\nTotal Qty: '+total+(d.remarks?'\n\nRemarks: '+d.remarks:'')+'\n\n========================\nPDF attached separately.\nPlease attach the downloaded PDF before sending.';document.getElementById('step2').style.display='none';document.getElementById('step3').style.display='block';window.scrollTo(0,0);setTimeout(()=>{window.open('mailto:demand.planner@emiratespride.ae?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body),'_blank');},1500);}catch(e){console.error(e);alert('Error: '+e.message);}finally{btn.disabled=false;btn.textContent='\u2713 Submit & Send';}},100);}
+function resetAll(){document.getElementById('step1').style.display='block';document.getElementById('step2').style.display='none';document.getElementById('step3').style.display='none';document.getElementById('f_store').value='';document.getElementById('f_name').value='';document.getElementById('f_remarks').value='';document.getElementById('rows').innerHTML='';n=0;formData=null;addRow();window.scrollTo(0,0);}
+addRow();
 </script>
 </body>
 </html>
