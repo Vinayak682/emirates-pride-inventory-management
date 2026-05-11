@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -47,6 +47,8 @@ input[type="number"]{text-align:center;}
 .preview .row b{color:#1A1A1A;}
 .preview .row span{color:#888;}
 .preview .section{font-weight:700;font-size:11px;color:#C9A44E;text-transform:uppercase;letter-spacing:1px;margin-top:12px;margin-bottom:4px;}
+/* Bilingual option styling */
+.opt-ar{float:right;color:#999;font-size:13px;direction:rtl;}
 </style>
 </head>
 <body>
@@ -57,53 +59,142 @@ input[type="number"]{text-align:center;}
 <div class="wrap">
   <div id="step1">
     <div class="note"><b>When to use:</b> When a tester cannot be sent from the warehouse and your store converts a Finished Good (FG) into a tester. Fill this form for every conversion.</div>
-    <div class="fld"><label class="lbl">Store Name <span class="req">*</span></label>
-      <select id="f_store"><option value="">Tap to select your store</option>
-        <optgroup label="── ABU DHABI ──"><option>Bawabat al Sharq Mall Shop</option><option>Bawabat al Sharq Mall Kiosk</option><option>Bawabat al Sharq Kiosk ASL</option><option>Dalma Mall Shop</option><option>Dalma Mall Kiosk</option><option>Deerfield Mall Kiosk</option><option>Yas Mall Podium</option><option>Yas Mall Kiosk 2</option><option>Yas Mall Kiosk 3</option><option>Yas Mall ASL</option></optgroup>
-        <optgroup label="── AL AIN ──"><option>Al Ain Mall Kiosk</option><option>Bawadi Mall Kiosk 1</option><option>Bawadi Mall Kiosk 2</option><option>Bawadi Mall ASL</option><option>Jimi Mall Shop</option><option>Makhani Zakhar Mall Shop</option><option>Makhani Zakhar Mall ASL</option></optgroup>
-        <optgroup label="── DUBAI ──"><option>Dubai Mall Shop</option><option>Mall of the Emirates Kiosk</option><option>Mirdif City Centre Kiosk</option><option>Dubai Hills Mall Shop</option></optgroup>
-        <optgroup label="── RAK ──"><option>Manar Mall Shop</option><option>Manar Mall Kiosk</option></optgroup>
-        <optgroup label="── FUJAIRAH ──"><option>Fujairah City Centre Kiosk</option><option>Fujairah City Centre ASL</option></optgroup>
-        <optgroup label="── SHARJAH ──"><option>Zahia City Centre Kiosk</option></optgroup>
-        <optgroup label="── AJMAN ──"><option>Ajman City Centre Kiosk</option></optgroup>
+    <div class="fld"><label class="lbl">Store Name / اسم المتجر <span class="req">*</span></label>
+      <select id="f_store"><option value="">Tap to select your store / اختر متجرك</option>
+        <optgroup label="── أبوظبي ABU DHABI ──">
+          <option value="Bawabat al Sharq Mall Shop | بوابة الشرق مول شوب">Bawabat al Sharq Mall Shop — بوابة الشرق مول شوب</option>
+          <option value="Bawabat al Sharq Mall Kiosk | بوابة الشرق مول كيوسك">Bawabat al Sharq Mall Kiosk — بوابة الشرق مول كيوسك</option>
+          <option value="Bawabat al Sharq Kiosk ASL | بوابة الشرق كيوسك ASL">Bawabat al Sharq Kiosk ASL — بوابة الشرق كيوسك ASL</option>
+          <option value="Dalma Mall Shop | دلمة مول شوب">Dalma Mall Shop — دلمة مول شوب</option>
+          <option value="Dalma Mall Kiosk | دلمة مول كيوسك">Dalma Mall Kiosk — دلمة مول كيوسك</option>
+          <option value="Deerfield Mall Kiosk | ديرفيلدز مول كيوسك">Deerfield Mall Kiosk — ديرفيلدز مول كيوسك</option>
+          <option value="Yas Mall Podium | ياس مول بوديوم">Yas Mall Podium — ياس مول بوديوم</option>
+          <option value="Yas Mall Kiosk 2 | ياس مول كيوسك 2">Yas Mall Kiosk 2 — ياس مول كيوسك 2</option>
+          <option value="Yas Mall Kiosk 3 | ياس مول كيوسك 3">Yas Mall Kiosk 3 — ياس مول كيوسك 3</option>
+          <option value="Yas Mall ASL | ياس مول ASL">Yas Mall ASL — ياس مول ASL</option>
+        </optgroup>
+        <optgroup label="── العين AL AIN ──">
+          <option value="Al Ain Mall Kiosk | العين مول كيوسك">Al Ain Mall Kiosk — العين مول كيوسك</option>
+          <option value="Bawadi Mall Kiosk 1 | بوادي مول كيوسك 1">Bawadi Mall Kiosk 1 — بوادي مول كيوسك 1</option>
+          <option value="Bawadi Mall Kiosk 2 | بوادي مول كيوسك 2">Bawadi Mall Kiosk 2 — بوادي مول كيوسك 2</option>
+          <option value="Bawadi Mall ASL | بوادي مول ASL">Bawadi Mall ASL — بوادي مول ASL</option>
+          <option value="Jimi Mall Shop | الجيمي مول شوب">Jimi Mall Shop — الجيمي مول شوب</option>
+          <option value="Makhani Zakhar Mall Shop | مكاني زاخر مول شوب">Makhani Zakhar Mall Shop — مكاني زاخر مول شوب</option>
+          <option value="Makhani Zakhar Mall ASL | مكاني زاخر مول ASL">Makhani Zakhar Mall ASL — مكاني زاخر مول ASL</option>
+        </optgroup>
+        <optgroup label="── دبي DUBAI ──">
+          <option value="Dubai Mall Shop | دبي مول شوب">Dubai Mall Shop — دبي مول شوب</option>
+          <option value="Mall of the Emirates Kiosk | مول الإمارات كيوسك">Mall of the Emirates Kiosk — مول الإمارات كيوسك</option>
+          <option value="Mirdif City Centre Kiosk | مردف سيتي سنتر كيوسك">Mirdif City Centre Kiosk — مردف سيتي سنتر كيوسك</option>
+          <option value="Dubai Hills Mall Shop | دبي هيلز مول شوب">Dubai Hills Mall Shop — دبي هيلز مول شوب</option>
+        </optgroup>
+        <optgroup label="── رأس الخيمة RAK ──">
+          <option value="Manar Mall Shop | منار مول شوب">Manar Mall Shop — منار مول شوب</option>
+          <option value="Manar Mall Kiosk | منار مول كيوسك">Manar Mall Kiosk — منار مول كيوسك</option>
+        </optgroup>
+        <optgroup label="── الفجيرة FUJAIRAH ──">
+          <option value="Fujairah City Centre Kiosk | الفجيرة سيتي سنتر كيوسك">Fujairah City Centre Kiosk — الفجيرة سيتي سنتر كيوسك</option>
+          <option value="Fujairah City Centre ASL | الفجيرة سيتي سنتر ASL">Fujairah City Centre ASL — الفجيرة سيتي سنتر ASL</option>
+        </optgroup>
+        <optgroup label="── الشارقة SHARJAH ──">
+          <option value="Zahia City Centre Kiosk | الزاهية سيتي سنتر كيوسك">Zahia City Centre Kiosk — الزاهية سيتي سنتر كيوسك</option>
+        </optgroup>
+        <optgroup label="── عجمان AJMAN ──">
+          <option value="Ajman City Centre Kiosk | عجمان سيتي سنتر كيوسك">Ajman City Centre Kiosk — عجمان سيتي سنتر كيوسك</option>
+        </optgroup>
       </select>
     </div>
-    <div class="fld"><label class="lbl">Your Name <span class="req">*</span></label><input type="text" id="f_name" placeholder="e.g., Ahmed"></div>
-    <div class="items-hdr"><h2>Products Converted</h2><button class="add" onclick="addRow()">+ Add</button></div>
+    <div class="fld"><label class="lbl">Your Name / اسمك <span class="req">*</span></label><input type="text" id="f_name" placeholder="e.g., Ahmed / أحمد"></div>
+    <div class="items-hdr"><h2>Products Converted / المنتجات المحولة</h2><button class="add" onclick="addRow()">+ Add / إضافة</button></div>
     <div id="rows"></div>
-    <div class="fld" style="margin-top:18px;"><label class="lbl">Reason / Remarks</label><textarea id="f_remarks" placeholder="e.g., Maroon tester cracked, converted FG as replacement"></textarea></div>
-    <button class="btn" onclick="goPreview()">Review & Submit →</button>
+    <div class="fld" style="margin-top:18px;"><label class="lbl">Reason / Remarks / ملاحظات</label><textarea id="f_remarks" placeholder="e.g., Maroon tester cracked, converted FG / تستر مارون مكسور، تم تحويل قطعة جديدة"></textarea></div>
+    <button class="btn" onclick="goPreview()">Review & Submit / مراجعة وإرسال →</button>
     <div class="ts" id="ts1"></div>
   </div>
   <div id="step2" class="step2">
-    <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Confirm Details</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Confirm Details / تأكيد التفاصيل</div>
     <div class="preview" id="previewBox"></div>
     <div style="display:flex;gap:10px;">
-      <button class="btn" style="background:#E0DDD6;color:#1A1A1A;flex:1;" onclick="backToForm()">← Edit</button>
-      <button class="btn gold" style="flex:2;" id="confirmBtn" onclick="doSubmit()">✓ Submit & Send</button>
+      <button class="btn" style="background:#E0DDD6;color:#1A1A1A;flex:1;" onclick="backToForm()">← Edit / تعديل</button>
+      <button class="btn gold" style="flex:2;" id="confirmBtn" onclick="doSubmit()">✓ Submit / إرسال</button>
     </div>
     <div class="ts" id="ts2"></div>
   </div>
   <div id="step3" class="ok">
     <div class="ok-icon">✅</div>
-    <h2>Submitted!</h2>
-    <p>PDF downloaded to your device.<br>Email opened to <b>demand.planner@emiratespride.ae</b><br>Please attach the PDF and tap Send.</p>
-    <button class="btn gold" onclick="resetAll()">Submit Another</button>
+    <h2>Submitted! / تم الإرسال</h2>
+    <p>PDF downloaded to your device.<br>Email opened to <b>demand.planner@emiratespride.ae</b><br>Please attach the PDF and tap Send.<br><br>تم تنزيل ملف PDF. يرجى إرفاقه بالبريد وإرساله.</p>
+    <button class="btn gold" onclick="resetAll()">Submit Another / إرسال آخر</button>
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-const PRODUCTS=["White 100ml Perfume","Maroon 100ml Perfume","Navy Perfume 100ml","Violet 100ml Perfume","Maroon Intense","White Overdose","Caballo Green","No.4","Black Perfume 100ml","Bergamot bel Amber","Jasmine bel Musk","Amber Bel Oud","Peaceful Life","Midnight Glow","Midnight Bloom 100ml","Golden Chance","Meydan","Mystery","Mersal","Sakura","Vetiveria","Ambergris","Arabica","Firewood","Hidden Leather","Mysterious Rose","Thekrayat","Hidden Tobacco","Masters Perfume 100ml","Master Signature","Oud Amiri","Oud Meydan","Oud Al Emarat","Oud Al Fakhamah","Oud Hindi Malaki","Oud Hindi Khas","Dakhoon Al Emarat","Dakhoon Badia","Dakhoon Al Marasim","Dakhoon Al Dar","Dakhoon Al Barzah","Dakhoon Retaj","Hindi Special","Seufi Special","White Oil 8ml","Maroon Oil 8ml","No.4 Oil 8ml","Musk Oil 8ml","Future Bakhoor 100ml","Future Oud 100ml","Reflection","More of Oud","White Oud Set Box","Discovery Set"];
+const PRODUCTS=[
+  {en:"White 100ml Perfume",ar:"وايت 100 مل"},
+  {en:"Maroon 100ml Perfume",ar:"مارون 100 مل"},
+  {en:"Navy Perfume 100ml",ar:"عطر نيفي 100 مل"},
+  {en:"Violet 100ml Perfume",ar:"فيوليت 100 مل"},
+  {en:"Maroon Intense",ar:"مارون انتنس"},
+  {en:"White Overdose",ar:"وايت أوفردوز"},
+  {en:"Caballo Green",ar:"كبالو غرتن"},
+  {en:"No.4",ar:"رقم 4"},
+  {en:"Black Perfume 100ml",ar:"بلاك 100 مل"},
+  {en:"Bergamot bel Amber",ar:"برغموت بالعنبر"},
+  {en:"Jasmine bel Musk",ar:"جاسمين بالمسك"},
+  {en:"Amber Bel Oud",ar:"عنبر بالعود"},
+  {en:"Peaceful Life",ar:"بيسفول لايف"},
+  {en:"Midnight Glow",ar:"ميدنايت غلو"},
+  {en:"Midnight Bloom 100ml",ar:"ميدنايت بلوم"},
+  {en:"Golden Chance",ar:"غولدن تشانس"},
+  {en:"Meydan",ar:"ميدان"},
+  {en:"Mystery",ar:"ميستري"},
+  {en:"Mersal",ar:"مرسال"},
+  {en:"Sakura",ar:"سكورا"},
+  {en:"Vetiveria",ar:"فيتيفيريا"},
+  {en:"Ambergris",ar:"عنبر"},
+  {en:"Arabica",ar:"أرابيكا"},
+  {en:"Firewood",ar:"فيروود"},
+  {en:"Hidden Leather",ar:"هيدن ليذر"},
+  {en:"Mysterious Rose",ar:"ميستيريوس روز"},
+  {en:"Thekrayat",ar:"ذكريات"},
+  {en:"Hidden Tobacco",ar:"هيدن توباكو"},
+  {en:"Masters Perfume 100ml",ar:"ماسترز برفيوم"},
+  {en:"Master Signature",ar:"ماستر سيجنتشر"},
+  {en:"Oud Amiri",ar:"عود أميري"},
+  {en:"Oud Meydan",ar:"عود ميدان"},
+  {en:"Oud Al Emarat",ar:"عود الإمارات"},
+  {en:"Oud Al Fakhamah",ar:"عود الفخامة"},
+  {en:"Oud Hindi Malaki",ar:"عود هندي ملكي"},
+  {en:"Oud Hindi Khas",ar:"عود هندي خاص"},
+  {en:"Dakhoon Al Emarat",ar:"دخون الإمارات"},
+  {en:"Dakhoon Badia",ar:"دخون بادية"},
+  {en:"Dakhoon Al Marasim",ar:"دخون المراسيم"},
+  {en:"Dakhoon Al Dar",ar:"دخون الدار"},
+  {en:"Dakhoon Al Barzah",ar:"دخون البرزة"},
+  {en:"Dakhoon Retaj",ar:"دخون رتاج"},
+  {en:"Hindi Special",ar:"هندي سبيشل"},
+  {en:"Seufi Special",ar:"صوفي سبيشل"},
+  {en:"White Oil 8ml",ar:"زيت وايت 8 مل"},
+  {en:"Maroon Oil 8ml",ar:"زيت مارون 8 مل"},
+  {en:"No.4 Oil 8ml",ar:"زيت رقم 4 - 8 مل"},
+  {en:"Musk Oil 8ml",ar:"زيت مسك 8 مل"},
+  {en:"Future Bakhoor 100ml",ar:"بخور المستقبل"},
+  {en:"Future Oud 100ml",ar:"عود المستقبل"},
+  {en:"Reflection",ar:"ريفليكشن"},
+  {en:"More of Oud",ar:"مور أوف عود"},
+  {en:"White Oud Set Box",ar:"طقم وايت عود"},
+  {en:"Discovery Set",ar:"طقم الاستكشاف"},
+];
 let n=0,formData=null;
-function opts(){let h='<option value="">Select product</option>';PRODUCTS.forEach(p=>{h+='<option value="'+p+'">'+p+'</option>';});return h;}
-function addRow(){n++;const d=document.createElement('div');d.className='item';d.id='r'+n;d.innerHTML='<button class="del" onclick="this.parentElement.remove()">&times;</button><div class="item-row"><div class="fld"><label class="lbl">Product <span class="req">*</span></label><select id="p'+n+'" style="font-size:14px;padding:11px 14px;">'+opts()+'</select></div><div class="fld q"><label class="lbl">Qty <span class="req">*</span></label><input type="number" id="q'+n+'" value="1" min="1" max="50"></div></div>';document.getElementById('rows').appendChild(d);}
+function opts(){let h='<option value="">Select product / اختر المنتج</option>';PRODUCTS.forEach(p=>{h+='<option value="'+p.en+' | '+p.ar+'">'+p.en+' — '+p.ar+'</option>';});return h;}
+function addRow(){n++;const d=document.createElement('div');d.className='item';d.id='r'+n;d.innerHTML='<button class="del" onclick="this.parentElement.remove()">&times;</button><div class="item-row"><div class="fld"><label class="lbl">Product / المنتج <span class="req">*</span></label><select id="p'+n+'" style="font-size:13px;padding:11px 14px;">'+opts()+'</select></div><div class="fld q"><label class="lbl">Qty / كمية <span class="req">*</span></label><input type="number" id="q'+n+'" value="1" min="1" max="50"></div></div>';document.getElementById('rows').appendChild(d);}
 function now(){const d=new Date(),p=x=>String(x).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
 setInterval(()=>{const t=now()+' UAE';const e1=document.getElementById('ts1');if(e1)e1.textContent=t;const e2=document.getElementById('ts2');if(e2)e2.textContent=t;},1000);
 function collectItems(){const items=[];document.querySelectorAll('.item').forEach(card=>{const id=card.id.replace('r','');const p=document.getElementById('p'+id);const q=document.getElementById('q'+id);if(p&&p.value&&q)items.push({product:p.value,qty:parseInt(q.value)||1});});return items;}
-function goPreview(){const store=document.getElementById('f_store').value;const name=document.getElementById('f_name').value.trim();const items=collectItems();const remarks=document.getElementById('f_remarks').value.trim();if(!store){alert('Please select your store');return;}if(!name){alert('Please enter your name');return;}if(!items.length){alert('Please add at least one product');return;}const ref='FGT-'+Date.now().toString(36).toUpperCase();formData={store,name,items,remarks,ref,timestamp:now()};let total=0;let html='<div class="row"><span>Ref No</span><b>'+ref+'</b></div><div class="row"><span>Store</span><b>'+store+'</b></div><div class="row"><span>Submitted By</span><b>'+name+'</b></div><div class="row"><span>Date/Time</span><b>'+formData.timestamp+' UAE</b></div><div class="section" style="margin-top:14px;">Products</div>';items.forEach((item,i)=>{total+=item.qty;html+='<div class="row"><span>'+(i+1)+'. '+item.product+'</span><b>&times;'+item.qty+'</b></div>';});html+='<div class="row" style="border-top:2px solid #E0DDD6;margin-top:6px;padding-top:8px;"><span style="font-weight:700;color:#1A1A1A;">Total</span><b style="color:#C9A44E;font-size:16px;">'+total+'</b></div>';if(remarks)html+='<div class="section" style="margin-top:14px;">Remarks</div><div style="color:#666;font-size:12px;">'+remarks+'</div>';document.getElementById('previewBox').innerHTML=html;document.getElementById('step1').style.display='none';document.getElementById('step2').style.display='block';window.scrollTo(0,0);}
+function goPreview(){const store=document.getElementById('f_store').value;const name=document.getElementById('f_name').value.trim();const items=collectItems();const remarks=document.getElementById('f_remarks').value.trim();if(!store){alert('Please select your store / يرجى اختيار متجرك');return;}if(!name){alert('Please enter your name / يرجى إدخال اسمك');return;}if(!items.length){alert('Please add at least one product / يرجى إضافة منتج واحد على الأقل');return;}const ref='FGT-'+Date.now().toString(36).toUpperCase();formData={store,name,items,remarks,ref,timestamp:now()};let total=0;let html='<div class="row"><span>Ref No / رقم المرجع</span><b>'+ref+'</b></div><div class="row"><span>Store / المتجر</span><b style="font-size:12px;">'+store+'</b></div><div class="row"><span>Submitted By / مقدم من</span><b>'+name+'</b></div><div class="row"><span>Date/Time / التاريخ</span><b>'+formData.timestamp+' UAE</b></div><div class="section" style="margin-top:14px;">Products / المنتجات</div>';items.forEach((item,i)=>{total+=item.qty;html+='<div class="row"><span style="font-size:12px;">'+(i+1)+'. '+item.product+'</span><b>&times;'+item.qty+'</b></div>';});html+='<div class="row" style="border-top:2px solid #E0DDD6;margin-top:6px;padding-top:8px;"><span style="font-weight:700;color:#1A1A1A;">Total / المجموع</span><b style="color:#C9A44E;font-size:16px;">'+total+'</b></div>';if(remarks)html+='<div class="section" style="margin-top:14px;">Remarks / ملاحظات</div><div style="color:#666;font-size:12px;">'+remarks+'</div>';document.getElementById('previewBox').innerHTML=html;document.getElementById('step1').style.display='none';document.getElementById('step2').style.display='block';window.scrollTo(0,0);}
 function backToForm(){document.getElementById('step1').style.display='block';document.getElementById('step2').style.display='none';window.scrollTo(0,0);}
-function makePDF(d){const{jsPDF}=window.jspdf;const doc=new jsPDF('p','mm','a4');const W=210;let y=15;doc.setFillColor(26,26,26);doc.rect(0,0,W,30,'F');doc.setFillColor(201,164,78);doc.rect(0,30,W,2,'F');doc.setFont('helvetica','bold');doc.setTextColor(201,164,78);doc.setFontSize(8);doc.text('EMIRATES PRIDE PERFUMES',W/2,10,{align:'center'});doc.setTextColor(255,255,255);doc.setFontSize(15);doc.text('FG CONVERTED TO TESTER',W/2,19,{align:'center'});doc.setFontSize(8);doc.setTextColor(150,150,150);doc.text('Store Conversion Documentation',W/2,26,{align:'center'});y=40;doc.setFillColor(250,248,245);doc.setDrawColor(232,228,220);doc.roundedRect(15,y-4,(W-30),22,3,3,'FD');doc.setFont('helvetica','bold');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text('Ref:',20,y+2);doc.setFont('helvetica','normal');doc.text(d.ref,32,y+2);doc.setFont('helvetica','bold');doc.text('Date/Time:',110,y+2);doc.setFont('helvetica','normal');doc.text(d.timestamp+' UAE',140,y+2);doc.setFont('helvetica','bold');doc.text('Store:',20,y+12);doc.setFont('helvetica','normal');doc.text(d.store,36,y+12);doc.setFont('helvetica','bold');doc.text('Submitted By:',110,y+12);doc.setFont('helvetica','normal');doc.text(d.name,143,y+12);y+=28;doc.setFillColor(26,26,26);doc.rect(15,y,W-30,9,'F');doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);doc.setFontSize(8);doc.text('#',20,y+6);doc.text('PRODUCT NAME',30,y+6);doc.text('QTY',175,y+6,{align:'center'});y+=9;let total=0;d.items.forEach((item,i)=>{const bg=i%2===0?[255,255,255]:[250,248,245];doc.setFillColor(...bg);doc.rect(15,y,W-30,9,'F');doc.setDrawColor(232,228,220);doc.line(15,y+9,W-15,y+9);doc.setFont('helvetica','normal');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text(String(i+1),20,y+6);doc.text(item.product,30,y+6);doc.setFont('helvetica','bold');doc.text(String(item.qty),175,y+6,{align:'center'});total+=item.qty;y+=9;});doc.setFillColor(26,26,26);doc.rect(15,y,W-30,9,'F');doc.setFont('helvetica','bold');doc.setTextColor(201,164,78);doc.setFontSize(9);doc.text('TOTAL',30,y+6);doc.text(String(total),175,y+6,{align:'center'});y+=18;if(d.remarks){doc.setFont('helvetica','bold');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text('REMARKS:',20,y);y+=5;doc.setFont('helvetica','normal');doc.setTextColor(80,80,80);doc.setFontSize(9);const lines=doc.splitTextToSize(d.remarks,W-40);doc.text(lines,20,y);y+=lines.length*5+10;}y=Math.max(y+10,210);doc.setDrawColor(200,200,200);doc.setLineWidth(0.3);doc.line(20,y,90,y);doc.line(120,y,190,y);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.setFontSize(8);doc.text('Store Staff Signature',55,y+5,{align:'center'});doc.text('Warehouse Verification',155,y+5,{align:'center'});doc.setFillColor(250,248,245);doc.rect(0,280,W,17,'F');doc.setDrawColor(232,228,220);doc.line(0,280,W,280);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.setFontSize(7);doc.text('Emirates Pride Perfumes \u00B7 JAFZA \u00B7 Auto-generated for inventory audit',W/2,286,{align:'center'});doc.text('Ref: '+d.ref+' \u00B7 Generated: '+d.timestamp+' UAE',W/2,291,{align:'center'});return doc;}
-function doSubmit(){const btn=document.getElementById('confirmBtn');btn.disabled=true;btn.textContent='Generating PDF...';setTimeout(()=>{try{const d=formData;const pdf=makePDF(d);const fname='FG_to_Tester_'+d.store.replace(/\s+/g,'_')+'_'+d.timestamp.split(' ')[0]+'.pdf';pdf.save(fname);let total=0;let itemsText=d.items.map((it,i)=>{total+=it.qty;return(i+1)+'. '+it.product+' - Qty: '+it.qty;}).join('\n');const subject='FG Converted to Tester - '+d.store+' - '+d.timestamp.split(' ')[0];const body='FG CONVERTED TO TESTER\n========================\n\nRef: '+d.ref+'\nStore: '+d.store+'\nSubmitted By: '+d.name+'\nDate/Time: '+d.timestamp+' UAE\n\nPRODUCTS CONVERTED:\n'+itemsText+'\n\nTotal Qty: '+total+(d.remarks?'\n\nRemarks: '+d.remarks:'')+'\n\n========================\nPDF attached separately.\nPlease attach the downloaded PDF before sending.';document.getElementById('step2').style.display='none';document.getElementById('step3').style.display='block';window.scrollTo(0,0);setTimeout(()=>{window.open('mailto:demand.planner@emiratespride.ae?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body),'_blank');},1500);}catch(e){console.error(e);alert('Error: '+e.message);}finally{btn.disabled=false;btn.textContent='\u2713 Submit & Send';}},100);}
+function makePDF(d){const{jsPDF}=window.jspdf;const doc=new jsPDF('p','mm','a4');const W=210;let y=15;doc.setFillColor(26,26,26);doc.rect(0,0,W,30,'F');doc.setFillColor(201,164,78);doc.rect(0,30,W,2,'F');doc.setFont('helvetica','bold');doc.setTextColor(201,164,78);doc.setFontSize(8);doc.text('EMIRATES PRIDE PERFUMES',W/2,10,{align:'center'});doc.setTextColor(255,255,255);doc.setFontSize(15);doc.text('FG CONVERTED TO TESTER',W/2,19,{align:'center'});doc.setFontSize(8);doc.setTextColor(150,150,150);doc.text('Store Conversion Documentation',W/2,26,{align:'center'});y=40;doc.setFillColor(250,248,245);doc.setDrawColor(232,228,220);doc.roundedRect(15,y-4,(W-30),22,3,3,'FD');doc.setFont('helvetica','bold');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text('Ref:',20,y+2);doc.setFont('helvetica','normal');doc.text(d.ref,32,y+2);doc.setFont('helvetica','bold');doc.text('Date/Time:',110,y+2);doc.setFont('helvetica','normal');doc.text(d.timestamp+' UAE',140,y+2);doc.setFont('helvetica','bold');doc.text('Store:',20,y+12);doc.setFont('helvetica','normal');const storeTxt=d.store.length>45?d.store.substring(0,45)+'...':d.store;doc.text(storeTxt,36,y+12);y+=28;doc.setFont('helvetica','bold');doc.text('Submitted By:',20,y);doc.setFont('helvetica','normal');doc.text(d.name,52,y);y+=10;doc.setFillColor(26,26,26);doc.rect(15,y,W-30,9,'F');doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);doc.setFontSize(8);doc.text('#',20,y+6);doc.text('PRODUCT / المنتج',30,y+6);doc.text('QTY',175,y+6,{align:'center'});y+=9;let total=0;d.items.forEach((item,i)=>{const bg=i%2===0?[255,255,255]:[250,248,245];doc.setFillColor(...bg);doc.rect(15,y,W-30,9,'F');doc.setDrawColor(232,228,220);doc.line(15,y+9,W-15,y+9);doc.setFont('helvetica','normal');doc.setTextColor(26,26,26);doc.setFontSize(8);doc.text(String(i+1),20,y+6);const prodTxt=item.product.length>55?item.product.substring(0,55)+'...':item.product;doc.text(prodTxt,30,y+6);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(String(item.qty),175,y+6,{align:'center'});total+=item.qty;y+=9;});doc.setFillColor(26,26,26);doc.rect(15,y,W-30,9,'F');doc.setFont('helvetica','bold');doc.setTextColor(201,164,78);doc.setFontSize(9);doc.text('TOTAL',30,y+6);doc.text(String(total),175,y+6,{align:'center'});y+=18;if(d.remarks){doc.setFont('helvetica','bold');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text('REMARKS:',20,y);y+=5;doc.setFont('helvetica','normal');doc.setTextColor(80,80,80);doc.setFontSize(9);const lines=doc.splitTextToSize(d.remarks,W-40);doc.text(lines,20,y);y+=lines.length*5+10;}y=Math.max(y+10,210);doc.setDrawColor(200,200,200);doc.setLineWidth(0.3);doc.line(20,y,90,y);doc.line(120,y,190,y);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.setFontSize(8);doc.text('Store Staff Signature',55,y+5,{align:'center'});doc.text('Warehouse Verification',155,y+5,{align:'center'});doc.setFillColor(250,248,245);doc.rect(0,280,W,17,'F');doc.setDrawColor(232,228,220);doc.line(0,280,W,280);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.setFontSize(7);doc.text('Emirates Pride Perfumes - JAFZA - Auto-generated for inventory audit',W/2,286,{align:'center'});doc.text('Ref: '+d.ref+' - Generated: '+d.timestamp+' UAE',W/2,291,{align:'center'});return doc;}
+function doSubmit(){const btn=document.getElementById('confirmBtn');btn.disabled=true;btn.textContent='Generating PDF...';setTimeout(()=>{try{const d=formData;const pdf=makePDF(d);const fname='FG_to_Tester_'+d.store.split('|')[0].trim().replace(/\s+/g,'_')+'_'+d.timestamp.split(' ')[0]+'.pdf';pdf.save(fname);let total=0;let itemsText=d.items.map((it,i)=>{total+=it.qty;return(i+1)+'. '+it.product+' - Qty: '+it.qty;}).join('\n');const subject='FG Converted to Tester - '+d.store.split('|')[0].trim()+' - '+d.timestamp.split(' ')[0];const body='FG CONVERTED TO TESTER\n========================\n\nRef: '+d.ref+'\nStore: '+d.store+'\nSubmitted By: '+d.name+'\nDate/Time: '+d.timestamp+' UAE\n\nPRODUCTS CONVERTED:\n'+itemsText+'\n\nTotal Qty: '+total+(d.remarks?'\n\nRemarks: '+d.remarks:'')+'\n\n========================\nPDF attached separately.\nPlease attach the downloaded PDF before sending.';document.getElementById('step2').style.display='none';document.getElementById('step3').style.display='block';window.scrollTo(0,0);setTimeout(()=>{window.open('mailto:demand.planner@emiratespride.ae?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body),'_blank');},1500);}catch(e){console.error(e);alert('Error: '+e.message);}finally{btn.disabled=false;btn.textContent='✓ Submit / إرسال';}},100);}
 function resetAll(){document.getElementById('step1').style.display='block';document.getElementById('step2').style.display='none';document.getElementById('step3').style.display='none';document.getElementById('f_store').value='';document.getElementById('f_name').value='';document.getElementById('f_remarks').value='';document.getElementById('rows').innerHTML='';n=0;formData=null;addRow();window.scrollTo(0,0);}
 addRow();
 </script>
