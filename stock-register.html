@@ -3368,7 +3368,7 @@ function buildGrid(){
     const _cm={'Caballo Collection':['🐎','كولكشن كابالو','Signature Equestrian Line'],'Bel Collection':['🌹','كولكشن بيل','Floral Luxury Series'],'Sets & Specials':['✨','مجموعات مميزة','Curated Gift Sets'],'Oud':['🪵','عود','Arabian Oud Essences'],'Dakhoon':['🌿','دخون','Traditional Bakhoor'],'Oils & Gifts':['💎','زيوت وهدايا','Premium Oils & Gifts'],'Accessories':['🎁','إكسسوارات','Fine Accessories'],'Gift Boxes':['📦','صناديق هدايا','Luxury Gift Packaging'],'Heritage Collection':['🏛️','كولكشن التراث','Timeless Heritage Blends'],'Bel Paper Box (Gift Sets)':['🎀','بيل - صناديق هدايا','Bel Signature Gift Sets']};
     const _cme=_cm[cat.cat]||['◈',cat.cat,''];
     const _cpCount=cat.products.filter(p=>!p.isTester).length;
-    cr.innerHTML=`<td colspan="9"><div class="cat-sep-inner"><div class="cat-sep-icon">${_cme[0]}</div><div class="cat-sep-body"><div class="cat-sep-en">${cat.cat}</div><div class="cat-sep-sub">${_cme[2]}</div><div class="cat-sep-ar">${_cme[1]}</div></div><div class="cat-sep-right"><div class="cat-sep-count">${_cpCount}</div><div class="cat-sep-count-lbl">SKUs</div></div></div></td>`;
+    cr.innerHTML=`<td colspan="10"><div class="cat-sep-inner"><div class="cat-sep-icon">${_cme[0]}</div><div class="cat-sep-body"><div class="cat-sep-en">${cat.cat}</div><div class="cat-sep-sub">${_cme[2]}</div><div class="cat-sep-ar">${_cme[1]}</div></div><div class="cat-sep-right"><div class="cat-sep-count">${_cpCount}</div><div class="cat-sep-count-lbl">SKUs</div></div></div></td>`;
     tbody.appendChild(cr);
 
     let ri_idx=0;
