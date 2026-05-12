@@ -2740,6 +2740,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     </div>
     <div style="display:flex;gap:8px;">
       <button onclick="loadFGRequests()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;">⇅ Refresh</button>
+      <a href="https://vinayak682.github.io/emirates-pride-inventory-management/fg-report.html" target="_blank" style="background:#C9A44E;border:none;border-radius:6px;color:#fff;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:4px;">📊 Full Report</a>
       <button onclick="closeFGApproval()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">✕ Close</button>
     </div>
   </div>
@@ -11548,12 +11549,13 @@ async function submitFGRequest(){
   });
   if(!items.length){alert('Please add at least one product');return;}
   const ref='FGTST-'+Date.now().toString(36).toUpperCase();
-  const record={request_ref:ref,store_name:me.name+'|'+me.name,employee_name:empName,employee_id:empID,items:items,status:'pending',submitted_at:new Date().toISOString()};
+  const record={request_ref:ref,store_name:me.name+'|'+me.name,employee_name:empName,employee_id:empID,items:items,remarks:remarks,status:'pending',submitted_at:new Date().toISOString()};
   try{
     const{error}=await _SBC.from('fg_tester_requests').insert([record]);
     if(error) throw error;
-    alert('✅ Request submitted!\nRef: '+ref+'\nStatus: PENDING APPROVAL');
     closeFGRequest();
+    generateFGRequestPDF(record);
+    toast('✅ Request submitted — PDF downloading');
   }catch(e){console.error(e);alert('Error: '+e.message);}
 }
 
@@ -11609,11 +11611,14 @@ async function loadFGRequests(){
 async function approveFGRequest(ref){
   const approver=prompt('Your name (for audit trail):');
   if(!approver) return;
+  const approvedAt=new Date().toISOString();
   try{
-    const{error}=await _SBC.from('fg_tester_requests').update({status:'approved',approved_by:approver,approved_at:new Date().toISOString()}).eq('request_ref',ref);
+    const{error}=await _SBC.from('fg_tester_requests').update({status:'approved',approved_by:approver,approved_at:approvedAt}).eq('request_ref',ref);
     if(error) throw error;
-    alert('✅ Request approved!');
+    const{data}=await _SBC.from('fg_tester_requests').select('*').eq('request_ref',ref).single();
     loadFGRequests();
+    if(data) generateFGApprovalPDF(data);
+    toast('✅ Approved — PDF downloading');
   }catch(e){alert('Error: '+e.message);}
 }
 
@@ -11622,12 +11627,106 @@ async function rejectFGRequest(ref){
   if(!approver) return;
   const reason=prompt('Rejection reason:');
   if(!reason) return;
+  const rejectedAt=new Date().toISOString();
   try{
-    const{error}=await _SBC.from('fg_tester_requests').update({status:'rejected',approved_by:approver,approved_at:new Date().toISOString(),rejection_reason:reason}).eq('request_ref',ref);
+    const{error}=await _SBC.from('fg_tester_requests').update({status:'rejected',approved_by:approver,approved_at:rejectedAt,rejection_reason:reason}).eq('request_ref',ref);
     if(error) throw error;
-    alert('❌ Request rejected!');
+    const{data}=await _SBC.from('fg_tester_requests').select('*').eq('request_ref',ref).single();
     loadFGRequests();
+    if(data) generateFGApprovalPDF(data);
+    toast('❌ Rejected — PDF downloading');
   }catch(e){alert('Error: '+e.message);}
+}
+
+function generateFGRequestPDF(rec){
+  const fmtDate=d=>new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const fmtDateTime=d=>new Date(d).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const itemRows=rec.items.map((it,i)=>`<tr style="border-bottom:1px solid #F0EDE6;"><td style="padding:8px 12px;color:#888;">${i+1}</td><td style="padding:8px 12px;">${it.product}</td><td style="padding:8px 12px;text-align:center;font-weight:700;">${it.qty}</td></tr>`).join('');
+  const totalQty=rec.items.reduce((s,i)=>s+i.qty,0);
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>FG Request ${rec.request_ref}</title>
+  <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:#fff;color:#1A1A1A;}
+  .hdr{background:#1A1A1A;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;}
+  .hdr-l h1{color:#C9A44E;font-size:20px;letter-spacing:2px;}.hdr-l p{color:#888;font-size:11px;margin-top:3px;}
+  .hdr-r{text-align:right;}.hdr-r .ref{color:#fff;font-family:monospace;font-size:14px;font-weight:700;}
+  .badge{display:inline-block;padding:5px 12px;border-radius:4px;font-size:11px;font-weight:800;margin-top:6px;background:#FEF3C7;color:#92400E;}
+  .body{padding:24px;}.sec{background:#F9F8F6;border:1px solid #E8E4DC;border-radius:8px;padding:16px;margin-bottom:16px;}
+  .sec-title{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .fi label{display:block;font-size:9px;color:#999;text-transform:uppercase;margin-bottom:2px;}
+  .fi span{font-size:13px;font-weight:600;}
+  table{width:100%;border-collapse:collapse;}th{background:#1A1A1A;color:#fff;padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;}
+  td{font-size:12px;}tfoot td{background:#F0EDE6;font-weight:700;}
+  .foot{margin-top:20px;padding-top:14px;border-top:2px solid #E8E4DC;display:flex;justify-content:space-between;font-size:10px;color:#888;}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>
+  <div class="hdr"><div class="hdr-l"><h1>EMIRATES PRIDE</h1><p>FG to Tester Request — طلب تستر من مخزون المتجر</p></div>
+  <div class="hdr-r"><div class="ref">${rec.request_ref}</div><div class="badge">⏳ PENDING APPROVAL</div></div></div>
+  <div class="body">
+    <div class="sec"><div class="sec-title">Request Details</div><div class="grid">
+      <div class="fi"><label>Date Submitted</label><span>${fmtDate(rec.submitted_at)}</span></div>
+      <div class="fi"><label>Store</label><span>${rec.store_name.split('|')[0].trim()}</span></div>
+      <div class="fi"><label>Employee Name</label><span>${rec.employee_name}</span></div>
+      <div class="fi"><label>Employee ID</label><span>${rec.employee_id}</span></div>
+    </div></div>
+    <div class="sec"><div class="sec-title">Items Requested — ${rec.items.length} Products</div>
+      <table><thead><tr><th>#</th><th>Product</th><th style="text-align:center;">Qty</th></tr></thead>
+      <tbody>${itemRows}</tbody>
+      <tfoot><tr><td colspan="2" style="padding:8px 12px;text-align:right;">Total Units:</td><td style="padding:8px 12px;text-align:center;">${totalQty}</td></tr></tfoot>
+      </table></div>
+    ${rec.remarks?`<div class="sec"><div class="sec-title">Remarks / ملاحظات</div><p style="font-size:13px;color:#555;margin-top:4px;">${rec.remarks}</p></div>`:''}
+    <div class="foot"><span>Generated: ${fmtDateTime(new Date())}</span><span>This request is PENDING manager approval — Emirates Pride Perfumes</span></div>
+  </div></body></html>`;
+  openPrintWindow(html);
+}
+
+function generateFGApprovalPDF(rec){
+  const fmtDate=d=>new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const fmtDateTime=d=>new Date(d).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const isApproved=rec.status==='approved';
+  const sc=isApproved?'#10B981':'#EF4444';
+  const sb=isApproved?'#D1FAE5':'#FEE2E2';
+  const itemRows=rec.items.map((it,i)=>`<tr style="border-bottom:1px solid #F0EDE6;"><td style="padding:8px 12px;color:#888;">${i+1}</td><td style="padding:8px 12px;">${it.product}</td><td style="padding:8px 12px;text-align:center;font-weight:700;">${it.qty}</td></tr>`).join('');
+  const totalQty=rec.items.reduce((s,i)=>s+i.qty,0);
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>FG ${rec.status.toUpperCase()} ${rec.request_ref}</title>
+  <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:#fff;color:#1A1A1A;}
+  .hdr{background:#1A1A1A;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;}
+  .hdr-l h1{color:#C9A44E;font-size:20px;letter-spacing:2px;}.hdr-l p{color:#888;font-size:11px;margin-top:3px;}
+  .hdr-r{text-align:right;}.hdr-r .ref{color:#fff;font-family:monospace;font-size:14px;font-weight:700;}
+  .badge{display:inline-block;padding:5px 12px;border-radius:4px;font-size:11px;font-weight:800;margin-top:6px;background:${sb};color:${sc};}
+  .body{padding:24px;}.action-box{background:${sb};border:2px solid ${sc};border-radius:8px;padding:16px;margin-bottom:16px;}
+  .action-title{font-size:11px;font-weight:800;color:${sc};text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+  .sec{background:#F9F8F6;border:1px solid #E8E4DC;border-radius:8px;padding:16px;margin-bottom:16px;}
+  .sec-title{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .fi label{display:block;font-size:9px;color:#999;text-transform:uppercase;margin-bottom:2px;}
+  .fi span{font-size:13px;font-weight:600;}
+  table{width:100%;border-collapse:collapse;}th{background:#1A1A1A;color:#fff;padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;}
+  td{font-size:12px;}tfoot td{background:#F0EDE6;font-weight:700;}
+  .foot{margin-top:20px;padding-top:14px;border-top:2px solid #E8E4DC;display:flex;justify-content:space-between;font-size:10px;color:#888;}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>
+  <div class="hdr"><div class="hdr-l"><h1>EMIRATES PRIDE</h1><p>FG to Tester Request — ${isApproved?'Approval':'Rejection'} Copy</p></div>
+  <div class="hdr-r"><div class="ref">${rec.request_ref}</div><div class="badge">${isApproved?'✓ APPROVED':'✕ REJECTED'}</div></div></div>
+  <div class="body">
+    <div class="action-box"><div class="action-title">${isApproved?'✓ Approved':'✕ Rejected'} by Manager</div>
+    <div class="grid">
+      <div class="fi"><label>${isApproved?'Approved':'Rejected'} By</label><span>${rec.approved_by||'—'}</span></div>
+      <div class="fi"><label>${isApproved?'Approval':'Rejection'} Date</label><span>${rec.approved_at?fmtDate(rec.approved_at):'—'}</span></div>
+      ${!isApproved&&rec.rejection_reason?`<div class="fi" style="grid-column:1/-1;"><label>Reason for Rejection</label><span style="color:#991B1B;">${rec.rejection_reason}</span></div>`:''}
+    </div></div>
+    <div class="sec"><div class="sec-title">Request Details</div><div class="grid">
+      <div class="fi"><label>Date Submitted</label><span>${fmtDate(rec.submitted_at)}</span></div>
+      <div class="fi"><label>Store</label><span>${rec.store_name.split('|')[0].trim()}</span></div>
+      <div class="fi"><label>Employee Name</label><span>${rec.employee_name}</span></div>
+      <div class="fi"><label>Employee ID</label><span>${rec.employee_id}</span></div>
+    </div></div>
+    <div class="sec"><div class="sec-title">Items ${isApproved?'Approved':'Requested'} — ${rec.items.length} Products</div>
+      <table><thead><tr><th>#</th><th>Product</th><th style="text-align:center;">Qty</th></tr></thead>
+      <tbody>${itemRows}</tbody>
+      <tfoot><tr><td colspan="2" style="padding:8px 12px;text-align:right;">Total Units:</td><td style="padding:8px 12px;text-align:center;">${totalQty}</td></tr></tfoot>
+      </table></div>
+    ${rec.remarks?`<div class="sec"><div class="sec-title">Remarks / ملاحظات</div><p style="font-size:13px;color:#555;margin-top:4px;">${rec.remarks}</p></div>`:''}
+    <div class="foot"><span>Generated: ${fmtDateTime(new Date())}</span><span>Emirates Pride Perfumes — Internal Document</span></div>
+  </div></body></html>`;
+  openPrintWindow(html);
 }
 
 </script>

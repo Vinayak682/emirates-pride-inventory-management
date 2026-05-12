@@ -3,56 +3,102 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FG Requests Report</title>
+<title>FG Requests Report — Emirates Pride</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:#F5F3EF;color:#1A1A1A;padding:16px;}
-.hdr{background:#1A1A1A;border-radius:12px 12px 0 0;padding:16px 20px;color:#fff;}
-.hdr h1{font-size:18px;margin-bottom:4px;}
-.hdr p{font-size:11px;color:#C9A44E;}
+.hdr{background:#1A1A1A;border-radius:12px 12px 0 0;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;}
+.hdr-left h1{font-size:18px;color:#fff;margin-bottom:4px;}
+.hdr-left p{font-size:11px;color:#C9A44E;}
+.hdr-right{font-size:11px;color:#888;text-align:right;}
 .panel{background:#fff;border:2px solid #E0DDD6;border-radius:12px;overflow:hidden;margin-bottom:16px;}
-.toolbar{background:#FAFAF8;border-bottom:1px solid#E8E4DC;padding:12px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-.toolbar input{padding:8px 12px;border:1.5px solid #E0DDD6;border-radius:8px;font-size:13px;font-family:inherit;}
-.toolbar button{background:#C9A44E;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;}
-.toolbar button:disabled{background:#CCC;}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:14px 16px;background:#F9F8F6;border-bottom:1px solid #E8E4DC;}
-.stat{text-align:center;}
-.stat-val{font-size:26px;font-weight:700;font-family:monospace;}
+.toolbar{background:#FAFAF8;border-bottom:1px solid #E8E4DC;padding:12px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.toolbar input,.toolbar select{padding:8px 12px;border:1.5px solid #E0DDD6;border-radius:8px;font-size:13px;font-family:inherit;background:#fff;}
+.toolbar button{background:#C9A44E;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.toolbar button:hover{background:#B8923D;}
+.toolbar button.sec{background:#1A1A1A;}
+.toolbar button.sec:hover{background:#333;}
+.toolbar button:disabled{background:#CCC;cursor:not-allowed;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;padding:14px 16px;background:#F9F8F6;border-bottom:1px solid #E8E4DC;}
+.stat{text-align:center;padding:8px;}
+.stat-val{font-size:28px;font-weight:700;font-family:monospace;}
 .stat-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+.tbl-wrap{overflow-x:auto;}
 .tbl{width:100%;font-size:12px;border-collapse:collapse;}
 .tbl thead{background:#1A1A1A;color:#fff;}
-.tbl th{padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;}
-.tbl td{padding:10px 12px;border-bottom:1px solid #F0EDE6;}
-.tbl tr:hover{background:rgba(0,0,0,0.02);}
-.badge{display:inline-block;padding:3px 8px;border-radius:5px;font-size:9px;font-weight:700;text-transform:uppercase;}
+.tbl th{padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;white-space:nowrap;}
+.tbl td{padding:10px 12px;border-bottom:1px solid #F0EDE6;vertical-align:top;}
+.tbl tr:hover td{background:rgba(201,164,78,0.04);}
+.tbl tr.expanded-row td{background:#FAFAF8;border-bottom:2px solid #E8E4DC;}
+.badge{display:inline-block;padding:3px 9px;border-radius:5px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;}
 .badge-pending{background:#FEF3C7;color:#92400E;}
 .badge-approved{background:#D1FAE5;color:#065F46;}
 .badge-rejected{background:#FEE2E2;color:#991B1B;}
+.items-list{margin:0;padding:0;list-style:none;}
+.items-list li{font-size:11px;color:#555;padding:2px 0;display:flex;gap:6px;align-items:baseline;}
+.items-list li .qty{font-weight:700;color:#1A1A1A;font-family:monospace;min-width:20px;}
+.rejection-reason{font-size:10px;color:#991B1B;margin-top:4px;padding:4px 8px;background:#FEE2E2;border-radius:4px;}
+.approved-info{font-size:10px;color:#065F46;margin-top:4px;}
 .loading{text-align:center;padding:60px;color:#888;}
+.no-data{text-align:center;padding:60px;color:#888;}
+.filter-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid transparent;}
+.filter-badge.all{background:#1A1A1A;color:#fff;border-color:#1A1A1A;}
+.filter-badge.pending{background:#FEF3C7;color:#92400E;border-color:#F59E0B;}
+.filter-badge.approved{background:#D1FAE5;color:#065F46;border-color:#10B981;}
+.filter-badge.rejected{background:#FEE2E2;color:#991B1B;border-color:#EF4444;}
+.filter-badge.inactive{background:#fff;color:#888;border-color:#E0DDD6;}
 </style>
 </head>
 <body>
 <div class="panel">
   <div class="hdr">
-    <h1>FG to Tester Requests — Management Report</h1>
-    <p>Emirates Pride Perfumes</p>
+    <div class="hdr-left">
+      <h1>📦 FG to Tester Requests — Management Report</h1>
+      <p>Emirates Pride Perfumes · All Stores</p>
+    </div>
+    <div class="hdr-right" id="lastRefresh">—</div>
   </div>
   <div class="toolbar">
-    <input type="date" id="dateFrom" placeholder="From">
-    <input type="date" id="dateTo" placeholder="To">
+    <input type="date" id="dateFrom" title="From date">
+    <input type="date" id="dateTo" title="To date">
     <button onclick="loadData()">🔄 Refresh</button>
-    <button onclick="exportPDF()">📄 Export PDF</button>
-    <button onclick="exportExcel()">📊 Export Excel</button>
+    <button onclick="exportPDF()" class="sec">📄 Export PDF</button>
+    <button onclick="exportExcel()" class="sec">📊 Export Excel</button>
   </div>
-  <div class="stats" id="stats"></div>
-  <div style="overflow-x:auto;">
+  <div class="stats" id="stats">
+    <div class="stat"><div class="stat-val">—</div><div class="stat-lbl">Pending</div></div>
+    <div class="stat"><div class="stat-val">—</div><div class="stat-lbl">Approved</div></div>
+    <div class="stat"><div class="stat-val">—</div><div class="stat-lbl">Rejected</div></div>
+    <div class="stat"><div class="stat-val">—</div><div class="stat-lbl">Total Units</div></div>
+  </div>
+  <div class="toolbar" style="gap:6px;">
+    <span style="font-size:11px;color:#888;font-weight:600;">Filter:</span>
+    <span class="filter-badge all" onclick="setFilter('all')" id="f-all">All</span>
+    <span class="filter-badge pending inactive" onclick="setFilter('pending')" id="f-pending">⏳ Pending</span>
+    <span class="filter-badge approved inactive" onclick="setFilter('approved')" id="f-approved">✓ Approved</span>
+    <span class="filter-badge rejected inactive" onclick="setFilter('rejected')" id="f-rejected">✕ Rejected</span>
+    <input type="text" id="searchInput" placeholder="Search store / employee / ref…" style="margin-left:auto;min-width:220px;" oninput="applyFilters()">
+  </div>
+  <div class="tbl-wrap">
     <table class="tbl" id="tbl">
-      <thead><tr><th>Ref</th><th>Store</th><th>Employee</th><th>Items</th><th>Qty</th><th>Status</th><th>Submitted</th><th>Approved By</th></tr></thead>
-      <tbody id="tbody"><tr><td colspan="8" class="loading">Loading...</td></tr></tbody>
+      <thead>
+        <tr>
+          <th>Ref</th>
+          <th>Submitted</th>
+          <th>Store</th>
+          <th>Employee</th>
+          <th>Items</th>
+          <th style="text-align:center;">Total Qty</th>
+          <th>Status</th>
+          <th>Action By / Date</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody>
     </table>
   </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -61,98 +107,194 @@ body{font-family:'DM Sans',sans-serif;background:#F5F3EF;color:#1A1A1A;padding:1
 const SB_URL='https://ncszurcrkngjcjqsowln.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
+
 let allData=[];
+let activeFilter='all';
+
+const fmtDate=d=>new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});
+const fmtDateTime=d=>new Date(d).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
 async function loadData(){
+  document.getElementById('tbody').innerHTML='<tr><td colspan="8" class="loading">Loading…</td></tr>';
   try{
-    const{data,error}=await sb.from('fg_tester_requests').select('*').order('submitted_at',{ascending:false});
+    let query=sb.from('fg_tester_requests').select('*').order('submitted_at',{ascending:false});
+    const from=document.getElementById('dateFrom').value;
+    const to=document.getElementById('dateTo').value;
+    if(from) query=query.gte('submitted_at',from+'T00:00:00');
+    if(to) query=query.lte('submitted_at',to+'T23:59:59');
+    const{data,error}=await query;
     if(error) throw error;
     allData=data||[];
-    renderTable(allData);
     renderStats(allData);
+    applyFilters();
+    document.getElementById('lastRefresh').textContent='Last refreshed: '+fmtDateTime(new Date());
   }catch(e){
     console.error(e);
-    document.getElementById('tbody').innerHTML='<tr><td colspan="8" style="color:#EF4444;text-align:center;">Error: '+e.message+'</td></tr>';
+    document.getElementById('tbody').innerHTML='<tr><td colspan="8" style="color:#EF4444;text-align:center;padding:40px;">Error: '+e.message+'</td></tr>';
   }
 }
+
 function renderStats(data){
   const pending=data.filter(r=>r.status==='pending').length;
   const approved=data.filter(r=>r.status==='approved').length;
   const rejected=data.filter(r=>r.status==='rejected').length;
-  const totalQty=data.reduce((sum,r)=>sum+r.items.reduce((s,i)=>s+i.qty,0),0);
+  const totalQty=data.reduce((sum,r)=>sum+(r.items||[]).reduce((s,i)=>s+(i.qty||0),0),0);
   document.getElementById('stats').innerHTML=
     '<div class="stat"><div class="stat-val" style="color:#F59E0B;">'+pending+'</div><div class="stat-lbl">Pending</div></div>'+
     '<div class="stat"><div class="stat-val" style="color:#22C55E;">'+approved+'</div><div class="stat-lbl">Approved</div></div>'+
     '<div class="stat"><div class="stat-val" style="color:#EF4444;">'+rejected+'</div><div class="stat-lbl">Rejected</div></div>'+
     '<div class="stat"><div class="stat-val">'+totalQty+'</div><div class="stat-lbl">Total Units</div></div>';
 }
+
+function setFilter(f){
+  activeFilter=f;
+  ['all','pending','approved','rejected'].forEach(k=>{
+    const el=document.getElementById('f-'+k);
+    el.classList.toggle('inactive', k!==f);
+    if(k==='all') el.className='filter-badge all'+(f!=='all'?' inactive':'');
+    else el.className='filter-badge '+k+(f!==k?' inactive':'');
+  });
+  applyFilters();
+}
+
+function applyFilters(){
+  const search=(document.getElementById('searchInput').value||'').toLowerCase();
+  let data=allData;
+  if(activeFilter!=='all') data=data.filter(r=>r.status===activeFilter);
+  if(search) data=data.filter(r=>
+    (r.request_ref||'').toLowerCase().includes(search)||
+    (r.store_name||'').toLowerCase().includes(search)||
+    (r.employee_name||'').toLowerCase().includes(search)||
+    (r.employee_id||'').toLowerCase().includes(search)
+  );
+  renderTable(data);
+}
+
 function renderTable(data){
   if(!data.length){
-    document.getElementById('tbody').innerHTML='<tr><td colspan="8" style="text-align:center;color:#888;">No requests found</td></tr>';
+    document.getElementById('tbody').innerHTML='<tr><td colspan="8" class="no-data">No requests found</td></tr>';
     return;
   }
   let html='';
   data.forEach(r=>{
-    const store=r.store_name.split('|')[0].trim();
-    const itemCount=r.items.length;
-    const totalQty=r.items.reduce((s,i)=>s+i.qty,0);
+    const store=(r.store_name||'').split('|')[0].trim();
+    const items=r.items||[];
+    const totalQty=items.reduce((s,i)=>s+(i.qty||0),0);
     const badge=r.status==='pending'?'badge-pending':r.status==='approved'?'badge-approved':'badge-rejected';
-    html+='<tr>'+
-      '<td style="font-family:monospace;font-size:11px;">'+r.request_ref+'</td>'+
-      '<td>'+store+'</td>'+
-      '<td>'+r.employee_name+'<br><span style="font-size:10px;color:#888;">'+r.employee_id+'</span></td>'+
-      '<td>'+itemCount+' items</td>'+
-      '<td><b>'+totalQty+'</b></td>'+
-      '<td><span class="badge '+badge+'">'+r.status+'</span></td>'+
-      '<td style="font-size:11px;">'+new Date(r.submitted_at).toLocaleDateString()+'</td>'+
-      '<td style="font-size:11px;">'+(r.approved_by||'—')+'</td>'+
-    '</tr>';
+    const itemsList=items.map(it=>`<li><span class="qty">${it.qty}×</span>${it.product||''}</li>`).join('');
+    let actionCell='<span style="color:#CCC;">—</span>';
+    if(r.approved_by){
+      const actionColor=r.status==='approved'?'#065F46':'#991B1B';
+      actionCell=`<div style="font-size:11px;font-weight:600;color:${actionColor};">${r.approved_by}</div>`+
+        `<div style="font-size:10px;color:#888;margin-top:2px;">${r.approved_at?fmtDateTime(r.approved_at):'—'}</div>`+
+        (r.rejection_reason?`<div class="rejection-reason">Reason: ${r.rejection_reason}</div>`:'');
+    }
+    html+=`<tr>
+      <td style="font-family:monospace;font-size:11px;font-weight:700;">${r.request_ref}</td>
+      <td style="white-space:nowrap;">${fmtDateTime(r.submitted_at)}</td>
+      <td style="font-size:12px;max-width:160px;">${store}</td>
+      <td><div style="font-weight:600;">${r.employee_name||'—'}</div><div style="font-size:10px;color:#888;">${r.employee_id||''}</div></td>
+      <td><ul class="items-list">${itemsList}</ul>${r.remarks?`<div style="font-size:10px;color:#888;margin-top:4px;font-style:italic;">${r.remarks}</div>`:''}</td>
+      <td style="text-align:center;font-weight:700;font-size:14px;">${totalQty}</td>
+      <td><span class="badge ${badge}">${r.status}</span></td>
+      <td>${actionCell}</td>
+    </tr>`;
   });
   document.getElementById('tbody').innerHTML=html;
 }
+
 function exportPDF(){
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF('l','mm','a4');
-  doc.setFont('helvetica','bold');doc.setFontSize(16);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(16);
   doc.text('FG to Tester Requests Report',15,15);
-  doc.setFontSize(10);doc.setFont('helvetica','normal');
-  doc.text('Emirates Pride Perfumes — Generated: '+new Date().toLocaleString(),15,22);
-  const rows=allData.map(r=>[
-    r.request_ref,
-    r.store_name.split('|')[0].trim(),
-    r.employee_name+'\n'+r.employee_id,
-    r.items.length+' items',
-    r.items.reduce((s,i)=>s+i.qty,0),
-    r.status.toUpperCase(),
-    new Date(r.submitted_at).toLocaleDateString(),
-    r.approved_by||'—'
-  ]);
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.text('Emirates Pride Perfumes — Generated: '+fmtDateTime(new Date()),15,22);
+  const from=document.getElementById('dateFrom').value;
+  const to=document.getElementById('dateTo').value;
+  if(from||to) doc.text('Period: '+(from?fmtDate(from+'T00:00:00'):'All')+' to '+(to?fmtDate(to+'T00:00:00'):'All'),15,28);
+
+  const filtered=activeFilter==='all'?allData:allData.filter(r=>r.status===activeFilter);
+  const rows=filtered.map(r=>{
+    const items=(r.items||[]).map(it=>it.qty+'× '+it.product).join('\n');
+    const totalQty=(r.items||[]).reduce((s,i)=>s+(i.qty||0),0);
+    return[
+      r.request_ref,
+      fmtDate(r.submitted_at),
+      (r.store_name||'').split('|')[0].trim(),
+      (r.employee_name||'')+(r.employee_id?'\n'+r.employee_id:''),
+      items,
+      totalQty,
+      r.status.toUpperCase(),
+      (r.approved_by||'—')+(r.approved_at?'\n'+fmtDate(r.approved_at):''),
+      r.rejection_reason||''
+    ];
+  });
   doc.autoTable({
-    startY:28,
-    head:[['Ref','Store','Employee','Items','Qty','Status','Date','Approved By']],
+    startY:from||to?34:28,
+    head:[['Ref','Date','Store','Employee','Items','Qty','Status','Action By','Rejection Reason']],
     body:rows,
-    styles:{fontSize:8},
-    headStyles:{fillColor:[26,26,26]}
+    styles:{fontSize:7,cellPadding:3,overflow:'linebreak'},
+    headStyles:{fillColor:[26,26,26],textColor:255,fontSize:7},
+    columnStyles:{
+      0:{cellWidth:28,font:'courier'},
+      4:{cellWidth:50},
+      6:{cellWidth:18},
+      8:{cellWidth:30}
+    },
+    didParseCell:function(d){
+      if(d.section==='body'&&d.column.index===6){
+        const v=(d.cell.raw||'').toLowerCase();
+        if(v==='approved') d.cell.styles.textColor=[6,95,70];
+        else if(v==='rejected') d.cell.styles.textColor=[153,27,27];
+        else d.cell.styles.textColor=[146,64,14];
+      }
+    }
   });
   doc.save('FG_Tester_Requests_'+new Date().toISOString().split('T')[0]+'.pdf');
 }
+
 function exportExcel(){
-  const rows=allData.map(r=>({
-    'Ref':r.request_ref,
-    'Store':r.store_name.split('|')[0].trim(),
-    'Employee Name':r.employee_name,
-    'Employee ID':r.employee_id,
-    'Items Count':r.items.length,
-    'Total Qty':r.items.reduce((s,i)=>s+i.qty,0),
-    'Status':r.status.toUpperCase(),
-    'Submitted':new Date(r.submitted_at).toLocaleString(),
-    'Approved By':r.approved_by||'',
-    'Rejection Reason':r.rejection_reason||''
-  }));
+  const filtered=activeFilter==='all'?allData:allData.filter(r=>r.status===activeFilter);
+  const rows=[];
+  filtered.forEach(r=>{
+    const items=r.items||[];
+    if(items.length===0){
+      rows.push({
+        'Ref':r.request_ref,'Submitted':fmtDateTime(r.submitted_at),
+        'Store':(r.store_name||'').split('|')[0].trim(),
+        'Employee Name':r.employee_name||'','Employee ID':r.employee_id||'',
+        'Product':'','Qty':0,'Total Qty':0,
+        'Status':r.status.toUpperCase(),
+        'Action By':r.approved_by||'','Action Date':r.approved_at?fmtDateTime(r.approved_at):'',
+        'Rejection Reason':r.rejection_reason||'','Remarks':r.remarks||''
+      });
+    } else {
+      const totalQty=items.reduce((s,i)=>s+(i.qty||0),0);
+      items.forEach((it,idx)=>{
+        rows.push({
+          'Ref':idx===0?r.request_ref:'','Submitted':idx===0?fmtDateTime(r.submitted_at):'',
+          'Store':idx===0?(r.store_name||'').split('|')[0].trim():'',
+          'Employee Name':idx===0?(r.employee_name||''):'','Employee ID':idx===0?(r.employee_id||''):'',
+          'Product':it.product||'','Qty':it.qty||0,'Total Qty':idx===0?totalQty:'',
+          'Status':idx===0?r.status.toUpperCase():'',
+          'Action By':idx===0?(r.approved_by||''):'',
+          'Action Date':idx===0?(r.approved_at?fmtDateTime(r.approved_at):''):'',
+          'Rejection Reason':idx===0?(r.rejection_reason||''):'',
+          'Remarks':idx===0?(r.remarks||''):''
+        });
+      });
+    }
+  });
   const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[{wch:22},{wch:18},{wch:24},{wch:20},{wch:12},{wch:35},{wch:6},{wch:10},{wch:12},{wch:18},{wch:18},{wch:30},{wch:25}];
   const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Requests');
+  XLSX.utils.book_append_sheet(wb,ws,'FG Requests');
   XLSX.writeFile(wb,'FG_Tester_Requests_'+new Date().toISOString().split('T')[0]+'.xlsx');
 }
+
 loadData();
 </script>
 </body>
