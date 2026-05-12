@@ -1703,6 +1703,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <div class="top-spacer"></div>
     <button class="top-btn" onclick="openDash()" style="border-color:rgba(201,164,78,0.3);color:var(--gold2);">📊 Dashboard</button>
     <button class="top-btn" onclick="openExport()" style="border-color:rgba(127,200,96,0.3);color:#7FC860;">📥 Export</button>
+    <button class="top-btn" onclick="openFGRequest()" style="border-color:rgba(255,150,50,0.3);color:#FF9632;">📦 Request Tester</button>
     <button class="top-btn stores-btn" id="allStoresBtn" onclick="openStores()">🏪 All Stores</button>
     <button class="top-btn logout" onclick="doLogout()">Logout</button>
   </div>
@@ -2447,6 +2448,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <div style="font-family:var(--f-mono);font-size:10px;color:#AAA;margin-top:2px;letter-spacing:0.5px;">Manager Dashboard — All Stores</div>
     </div>
     <div style="display:flex;gap:8px;">
+      <button onclick="openFGApproval()" style="background:linear-gradient(135deg,#FF6B35,#F7931E);border:1px solid #FFB84D;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(255,107,53,0.3);">📦 FG Tester Requests</button>
       <button onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:1px solid #A78BFA;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.3);">📈 Demand Planning</button>
       <button onclick="renderMgrDashboard()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
       <button onclick="closeMgrDashboard()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
@@ -2702,6 +2704,47 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 </div>
 
 <div id="toast"></div>
+
+<!-- ══════════ FG TESTER REQUEST PANEL (Store Staff) ══════════ -->
+<div id="fgRequestPanel" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:900;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#FAFAF8;border-radius:12px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+    <div style="background:#1A1A1A;border-bottom:3px solid #C9A44E;padding:14px 18px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:#FFFFFF;letter-spacing:1px;">REQUEST TESTER FROM FG STOCK</div>
+        <div style="font-family:var(--f-ar);font-size:11px;color:#C9A44E;margin-top:2px;">طلب تستر من مخزون المتجر</div>
+      </div>
+      <button onclick="closeFGRequest()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-size:18px;padding:4px 10px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:16px 18px;">
+      <div style="background:#FFF9ED;border:1px solid #E8D5A8;border-radius:8px;padding:10px 12px;font-size:11px;color:#7A6530;margin-bottom:14px;line-height:1.5;">
+        <b style="color:#1A1A1A;">When to Request:</b> Once the tester cannot be supplied from warehouse and management approval taken by the Area Manager.
+        <div style="direction:rtl;margin-top:4px;color:#8B7340;"><b>متى يتم الطلب:</b> عندما لا يمكن توفير التستر من المستودع وبعد أخذ موافقة الإدارة من مدير المنطقة</div>
+      </div>
+      <div style="margin-bottom:14px;"><label style="display:block;font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:4px;">Date <span style="float:right;direction:rtl;">التاريخ</span> <span style="color:#D94040;">*</span></label><input type="date" id="fgDate" readonly style="width:100%;padding:10px;border:2px solid #E0DDD6;border-radius:8px;font-size:13px;background:#F9F8F6;"></div>
+      <div style="margin-bottom:14px;"><label style="display:block;font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:4px;">Employee Name <span style="float:right;direction:rtl;">اسم الموظف</span> <span style="color:#D94040;">*</span></label><input type="text" id="fgEmpName" placeholder="Full name" style="width:100%;padding:10px;border:2px solid #E0DDD6;border-radius:8px;font-size:13px;"></div>
+      <div style="margin-bottom:14px;"><label style="display:block;font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:4px;">Employee ID <span style="float:right;direction:rtl;">رقم الموظف</span> <span style="color:#D94040;">*</span></label><input type="text" id="fgEmpID" placeholder="e.g., EMP-1234" style="width:100%;padding:10px;border:2px solid #E0DDD6;border-radius:8px;font-size:13px;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div style="font-size:13px;font-weight:700;">FG Items Required <span style="font-size:11px;color:#888;font-weight:400;direction:rtl;">/ المنتجات</span></div><button onclick="fgAddItem()" style="background:#C9A44E;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">+ Add</button></div>
+      <div id="fgItems"></div>
+      <div style="margin:14px 0;"><label style="display:block;font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:4px;">Remarks (Optional) <span style="float:right;direction:rtl;">ملاحظات</span></label><textarea id="fgRemarks" placeholder="Optional notes" style="width:100%;padding:10px;border:2px solid #E0DDD6;border-radius:8px;font-size:13px;min-height:50px;resize:vertical;"></textarea></div>
+      <button onclick="submitFGRequest()" style="width:100%;padding:14px;background:#1A1A1A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">Submit Request / إرسال الطلب</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ FG APPROVAL PANEL (Manager) ══════════ -->
+<div id="fgApprovalPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:820;display:none;flex-direction:column;">
+  <div style="background:#1A1A1A;border-bottom:4px solid #FF9632;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+    <div>
+      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">📦 FG TESTER REQUESTS</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:#AAA;margin-top:2px;">Pending Approvals · Approved · Rejected</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="loadFGRequests()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;">⇅ Refresh</button>
+      <button onclick="closeFGApproval()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">✕ Close</button>
+    </div>
+  </div>
+  <div id="fgApprovalBody" style="flex:1;overflow-y:auto;padding:16px;"></div>
+</div>
 
 <script>
 // ══════════════════════════════════════════
@@ -11453,6 +11496,139 @@ function _tbCountByStatus(status){
 
 
 
+
+
+// ══════════════════════════════════════════
+// FG TESTER REQUEST MODULE
+// ══════════════════════════════════════════
+const FG_PRODUCTS=[
+  {en:"White 100ml",ar:"وايت 100 مل"},{en:"Maroon 100ml",ar:"مارون 100 مل"},{en:"Navy 100ml",ar:"نيفي 100 مل"},
+  {en:"Violet 100ml",ar:"فيوليت 100 مل"},{en:"Maroon Intense",ar:"مارون انتنس"},{en:"No.4",ar:"رقم 4"},
+  {en:"Midnight Bloom",ar:"ميدنايت بلوم"},{en:"Golden Chance",ar:"غولدن تشانس"},{en:"Meydan",ar:"ميدان"},
+  {en:"Oud Amiri",ar:"عود أميري"},{en:"Oud Al Emarat",ar:"عود الإمارات"},{en:"Discovery Set",ar:"طقم الاستكشاف"}
+];
+let fgItemCount=0;
+
+function openFGRequest(){
+  document.getElementById('fgRequestPanel').style.display='flex';
+  document.getElementById('fgDate').valueAsDate=new Date();
+  document.getElementById('fgEmpName').value='';
+  document.getElementById('fgEmpID').value='';
+  document.getElementById('fgRemarks').value='';
+  document.getElementById('fgItems').innerHTML='';
+  fgItemCount=0;
+  fgAddItem();
+}
+
+function closeFGRequest(){
+  document.getElementById('fgRequestPanel').style.display='none';
+}
+
+function fgAddItem(){
+  fgItemCount++;
+  const id='fgi'+fgItemCount;
+  const opts=FG_PRODUCTS.map(p=>'<option value="'+p.en+' | '+p.ar+'">'+p.en+' — '+p.ar+'</option>').join('');
+  const html='<div id="'+id+'" style="background:#fff;border:1.5px solid #E0DDD6;border-radius:8px;padding:10px;margin-bottom:8px;position:relative;">'
+    +'<button onclick="document.getElementById(\''+id+'\').remove()" style="position:absolute;top:4px;right:6px;background:none;border:none;color:#CCC;font-size:18px;cursor:pointer;padding:2px 6px;">&times;</button>'
+    +'<div style="display:flex;gap:8px;"><div style="flex:1;"><label style="display:block;font-size:9px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:3px;">Product <span style="color:#D94040;">*</span></label><select class="fgProd" style="width:100%;padding:8px;border:1.5px solid #E0DDD6;border-radius:6px;font-size:12px;"><option value="">Select</option>'+opts+'</select></div>'
+    +'<div style="width:60px;"><label style="display:block;font-size:9px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:3px;">Qty</label><input type="number" class="fgQty" value="1" min="1" max="50" style="width:100%;padding:8px;border:1.5px solid #E0DDD6;border-radius:6px;font-size:12px;text-align:center;"></div></div></div>';
+  document.getElementById('fgItems').insertAdjacentHTML('beforeend',html);
+}
+
+async function submitFGRequest(){
+  const empName=document.getElementById('fgEmpName').value.trim();
+  const empID=document.getElementById('fgEmpID').value.trim();
+  const remarks=document.getElementById('fgRemarks').value.trim();
+  if(!empName||!empID){alert('Please fill Employee Name and ID');return;}
+  const items=[];
+  document.querySelectorAll('.fgProd').forEach((sel,i)=>{
+    const prod=sel.value;
+    const qty=parseInt(document.querySelectorAll('.fgQty')[i].value)||1;
+    if(prod) items.push({product:prod,qty:qty});
+  });
+  if(!items.length){alert('Please add at least one product');return;}
+  const ref='FGTST-'+Date.now().toString(36).toUpperCase();
+  const record={request_ref:ref,store_name:me.name+'|'+me.name,employee_name:empName,employee_id:empID,items:items,status:'pending',submitted_at:new Date().toISOString()};
+  try{
+    const{error}=await _SBC.from('fg_tester_requests').insert([record]);
+    if(error) throw error;
+    alert('✅ Request submitted!\nRef: '+ref+'\nStatus: PENDING APPROVAL');
+    closeFGRequest();
+  }catch(e){console.error(e);alert('Error: '+e.message);}
+}
+
+function openFGApproval(){
+  document.getElementById('fgApprovalPanel').style.display='flex';
+  loadFGRequests();
+}
+
+function closeFGApproval(){
+  document.getElementById('fgApprovalPanel').style.display='none';
+}
+
+async function loadFGRequests(){
+  const body=document.getElementById('fgApprovalBody');
+  body.innerHTML='<div style="text-align:center;padding:40px;color:#888;">Loading...</div>';
+  try{
+    const{data,error}=await _SBC.from('fg_tester_requests').select('*').order('submitted_at',{ascending:false});
+    if(error) throw error;
+    if(!data||!data.length){body.innerHTML='<div style="text-align:center;padding:40px;color:#888;">No requests yet</div>';return;}
+    const pending=data.filter(r=>r.status==='pending');
+    const approved=data.filter(r=>r.status==='approved');
+    const rejected=data.filter(r=>r.status==='rejected');
+    let html='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;">';
+    html+='<div style="background:#FEF3C7;border:2px solid #F59E0B;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:28px;font-weight:800;color:#92400E;">'+pending.length+'</div><div style="font-size:11px;color:#92400E;font-weight:600;">PENDING</div></div>';
+    html+='<div style="background:#D1FAE5;border:2px solid #10B981;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:28px;font-weight:800;color:#065F46;">'+approved.length+'</div><div style="font-size:11px;color:#065F46;font-weight:600;">APPROVED</div></div>';
+    html+='<div style="background:#FEE2E2;border:2px solid #EF4444;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:28px;font-weight:800;color:#991B1B;">'+rejected.length+'</div><div style="font-size:11px;color:#991B1B;font-weight:600;">REJECTED</div></div></div>';
+    data.forEach(r=>{
+      const store=r.store_name.split('|')[0];
+      const totalQty=r.items.reduce((s,i)=>s+i.qty,0);
+      const statusColor=r.status==='pending'?'#F59E0B':r.status==='approved'?'#10B981':'#EF4444';
+      const statusBg=r.status==='pending'?'#FEF3C7':r.status==='approved'?'#D1FAE5':'#FEE2E2';
+      html+='<div style="background:#fff;border:2px solid #E8E4DC;border-radius:10px;padding:14px;margin-bottom:12px;">';
+      html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">';
+      html+='<div><div style="font-family:var(--f-mono);font-size:12px;font-weight:700;color:#1A1A1A;">'+r.request_ref+'</div><div style="font-size:11px;color:#888;margin-top:2px;">'+new Date(r.submitted_at).toLocaleString('en-GB')+'</div></div>';
+      html+='<div style="background:'+statusBg+';color:'+statusColor+';padding:4px 10px;border-radius:6px;font-size:9px;font-weight:800;">'+r.status.toUpperCase()+'</div></div>';
+      html+='<div style="font-size:12px;margin-bottom:8px;"><b>Store:</b> '+store+'</div>';
+      html+='<div style="font-size:12px;margin-bottom:8px;"><b>Employee:</b> '+r.employee_name+' ('+r.employee_id+')</div>';
+      html+='<div style="font-size:12px;margin-bottom:8px;"><b>Items:</b> '+r.items.length+' products, '+totalQty+' units total</div>';
+      if(r.status==='pending'){
+        html+='<div style="display:flex;gap:8px;margin-top:12px;">';
+        html+='<button onclick="approveFGRequest(\''+r.request_ref+'\')" style="flex:1;background:#10B981;color:#fff;border:none;border-radius:6px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;">✓ Approve</button>';
+        html+='<button onclick="rejectFGRequest(\''+r.request_ref+'\')" style="flex:1;background:#EF4444;color:#fff;border:none;border-radius:6px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;">✕ Reject</button></div>';
+      }else if(r.approved_by){
+        html+='<div style="font-size:10px;color:#888;margin-top:8px;padding-top:8px;border-top:1px solid #E8E4DC;">'+r.status.charAt(0).toUpperCase()+r.status.slice(1)+' by: '+r.approved_by+'<br>'+new Date(r.approved_at).toLocaleString('en-GB')+'</div>';
+        if(r.rejection_reason) html+='<div style="font-size:10px;color:#991B1B;margin-top:4px;"><b>Reason:</b> '+r.rejection_reason+'</div>';
+      }
+      html+='</div>';
+    });
+    body.innerHTML=html;
+  }catch(e){console.error(e);body.innerHTML='<div style="text-align:center;padding:40px;color:#EF4444;">Error: '+e.message+'</div>';}
+}
+
+async function approveFGRequest(ref){
+  const approver=prompt('Your name (for audit trail):');
+  if(!approver) return;
+  try{
+    const{error}=await _SBC.from('fg_tester_requests').update({status:'approved',approved_by:approver,approved_at:new Date().toISOString()}).eq('request_ref',ref);
+    if(error) throw error;
+    alert('✅ Request approved!');
+    loadFGRequests();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function rejectFGRequest(ref){
+  const approver=prompt('Your name (for audit trail):');
+  if(!approver) return;
+  const reason=prompt('Rejection reason:');
+  if(!reason) return;
+  try{
+    const{error}=await _SBC.from('fg_tester_requests').update({status:'rejected',approved_by:approver,approved_at:new Date().toISOString(),rejection_reason:reason}).eq('request_ref',ref);
+    if(error) throw error;
+    alert('❌ Request rejected!');
+    loadFGRequests();
+  }catch(e){alert('Error: '+e.message);}
+}
 
 </script>
 </body>
