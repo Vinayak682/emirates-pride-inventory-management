@@ -213,7 +213,7 @@ function exportPDF(){
   const doc=new jsPDF('l','mm','a4');
   doc.setFont('helvetica','bold');
   doc.setFontSize(16);
-  doc.text('FG to Tester Requests Report',15,15);
+  doc.text('FG to Tester Requests Report — Complete Transaction History',15,15);
   doc.setFontSize(10);
   doc.setFont('helvetica','normal');
   doc.text('Emirates Pride Perfumes — Generated: '+fmtDateTime(new Date()),15,22);
@@ -221,8 +221,12 @@ function exportPDF(){
   const to=document.getElementById('dateTo').value;
   if(from||to) doc.text('Period: '+(from?fmtDate(from+'T00:00:00'):'All')+' to '+(to?fmtDate(to+'T00:00:00'):'All'),15,28);
 
-  const filtered=activeFilter==='all'?allData:allData.filter(r=>r.status===activeFilter);
-  const rows=filtered.map(r=>{
+  doc.setFontSize(8);
+  doc.setFont('helvetica','italic');
+  doc.text('(Exporting ALL requests regardless of current filter)',15,32);
+  doc.setFont('helvetica','normal');
+
+  const rows=allData.map(r=>{
     const items=(r.items||[]).map(it=>it.qty+'× '+cleanProduct(it.product)).join('\n');
     const totalQty=(r.items||[]).reduce((s,i)=>s+(i.qty||0),0);
     return[
@@ -238,7 +242,7 @@ function exportPDF(){
     ];
   });
   doc.autoTable({
-    startY:from||to?34:28,
+    startY:from||to?40:36,
     head:[['Ref','Date','Store','Employee','Items','Qty','Status','Action By','Rejection Reason']],
     body:rows,
     styles:{fontSize:7,cellPadding:3,overflow:'linebreak'},
@@ -258,13 +262,13 @@ function exportPDF(){
       }
     }
   });
-  doc.save('FG_Tester_Requests_'+new Date().toISOString().split('T')[0]+'.pdf');
+  doc.save('FG_Tester_Requests_Complete_'+new Date().toISOString().split('T')[0]+'.pdf');
 }
 
 function exportExcel(){
-  const filtered=activeFilter==='all'?allData:allData.filter(r=>r.status===activeFilter);
   const rows=[];
-  filtered.forEach(r=>{
+  // Export ALL data, not filtered
+  allData.forEach(r=>{
     const items=r.items||[];
     if(items.length===0){
       rows.push({
@@ -273,7 +277,7 @@ function exportExcel(){
         'Employee Name':r.employee_name||'','Employee ID':r.employee_id||'',
         'Product':'','Qty':0,'Total Qty':0,
         'Status':r.status.toUpperCase(),
-        'Action By':r.approved_by||'','Action Date':r.approved_at?fmtDateTime(r.approved_at):'',
+        'Approved By':r.approved_by||'','Approved Date':r.approved_at?fmtDateTime(r.approved_at):'',
         'Rejection Reason':r.rejection_reason||'','Remarks':r.remarks||''
       });
     } else {
@@ -285,8 +289,8 @@ function exportExcel(){
           'Employee Name':idx===0?(r.employee_name||''):'','Employee ID':idx===0?(r.employee_id||''):'',
           'Product':cleanProduct(it.product),'Qty':it.qty||0,'Total Qty':idx===0?totalQty:'',
           'Status':idx===0?r.status.toUpperCase():'',
-          'Action By':idx===0?(r.approved_by||''):'',
-          'Action Date':idx===0?(r.approved_at?fmtDateTime(r.approved_at):''):'',
+          'Approved By':idx===0?(r.approved_by||''):'',
+          'Approved Date':idx===0?(r.approved_at?fmtDateTime(r.approved_at):''):'',
           'Rejection Reason':idx===0?(r.rejection_reason||''):'',
           'Remarks':idx===0?(r.remarks||''):''
         });
@@ -294,10 +298,10 @@ function exportExcel(){
     }
   });
   const ws=XLSX.utils.json_to_sheet(rows);
-  ws['!cols']=[{wch:22},{wch:18},{wch:24},{wch:20},{wch:12},{wch:35},{wch:6},{wch:10},{wch:12},{wch:18},{wch:18},{wch:30},{wch:25}];
+  ws['!cols']=[{wch:22},{wch:18},{wch:24},{wch:20},{wch:12},{wch:35},{wch:6},{wch:10},{wch:16},{wch:18},{wch:18},{wch:30},{wch:25}];
   const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'FG Requests');
-  XLSX.writeFile(wb,'FG_Tester_Requests_'+new Date().toISOString().split('T')[0]+'.xlsx');
+  XLSX.utils.book_append_sheet(wb,ws,'FG Requests Complete');
+  XLSX.writeFile(wb,'FG_Tester_Requests_Complete_'+new Date().toISOString().split('T')[0]+'.xlsx');
 }
 
 loadData();
