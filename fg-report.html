@@ -170,6 +170,11 @@ function applyFilters(){
   renderTable(data);
 }
 
+function cleanProduct(p){
+  if(!p) return '';
+  return(p.split('|')[0]||p).trim();
+}
+
 function renderTable(data){
   if(!data.length){
     document.getElementById('tbody').innerHTML='<tr><td colspan="8" class="no-data">No requests found</td></tr>';
@@ -181,7 +186,7 @@ function renderTable(data){
     const items=r.items||[];
     const totalQty=items.reduce((s,i)=>s+(i.qty||0),0);
     const badge=r.status==='pending'?'badge-pending':r.status==='approved'?'badge-approved':'badge-rejected';
-    const itemsList=items.map(it=>`<li><span class="qty">${it.qty}×</span>${it.product||''}</li>`).join('');
+    const itemsList=items.map(it=>`<li><span class="qty">${it.qty}×</span>${cleanProduct(it.product)}</li>`).join('');
     let actionCell='<span style="color:#CCC;">—</span>';
     if(r.approved_by){
       const actionColor=r.status==='approved'?'#065F46':'#991B1B';
@@ -218,7 +223,7 @@ function exportPDF(){
 
   const filtered=activeFilter==='all'?allData:allData.filter(r=>r.status===activeFilter);
   const rows=filtered.map(r=>{
-    const items=(r.items||[]).map(it=>it.qty+'× '+it.product).join('\n');
+    const items=(r.items||[]).map(it=>it.qty+'× '+cleanProduct(it.product)).join('\n');
     const totalQty=(r.items||[]).reduce((s,i)=>s+(i.qty||0),0);
     return[
       r.request_ref,
@@ -278,7 +283,7 @@ function exportExcel(){
           'Ref':idx===0?r.request_ref:'','Submitted':idx===0?fmtDateTime(r.submitted_at):'',
           'Store':idx===0?(r.store_name||'').split('|')[0].trim():'',
           'Employee Name':idx===0?(r.employee_name||''):'','Employee ID':idx===0?(r.employee_id||''):'',
-          'Product':it.product||'','Qty':it.qty||0,'Total Qty':idx===0?totalQty:'',
+          'Product':cleanProduct(it.product),'Qty':it.qty||0,'Total Qty':idx===0?totalQty:'',
           'Status':idx===0?r.status.toUpperCase():'',
           'Action By':idx===0?(r.approved_by||''):'',
           'Action Date':idx===0?(r.approved_at?fmtDateTime(r.approved_at):''):'',
