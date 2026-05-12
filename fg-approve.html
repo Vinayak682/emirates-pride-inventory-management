@@ -29,7 +29,7 @@ body{font-family:'DM Sans',sans-serif;background:#F5F3EF;color:#1A1A1A;min-heigh
 .done-icon{font-size:54px;margin-bottom:12px;}
 .done h2{font-size:18px;margin-bottom:8px;}
 .done p{font-size:13px;color:#888;}
-.loading{display:none;text-align:center;padding:40px;}
+.loading{text-align:center;padding:40px;}
 .loading div{font-size:14px;color:#888;margin-top:12px;}
 </style>
 </head>
@@ -62,20 +62,44 @@ body{font-family:'DM Sans',sans-serif;background:#F5F3EF;color:#1A1A1A;min-heigh
 <script>
 const SB_URL='https://ncszurcrkngjcjqsowln.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
-const sb=window.supabase.createClient(SB_URL,SB_KEY);
+let sb;
 const params=new URLSearchParams(window.location.search);
 const ref=params.get('ref');
 const action=params.get('action');
 let requestData=null;
+
+// Wait for Supabase SDK to load
+window.addEventListener('load',()=>{
+  if(typeof window.supabase==='undefined'){
+    document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Failed to load dependencies</div>';
+    return;
+  }
+  sb=window.supabase.createClient(SB_URL,SB_KEY);
+  loadRequest();
+});
+
 async function loadRequest(){
-  if(!ref){document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Invalid link</div>';return;}
+  if(!ref){
+    document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Invalid link - missing request reference</div>';
+    return;
+  }
   try{
     const{data,error}=await sb.from('fg_tester_requests').select('*').eq('request_ref',ref).single();
-    if(error) throw error;
-    if(!data){document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Request not found</div>';return;}
+    if(error){
+      console.error('Supabase error:',error);
+      document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Error loading request: '+error.message+'</div>';
+      return;
+    }
+    if(!data){
+      document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Request not found</div>';
+      return;
+    }
     requestData=data;
     if(data.status!=='pending'){
-      showDone(data.status==='approved'?'✅':'❌',data.status==='approved'?'Already Approved':'Already Rejected','This request was '+data.status+' on '+new Date(data.approved_at).toLocaleString()+' by '+data.approved_by);
+      const statusIcon=data.status==='approved'?'✅':'❌';
+      const statusTitle=data.status==='approved'?'Already Approved':'Already Rejected';
+      const statusMsg='This request was '+data.status+' on '+new Date(data.approved_at).toLocaleString('en-GB')+' by '+data.approved_by;
+      showDone(statusIcon,statusTitle,statusMsg);
       return;
     }
     const store=data.store_name.split('|')[0].trim();
@@ -83,11 +107,12 @@ async function loadRequest(){
       '<div class="row"><span>Ref</span><b>'+data.request_ref+'</b></div>'+
       '<div class="row"><span>Store</span><b>'+store+'</b></div>'+
       '<div class="row"><span>Employee</span><b>'+data.employee_name+' ('+data.employee_id+')</b></div>'+
-      '<div class="row"><span>Submitted</span><b>'+new Date(data.submitted_at).toLocaleString()+'</b></div>'+
+      '<div class="row"><span>Submitted</span><b>'+new Date(data.submitted_at).toLocaleString('en-GB')+'</b></div>'+
       '<div class="row"><span>Status</span><b style="color:#F59E0B;">'+data.status.toUpperCase()+'</b></div>';
     let itemsHtml='';
     data.items.forEach((item,i)=>{
-      itemsHtml+='<div class="item">'+(i+1)+'. '+item.product.split('|')[0].trim()+' <b>×'+item.qty+'</b></div>';
+      const prodName=item.product.split('|')[0].trim();
+      itemsHtml+='<div class="item">'+(i+1)+'. '+prodName+' <b>×'+item.qty+'</b></div>';
     });
     document.getElementById('itemsList').innerHTML=itemsHtml;
     document.getElementById('loading').style.display='none';
@@ -95,35 +120,52 @@ async function loadRequest(){
     if(action==='approve') document.getElementById('rejectBtn').style.display='none';
     if(action==='reject') document.getElementById('approveBtn').style.display='none';
   }catch(e){
-    console.error(e);
+    console.error('Load error:',e);
     document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Error: '+e.message+'</div>';
   }
 }
+
 async function doAction(act){
   const approver=prompt('Your name (for audit trail):','');
-  if(!approver) return;
+  if(!approver||!approver.trim()){
+    alert('Name is required');
+    return;
+  }
   let reason='';
   if(act==='reject'){
     reason=prompt('Rejection reason:','');
-    if(!reason) return;
+    if(!reason||!reason.trim()){
+      alert('Rejection reason is required');
+      return;
+    }
   }
   const btns=document.querySelectorAll('.btn');
   btns.forEach(b=>b.disabled=true);
   try{
     const update={
       status:act==='approve'?'approved':'rejected',
-      approved_by:approver,
+      approved_by:approver.trim(),
       approved_at:new Date().toISOString()
     };
-    if(act==='reject') update.rejection_reason=reason;
+    if(act==='reject') update.rejection_reason=reason.trim();
+    
     const{error}=await sb.from('fg_tester_requests').update(update).eq('request_ref',ref);
-    if(error) throw error;
-    showDone(act==='approve'?'✅':'❌',act==='approve'?'Request Approved':'Request Rejected','The store has been notified of your decision.');
+    if(error){
+      console.error('Update error:',error);
+      throw new Error(error.message);
+    }
+    
+    const statusIcon=act==='approve'?'✅':'❌';
+    const statusTitle=act==='approve'?'Request Approved':'Request Rejected';
+    const statusMsg='The store will be notified. You can close this window now.';
+    showDone(statusIcon,statusTitle,statusMsg);
   }catch(e){
+    console.error('Action error:',e);
     alert('Error: '+e.message);
     btns.forEach(b=>b.disabled=false);
   }
 }
+
 function showDone(icon,title,msg){
   document.getElementById('loading').style.display='none';
   document.getElementById('content').style.display='none';
@@ -132,7 +174,6 @@ function showDone(icon,title,msg){
   document.getElementById('doneMsg').textContent=msg;
   document.getElementById('done').style.display='block';
 }
-loadRequest();
 </script>
 </body>
 </html>
