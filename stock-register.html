@@ -3338,6 +3338,7 @@ function buildGrid(){
       <th class="gh-sold"><div class="hdr-en">SALES</div><div class="hdr-ar">المبيعات</div><div class="hdr-sub-lbl">(D)</div></th>
       <th class="gh-trf"><div class="hdr-en">TRANSFER TO STORE</div><div class="hdr-ar">نقل إلى متجر</div><div class="hdr-sub-lbl">(E)</div></th>
       <th class="gh-wrh"><div class="hdr-en">RETURN TO WAREHOUSE</div><div class="hdr-ar">إرجاع إلى المستودع</div><div class="hdr-sub-lbl">(F)</div></th>
+      <th class="gh-tst" style="background:#F0F8F5;color:#1A6040;"><div class="hdr-en">TESTER RECEIVED</div><div class="hdr-ar">تستر استلام</div><div class="hdr-sub-lbl">(G)</div></th>
       <th class="gh-bal"><div class="hdr-en">BALANCE</div><div class="hdr-ar">الرصيد</div><div class="hdr-sub-lbl">A+B+C−D−E−F</div></th>
     </tr>
     <tr class="hdr-sub hdr-totals-row">
@@ -3348,6 +3349,7 @@ function buildGrid(){
       <th class="gs-sold" id="tot-sold-th"></th>
       <th class="gs-trf"  id="tot-trf-th"></th>
       <th class="gs-wrh"  id="tot-wrh-th"></th>
+      <th class="gs-tst"  id="tot-tst-th"></th>
       <th class="gs-bal"  id="tot-bal-th"></th>
     </tr>`;
   // Populate totals row immediately after building header
@@ -3356,7 +3358,7 @@ function buildGrid(){
   // Body
   const tbody=document.getElementById('sgridBody');
   tbody.innerHTML='';
-  let totO=0,totW=0,totI=0,totS=0,totT=0,totR=0,totB=0;
+  let totO=0,totW=0,totI=0,totS=0,totT=0,totR=0,totTst=0,totB=0;
 
   CATS.forEach(cat=>{
     // Category row
@@ -3378,8 +3380,9 @@ function buildGrid(){
       const t=dbGet(me.code,curDay,p.code,'trf');
       const w=dbGet(me.code,curDay,p.code,'wh');
       const r=dbGet(me.code,curDay,p.code,'wrh');
+      const tst=dbGet(me.code,curDay,p.code,'tst');
       const b=bal(me.code,curDay,p.code);
-      totO+=o;totW+=w;totI+=i;totS+=s;totT+=t;totR+=r;totB+=b;
+      totO+=o;totW+=w;totI+=i;totS+=s;totT+=t;totR+=r;totTst+=tst;totB+=b;
       const isNeg=b<0;
 
       const tr=document.createElement('tr');
@@ -3392,6 +3395,7 @@ function buildGrid(){
       const showS=s>0?s:'';
       const showT=t>0?t:'';
       const showR=r>0?r:'';
+      const showTst=tst>0?tst:'';
 
       const mgrActive=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
       const canEdit=!locked||mgrActive;
@@ -3492,6 +3496,9 @@ function buildGrid(){
         <td class="dcell wrh" onclick="${canEdit?'openNP(\''+p.code+'\',\'wrh\')':'toast(\'🔒 Day locked\')'}">
           <span class="dcell-val${showR===''?' empty':''}">${showR===''?'—':showR}</span>
         </td>
+        <td class="dcell tst" style="background:#F0F8F5;color:#1A6040;font-weight:700;">
+          <span class="dcell-val${showTst===''?' empty':''}">${showTst===''?'—':showTst}</span>
+        </td>
         <td class="dcell bal">
           <span class="dcell-val${isNeg?' negative':''}">${b}</span>
         </td>`;
@@ -3511,6 +3518,7 @@ function buildGrid(){
     <td class="sold">${totS}</td>
     <td class="trf">${totT}</td>
     <td class="wrh">${totR}</td>
+    <td class="tst" style="background:#F0F8F5;color:#1A6040;font-weight:700;">${totTst}</td>
     <td class="bal">${totB}</td>`;
   tbody.appendChild(tot);
 
@@ -3581,7 +3589,7 @@ function buildFooter(){
 
 function updateTotalsRow(){
   if(!me) return;
-  let tO=0,tW=0,tI=0,tS=0,tT=0,tR=0,tB=0;
+  let tO=0,tW=0,tI=0,tS=0,tT=0,tR=0,tTst=0,tB=0;
   PRODUCTS.forEach(p=>{
     tO+=dbGet(me.code,curDay,p.code,'open');
     tW+=dbGet(me.code,curDay,p.code,'wh');
@@ -3589,6 +3597,7 @@ function updateTotalsRow(){
     tS+=dbGet(me.code,curDay,p.code,'sold');
     tT+=dbGet(me.code,curDay,p.code,'trf');
     tR+=dbGet(me.code,curDay,p.code,'wrh');
+    tTst+=dbGet(me.code,curDay,p.code,'tst');
     tB+=bal(me.code,curDay,p.code);
   });
   // Numbers only — no text labels
@@ -3599,6 +3608,7 @@ function updateTotalsRow(){
   set('tot-sold-th',`<span class="tot-num sold">${tS||'—'}</span>`);
   set('tot-trf-th', `<span class="tot-num trf">${tT||'—'}</span>`);
   set('tot-wrh-th', `<span class="tot-num wrh">${tR||'—'}</span>`);
+  set('tot-tst-th', `<span class="tot-num tst" style="color:#1A6040;font-weight:700;">${tTst||'—'}</span>`);
   set('tot-bal-th', `<span class="tot-num ${tB<0?'neg':tB>0?'bal':'zero'}">${tB||'—'}</span>`);
 }
 
@@ -3642,7 +3652,7 @@ function openNP(code,field){
   const p=PRODUCTS.find(x=>x.code===code);
   npCtx={code,field};
   npBuf=String(dbGet(me.code,curDay,code,field)||'');
-  const labels={open:'Opening Stock  (A)',wh:'Warehouse IN — From Warehouse  (B)',inn:'Store IN — From Another Store  (C)',sold:'SOLD — To Customer  (D)',trf:'SENT OUT — To Another Store  (E)',wrh:'RETURN TO WAREHOUSE  (F)'};
+  const labels={open:'Opening Stock  (A)',wh:'Warehouse IN — From Warehouse  (B)',inn:'Store IN — From Another Store  (C)',sold:'SOLD — To Customer  (D)',trf:'SENT OUT — To Another Store  (E)',wrh:'RETURN TO WAREHOUSE  (F)',tst:'TESTER RECEIVED — From FG Conversion  (G)'};
   const cls={open:'open',wh:'wh',inn:'inn',sold:'sold',trf:'trf',wrh:'wrh'};
   document.getElementById('npProduct').textContent=p?p.en:code;
   const fEl=document.getElementById('npField');
@@ -11676,10 +11686,57 @@ async function approveFGRequest(ref){
     const{error}=await _SBC.from('fg_tester_requests').update({status:'approved',approved_by:approver,approved_at:approvedAt}).eq('request_ref',ref);
     if(error) throw error;
     const{data}=await _SBC.from('fg_tester_requests').select('*').eq('request_ref',ref).single();
+    if(data) await _applyFGConversion(data,approver);
     loadFGRequests();
     if(data) generateFGApprovalPDF(data);
-    toast('✅ Approved — PDF downloading');
+    toast('✅ Approved — Stock updated & PDF downloading');
   }catch(e){alert('Error: '+e.message);}
+}
+
+async function _applyFGConversion(req,approver){
+  try{
+    const storeCode=(req.store_name||'').split('|')[0].trim();
+    const items=req.items||[];
+    if(!storeCode||!items.length) return;
+    const today=new Date();
+    const dayDate=today.getFullYear()+'-'+(today.getMonth()+1).toString().padStart(2,'0')+'-'+today.getDate().toString().padStart(2,'0');
+    const ts=today.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' '+today.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    for(const it of items){
+      const prodCode=it.item_code||it.code||'';
+      const qty=it.qty||0;
+      if(!prodCode||qty<=0) continue;
+      const curOpen=dbGet(storeCode,0,prodCode,'open')||0;
+      const curTst=dbGet(storeCode,0,prodCode,'tst')||0;
+      dbSet(storeCode,0,prodCode,'open',Math.max(0,curOpen-qty));
+      dbSet(storeCode,0,prodCode,'tst',curTst+qty);
+      if(!db.transferLog) db.transferLog=[];
+      db.transferLog.unshift({
+        id:Date.now(),ts,day:0,
+        fromStore:storeCode,fromName:storeCode,
+        toStore:'TST',toName:'Tester Stock',
+        prodCode,prodName:it.product||'',prodAr:'',
+        qty,remark:'FG Stock Converted to Tester',note:'fg-conversion'
+      });
+      await fetch(_SB_URL+'/rest/v1/stock_cells?store_code=eq.'+storeCode+'&day_date=eq.'+dayDate+'&prod_code=eq.'+prodCode,{
+        method:'PATCH',headers:{..._SBH,'Prefer':'return=minimal'},
+        body:JSON.stringify({open:Math.max(0,curOpen-qty),field:'open'})
+      }).catch(()=>{});
+      await fetch(_SB_URL+'/rest/v1/stock_cells?store_code=eq.'+storeCode+'&day_date=eq.'+dayDate+'&prod_code=eq.'+prodCode,{
+        method:'PATCH',headers:{..._SBH,'Prefer':'return=minimal'},
+        body:JSON.stringify({tst:curTst+qty,field:'tst'})
+      }).catch(()=>{});
+      await fetch(_SB_URL+'/rest/v1/transfers',{
+        method:'POST',headers:{..._SBH,'Prefer':'return=minimal'},
+        body:JSON.stringify({
+          day_date:dayDate,from_store:storeCode,from_name:storeCode,
+          to_store:'TST',to_name:'Tester Stock',
+          prod_code:prodCode,prod_name:it.product||'',prod_ar:'',
+          qty,remark:'FG Stock Converted to Tester [Ref: '+req.request_ref+']',note:'fg-conversion'
+        })
+      }).catch(()=>{});
+    }
+    saveDB();
+  }catch(e){console.warn('FG conversion update failed:',e.message);}
 }
 
 async function rejectFGRequest(ref){
