@@ -28,13 +28,13 @@ body{font-family:'DM Sans',sans-serif;background:#F5F3EF;color:#1A1A1A;min-heigh
 .done{display:none;text-align:center;padding:30px 20px;}
 .done-icon{font-size:54px;margin-bottom:12px;}
 .done h2{font-size:18px;margin-bottom:8px;}
-.done p{font-size:13px;color:#888;}
+.done p{font-size:13px;color:#888;margin-bottom:16px;}
 .loading{text-align:center;padding:40px;}
 .loading div{font-size:14px;color:#888;margin-top:12px;}
 </style>
 </head>
 <body>
-<div class="card" id="main">
+<div class="card">
   <div class="hdr">
     <h1>FG to Tester Request</h1>
     <p>Emirates Pride Perfumes</p>
@@ -59,6 +59,7 @@ body{font-family:'DM Sans',sans-serif;background:#F5F3EF;color:#1A1A1A;min-heigh
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 const SB_URL='https://ncszurcrkngjcjqsowln.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
@@ -67,113 +68,11 @@ const params=new URLSearchParams(window.location.search);
 const ref=params.get('ref');
 const action=params.get('action');
 let requestData=null;
-
-// Wait for Supabase SDK to load
-window.addEventListener('load',()=>{
-  if(typeof window.supabase==='undefined'){
-    document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Failed to load dependencies</div>';
-    return;
-  }
-  sb=window.supabase.createClient(SB_URL,SB_KEY);
-  loadRequest();
-});
-
-async function loadRequest(){
-  if(!ref){
-    document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Invalid link - missing request reference</div>';
-    return;
-  }
-  try{
-    const{data,error}=await sb.from('fg_tester_requests').select('*').eq('request_ref',ref).single();
-    if(error){
-      console.error('Supabase error:',error);
-      document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Error loading request: '+error.message+'</div>';
-      return;
-    }
-    if(!data){
-      document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Request not found</div>';
-      return;
-    }
-    requestData=data;
-    if(data.status!=='pending'){
-      const statusIcon=data.status==='approved'?'✅':'❌';
-      const statusTitle=data.status==='approved'?'Already Approved':'Already Rejected';
-      const statusMsg='This request was '+data.status+' on '+new Date(data.approved_at).toLocaleString('en-GB')+' by '+data.approved_by;
-      showDone(statusIcon,statusTitle,statusMsg);
-      return;
-    }
-    const store=data.store_name.split('|')[0].trim();
-    document.getElementById('infoBox').innerHTML=
-      '<div class="row"><span>Ref</span><b>'+data.request_ref+'</b></div>'+
-      '<div class="row"><span>Store</span><b>'+store+'</b></div>'+
-      '<div class="row"><span>Employee</span><b>'+data.employee_name+' ('+data.employee_id+')</b></div>'+
-      '<div class="row"><span>Submitted</span><b>'+new Date(data.submitted_at).toLocaleString('en-GB')+'</b></div>'+
-      '<div class="row"><span>Status</span><b style="color:#F59E0B;">'+data.status.toUpperCase()+'</b></div>';
-    let itemsHtml='';
-    data.items.forEach((item,i)=>{
-      const prodName=item.product.split('|')[0].trim();
-      itemsHtml+='<div class="item">'+(i+1)+'. '+prodName+' <b>×'+item.qty+'</b></div>';
-    });
-    document.getElementById('itemsList').innerHTML=itemsHtml;
-    document.getElementById('loading').style.display='none';
-    document.getElementById('content').style.display='block';
-    if(action==='approve') document.getElementById('rejectBtn').style.display='none';
-    if(action==='reject') document.getElementById('approveBtn').style.display='none';
-  }catch(e){
-    console.error('Load error:',e);
-    document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Error: '+e.message+'</div>';
-  }
-}
-
-async function doAction(act){
-  const approver=prompt('Your name (for audit trail):','');
-  if(!approver||!approver.trim()){
-    alert('Name is required');
-    return;
-  }
-  let reason='';
-  if(act==='reject'){
-    reason=prompt('Rejection reason:','');
-    if(!reason||!reason.trim()){
-      alert('Rejection reason is required');
-      return;
-    }
-  }
-  const btns=document.querySelectorAll('.btn');
-  btns.forEach(b=>b.disabled=true);
-  try{
-    const update={
-      status:act==='approve'?'approved':'rejected',
-      approved_by:approver.trim(),
-      approved_at:new Date().toISOString()
-    };
-    if(act==='reject') update.rejection_reason=reason.trim();
-    
-    const{error}=await sb.from('fg_tester_requests').update(update).eq('request_ref',ref);
-    if(error){
-      console.error('Update error:',error);
-      throw new Error(error.message);
-    }
-    
-    const statusIcon=act==='approve'?'✅':'❌';
-    const statusTitle=act==='approve'?'Request Approved':'Request Rejected';
-    const statusMsg='The store will be notified. You can close this window now.';
-    showDone(statusIcon,statusTitle,statusMsg);
-  }catch(e){
-    console.error('Action error:',e);
-    alert('Error: '+e.message);
-    btns.forEach(b=>b.disabled=false);
-  }
-}
-
-function showDone(icon,title,msg){
-  document.getElementById('loading').style.display='none';
-  document.getElementById('content').style.display='none';
-  document.getElementById('doneIcon').textContent=icon;
-  document.getElementById('doneTitle').textContent=title;
-  document.getElementById('doneMsg').textContent=msg;
-  document.getElementById('done').style.display='block';
-}
+window.addEventListener('load',()=>{if(typeof window.supabase==='undefined'){document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Failed to load</div>';return;}sb=window.supabase.createClient(SB_URL,SB_KEY);loadRequest();});
+async function loadRequest(){if(!ref){document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Invalid link</div>';return;}try{const{data,error}=await sb.from('fg_tester_requests').select('*').eq('request_ref',ref).single();if(error||!data){document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Request not found</div>';return;}requestData=data;if(data.status!=='pending'){showDone(data.status==='approved'?'✅':'❌',data.status==='approved'?'Already Approved':'Already Rejected','This request was '+data.status+' on '+new Date(data.approved_at).toLocaleString('en-GB')+' by '+data.approved_by);return;}const store=data.store_name.split('|')[0].trim();document.getElementById('infoBox').innerHTML='<div class="row"><span>Ref</span><b>'+data.request_ref+'</b></div><div class="row"><span>Store</span><b>'+store+'</b></div><div class="row"><span>Employee</span><b>'+data.employee_name+' ('+data.employee_id+')</b></div><div class="row"><span>Submitted</span><b>'+new Date(data.submitted_at).toLocaleString('en-GB')+'</b></div><div class="row"><span>Status</span><b style="color:#F59E0B;">'+data.status.toUpperCase()+'</b></div>';let itemsHtml='';data.items.forEach((item,i)=>{itemsHtml+='<div class="item">'+(i+1)+'. '+item.product.split('|')[0].trim()+' <b>×'+item.qty+'</b></div>';});document.getElementById('itemsList').innerHTML=itemsHtml;document.getElementById('loading').style.display='none';document.getElementById('content').style.display='block';if(action==='approve') document.getElementById('rejectBtn').style.display='none';if(action==='reject') document.getElementById('approveBtn').style.display='none';}catch(e){document.getElementById('loading').innerHTML='<div style="color:#EF4444;">Error: '+e.message+'</div>';}}
+async function doAction(act){const approver=prompt('Your name (for audit trail):','');if(!approver||!approver.trim()){alert('Name is required');return;}let reason='';if(act==='reject'){reason=prompt('Rejection reason:','');if(!reason||!reason.trim()){alert('Rejection reason is required');return;}}const btns=document.querySelectorAll('.btn');btns.forEach(b=>b.disabled=true);try{const update={status:act==='approve'?'approved':'rejected',approved_by:approver.trim(),approved_at:new Date().toISOString()};if(act==='reject') update.rejection_reason=reason.trim();const{error}=await sb.from('fg_tester_requests').update(update).eq('request_ref',ref);if(error) throw error;makePDF(act,approver.trim(),reason.trim());showDone(act==='approve'?'✅':'❌',act==='approve'?'Request Approved':'Request Rejected','Updated PDF downloaded. You can close this window.');}catch(e){alert('Error: '+e.message);btns.forEach(b=>b.disabled=false);}}
+function makePDF(act,approver,reason){const{jsPDF}=window.jspdf;const doc=new jsPDF('p','mm','a4');const W=210;let y=15;const d=requestData;doc.setFillColor(26,26,26);doc.rect(0,0,W,30,'F');doc.setFillColor(201,164,78);doc.rect(0,30,W,2,'F');doc.setFont('helvetica','bold');doc.setTextColor(201,164,78);doc.setFontSize(8);doc.text('EMIRATES PRIDE PERFUMES',W/2,10,{align:'center'});doc.setTextColor(255,255,255);doc.setFontSize(14);doc.text('REQUEST FOR TESTER FROM OUTLET FG STOCK',W/2,19,{align:'center'});doc.setFontSize(8);doc.setTextColor(150,150,150);doc.text('طلب تستر من مخزون المتجر',W/2,26,{align:'center'});y=40;doc.setFillColor(250,248,245);doc.setDrawColor(232,228,220);doc.roundedRect(15,y-4,(W-30),36,3,3,'FD');doc.setFont('helvetica','bold');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text('Ref:',20,y+2);doc.setFont('helvetica','normal');doc.text(d.request_ref,32,y+2);doc.setFont('helvetica','bold');doc.text('Date:',110,y+2);doc.setFont('helvetica','normal');doc.text(new Date(d.submitted_at).toLocaleDateString('en-GB'),130,y+2);const store=d.store_name.split('|')[0].trim();doc.setFont('helvetica','bold');doc.text('Store:',20,y+9);doc.setFont('helvetica','normal');doc.text(store.length>45?store.substring(0,45)+'...':store,38,y+9);doc.setFont('helvetica','bold');doc.text('Employee:',20,y+16);doc.setFont('helvetica','normal');doc.text(d.employee_name+' ('+d.employee_id+')',48,y+16);doc.setFont('helvetica','bold');doc.text('Status:',20,y+23);doc.setFont('helvetica','bold');const statusColor=act==='approve'?[34,197,94]:[239,68,68];doc.setTextColor(...statusColor);doc.text(act==='approve'?'APPROVED FOR TESTER USE':'REJECTED',45,y+23);doc.setFont('helvetica','normal');doc.setTextColor(26,26,26);doc.setFontSize(8);doc.text('Approved by: '+approver,20,y+30);doc.text('Date: '+new Date().toLocaleString('en-GB'),110,y+30);y+=42;doc.setFillColor(26,26,26);doc.rect(15,y,W-30,9,'F');doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);doc.setFontSize(8);doc.text('#',20,y+6);doc.text('PRODUCT / المنتج',30,y+6);doc.text('QTY',175,y+6,{align:'center'});y+=9;let total=0;d.items.forEach((item,i)=>{const bg=i%2===0?[255,255,255]:[250,248,245];doc.setFillColor(...bg);doc.rect(15,y,W-30,9,'F');doc.setDrawColor(232,228,220);doc.line(15,y+9,W-15,y+9);doc.setFont('helvetica','normal');doc.setTextColor(26,26,26);doc.setFontSize(8);doc.text(String(i+1),20,y+6);doc.text(item.product.length>50?item.product.substring(0,50)+'...':item.product,30,y+6);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(String(item.qty),175,y+6,{align:'center'});total+=item.qty;y+=9;});doc.setFillColor(26,26,26);doc.rect(15,y,W-30,9,'F');doc.setFont('helvetica','bold');doc.setTextColor(201,164,78);doc.setFontSize(9);doc.text('TOTAL',30,y+6);doc.text(String(total),175,y+6,{align:'center'});y+=18;if(act==='reject'&&reason){doc.setFont('helvetica','bold');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text('REJECTION REASON:',20,y);y+=5;doc.setFont('helvetica','normal');doc.setTextColor(80,80,80);doc.setFontSize(9);const lines=doc.splitTextToSize(reason,W-40);doc.text(lines,20,y);y+=lines.length*5+10;}doc.setFillColor(250,248,245);doc.rect(0,280,W,17,'F');doc.setDrawColor(232,228,220);doc.line(0,280,W,280);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.setFontSize(7);doc.text('Emirates Pride Perfumes - JAFZA',W/2,286,{align:'center'});doc.text('Ref: '+d.request_ref+' - '+(act==='approve'?'APPROVED':'REJECTED')+' - '+new Date().toLocaleString('en-GB'),W/2,291,{align:'center'});const fname='FG_Tester_Request_'+d.request_ref+'_'+(act==='approve'?'APPROVED':'REJECTED')+'.pdf';doc.save(fname);}
+function showDone(icon,title,msg){document.getElementById('loading').style.display='none';document.getElementById('content').style.display='none';document.getElementById('doneIcon').textContent=icon;document.getElementById('doneTitle').textContent=title;document.getElementById('doneMsg').textContent=msg;document.getElementById('done').style.display='block';}
 </script>
 </body>
 </html>
