@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -2486,58 +2486,138 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 </div>
 
 <!-- ══════════ WAREHOUSE PANEL (Tester Tracker) ══════════ -->
-<div id="whPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:700;display:none;flex-direction:column;">
-  <!-- Header -->
-  <div style="background:#1A1A1A;border-bottom:4px solid #9A7B4F;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+<style>
+.wh-tbl{width:100%;border-collapse:collapse;font-size:11px;min-width:1300px;}
+.wh-tbl th{padding:5px 8px;text-align:left;white-space:nowrap;position:sticky;z-index:2;border-right:1px solid rgba(255,255,255,0.15);}
+.wh-tbl td{padding:6px 8px;border-bottom:1px solid #E8E4DC;vertical-align:middle;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wh-tbl tbody tr:hover td{background:rgba(201,164,78,0.06)!important;}
+.wh-th-sec{font-family:monospace;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-align:center!important;padding:5px 8px!important;}
+.wh-th-out{background:#1A5276;color:#fff;}.wh-th-in{background:#145A32;color:#fff;}.wh-th-rev{background:#922B21;color:#fff;}
+.wh-row-ok td{background:#F0FDF4!important;}.wh-row-mm td{background:#FFF0F0!important;}
+.wh-row-warn td{background:#FFFBF0!important;}.wh-row-red td{background:#FFF0F0!important;}
+.wh-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;}
+.wh-pend{background:#FEF3C7;color:#92400E;}.wh-ret{background:#D1FAE5;color:#065F46;}.wh-mm{background:#FEE2E2;color:#991B1B;}
+.wh-act{padding:3px 8px;border:1.5px solid;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;display:block;margin-bottom:3px;text-align:center;}
+</style>
+
+<div id="whPanel" style="position:fixed;inset:0;background:#F0EDE6;z-index:700;display:none;flex-direction:column;overflow:hidden;">
+  <div style="background:#1A1A1A;border-bottom:4px solid #9A7B4F;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
     <div>
-      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">🏭 WAREHOUSE — TESTER TRACKER</div>
-      <div style="font-family:var(--f-mono);font-size:10px;color:#AAA;margin-top:2px;">Emirates Pride Perfumes · JAFZA</div>
+      <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">&#128230; WAREHOUSE &mdash; TESTER TRACKER</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:#AAA;margin-top:1px;">Emirates Pride Perfumes &middot; JAFZA &middot; 1-to-1 Tester Exchange Log</div>
     </div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="whRefresh()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;">⇅ Refresh</button>
-      <button onclick="doLogout()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">⏻ Logout</button>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+      <span style="font-family:var(--f-mono);font-size:9px;color:#888;">FROM</span>
+      <input type="date" id="whFromDate" style="background:#2A2A2A;color:#DDD;border:1px solid #555;border-radius:5px;padding:4px 8px;font-family:var(--f-mono);font-size:11px;">
+      <span style="font-family:var(--f-mono);font-size:9px;color:#888;">TO</span>
+      <input type="date" id="whToDate" style="background:#2A2A2A;color:#DDD;border:1px solid #555;border-radius:5px;padding:4px 8px;font-family:var(--f-mono);font-size:11px;">
+      <button onclick="whRefresh()" style="background:transparent;border:1px solid #555;border-radius:5px;color:#CCC;font-family:var(--f-mono);font-size:10px;padding:5px 10px;cursor:pointer;">&#8645; Refresh</button>
+      <button onclick="whExportExcel()" style="background:#1E5631;border:none;border-radius:5px;color:#fff;font-family:var(--f-mono);font-size:10px;padding:5px 10px;cursor:pointer;">&#128202; Excel</button>
+      <button onclick="doLogout()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:5px;color:#1A1A1A;font-family:var(--f-mono);font-size:10px;padding:5px 10px;cursor:pointer;font-weight:700;">&#9167; Logout</button>
     </div>
   </div>
-  <!-- Date bar -->
-  <div style="background:#fff;border-bottom:2px solid #E8E4DC;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
-    <span style="font-family:var(--f-mono);font-size:11px;font-weight:600;color:#888;">DATE:</span>
-    <input type="date" id="whDate" style="background:#1A1A1A;color:#E8E4DC;border:1px solid #555;border-radius:6px;padding:6px 12px;font-family:var(--f-mono);font-size:13px;" onchange="whLoadDay()">
-    <button onclick="whNewRequest()" style="background:#9A7B4F;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-family:var(--f-body);font-size:12px;font-weight:600;cursor:pointer;margin-left:auto;">+ New Request</button>
+  <div style="background:#fff;border-bottom:2px solid #E8E4DC;padding:8px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;">
+    <div id="whStats" style="display:flex;gap:8px;flex:1;min-width:0;flex-wrap:wrap;"></div>
+    <button onclick="whOpenOutwardModal()" style="background:#9A7B4F;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-family:var(--f-body);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">+ Record Outward (New DN)</button>
   </div>
-  <!-- Body -->
-  <div id="whBody" style="flex:1;overflow-y:auto;padding:16px;"></div>
+  <div id="whBody" style="flex:1;overflow:auto;padding:0;"></div>
 </div>
 
-<!-- Warehouse: New Request Modal -->
-<div id="whReqModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:950;display:none;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:12px;width:92%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-    <div style="background:#1A1A1A;border-radius:12px 12px 0 0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:#fff;">New Tester Request</span>
-      <button onclick="whCloseReqModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✕</button>
+<!-- WH: Outward Modal -->
+<div id="whOutwardModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:960;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:680px;box-shadow:0 20px 60px rgba(0,0,0,0.4);margin:auto;">
+    <div style="background:#1A5276;border-radius:12px 12px 0 0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:#fff;">&#128228; Record Outward Dispatch</div>
+        <div style="font-size:10px;color:#AED6F1;margin-top:2px;">Type from ATALO DN printout &mdash; 2 copies will print (Warehouse + Store)</div>
+      </div>
+      <button onclick="whCloseOutwardModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">&#10005;</button>
     </div>
-    <div style="padding:18px;overflow-y:auto;flex:1;">
-      <label style="font-size:12px;font-weight:600;color:#888;display:block;margin-bottom:4px;">Store</label>
-      <select id="whReqStore" style="width:100%;padding:10px;border:1.5px solid #E8E4DC;border-radius:8px;font-size:13px;margin-bottom:14px;background:#FAFAF8;"></select>
-      
-      <label style="font-size:12px;font-weight:600;color:#888;display:block;margin-bottom:4px;">Tester SKU</label>
-      <select id="whReqSku" style="width:100%;padding:10px;border:1.5px solid #E8E4DC;border-radius:8px;font-size:13px;margin-bottom:14px;background:#FAFAF8;"></select>
-      
-      <label style="font-size:12px;font-weight:600;color:#888;display:block;margin-bottom:4px;">Quantity Requested</label>
-      <input type="number" id="whReqQty" value="1" min="1" max="20" style="width:100%;padding:10px;border:1.5px solid #E8E4DC;border-radius:8px;font-size:13px;margin-bottom:14px;background:#FAFAF8;box-sizing:border-box;">
-      
-      <label style="font-size:12px;font-weight:600;color:#888;display:block;margin-bottom:4px;">Request Document Ref (optional)</label>
-      <input type="text" id="whReqDoc" placeholder="e.g., REQ-2026-0501" style="width:100%;padding:10px;border:1.5px solid #E8E4DC;border-radius:8px;font-size:13px;margin-bottom:14px;background:#FAFAF8;box-sizing:border-box;">
-      
-      <label style="font-size:12px;font-weight:600;color:#888;display:block;margin-bottom:4px;">📎 Attach Store Request (PDF/Image)</label>
-      <input type="file" id="whReqFile" accept="image/*,.pdf" style="width:100%;padding:8px;border:1.5px dashed #E8E4DC;border-radius:8px;font-size:12px;margin-bottom:6px;background:#FAFAF8;box-sizing:border-box;">
-      <div id="whReqFileStatus" style="font-size:10px;color:#888;margin-bottom:14px;"></div>
+    <div style="padding:16px 18px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div>
+          <label style="display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Date Dispatched *</label>
+          <input type="date" id="whOutDate" style="width:100%;padding:8px;border:1.5px solid #E0DDD6;border-radius:7px;font-size:13px;background:#fff;">
+        </div>
+        <div>
+          <label style="display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">DN Reference (ATALO) *</label>
+          <input type="text" id="whOutDN" placeholder="e.g., DN 3333" style="width:100%;padding:8px;border:1.5px solid #E0DDD6;border-radius:7px;font-size:13px;background:#fff;">
+        </div>
+        <div>
+          <label style="display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Outlet (Store) *</label>
+          <select id="whOutStore" style="width:100%;padding:8px;border:1.5px solid #E0DDD6;border-radius:7px;font-size:12px;background:#fff;"></select>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1.5px solid #E8E4DC;">
+        <div style="font-size:11px;font-weight:700;color:#1A5276;">SKU Line Items <span style="font-size:10px;font-weight:400;color:#888;">(one row per SKU from the ATALO DN)</span></div>
+        <button onclick="whAddOutwardRow()" style="background:#1A5276;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">+ Add SKU</button>
+      </div>
+      <div id="whOutItems"></div>
     </div>
-    <div style="padding:14px 18px;border-top:1px solid #E8E4DC;display:flex;gap:10px;">
-      <button onclick="whCloseReqModal()" style="flex:1;padding:10px;border:1px solid #E8E4DC;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">Cancel</button>
-      <button onclick="whSubmitRequest()" style="flex:1;padding:10px;border:none;border-radius:8px;background:#9A7B4F;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Create Request</button>
+    <div style="padding:12px 18px;border-top:1px solid #E8E4DC;display:flex;gap:10px;">
+      <button onclick="whCloseOutwardModal()" style="flex:1;padding:10px;border:1px solid #E8E4DC;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">Cancel</button>
+      <button onclick="whSubmitOutward()" style="flex:2;padding:10px;border:none;border-radius:8px;background:#1A5276;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">&#10003; Save &amp; Print 2 DN Copies</button>
     </div>
   </div>
 </div>
+
+<!-- WH: Return Modal -->
+<div id="whReturnModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:960;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,0.4);margin:auto;">
+    <div style="background:#145A32;border-radius:12px 12px 0 0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:#fff;">&#128229; Record Inward Return</div>
+        <div style="font-size:10px;color:#ABEBC6;margin-top:2px;">Verify the empty bottle brought back by driver</div>
+      </div>
+      <button onclick="whCloseReturnModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">&#10005;</button>
+    </div>
+    <div style="padding:16px 18px;">
+      <div id="whReturnInfo" style="background:#F9F8F6;border:1.5px solid #E8E4DC;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;line-height:1.8;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <label style="display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Date Returned *</label>
+          <input type="date" id="whRetDate" style="width:100%;padding:8px;border:1.5px solid #E0DDD6;border-radius:7px;font-size:13px;background:#fff;">
+        </div>
+        <div>
+          <label style="display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Driver Name *</label>
+          <input type="text" id="whRetDriver" placeholder="Driver who returned empty" style="width:100%;padding:8px;border:1.5px solid #E0DDD6;border-radius:7px;font-size:13px;background:#fff;">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <label style="display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">SKU Returned * (verify vs DN)</label>
+          <select id="whRetSKU" style="width:100%;padding:8px;border:1.5px solid #E0DDD6;border-radius:7px;font-size:12px;background:#fff;" onchange="whCheckMismatch()"></select>
+          <div id="whMismatchWarn" style="display:none;margin-top:4px;padding:5px 8px;background:#FEE2E2;border:1px solid #EF4444;border-radius:5px;font-size:9px;color:#991B1B;font-weight:800;">&#9888;&#65039; MISMATCH &mdash; Different SKU from what was sent!</div>
+        </div>
+        <div>
+          <label style="display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Qty Returned *</label>
+          <input type="number" id="whRetQty" value="1" min="1" max="50" style="width:100%;padding:8px;border:1.5px solid #E0DDD6;border-radius:7px;font-size:13px;text-align:center;background:#fff;">
+        </div>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Tester Condition *</label>
+        <select id="whRetCondition" style="width:100%;padding:8px;border:1.5px solid #E0DDD6;border-radius:7px;font-size:13px;background:#fff;">
+          <option value="">&#8212; Select condition &#8212;</option>
+          <option value="Half Empty">Half Empty</option>
+          <option value="Fully Consumed">Fully Consumed</option>
+          <option value="Damaged / Broken">Damaged / Broken</option>
+          <option value="Missing T-Code">Missing T-Code (no -T label on bottle)</option>
+          <option value="Sealed / Unused">Sealed / Unused</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Note (Optional)</label>
+        <textarea id="whRetNote" placeholder="Any additional observations..." style="width:100%;padding:8px;border:1.5px solid #E0DDD6;border-radius:7px;font-size:13px;min-height:46px;resize:vertical;background:#fff;"></textarea>
+      </div>
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid #E8E4DC;display:flex;gap:10px;">
+      <button onclick="whCloseReturnModal()" style="flex:1;padding:10px;border:1px solid #E8E4DC;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">Cancel</button>
+      <button onclick="whSubmitReturn()" style="flex:2;padding:10px;border:none;border-radius:8px;background:#145A32;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">&#10003; Confirm Return &amp; Log</button>
+    </div>
+  </div>
+</div>
+
+
 
 <!-- ══════════ TRANSFER DRAWER ══════════ -->
 <div id="trfDrawer" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);
@@ -8024,353 +8104,333 @@ ${storeHealth.map(s=>{
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ── WAREHOUSE TESTER TRACKER ──────────────────────────────────
+// ── WAREHOUSE TESTER TRACKER ──────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════
 let _whData=[];
-const TESTER_SKUS=PRODUCTS.filter(p=>p.code.endsWith('-T'));
+let _whReturnId=null;
+let _whOutRowN=0;
 
 function whInit(){
-  // Set date to today
-  const d=document.getElementById('whDate');
   const today=new Date();
-  d.value=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-  // Populate store dropdown in modal — grouped by region
-  const sel=document.getElementById('whReqStore');
-  sel.innerHTML='<option value="">— Select Store —</option>';
-  const WH_REGIONS=[
-    {label:'ABU DHABI',codes:['A0001','A0002','BAS001','A0003','A0004','A0005','A0009','A0007','A0008','YMK001']},
-    {label:'AL AIN',codes:['AL001','AL002','AL003','BAW001','AL004','AL006','MAK001']},
-    {label:'DUBAI',codes:['DX001','DX004','DX005','DX006']},
-    {label:'RAK',codes:['RK001','RK002']},
-    {label:'FUJAIRAH',codes:['FJ001','FJ001A']},
-    {label:'SHARJAH',codes:['SH001']},
-    {label:'AJMAN',codes:['AJ001']},
-  ];
-  WH_REGIONS.forEach(rgn=>{
-    const og=document.createElement('optgroup');
-    og.label='── '+rgn.label+' ──';
-    rgn.codes.forEach(code=>{
-      const s=STORES.find(x=>x.code===code);
-      if(s){
-        const o=document.createElement('option');
-        o.value=s.code;
-        o.textContent=s.name;
-        og.appendChild(o);
-      }
+  const pad=x=>String(x).padStart(2,'0');
+  const todayStr=today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
+  const from=new Date(today); from.setDate(from.getDate()-30);
+  const fromStr=from.getFullYear()+'-'+pad(from.getMonth()+1)+'-'+pad(from.getDate());
+  document.getElementById('whFromDate').value=fromStr;
+  document.getElementById('whToDate').value=todayStr;
+  if(!window.XLSX){const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';document.head.appendChild(s);}
+  const sel=document.getElementById('whOutStore');
+  if(sel){
+    sel.innerHTML='<option value="">— Select Store —</option>';
+    const RGNS=[
+      {label:'ABU DHABI',codes:['A0001','A0002','BAS001','A0003','A0004','A0005','A0009','A0007','A0008','YMK001']},
+      {label:'AL AIN',codes:['AL001','AL002','AL003','BAW001','AL004','AL006','MAK001']},
+      {label:'DUBAI',codes:['DX001','DX004','DX005','DX006']},
+      {label:'RAK',codes:['RK001','RK002']},
+      {label:'FUJAIRAH',codes:['FJ001','FJ001A']},
+      {label:'SHARJAH',codes:['SH001']},
+      {label:'AJMAN',codes:['AJ001']},
+    ];
+    RGNS.forEach(rgn=>{
+      const og=document.createElement('optgroup');
+      og.label='── '+rgn.label+' ──';
+      rgn.codes.forEach(code=>{
+        const s=STORES.find(x=>x.code===code);
+        if(s){const o=document.createElement('option');o.value=s.name;o.textContent=s.name;og.appendChild(o);}
+      });
+      if(og.children.length) sel.appendChild(og);
     });
-    if(og.children.length) sel.appendChild(og);
-  });
-  // Populate SKU dropdown
-  const sku=document.getElementById('whReqSku');
-  sku.innerHTML='<option value="">— Select Tester SKU —</option>';
-  TESTER_SKUS.forEach(p=>{
-    sku.innerHTML+=`<option value="${p.code}">${p.code} — ${p.en}</option>`;
-  });
-  whLoadDay();
+  }
+  whLoadData();
 }
 
-async function whLoadDay(){
-  const date=document.getElementById('whDate').value;
-  if(!date) return;
+async function whLoadData(){
+  const from=document.getElementById('whFromDate').value;
+  const to=document.getElementById('whToDate').value;
   const body=document.getElementById('whBody');
-  body.innerHTML='<div style="padding:40px;text-align:center;font-family:var(--f-mono);color:#888;">Loading…</div>';
+  body.innerHTML='<div style="padding:60px;text-align:center;font-family:var(--f-mono);color:#888;font-size:12px;">Loading transactions…</div>';
   try{
-    const resp=await fetch(_SB_URL+'/rest/v1/tester_transactions?day_date=eq.'+date+'&select=*&order=balance.desc,created_at.desc',{headers:_SBH});
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    let url=_SB_URL+'/rest/v1/tester_tracker?select=*&order=outward_date.desc,dn_ref.asc,id.asc';
+    if(from) url+='&outward_date=gte.'+from;
+    if(to) url+='&outward_date=lte.'+to;
+    const resp=await fetch(url,{headers:_SBH});
+    if(!resp.ok) throw new Error('HTTP '+resp.status+': '+await resp.text());
     _whData=await resp.json();
   }catch(e){
     console.error('WH load:',e);
-    _whData=[];
-  }
-  whRender();
-}
-
-function whRender(){
-  const body=document.getElementById('whBody');
-  const date=document.getElementById('whDate').value;
-  if(!_whData.length){
-    body.innerHTML=`<div style="padding:60px;text-align:center;">
-      <div style="font-size:40px;margin-bottom:12px;">📋</div>
-      <div style="font-family:var(--f-mono);font-size:13px;color:#888;">No tester transactions for ${date}</div>
-      <div style="font-size:12px;color:#AAA;margin-top:8px;">Click <strong>+ New Request</strong> to create one</div>
-    </div>`;
+    body.innerHTML='<div style="padding:60px;text-align:center;color:#EF4444;font-size:13px;font-family:var(--f-mono);">Error: '+e.message+'<br><br><small style="color:#888;">Run the SQL setup script in Supabase to create the <b>tester_tracker</b> table.</small></div>';
     return;
   }
-  // Split: open (balance=1) first, resolved (balance=0) collapsed
-  const open=_whData.filter(r=>r.balance===1);
-  const resolved=_whData.filter(r=>r.balance===0);
-  
-  let html='';
-  
-  // Open issues first
-  if(open.length){
-    html+=`<div style="font-family:var(--f-mono);font-size:11px;font-weight:700;color:#EF4444;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">⚠️ Open Issues (${open.length})</div>`;
-    html+=open.map(r=>whRenderCard(r,false)).join('');
+  whRenderGrid();
+}
+
+function whRenderGrid(){
+  const body=document.getElementById('whBody');
+  const today=new Date(); today.setHours(0,0,0,0);
+  const pending=_whData.filter(r=>r.status==='pending').length;
+  const returned=_whData.filter(r=>r.status==='returned'||r.status==='mismatch').length;
+  const mismatches=_whData.filter(r=>r.is_mismatch).length;
+  const overdue=_whData.filter(r=>r.status==='pending'&&Math.floor((today-new Date(r.outward_date+'T00:00:00'))/86400000)>=15).length;
+  document.getElementById('whStats').innerHTML=
+    '<div style="background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:6px;padding:5px 10px;text-align:center;min-width:64px;"><div style="font-size:17px;font-weight:800;color:#92400E;">'+pending+'</div><div style="font-size:9px;color:#92400E;font-weight:700;">OUTSTANDING</div></div>'+
+    '<div style="background:#D1FAE5;border:1.5px solid #10B981;border-radius:6px;padding:5px 10px;text-align:center;min-width:64px;"><div style="font-size:17px;font-weight:800;color:#065F46;">'+returned+'</div><div style="font-size:9px;color:#065F46;font-weight:700;">RETURNED</div></div>'+
+    '<div style="background:'+(mismatches>0?'#FEE2E2':'#F5F5F5')+';border:1.5px solid '+(mismatches>0?'#EF4444':'#DDD')+';border-radius:6px;padding:5px 10px;text-align:center;min-width:64px;"><div style="font-size:17px;font-weight:800;color:'+(mismatches>0?'#991B1B':'#888')+';">'+mismatches+'</div><div style="font-size:9px;color:'+(mismatches>0?'#991B1B':'#888')+';font-weight:700;">MISMATCHES</div></div>'+
+    '<div style="background:'+(overdue>0?'#FEE2E2':'#F5F5F5')+';border:1.5px solid '+(overdue>0?'#DC2626':'#DDD')+';border-radius:6px;padding:5px 10px;text-align:center;min-width:64px;"><div style="font-size:17px;font-weight:800;color:'+(overdue>0?'#991B1B':'#888')+';">'+overdue+'</div><div style="font-size:9px;color:'+(overdue>0?'#991B1B':'#888')+';font-weight:700;">OVERDUE 15d+</div></div>';
+  if(!_whData.length){
+    body.innerHTML='<div style="padding:80px;text-align:center;"><div style="font-size:40px;margin-bottom:12px;">&#128203;</div><div style="font-family:var(--f-mono);font-size:13px;color:#888;">No transactions in this date range</div><div style="font-size:11px;color:#AAA;margin-top:8px;">Click <b>+ Record Outward (New DN)</b> to add the first dispatch</div></div>';
+    return;
   }
-  
-  // Resolved — collapsed
-  if(resolved.length){
-    html+=`<div style="margin-top:20px;font-family:var(--f-mono);font-size:11px;font-weight:700;color:#22C55E;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';">✅ Resolved (${resolved.length}) — tap to expand</div>`;
-    html+=`<div style="display:none;">`;
-    html+=resolved.map(r=>whRenderCard(r,true)).join('');
-    html+=`</div>`;
-  }
-  
+  const fmtD=d=>{if(!d)return'&mdash;';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});};
+  let html='<table class="wh-tbl"><thead><tr>'
+    +'<th class="wh-th-sec wh-th-out" colspan="7">&#128228; OUTWARD &mdash; Full Tester Sent to Store</th>'
+    +'<th class="wh-th-sec wh-th-in" colspan="7">&#128229; INWARD &mdash; Empty Bottle Returned by Driver</th>'
+    +'<th class="wh-th-sec wh-th-rev" colspan="3">&#128202; REVIEW</th>'
+    +'<th style="background:#2C2C2C;color:#AAA;font-size:9px;font-weight:700;padding:4px 8px;text-align:center;text-transform:uppercase;letter-spacing:1px;top:0;position:sticky;">ACTIONS</th>'
+    +'</tr><tr>'
+    +'<th style="background:#D4E6F1;color:#1A3A5C;top:26px;position:sticky;">DATE</th>'
+    +'<th style="background:#D4E6F1;color:#1A3A5C;top:26px;position:sticky;">DN REF</th>'
+    +'<th style="background:#D4E6F1;color:#1A3A5C;top:26px;position:sticky;">OUTLET NAME</th>'
+    +'<th style="background:#D4E6F1;color:#1A3A5C;top:26px;position:sticky;">ITEM CODE</th>'
+    +'<th style="background:#D4E6F1;color:#1A3A5C;top:26px;position:sticky;">DESCRIPTION</th>'
+    +'<th style="background:#D4E6F1;color:#1A3A5C;top:26px;position:sticky;">QTY</th>'
+    +'<th style="background:#D4E6F1;color:#1A3A5C;top:26px;position:sticky;border-right:3px solid #1A5276;">NOTE</th>'
+    +'<th style="background:#D5EED9;color:#0A3A2A;top:26px;position:sticky;">DATE</th>'
+    +'<th style="background:#D5EED9;color:#0A3A2A;top:26px;position:sticky;">DRIVER NAME</th>'
+    +'<th style="background:#D5EED9;color:#0A3A2A;top:26px;position:sticky;">ITEM CODE</th>'
+    +'<th style="background:#D5EED9;color:#0A3A2A;top:26px;position:sticky;">DESCRIPTION</th>'
+    +'<th style="background:#D5EED9;color:#0A3A2A;top:26px;position:sticky;">QTY</th>'
+    +'<th style="background:#D5EED9;color:#0A3A2A;top:26px;position:sticky;">TESTER STATUS</th>'
+    +'<th style="background:#D5EED9;color:#0A3A2A;top:26px;position:sticky;border-right:3px solid #145A32;">NOTE</th>'
+    +'<th style="background:#F5CBA7;color:#7D3C1A;top:26px;position:sticky;">BALANCE</th>'
+    +'<th style="background:#F5CBA7;color:#7D3C1A;top:26px;position:sticky;">DURATION</th>'
+    +'<th style="background:#F5CBA7;color:#7D3C1A;top:26px;position:sticky;border-right:3px solid #922B21;">STATUS</th>'
+    +'<th style="background:#2C2C2C;color:#CCC;top:26px;position:sticky;padding:5px 8px;font-size:9px;font-weight:700;text-transform:uppercase;"></th>'
+    +'</tr></thead><tbody>';
+  _whData.forEach(function(r){
+    const durDays=r.outward_date?Math.floor((today-new Date(r.outward_date+'T00:00:00'))/86400000):0;
+    const isPending=r.status==='pending';
+    const isMM=r.is_mismatch;
+    const balance=(r.qty_out||1)-(r.qty_in||0);
+    let rowClass='';
+    if(isMM) rowClass='wh-row-mm';
+    else if(!isPending) rowClass='wh-row-ok';
+    else if(durDays>=15) rowClass='wh-row-red';
+    else if(durDays>=8) rowClass='wh-row-warn';
+    const durColor=!isPending?'#888':durDays>=15?'#991B1B':durDays>=8?'#B45309':'#065F46';
+    const durBg=!isPending?'transparent':durDays>=15?'#FEE2E2':durDays>=8?'#FEF3C7':'transparent';
+    const badge=isMM?'<span class="wh-badge wh-mm">&#9888; MISMATCH</span>':!isPending?'<span class="wh-badge wh-ret">&#10003; RETURNED</span>':'<span class="wh-badge wh-pend">PENDING</span>';
+    const actions=isPending
+      ?'<button class="wh-act" onclick="whOpenReturnModal('+r.id+')" style="background:#145A32;color:#fff;border-color:#145A32;">&#128229; Record Return</button><button class="wh-act" onclick="whToggleFlag('+r.id+','+(r.is_flagged?'true':'false')+')" style="background:'+(r.is_flagged?'#922B21':'#fff')+';color:'+(r.is_flagged?'#fff':'#888')+';border-color:'+(r.is_flagged?'#922B21':'#ccc')+';margin-top:2px;">&#9873; '+(r.is_flagged?'Unflag':'Flag')+'</button>'
+      :'<button class="wh-act" onclick="whPrintRow('+r.id+')" style="background:#1A5276;color:#fff;border-color:#1A5276;">&#128424; Print DN</button>';
+    html+='<tr class="'+rowClass+'">'
+      +'<td>'+fmtD(r.outward_date)+'</td>'
+      +'<td style="font-family:monospace;font-weight:700;">'+(r.dn_ref||'&mdash;')+'</td>'
+      +'<td title="'+(r.outlet_name||'')+'">'+(r.outlet_name||'&mdash;')+'</td>'
+      +'<td style="font-family:monospace;font-size:10px;font-weight:700;">'+(r.item_code||'&mdash;')+'</td>'
+      +'<td title="'+(r.item_description||'')+'">'+(r.item_description||'&mdash;')+'</td>'
+      +'<td style="text-align:center;font-weight:700;">'+(r.qty_out||1)+'</td>'
+      +'<td style="font-size:10px;color:#666;border-right:3px solid #9AB8D4;">'+(r.note_out||'')+'</td>'
+      +'<td>'+fmtD(r.inward_date)+'</td>'
+      +'<td style="font-size:10px;">'+(r.driver_name||'&mdash;')+'</td>'
+      +'<td style="font-family:monospace;font-size:10px;font-weight:700;color:'+(isMM?'#991B1B':'inherit')+'">'+(r.item_code_returned||'&mdash;')+'</td>'
+      +'<td style="font-size:10px;" title="'+(r.item_desc_returned||'')+'">'+(r.item_desc_returned||'&mdash;')+'</td>'
+      +'<td style="text-align:center;font-weight:700;">'+(r.qty_in||'&mdash;')+'</td>'
+      +'<td style="font-size:10px;">'+(r.tester_status||'&mdash;')+'</td>'
+      +'<td style="font-size:10px;border-right:3px solid #8AD0B8;">'+(r.note_in||'')+'</td>'
+      +'<td style="text-align:center;font-size:16px;font-weight:800;color:'+(balance===0?'#065F46':'#991B1B')+';">'+balance+'</td>'
+      +'<td style="text-align:center;background:'+durBg+';border-radius:4px;"><span style="font-size:11px;font-weight:700;color:'+durColor+';">'+(isPending?durDays+'d':'&mdash;')+'</span></td>'
+      +'<td style="border-right:3px solid #E8A87C;">'+badge+'</td>'
+      +'<td style="white-space:nowrap;vertical-align:top;padding:5px 6px;">'+actions+'</td>'
+      +'</tr>';
+  });
+  html+='</tbody></table>';
   body.innerHTML=html;
 }
 
-function whRenderCard(r,isResolved){
-  const store=STORES.find(s=>s.code===r.store_code);
-  const storeName=store?store.name:r.store_code;
-  const prod=TESTER_SKUS.find(p=>p.code===r.sku_code);
-  const prodName=prod?prod.en:r.sku_code;
-  const borderColor=isResolved?'#D1FAE5':'#FEE2E2';
-  const bgColor=isResolved?'#F0FDF4':'#FFF5F5';
-  
-  const statusBadge=r.status==='open'?'<span class="dp-badge dp-badge-red">OPEN</span>'
-    :r.status==='issued'?'<span class="dp-badge dp-badge-amber">ISSUED</span>'
-    :r.status==='verified'?'<span class="dp-badge dp-badge-green">VERIFIED</span>'
-    :'<span class="dp-badge dp-badge-orange">'+r.status.toUpperCase()+'</span>';
-  
-  return `<div style="background:${bgColor};border:1.5px solid ${borderColor};border-radius:10px;padding:14px;margin-bottom:10px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <div>
-        <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;">${prodName}</div>
-        <div style="font-family:var(--f-mono);font-size:10px;color:#888;margin-top:2px;">${r.sku_code} · ${storeName}</div>
-      </div>
-      <div style="text-align:right;">
-        ${statusBadge}
-        <div style="font-family:var(--f-mono);font-size:20px;font-weight:800;color:${r.balance===1?'#EF4444':'#22C55E'};margin-top:4px;">BAL: ${r.balance}</div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px;font-family:var(--f-mono);margin-bottom:8px;">
-      <div style="background:#fff;border:1px solid #E8E4DC;border-radius:6px;padding:8px;text-align:center;">
-        <div style="color:#888;font-size:9px;">REQUESTED</div>
-        <div style="font-size:16px;font-weight:700;">${r.qty_requested}</div>
-      </div>
-      <div style="background:#fff;border:1px solid #E8E4DC;border-radius:6px;padding:8px;text-align:center;">
-        <div style="color:#888;font-size:9px;">ISSUED</div>
-        <div style="font-size:16px;font-weight:700;color:${r.qty_issued>0?'#9A7B4F':'#CCC'}">${r.qty_issued}</div>
-      </div>
-      <div style="background:#fff;border:1px solid #E8E4DC;border-radius:6px;padding:8px;text-align:center;">
-        <div style="color:#888;font-size:9px;">RETURNED</div>
-        <div style="font-size:16px;font-weight:700;color:${r.qty_returned>0?'#22C55E':'#CCC'}">${r.qty_returned}</div>
-      </div>
-    </div>
-    ${r.remarks?`<div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:6px;padding:8px;font-size:11px;margin-bottom:8px;">📝 ${r.remarks}</div>`:''}
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center;">
-      ${r.request_doc?`<span style="font-size:10px;color:#888;background:#F5F5F0;border-radius:4px;padding:2px 6px;">📄 ${r.request_doc}</span>`:''}
-      ${r.request_file_url?`<a href="${r.request_file_url}" target="_blank" style="font-size:10px;color:#9A7B4F;text-decoration:none;font-weight:600;background:#FFF8ED;border:1px solid #E8D5A8;border-radius:4px;padding:2px 6px;">📎 Request Doc ↗</a>`:`<button onclick="whAttachFile(${r.id},'request')" style="font-size:10px;color:#9A7B4F;background:#fff;border:1px dashed #CCA;border-radius:4px;padding:2px 6px;cursor:pointer;">+ Attach Request</button>`}
-      ${r.issue_doc?`<span style="font-size:10px;color:#888;background:#F5F5F0;border-radius:4px;padding:2px 6px;">📄 ${r.issue_doc}</span>`:''}
-      ${r.issue_file_url?`<a href="${r.issue_file_url}" target="_blank" style="font-size:10px;color:#9A7B4F;text-decoration:none;font-weight:600;background:#FFF8ED;border:1px solid #E8D5A8;border-radius:4px;padding:2px 6px;">📎 DN Doc ↗</a>`:(r.status!=='open'?`<button onclick="whAttachFile(${r.id},'issue')" style="font-size:10px;color:#9A7B4F;background:#fff;border:1px dashed #CCA;border-radius:4px;padding:2px 6px;cursor:pointer;">+ Attach DN</button>`:'')}
-    </div>    ${!isResolved?`<div style="display:flex;gap:8px;margin-top:10px;">
-      ${r.status==='open'?`<button onclick="whIssue(${r.id})" style="flex:1;padding:8px;border:none;border-radius:6px;background:#9A7B4F;color:#fff;font-size:11px;font-weight:600;cursor:pointer;">📦 Mark Issued</button>`:''}
-      ${r.status==='issued'?`<button onclick="whVerify(${r.id})" style="flex:1;padding:8px;border:none;border-radius:6px;background:#22C55E;color:#fff;font-size:11px;font-weight:600;cursor:pointer;">✅ Verify Return</button>`:''}
-      <button onclick="whAddRemarks(${r.id})" style="padding:8px 12px;border:1px solid #E8E4DC;border-radius:6px;background:#fff;font-size:11px;cursor:pointer;">📝 Remarks</button>
-      ${r.balance===1&&r.status!=='open'?`<button onclick="whResolve(${r.id})" style="padding:8px 12px;border:none;border-radius:6px;background:#065F46;color:#fff;font-size:11px;font-weight:600;cursor:pointer;">☑ Resolve</button>`:''}
-    </div>`:''}
-  </div>`;
+function whOpenOutwardModal(){
+  document.getElementById('whOutwardModal').style.display='flex';
+  document.getElementById('whOutDate').valueAsDate=new Date();
+  document.getElementById('whOutDN').value='';
+  document.getElementById('whOutStore').selectedIndex=0;
+  document.getElementById('whOutItems').innerHTML='';
+  _whOutRowN=0;
+  whAddOutwardRow();
 }
+function whCloseOutwardModal(){document.getElementById('whOutwardModal').style.display='none';}
 
-function whNewRequest(){
-  document.getElementById('whReqModal').style.display='flex';
-  document.getElementById('whReqQty').value='1';
-  document.getElementById('whReqDoc').value='';
-}
-
-function whCloseReqModal(){
-  document.getElementById('whReqModal').style.display='none';
-}
-
-async function _whUploadFile(file, txId, docType){
-  // Upload to Supabase Storage: tester-docs/{txId}_{docType}_{filename}
-  const ext=file.name.split('.').pop();
-  const path=`${txId}_${docType}_${Date.now()}.${ext}`;
-  const resp=await fetch(_SB_URL+'/storage/v1/object/tester-docs/'+path,{
-    method:'POST',
-    headers:{
-      'apikey':_SB_KEY,
-      'Authorization':'Bearer '+_SB_KEY,
-      'Content-Type':file.type,
-      'x-upsert':'true'
-    },
-    body:file
+function whAddOutwardRow(){
+  _whOutRowN++;
+  const id='whor'+_whOutRowN;
+  let opts='<option value="">-- Select product --</option>';
+  CATS.forEach(function(c){
+    opts+='<optgroup label="'+c.cat+'">';
+    c.products.filter(function(p){return !p.isTester;}).forEach(function(p){opts+='<option value="'+p.code+'|'+p.en+'">'+p.code+' -- '+p.en+'</option>';});
+    opts+='</optgroup>';
   });
-  if(!resp.ok) throw new Error('Upload failed: '+resp.status);
-  // Return public URL
-  return _SB_URL+'/storage/v1/object/public/tester-docs/'+path;
+  document.getElementById('whOutItems').insertAdjacentHTML('beforeend',
+    '<div id="'+id+'" style="display:grid;grid-template-columns:2fr 65px 1fr auto;gap:6px;margin-bottom:6px;align-items:center;">'
+    +'<select class="wh-prod-sel" style="padding:7px;border:1.5px solid #E0DDD6;border-radius:6px;font-size:12px;background:#fff;">'+opts+'</select>'
+    +'<input type="number" class="wh-qty-in" value="1" min="1" max="50" style="padding:7px;border:1.5px solid #E0DDD6;border-radius:6px;font-size:13px;text-align:center;background:#fff;">'
+    +'<input type="text" class="wh-note-in" placeholder="Note" style="padding:7px;border:1.5px solid #E0DDD6;border-radius:6px;font-size:12px;background:#fff;">'
+    +'<button onclick="document.getElementById(\''+id+'\').remove()" style="padding:6px 10px;background:none;border:1px solid #DDD;border-radius:6px;color:#999;cursor:pointer;font-size:14px;">&#10005;</button>'
+    +'</div>');
 }
 
-async function whSubmitRequest(){
-  const store=document.getElementById('whReqStore').value;
-  const sku=document.getElementById('whReqSku').value;
-  const qty=parseInt(document.getElementById('whReqQty').value)||1;
-  const doc=document.getElementById('whReqDoc').value.trim();
-  const date=document.getElementById('whDate').value;
-  const fileInput=document.getElementById('whReqFile');
-  
-  if(!store){alert('Select a store');return;}
-  if(!sku){alert('Select a tester SKU');return;}
-  if(!date){alert('Select a date');return;}
-  
-  // Show uploading state
-  const statusEl=document.getElementById('whReqFileStatus');
-  
-  const record={
-    day_date:date,
-    store_code:store,
-    sku_code:sku,
-    qty_requested:qty,
-    qty_issued:0,
-    qty_returned:0,
-    balance:1,
-    status:'open',
-    remarks:'',
-    request_doc:doc,
-    issue_doc:'',
-    request_file_url:'',
-    issue_file_url:''
-  };
-  
-  try{
-    // Create the record first
-    const resp=await fetch(_SB_URL+'/rest/v1/tester_transactions',{
-      method:'POST',
-      headers:{..._SBH,'Prefer':'return=representation'},
-      body:JSON.stringify(record)
-    });
-    if(!resp.ok){
-      const err=await resp.text();
-      if(err.includes('duplicate key')) alert('This SKU already has a request for this store on this date.');
-      else throw new Error(err);
-      return;
+async function whSubmitOutward(){
+  const date=document.getElementById('whOutDate').value;
+  const dn=document.getElementById('whOutDN').value.trim();
+  const store=document.getElementById('whOutStore').value;
+  if(!date||!dn||!store){alert('Please fill Date, DN Reference, and Store');return;}
+  const rows=[];
+  document.querySelectorAll('#whOutItems>div').forEach(function(div){
+    const sel=div.querySelector('.wh-prod-sel');
+    const qty=parseInt(div.querySelector('.wh-qty-in').value)||1;
+    const note=div.querySelector('.wh-note-in').value.trim();
+    if(sel&&sel.value){
+      const parts=sel.value.split('|');
+      rows.push({dn_ref:dn,outward_date:date,outlet_name:store,item_code:parts[0]||sel.value,item_description:parts[1]||sel.value,qty_out:qty,note_out:note,status:'pending',is_mismatch:false,is_flagged:false,qty_in:0,created_at:new Date().toISOString(),updated_at:new Date().toISOString()});
     }
-    const created=await resp.json();
-    const txId=created[0]?.id||created.id||'new';
-    
-    // Upload file if selected
-    if(fileInput.files&&fileInput.files[0]){
-      statusEl.textContent='⏳ Uploading document…';
-      statusEl.style.color='#9A7B4F';
-      const fileUrl=await _whUploadFile(fileInput.files[0],txId,'request');
-      // Update the record with file URL
-      await fetch(_SB_URL+'/rest/v1/tester_transactions?id=eq.'+txId,{
-        method:'PATCH',
-        headers:_SBH,
-        body:JSON.stringify({request_file_url:fileUrl})
-      });
-    }
-    
-    whCloseReqModal();
-    await whLoadDay();
-  }catch(e){
-    console.error('WH submit:',e);
-    alert('Error: '+e.message);
-    if(statusEl) statusEl.textContent='';
-  }
-}
-
-async function whUpdateRecord(id,updates){
-  try{
-    updates.updated_at=new Date().toISOString();
-    const resp=await fetch(_SB_URL+'/rest/v1/tester_transactions?id=eq.'+id,{
-      method:'PATCH',
-      headers:{..._SBH,'Prefer':'return=representation'},
-      body:JSON.stringify(updates)
-    });
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    await whLoadDay();
-  }catch(e){
-    console.error('WH update:',e);
-    alert('Error: '+e.message);
-  }
-}
-
-async function whIssue(id){
-  const rec=_whData.find(r=>r.id===id);
-  if(!rec) return;
-  const issueDoc=prompt('Issue Document Ref (optional):','');
-  if(issueDoc===null) return; // cancelled
-  
-  const wantFile=confirm('Attach DN document (PDF/Image)?');
-  
-  if(wantFile){
-    const input=document.createElement('input');
-    input.type='file';
-    input.accept='image/*,.pdf';
-    input.onchange=async()=>{
-      if(!input.files||!input.files[0]){
-        await whUpdateRecord(id,{qty_issued:rec.qty_requested,status:'issued',issue_doc:issueDoc||''});
-        return;
-      }
-      try{
-        const fileUrl=await _whUploadFile(input.files[0],id,'issue');
-        await whUpdateRecord(id,{qty_issued:rec.qty_requested,status:'issued',issue_doc:issueDoc||'',issue_file_url:fileUrl});
-      }catch(e){
-        console.error('Issue upload:',e);
-        alert('File upload failed but issue recorded.');
-        await whUpdateRecord(id,{qty_issued:rec.qty_requested,status:'issued',issue_doc:issueDoc||''});
-      }
-    };
-    input.click();
-  }else{
-    await whUpdateRecord(id,{qty_issued:rec.qty_requested,status:'issued',issue_doc:issueDoc||''});
-  }
-}
-
-// Attach file to existing record (for adding docs later)
-function whAttachFile(id,docType){
-  const input=document.createElement('input');
-  input.type='file';
-  input.accept='image/*,.pdf';
-  input.onchange=async()=>{
-    if(!input.files||!input.files[0]) return;
-    try{
-      const fileUrl=await _whUploadFile(input.files[0],id,docType);
-      const update={};
-      update[docType+'_file_url']=fileUrl;
-      await whUpdateRecord(id,update);
-    }catch(e){
-      console.error('Attach upload:',e);
-      alert('Upload failed: '+e.message);
-    }
-  };
-  input.click();
-}
-
-function whVerify(id){
-  const rec=_whData.find(r=>r.id===id);
-  if(!rec) return;
-  const retQty=prompt('How many empties returned?',String(rec.qty_issued));
-  if(retQty===null) return;
-  const qty=parseInt(retQty)||0;
-  const match=qty===rec.qty_issued;
-  const newBalance=match?0:1;
-  const remarks=match?'':'Qty mismatch: issued '+rec.qty_issued+', returned '+qty;
-  whUpdateRecord(id,{
-    qty_returned:qty,
-    balance:newBalance,
-    status:match?'verified':'issue',
-    remarks:rec.remarks?(rec.remarks+'; '+remarks):remarks
   });
+  if(!rows.length){alert('Please add at least one SKU row');return;}
+  try{
+    const resp=await fetch(_SB_URL+'/rest/v1/tester_tracker',{method:'POST',headers:Object.assign({},_SBH,{'Prefer':'return=minimal'}),body:JSON.stringify(rows)});
+    if(!resp.ok) throw new Error('HTTP '+resp.status+': '+await resp.text());
+    whCloseOutwardModal();
+    await whLoadData();
+    whPrintDNSlip(date,dn,store,rows);
+    toast('Outward recorded -- printing 2 DN copies');
+  }catch(e){console.error(e);alert('Error: '+e.message);}
 }
 
-function whAddRemarks(id){
-  const rec=_whData.find(r=>r.id===id);
+function whPrintDNSlip(date,dn,store,rows){
+  const fmtD=function(d){return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});};
+  const totalQty=rows.reduce(function(s,r){return s+(r.qty_out||1);},0);
+  const itemsHtml=rows.map(function(r,i){return '<tr style="border-bottom:1px solid #EEE;"><td style="padding:6px 10px;color:#888;">'+(i+1)+'</td><td style="padding:6px 10px;font-family:monospace;font-weight:700;">'+r.item_code+'</td><td style="padding:6px 10px;">'+r.item_description+'</td><td style="padding:6px 10px;text-align:center;font-weight:700;">'+(r.qty_out||1)+'</td><td style="padding:6px 10px;font-size:10px;color:#888;">'+(r.note_out||'')+'</td><td style="padding:6px 10px;border:1px dashed #CCC;min-width:80px;"></td></tr>';}).join('');
+  function makeCopy(bannerText,bannerBg,checklistTitle,checklistItems,sigLabels){
+    return '<div style="page-break-after:always;">'
+      +'<div style="background:'+bannerBg+';color:#fff;text-align:center;padding:7px;font-family:monospace;font-size:11px;font-weight:800;letter-spacing:2px;">'+bannerText+'</div>'
+      +'<div style="background:#1A1A1A;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">'
+        +'<div><div style="color:#C9A44E;font-size:16px;font-weight:800;letter-spacing:2px;">EMIRATES PRIDE</div><div style="color:#888;font-size:10px;margin-top:2px;">Tester Dispatch Note</div></div>'
+        +'<div style="text-align:right;"><div style="color:#fff;font-family:monospace;font-size:16px;font-weight:700;">'+dn+'</div><div style="color:#888;font-size:10px;margin-top:2px;">'+fmtD(date)+'</div></div>'
+      +'</div>'
+      +'<div style="padding:16px 20px;">'
+        +'<div style="display:flex;gap:12px;margin-bottom:14px;">'
+          +'<div style="flex:1;background:#F9F8F6;border:1px solid #E8E4DC;border-radius:6px;padding:10px;"><div style="font-size:8px;color:#888;text-transform:uppercase;">DN Reference</div><div style="font-size:13px;font-weight:700;">'+dn+'</div></div>'
+          +'<div style="flex:1;background:#F9F8F6;border:1px solid #E8E4DC;border-radius:6px;padding:10px;"><div style="font-size:8px;color:#888;text-transform:uppercase;">Date</div><div style="font-size:13px;font-weight:700;">'+fmtD(date)+'</div></div>'
+          +'<div style="flex:2;background:#F9F8F6;border:1px solid #E8E4DC;border-radius:6px;padding:10px;"><div style="font-size:8px;color:#888;text-transform:uppercase;">Outlet / Store</div><div style="font-size:13px;font-weight:700;">'+store+'</div></div>'
+          +'<div style="flex:1;background:#F9F8F6;border:1px solid #E8E4DC;border-radius:6px;padding:10px;"><div style="font-size:8px;color:#888;text-transform:uppercase;">SKUs / Total</div><div style="font-size:13px;font-weight:700;">'+rows.length+' / '+totalQty+'</div></div>'
+        +'</div>'
+        +'<table style="width:100%;border-collapse:collapse;">'
+          +'<thead><tr style="background:#1A1A1A;"><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">#</th><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Item Code</th><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Description</th><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:center;text-transform:uppercase;">Qty</th><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Note</th><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Verified</th></tr></thead>'
+          +'<tbody>'+itemsHtml+'</tbody>'
+          +'<tfoot><tr style="background:#F0EDE6;"><td colspan="3" style="padding:7px 10px;font-weight:700;text-align:right;font-size:12px;">Total Units:</td><td style="padding:7px 10px;text-align:center;font-weight:700;font-size:14px;">'+totalQty+'</td><td colspan="2"></td></tr></tfoot>'
+        +'</table>'
+        +'<div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:6px;padding:10px;margin-top:12px;font-size:10px;"><b>'+checklistTitle+'</b><br>'+checklistItems+'</div>'
+        +'<div style="display:flex;gap:16px;margin-top:20px;">'+sigLabels.map(function(s){return '<div style="flex:1;border-top:1.5px solid #888;padding-top:6px;font-size:8px;color:#888;text-align:center;">'+s+'</div>';}).join('')+'</div>'
+      +'</div>'
+    +'</div>';
+  }
+  const wh=makeCopy('WAREHOUSE COPY -- Keep for Verification & Return Matching','#1A5276',
+    'Warehouse Verification Checklist:',
+    '[ ] Confirm each SKU matches DN before dispatch &nbsp; [ ] Driver must return EMPTY bottles on next visit &nbsp; [ ] Verify returned SKU has -T code &nbsp; [ ] Log return in system',
+    ['Warehouse Staff Signature','Driver Signature (Dispatch)','Store Staff Signature (Receipt)']);
+  const st=makeCopy('STORE COPY -- Keep at Store for Reference','#145A32',
+    'Store Instructions:',
+    '[ ] Check all items match this DN before signing &nbsp; [ ] Place testers on display shelf &nbsp; [ ] When tester empty -- hold bottle for driver collection &nbsp; [ ] Driver exchanges EMPTY for FULL bottle on next visit',
+    ['Warehouse Staff Signature','Driver Signature (Delivery)','Store Staff Signature (Receipt)']);
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>DN '+dn+'</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:#fff;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>'+wh+st+'</body></html>';
+  openPrintWindow(html);
+}
+
+function whOpenReturnModal(id){
+  _whReturnId=id;
+  const rec=_whData.find(function(r){return r.id===id;});
   if(!rec) return;
-  const text=prompt('Add remarks:',rec.remarks||'');
-  if(text===null) return;
-  whUpdateRecord(id,{remarks:text});
+  document.getElementById('whReturnModal').style.display='flex';
+  document.getElementById('whRetDate').valueAsDate=new Date();
+  document.getElementById('whRetDriver').value='';
+  document.getElementById('whRetCondition').value='';
+  document.getElementById('whRetNote').value='';
+  document.getElementById('whRetQty').value=rec.qty_out||1;
+  document.getElementById('whMismatchWarn').style.display='none';
+  const fmtD=function(d){return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});};
+  document.getElementById('whReturnInfo').innerHTML='<b>DN:</b> '+rec.dn_ref+' &nbsp;&middot;&nbsp; <b>Dispatched:</b> '+fmtD(rec.outward_date)+' &nbsp;&middot;&nbsp; <b>Store:</b> '+rec.outlet_name+'<br><b>Expected back:</b> <span style="font-family:monospace;font-weight:700;color:#1A5276;">'+rec.item_code+'</span> &mdash; '+rec.item_description+' &times; '+(rec.qty_out||1);
+  const sku=document.getElementById('whRetSKU');
+  sku.innerHTML='<option value="">-- Select SKU --</option>';
+  CATS.forEach(function(c){
+    const og=document.createElement('optgroup');
+    og.label=c.cat;
+    c.products.filter(function(p){return !p.isTester;}).forEach(function(p){
+      const o=document.createElement('option');
+      o.value=p.code+'|'+p.en;
+      o.textContent=p.code+' -- '+p.en;
+      if(p.code===rec.item_code) o.selected=true;
+      og.appendChild(o);
+    });
+    if(og.children.length) sku.appendChild(og);
+  });
+  whCheckMismatch();
+}
+function whCloseReturnModal(){document.getElementById('whReturnModal').style.display='none';_whReturnId=null;}
+
+function whCheckMismatch(){
+  const rec=_whData.find(function(r){return r.id===_whReturnId;});
+  if(!rec) return;
+  const val=(document.getElementById('whRetSKU').value||'').split('|')[0];
+  const warn=document.getElementById('whMismatchWarn');
+  if(val&&val!==rec.item_code){warn.style.display='block';document.getElementById('whRetSKU').style.borderColor='#EF4444';}
+  else{warn.style.display='none';document.getElementById('whRetSKU').style.borderColor='#E0DDD6';}
 }
 
-function whResolve(id){
-  if(!confirm('Mark as resolved? (Balance → 0)')) return;
-  whUpdateRecord(id,{balance:0,status:'verified'});
+async function whSubmitReturn(){
+  if(!_whReturnId) return;
+  const rec=_whData.find(function(r){return r.id===_whReturnId;});
+  if(!rec) return;
+  const date=document.getElementById('whRetDate').value;
+  const driver=document.getElementById('whRetDriver').value.trim();
+  const skuVal=document.getElementById('whRetSKU').value;
+  const qty=parseInt(document.getElementById('whRetQty').value)||1;
+  const condition=document.getElementById('whRetCondition').value;
+  const note=document.getElementById('whRetNote').value.trim();
+  if(!date||!driver||!skuVal||!condition){alert('Please fill all required fields: Date, Driver, SKU, Condition');return;}
+  const parts=skuVal.split('|');
+  const retCode=parts[0]; const retDesc=parts[1]||parts[0];
+  const isMM=retCode!==rec.item_code;
+  try{
+    const resp=await fetch(_SB_URL+'/rest/v1/tester_tracker?id=eq.'+_whReturnId,{method:'PATCH',headers:Object.assign({},_SBH,{'Prefer':'return=minimal'}),body:JSON.stringify({inward_date:date,driver_name:driver,item_code_returned:retCode,item_desc_returned:retDesc,qty_in:qty,tester_status:condition,note_in:note,status:isMM?'mismatch':'returned',is_mismatch:isMM,updated_at:new Date().toISOString()})});
+    if(!resp.ok) throw new Error('HTTP '+resp.status+': '+await resp.text());
+    whCloseReturnModal();
+    await whLoadData();
+    toast(isMM?'MISMATCH flagged -- review required':'Return confirmed -- SKU matched');
+  }catch(e){console.error(e);alert('Error: '+e.message);}
 }
 
-function whRefresh(){
-  whLoadDay();
+async function whToggleFlag(id,cur){
+  try{
+    await fetch(_SB_URL+'/rest/v1/tester_tracker?id=eq.'+id,{method:'PATCH',headers:Object.assign({},_SBH,{'Prefer':'return=minimal'}),body:JSON.stringify({is_flagged:!cur,updated_at:new Date().toISOString()})});
+    await whLoadData();
+  }catch(e){alert('Error: '+e.message);}
 }
+
+function whPrintRow(id){const rec=_whData.find(function(r){return r.id===id;});if(rec)whPrintDNSlip(rec.outward_date,rec.dn_ref,rec.outlet_name,[rec]);}
+
+function whExportExcel(){
+  if(!window.XLSX){alert('Excel library loading, please try again in 2 seconds.');return;}
+  const today=new Date();today.setHours(0,0,0,0);
+  const rows=_whData.map(function(r){
+    const dur=r.outward_date?Math.floor((today-new Date(r.outward_date+'T00:00:00'))/86400000):0;
+    return{'Outward Date':r.outward_date||'','DN Ref':r.dn_ref||'','Outlet':r.outlet_name||'','Item Code':r.item_code||'','Description':r.item_description||'','Qty Out':r.qty_out||0,'Outward Note':r.note_out||'','Inward Date':r.inward_date||'','Driver Name':r.driver_name||'','Item Code Returned':r.item_code_returned||'','Returned Description':r.item_desc_returned||'','Qty In':r.qty_in||0,'Tester Status':r.tester_status||'','Inward Note':r.note_in||'','Balance':(r.qty_out||0)-(r.qty_in||0),'Duration (days)':r.status==='pending'?dur:'','Status':r.status||'pending','Mismatch':r.is_mismatch?'YES':'','Flagged':r.is_flagged?'YES':''};
+  });
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[{wch:12},{wch:14},{wch:26},{wch:14},{wch:30},{wch:8},{wch:18},{wch:12},{wch:22},{wch:14},{wch:30},{wch:8},{wch:22},{wch:18},{wch:10},{wch:14},{wch:12},{wch:10},{wch:10}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Tester Tracker');
+  XLSX.writeFile(wb,'Tester_Tracker_'+new Date().toISOString().split('T')[0]+'.xlsx');
+}
+
+function whRefresh(){whLoadData();}
+
+
 
 function renderMgrDashboard(){
   const body=document.getElementById('mgrDashBody');
