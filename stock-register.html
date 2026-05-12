@@ -2518,6 +2518,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
   <div style="background:#fff;border-bottom:2px solid #E8E4DC;padding:8px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;">
     <div id="whStats" style="display:flex;gap:8px;flex:1;min-width:0;flex-wrap:wrap;"></div>
+    <button id="whArchiveToggle" onclick="whToggleArchive()" style="background:#666;color:#fff;border:none;border-radius:6px;padding:8px 12px;font-family:var(--f-body);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;">📋 Show Archived</button>
     <button onclick="whOpenOutwardModal()" style="background:#9A7B4F;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-family:var(--f-body);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">+ Record Outward (New DN)</button>
   </div>
   <div id="whBody" style="flex:1;overflow:auto;padding:0;"></div>
@@ -8119,6 +8120,7 @@ ${storeHealth.map(s=>{
 let _whData=[];
 let _whReturnId=null;
 let _whOutRowN=0;
+let _whShowArchived=false;
 
 function whInit(){
   const today=new Date();
@@ -8181,13 +8183,17 @@ function whRenderGrid(){
   const returned=_whData.filter(r=>r.status==='returned'||r.status==='mismatch').length;
   const mismatches=_whData.filter(r=>r.is_mismatch).length;
   const overdue=_whData.filter(r=>r.status==='pending'&&Math.floor((today-new Date(r.outward_date+'T00:00:00'))/86400000)>=15).length;
+  const archiveBtn=document.getElementById('whArchiveToggle');
+  if(archiveBtn) archiveBtn.textContent=(_whShowArchived?'📁 Hide Archived ':'📋 Show Archived ')+' ('+returned+')';
   document.getElementById('whStats').innerHTML=
     '<div style="background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:6px;padding:5px 10px;text-align:center;min-width:64px;"><div style="font-size:17px;font-weight:800;color:#92400E;">'+pending+'</div><div style="font-size:9px;color:#92400E;font-weight:700;">OUTSTANDING</div></div>'+
     '<div style="background:#D1FAE5;border:1.5px solid #10B981;border-radius:6px;padding:5px 10px;text-align:center;min-width:64px;"><div style="font-size:17px;font-weight:800;color:#065F46;">'+returned+'</div><div style="font-size:9px;color:#065F46;font-weight:700;">RETURNED</div></div>'+
     '<div style="background:'+(mismatches>0?'#FEE2E2':'#F5F5F5')+';border:1.5px solid '+(mismatches>0?'#EF4444':'#DDD')+';border-radius:6px;padding:5px 10px;text-align:center;min-width:64px;"><div style="font-size:17px;font-weight:800;color:'+(mismatches>0?'#991B1B':'#888')+';">'+mismatches+'</div><div style="font-size:9px;color:'+(mismatches>0?'#991B1B':'#888')+';font-weight:700;">MISMATCHES</div></div>'+
     '<div style="background:'+(overdue>0?'#FEE2E2':'#F5F5F5')+';border:1.5px solid '+(overdue>0?'#DC2626':'#DDD')+';border-radius:6px;padding:5px 10px;text-align:center;min-width:64px;"><div style="font-size:17px;font-weight:800;color:'+(overdue>0?'#991B1B':'#888')+';">'+overdue+'</div><div style="font-size:9px;color:'+(overdue>0?'#991B1B':'#888')+';font-weight:700;">OVERDUE 15d+</div></div>';
-  if(!_whData.length){
-    body.innerHTML='<div style="padding:80px;text-align:center;"><div style="font-size:40px;margin-bottom:12px;">&#128203;</div><div style="font-family:var(--f-mono);font-size:13px;color:#888;">No transactions in this date range</div><div style="font-size:11px;color:#AAA;margin-top:8px;">Click <b>+ Record Outward (New DN)</b> to add the first dispatch</div></div>';
+  const displayData=_whShowArchived?_whData:_whData.filter(r=>r.status==='pending');
+  if(!displayData.length){
+    const msg=_whShowArchived?'No transactions in this date range':'No outstanding transactions — all testers have been returned!';
+    body.innerHTML='<div style="padding:80px;text-align:center;"><div style="font-size:40px;margin-bottom:12px;">&#128203;</div><div style="font-family:var(--f-mono);font-size:13px;color:#888;">'+msg+'</div><div style="font-size:11px;color:#AAA;margin-top:8px;">'+(_whShowArchived?'Click <b>📋 Show Archived</b> to hide completed transactions':'Click <b>📋 Show Archived</b> to view returned/mismatched testers')+'</div></div>';
     return;
   }
   const fmtD=d=>{if(!d)return'&mdash;';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});};
@@ -8216,7 +8222,7 @@ function whRenderGrid(){
     +'<th style="background:#F5CBA7;color:#7D3C1A;top:26px;position:sticky;border-right:3px solid #922B21;">STATUS</th>'
     +'<th style="background:#2C2C2C;color:#CCC;top:26px;position:sticky;padding:5px 8px;font-size:9px;font-weight:700;text-transform:uppercase;"></th>'
     +'</tr></thead><tbody>';
-  _whData.forEach(function(r){
+  displayData.forEach(function(r){
     const durDays=r.outward_date?Math.floor((today-new Date(r.outward_date+'T00:00:00'))/86400000):0;
     const isPending=r.status==='pending';
     const isMM=r.is_mismatch;
@@ -8255,6 +8261,11 @@ function whRenderGrid(){
   });
   html+='</tbody></table>';
   body.innerHTML=html;
+}
+
+function whToggleArchive(){
+  _whShowArchived=!_whShowArchived;
+  whRenderGrid();
 }
 
 function whOpenOutwardModal(){
