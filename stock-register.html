@@ -3538,20 +3538,37 @@ function buildTrfNote(entries, type) {
   const total = entries.reduce((s,e)=>s+(e.qty||0), 0);
   const count = entries.length;
   const isInn = type === 'inn';
+
+  // Separate FG conversions from regular transfers
+  const fgConversions = entries.filter(e=>e.note==='fg-conversion');
+  const regularTransfers = entries.filter(e=>e.note!=='fg-conversion');
+
+  let html = '<div class="trf-note-block">';
+
+  // Show FG conversions first (special audit trail format)
+  fgConversions.forEach(e => {
+    const mgr=e.mgr||'Unknown';
+    const ts=e.mgr_ts||'';
+    const ref=e.remark?e.remark.match(/\[([^\]]+)\]/)?.[1]:'';
+    const balChange=e.balance_before!==undefined?e.balance_before+' → '+e.balance_after:'';
+    const tooltip='FG→TST | Manager: '+mgr+' | '+ts+(balChange?' | Stock: '+balChange:'');
+    html+='<div class="trf-note-row" style="background:#F0F8F5;border-left:4px solid #065F46;color:#065F46;padding:3px 6px;margin-bottom:2px;border-radius:3px;" title="'+tooltip+'">' +
+      '<span style="font-weight:800;font-size:10px;">📌 FG→TST</span> ' +
+      '<span style="font-size:9px;color:#1A6040;">'+e.qty+'u</span> '+
+      '<span style="font-size:8px;color:#888;">('+mgr+')</span>' +
+      '</div>';
+  });
+
+  // Show regular transfers (compact format)
   const arrow = isInn ? '←' : '→';
   const accentCol = isInn ? '#1A6040' : '#5A2A7A';
   const tagBg     = isInn ? '#E8F5EE' : '#F0E8FF';
-
-  // Compact: show each store as a single tight row — name truncated, qty badge
-  // Max 3 rows visible, rest shown as "+N more" link — tap whole cell for drawer
   const MAX = 3;
-  const shown = entries.slice(0, MAX);
-  const extra = entries.length - MAX;
+  const shown = regularTransfers.slice(0, MAX);
+  const extra = regularTransfers.length - MAX;
 
-  let html = '<div class="trf-note-block">';
   shown.forEach(e => {
     const name = isInn ? e.fromName : e.toName;
-    // Shorten: first word + first word of second part if exists
     const parts = name.split(' ');
     const short = parts.length > 3
       ? parts[0] + ' ' + parts[1] + ' ' + parts[2]
