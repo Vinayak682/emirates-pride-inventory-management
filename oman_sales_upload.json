@@ -1,0 +1,5066 @@
+﻿[
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  39
+    },
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  25
+    },
+    {
+        "sku_code":  "B00012",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "AG014",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AG001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "C00014",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  15
+    },
+    {
+        "sku_code":  "AP001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  28
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  14
+    },
+    {
+        "sku_code":  "C00006",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AC0002",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AAF001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "ARD002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "D00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "D00003",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "D00005",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "D00001",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  50
+    },
+    {
+        "sku_code":  "D00001",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  21
+    },
+    {
+        "sku_code":  "D00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AH008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AO008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  29
+    },
+    {
+        "sku_code":  "AP008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "AO011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  18
+    },
+    {
+        "sku_code":  "AP011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  15
+    },
+    {
+        "sku_code":  "B00014",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "B00014",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AOG011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "AOG010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AOG002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  35
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  25
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "O00008",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "B00002",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AO004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AP004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AC0003",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "BX0015",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "BX0015",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  27
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  26
+    },
+    {
+        "sku_code":  "SP0013",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "SP0013",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  15
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  14
+    },
+    {
+        "sku_code":  "AC0001",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00006",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "B00006",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0029",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0029",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  75
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  61
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  19
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  16
+    },
+    {
+        "sku_code":  "I00006",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00016",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "B00016",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  30
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  20
+    },
+    {
+        "sku_code":  "I00005",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "I00005",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0005",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "SP0005",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "O00001",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "O00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "O00003",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "O00006",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "AO010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "AP010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "G_PLIF10ML",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  18
+    },
+    {
+        "sku_code":  "G_PLIF10ML",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "SP0022",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AO005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AP005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AH009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "AP009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "AH006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "ABL003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "AP002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "O0007",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "AP006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "SP0031",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AH003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AO007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  44
+    },
+    {
+        "sku_code":  "AP007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "C00011",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  46
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  35
+    },
+    {
+        "sku_code":  "AO003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "ARD003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "SP0033",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0033",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "I00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "I00003",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "G00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "G00003",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  28
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  14
+    },
+    {
+        "sku_code":  "C00013",
+        "store_code":  "OM001",
+        "month_year":  "2025-10",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "C00013",
+        "store_code":  "OM002",
+        "month_year":  "2025-10",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "SET_2X10MS",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "SET_2X10MS",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  30
+    },
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  20
+    },
+    {
+        "sku_code":  "B00012",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00012",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AG014",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AG001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  15
+    },
+    {
+        "sku_code":  "AG013",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "C00014",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "C00014",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  14
+    },
+    {
+        "sku_code":  "AP001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "C00006",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AC0002",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AAF001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "ARD002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "D00005",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "D00001",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  52
+    },
+    {
+        "sku_code":  "D00001",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  15
+    },
+    {
+        "sku_code":  "D00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "D00008",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SPG_DAKH",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  67
+    },
+    {
+        "sku_code":  "SPG_DAKH",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  24
+    },
+    {
+        "sku_code":  "AH008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AO008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  25
+    },
+    {
+        "sku_code":  "AP008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "AO011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  41
+    },
+    {
+        "sku_code":  "AP011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "B00014",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AOG008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AOG011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "AOG004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "AOG002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  41
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  22
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "B00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AO004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AP004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  31
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "SP0013",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "SP0013",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "G00007",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  123
+    },
+    {
+        "sku_code":  "G00007",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  60
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "B00006",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00006",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  14
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "B00021",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  39
+    },
+    {
+        "sku_code":  "B00021",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  21
+    },
+    {
+        "sku_code":  "B00021-PB",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0035",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  36
+    },
+    {
+        "sku_code":  "SP0035",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  23
+    },
+    {
+        "sku_code":  "SP0029",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  88
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  39
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  21
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "I00006",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "B00016",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "B00016",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  37
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  18
+    },
+    {
+        "sku_code":  "C00012",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "C00012",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "I00005",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0005",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "SP0005",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "O00001",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "O00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "O00006",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AO010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "AP010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "AC0004",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AC0004",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "SP0022",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AP005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AH009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "AO009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  16
+    },
+    {
+        "sku_code":  "AP009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  15
+    },
+    {
+        "sku_code":  "B00010",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00010",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  15
+    },
+    {
+        "sku_code":  "AP002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AO006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "AP006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "AH003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "ABL002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AO007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  37
+    },
+    {
+        "sku_code":  "AP007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  16
+    },
+    {
+        "sku_code":  "C00011",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "C00011",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  47
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  23
+    },
+    {
+        "sku_code":  "AO003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AP003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0033",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "I00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "I00003",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  31
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  19
+    },
+    {
+        "sku_code":  "C00013",
+        "store_code":  "OM001",
+        "month_year":  "2025-11",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "C00013",
+        "store_code":  "OM002",
+        "month_year":  "2025-11",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "SET_2X10MS",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  110
+    },
+    {
+        "sku_code":  "SET_2X10MS",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  48
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  38
+    },
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "B00012",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00012",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AG014",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AG001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "AP001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "C00006",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AAF001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "D00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "D00003",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "D00001",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  21
+    },
+    {
+        "sku_code":  "D00001",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  27
+    },
+    {
+        "sku_code":  "D00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "D00002",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "D00008",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AH008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "ABL004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  29
+    },
+    {
+        "sku_code":  "AP008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  24
+    },
+    {
+        "sku_code":  "AO011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  20
+    },
+    {
+        "sku_code":  "AP011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  18
+    },
+    {
+        "sku_code":  "B00014",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "B00014",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "AOG011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "AOG004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  34
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  16
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "O00008",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "O00008",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00002",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AP004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "BX0015",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  28
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "SP0013",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  16
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AC0001",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00006",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "B00006",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  15
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "B00021",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  39
+    },
+    {
+        "sku_code":  "B00021",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  20
+    },
+    {
+        "sku_code":  "B00021-PB",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00021-PB",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0035",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  37
+    },
+    {
+        "sku_code":  "SP0035",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "SP0029",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  77
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  39
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  18
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "I00006",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00016",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  29
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "C00012",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "C00012",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "I00005",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "I00005",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0005",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "SP0005",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "O00001",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "O00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "O00003",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "O00006",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AH010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "AP010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  19
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AC0004",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  14
+    },
+    {
+        "sku_code":  "AO005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AP005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AH009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AO009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "AP009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "B00010",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AH006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AO002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  27
+    },
+    {
+        "sku_code":  "AP002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "O0007",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AP006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0031",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "AH003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AO007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  16
+    },
+    {
+        "sku_code":  "AP007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  41
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  22
+    },
+    {
+        "sku_code":  "AP003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "I00003",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "I00003",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  30
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "C00013",
+        "store_code":  "OM001",
+        "month_year":  "2025-12",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "C00013",
+        "store_code":  "OM002",
+        "month_year":  "2025-12",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AC0001",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AC0001",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AC0003",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AC0004",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AG001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "AG013",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AG015",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AH003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "AH006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AH008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "AH009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AH010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AO001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "AO002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "AO003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AO004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AO005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AO007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  42
+    },
+    {
+        "sku_code":  "AO008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  32
+    },
+    {
+        "sku_code":  "AO009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "AO010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "AO011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  28
+    },
+    {
+        "sku_code":  "AOG001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "AOG003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "AOG008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "AOG009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AOG010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AP001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AP002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "AP003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AP004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AP005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AP006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AP007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "AP008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "AP009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "AP010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AP011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "ARD002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "ARD003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00002",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  38
+    },
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  24
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  18
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  54
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  30
+    },
+    {
+        "sku_code":  "B00006",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  18
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  93
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  46
+    },
+    {
+        "sku_code":  "B00010",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "B00010",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00012",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "B00014",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00014",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  67
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  22
+    },
+    {
+        "sku_code":  "B00016",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "B00016",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  19
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  21
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "B00021",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "B00021",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  23
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  27
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  47
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  22
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  51
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "C00006",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "C00011",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "C00012",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "C00012",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "C00013",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "C00013",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "D00001",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  23
+    },
+    {
+        "sku_code":  "D00001",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  19
+    },
+    {
+        "sku_code":  "D00002",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "D00002",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "D00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "D00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  19
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "D00005",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "D00008",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "D00008",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "I00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  18
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "I00005",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "I00006",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "I00006",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "O00001",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "O00001",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "O00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "O00006",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "O00006",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "O00008",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "O0007",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0005",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "SP0005",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  26
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  68
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "SP0013",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  19
+    },
+    {
+        "sku_code":  "SP0013",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0029",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0035",
+        "store_code":  "OM001",
+        "month_year":  "2026-01",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "SP0035",
+        "store_code":  "OM002",
+        "month_year":  "2026-01",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  39
+    },
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  22
+    },
+    {
+        "sku_code":  "B00012",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "ADS03",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AG001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "AG013",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "C00014",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "C00014",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AH005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AP001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  38
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  18
+    },
+    {
+        "sku_code":  "AAF001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "ARD002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "D00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "D00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "D00005",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  26
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "D00002",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  26
+    },
+    {
+        "sku_code":  "D00002",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "D00008",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AH008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "ABL004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  21
+    },
+    {
+        "sku_code":  "AP008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "AO011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  28
+    },
+    {
+        "sku_code":  "AP011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "B00014",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "SPG001",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  165
+    },
+    {
+        "sku_code":  "SPG001",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  61
+    },
+    {
+        "sku_code":  "SP0037",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "SP0037",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "SPG002",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  165
+    },
+    {
+        "sku_code":  "SPG002",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  61
+    },
+    {
+        "sku_code":  "SP0038",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "SP0038",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "DIF-001",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "DIF-001",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0039",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "SP0039",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AOG001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AOG005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AOG007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "AOG003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  37
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  16
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "O00008",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AP004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "BX0015",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "BX0015",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  25
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "SP0013",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "SP0013",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  18
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  21
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AC0001",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00006",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00021",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "B00021",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "SP0029",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  101
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  45
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "I00006",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "B00016",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  23
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  20
+    },
+    {
+        "sku_code":  "C00012",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "I00005",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "I00005",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0005",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "O00001",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "O00001",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "O00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "O00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "O00006",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "O00006",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AO010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "AP010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  14
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "AO005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AH009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AO009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  19
+    },
+    {
+        "sku_code":  "AP009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "B00010",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00010",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AH006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "ABL003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "AP002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "O0007",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AO006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AH003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AO007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  33
+    },
+    {
+        "sku_code":  "AP007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "C00011",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  53
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  28
+    },
+    {
+        "sku_code":  "ARD003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AP003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "I00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "I00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "G00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  35
+    },
+    {
+        "sku_code":  "G00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  27
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  41
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM002",
+        "month_year":  "2026-02",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "C00013",
+        "store_code":  "OM001",
+        "month_year":  "2026-02",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  32
+    },
+    {
+        "sku_code":  "BX0002",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  54
+    },
+    {
+        "sku_code":  "B00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  27
+    },
+    {
+        "sku_code":  "B00012",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "ADS03",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  25
+    },
+    {
+        "sku_code":  "AG001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  18
+    },
+    {
+        "sku_code":  "AG013",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "B00001",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "C00014",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "C00014",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AH005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AP001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  50
+    },
+    {
+        "sku_code":  "BX0014",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  23
+    },
+    {
+        "sku_code":  "ARD002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "D00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "D00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "D00005",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  48
+    },
+    {
+        "sku_code":  "D00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  13
+    },
+    {
+        "sku_code":  "D00001",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  21
+    },
+    {
+        "sku_code":  "D00001",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "D00002",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  28
+    },
+    {
+        "sku_code":  "D00002",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  24
+    },
+    {
+        "sku_code":  "D00008",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "D00008",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "BX0011",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "ASLAOS-002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AH008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "AO008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  41
+    },
+    {
+        "sku_code":  "AP008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "AO011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  44
+    },
+    {
+        "sku_code":  "AP011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  26
+    },
+    {
+        "sku_code":  "B00014",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "B00014",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SPG001",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "SPG001",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0037",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  22
+    },
+    {
+        "sku_code":  "SP0037",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "SPG002",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "SPG002",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "SP0038",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  12
+    },
+    {
+        "sku_code":  "SP0038",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "DIF-001",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "DIF-001",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "SP0039",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "SP0039",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AOG008",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  5
+    },
+    {
+        "sku_code":  "AOG011",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  19
+    },
+    {
+        "sku_code":  "AOG010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "AOG002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AOG007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  83
+    },
+    {
+        "sku_code":  "B00015",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  33
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  17
+    },
+    {
+        "sku_code":  "B00018",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "O00008",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "O00008",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00002",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "B00002",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AP004",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "BX0015",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "BX0015",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  32
+    },
+    {
+        "sku_code":  "C00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  16
+    },
+    {
+        "sku_code":  "SP0013",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "SP0013",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  24
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "C00010",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "I00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  21
+    },
+    {
+        "sku_code":  "B00020",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "G00007",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  94
+    },
+    {
+        "sku_code":  "G00007",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  67
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  30
+    },
+    {
+        "sku_code":  "B00019",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  15
+    },
+    {
+        "sku_code":  "B00006",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00006",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  15
+    },
+    {
+        "sku_code":  "B00004",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "B00021",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  60
+    },
+    {
+        "sku_code":  "B00021",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  20
+    },
+    {
+        "sku_code":  "B00021-PB",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00021-PB",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0029",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0029",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  168
+    },
+    {
+        "sku_code":  "B00008",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  72
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  26
+    },
+    {
+        "sku_code":  "SP0006",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  24
+    },
+    {
+        "sku_code":  "I00006",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "I00006",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00016",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "B00016",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  48
+    },
+    {
+        "sku_code":  "B00005",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  19
+    },
+    {
+        "sku_code":  "C00012",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  14
+    },
+    {
+        "sku_code":  "C00012",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "I00005",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "SP0005",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "SP0005",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "O00001",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "O00001",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "O00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "O00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "O00006",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  22
+    },
+    {
+        "sku_code":  "O00006",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  9
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "O00002",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AO010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  3
+    },
+    {
+        "sku_code":  "AP010",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  30
+    },
+    {
+        "sku_code":  "B00007",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "SP0022",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AP005",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AH009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "ABL001",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  24
+    },
+    {
+        "sku_code":  "AP009",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  11
+    },
+    {
+        "sku_code":  "B00010",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "B00010",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "AH006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  2
+    },
+    {
+        "sku_code":  "ABL003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  10
+    },
+    {
+        "sku_code":  "AP002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "O0007",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AO006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  7
+    },
+    {
+        "sku_code":  "AP006",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  16
+    },
+    {
+        "sku_code":  "B00017",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "AH003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "AO007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  53
+    },
+    {
+        "sku_code":  "AP007",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "C00011",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  6
+    },
+    {
+        "sku_code":  "C00011",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  4
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  105
+    },
+    {
+        "sku_code":  "C00002",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  63
+    },
+    {
+        "sku_code":  "AAF002",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "ARD003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "AP003",
+        "store_code":  "OM_ASL001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "SP0012",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  27
+    },
+    {
+        "sku_code":  "SP0033",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "SP0033",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  1
+    },
+    {
+        "sku_code":  "I00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "I00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  8
+    },
+    {
+        "sku_code":  "G00003",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  61
+    },
+    {
+        "sku_code":  "G00003",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  40
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  69
+    },
+    {
+        "sku_code":  "SP0009",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  29
+    },
+    {
+        "sku_code":  "C00013",
+        "store_code":  "OM001",
+        "month_year":  "2026-03",
+        "qty_sold":  16
+    },
+    {
+        "sku_code":  "C00013",
+        "store_code":  "OM002",
+        "month_year":  "2026-03",
+        "qty_sold":  5
+    }
+]

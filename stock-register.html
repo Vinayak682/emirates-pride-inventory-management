@@ -1693,7 +1693,51 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <button class="login-go" id="loginGoBtn" onclick="doLogin()">ENTER →</button>
     <div class="login-err" id="loginErr"></div>
   </div>
+
+  <!-- S&OP Portal Access -->
+  <div style="margin-top:16px;width:340px;max-width:94vw;">
+    <div id="sopLoginBox" style="background:#1A1A1A;border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:0;overflow:hidden;">
+      <button onclick="toggleSopPwd()"
+        style="width:100%;background:transparent;border:none;color:#C9A84C;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:13px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-family:inherit;">
+        <span>📊 S&amp;OP Command Centre</span>
+        <span id="sopArrow" style="font-size:16px;transition:transform 0.2s;">›</span>
+      </button>
+      <div id="sopPwdSection" style="display:none;padding:0 16px 16px;">
+        <input type="password" id="sopPwdInput" placeholder="Management password"
+          style="width:100%;background:#111;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;padding:10px 12px;outline:none;font-family:inherit;box-sizing:border-box;margin-bottom:8px;"
+          autocomplete="off" onkeydown="if(event.key==='Enter')openSop()">
+        <div id="sopPwdErr" style="color:#F87171;font-size:11px;font-weight:600;margin-bottom:8px;display:none;">Incorrect password</div>
+        <button onclick="openSop()"
+          style="width:100%;background:linear-gradient(135deg,#C9A84C,#E8C96A);color:#1a2744;font-weight:800;border:none;border-radius:8px;padding:10px;font-size:13px;letter-spacing:0.08em;cursor:pointer;font-family:inherit;">
+          ENTER S&amp;OP →
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+function toggleSopPwd(){
+  const s=document.getElementById('sopPwdSection');
+  const a=document.getElementById('sopArrow');
+  const open=s.style.display!=='none';
+  s.style.display=open?'none':'block';
+  a.style.transform=open?'':'rotate(90deg)';
+  if(!open) setTimeout(()=>document.getElementById('sopPwdInput').focus(),50);
+}
+function openSop(){
+  const pwd=document.getElementById('sopPwdInput').value;
+  const err=document.getElementById('sopPwdErr');
+  if(pwd==='Vinayak@1998'){
+    window.location.href='sop-portal.html';
+  } else {
+    err.style.display='block';
+    document.getElementById('sopPwdInput').value='';
+    document.getElementById('sopPwdInput').focus();
+    setTimeout(()=>{err.style.display='none';},2500);
+  }
+}
+</script>
 
 <!-- ══════════ APP ══════════ -->
 <div id="appShell">
@@ -10479,6 +10523,7 @@ document.addEventListener('keydown', function(e){
   const ls = document.getElementById('loginScreen');
   const loginVisible = ls && ls.style.display !== 'none';
   if(loginVisible){
+    if(document.activeElement && document.activeElement.id==='sopPwdInput') return;
     if(digit !== null){ pk(digit); e.preventDefault(); return; }
     if(key==='Backspace'||key==='Delete'){ pd(); e.preventDefault(); return; }
     if(key==='Escape'){ pc(); e.preventDefault(); return; }
