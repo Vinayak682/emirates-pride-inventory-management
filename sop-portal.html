@@ -56,47 +56,47 @@ html,body{height:100%;background:var(--white);color:var(--ink);font-family:'Mont
    ══════════════════════════════════════════════ */
 #loginScreen{
   position:fixed;inset:0;z-index:9999;
-  background:var(--white);
+  background:#0D0D0D;
   display:flex;align-items:center;justify-content:center;flex-direction:column;
   overflow:auto;
 }
 .login-ornament-top{
-  position:absolute;top:0;left:0;right:0;height:3px;
+  position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--gold),var(--gold-dark),var(--gold),transparent);
 }
 .login-ornament-bottom{
-  position:absolute;bottom:0;left:0;right:0;height:3px;
+  position:absolute;bottom:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--gold),var(--gold-dark),var(--gold),transparent);
 }
 .login-card{
-  background:var(--white);
-  border:1px solid var(--border);
+  background:#1A1A1A;
+  border:1px solid rgba(201,168,76,0.3);
   border-radius:2px;
   padding:48px 44px 40px;
-  width:100%;max-width:420px;
-  box-shadow:0 8px 48px rgba(90,70,20,0.08);
+  width:100%;max-width:400px;
   position:relative;
 }
 .login-card::before,.login-card::after{
   content:'';position:absolute;
-  width:20px;height:20px;border-color:var(--gold);border-style:solid;
+  width:18px;height:18px;border-color:var(--gold);border-style:solid;
 }
 .login-card::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
 .login-card::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
 .login-divider{
-  height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);
+  height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent);
   margin:24px 0;
 }
 .login-label{
-  font-size:10px;letter-spacing:0.18em;color:var(--ink-light);
+  font-size:10px;letter-spacing:0.18em;color:rgba(255,255,255,0.4);
   text-transform:uppercase;font-weight:600;margin-bottom:8px;
 }
 .login-inp{
-  width:100%;border:1px solid var(--border);background:var(--cream);
-  color:var(--ink);font-family:'Montserrat',sans-serif;font-size:15px;
+  width:100%;border:1px solid rgba(201,168,76,0.25);background:#111;
+  color:#fff;font-family:'Montserrat',sans-serif;font-size:15px;
   padding:13px 16px;outline:none;border-radius:1px;transition:border-color .2s;
 }
 .login-inp:focus{border-color:var(--gold);}
+.login-inp::placeholder{color:rgba(255,255,255,0.25);}
 .login-btn{
   width:100%;background:var(--gold-dark);color:var(--white);
   font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;
@@ -386,23 +386,22 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
   <div class="login-ornament-top"></div>
 
   <!-- Logo -->
-  <div style="text-align:center;margin-bottom:40px;">
-    <div style="display:inline-block;position:relative;">
-      <svg width="90" height="90" viewBox="0 0 100 100" style="color:var(--gold-dark);">
-        <use href="#ep-mandala"/>
-      </svg>
+  <div style="text-align:center;margin-bottom:48px;">
+    <div style="font-family:'Montserrat',sans-serif;font-size:24px;font-weight:700;letter-spacing:0.32em;color:#C9A84C;text-transform:uppercase;">
+      EMIRATES PRIDE
     </div>
-    <div class="ep-logo-text-ar" style="font-size:17px;margin-top:10px;">فخـر الإمارات</div>
-    <div class="ep-logo-text-en" style="font-size:12px;letter-spacing:0.28em;">EMIRATES PRIDE</div>
+    <div style="font-family:'Noto Naskh Arabic',serif;font-size:16px;color:#A88B3D;margin-top:6px;letter-spacing:0.02em;">
+      فخر الإمارات
+    </div>
   </div>
 
   <div class="login-card">
     <!-- Corner ornaments via CSS -->
     <div style="text-align:center;margin-bottom:28px;">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink);letter-spacing:0.04em;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#fff;letter-spacing:0.04em;">
         S&OP Command Centre
       </div>
-      <div style="font-size:10px;color:var(--ink-light);letter-spacing:0.14em;text-transform:uppercase;margin-top:6px;font-weight:600;">
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:0.14em;text-transform:uppercase;margin-top:6px;font-weight:600;">
         Management Access Only
       </div>
     </div>
@@ -418,7 +417,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
 
     <div style="text-align:center;margin-top:24px;">
       <a href="stock-register.html"
-        style="font-size:10px;color:var(--ink-light);text-decoration:none;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">
+        style="font-size:10px;color:rgba(255,255,255,0.3);text-decoration:none;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">
         ← Return to Stock Register
       </a>
     </div>
@@ -442,12 +441,9 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-brand">
-      <svg width="40" height="40" viewBox="0 0 100 100" style="color:var(--gold-dark);flex-shrink:0;">
-        <use href="#ep-mandala"/>
-      </svg>
-      <div>
-        <div class="ep-logo-text-ar" style="font-size:12px;text-align:left;margin-bottom:1px;">فخـر الإمارات</div>
-        <div class="ep-logo-text-en" style="font-size:9px;">EMIRATES PRIDE</div>
+      <div style="line-height:1;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.22em;color:var(--gold-dark);text-transform:uppercase;">EMIRATES PRIDE</div>
+        <div style="font-family:'Noto Naskh Arabic',serif;font-size:11px;color:var(--gold);margin-top:2px;">فخر الإمارات</div>
       </div>
       <div class="topbar-divider"></div>
       <div>
