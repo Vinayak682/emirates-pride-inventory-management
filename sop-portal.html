@@ -4,221 +4,485 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Emirates Pride — S&OP Command Centre</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
+/* ══════════════════════════════════════════════
+   EMIRATES PRIDE — BRAND DESIGN SYSTEM
+   ══════════════════════════════════════════════ */
 :root {
-  --gold: #C9A84C;
-  --gold-light: #E8C96A;
-  --navy: #1a2744;
-  --dark: #0c1220;
-  --darker: #070d18;
-  --card: rgba(255,255,255,0.05);
-  --border: rgba(201,168,76,0.18);
+  --gold:        #C9A84C;
+  --gold-dark:   #7A6525;
+  --gold-deeper: #5C4A1A;
+  --gold-light:  #E8D49A;
+  --gold-pale:   #F5EDD8;
+  --cream:       #FAF7F2;
+  --cream-mid:   #F2EDE4;
+  --border:      #E2D9C8;
+  --border-soft: #EDE8DE;
+  --ink:         #1C1C1C;
+  --ink-mid:     #4A4540;
+  --ink-light:   #8A8278;
+  --white:       #FFFFFF;
 }
-* { box-sizing: border-box; }
-body { background: var(--dark); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #fff; margin: 0; min-height: 100vh; }
-/* ── LOGIN ── */
-#loginScreen {
-  position: fixed; inset: 0; z-index: 9999;
-  background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.12) 0%, #070d18 70%);
-  display: flex; align-items: center; justify-content: center; flex-direction: column;
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--white);color:var(--ink);font-family:'Montserrat',sans-serif;}
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--cream);}
+::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px;}
+
+/* ══════════════════════════════════════════════
+   LOGO SVG — Arabesque Mandala
+   ══════════════════════════════════════════════ */
+.ep-logo-mark svg{width:72px;height:72px;}
+.ep-logo-mark-sm svg{width:44px;height:44px;}
+.ep-logo-text-en{
+  font-family:'Montserrat',sans-serif;
+  font-weight:600;letter-spacing:0.22em;
+  font-size:13px;color:var(--gold-dark);text-transform:uppercase;
 }
-.login-card {
-  background: rgba(26,39,68,0.9); border: 1px solid var(--border);
-  border-radius: 24px; padding: 40px 36px; width: 100%; max-width: 400px;
-  box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+.ep-logo-text-ar{
+  font-family:'Noto Naskh Arabic',serif;
+  font-size:15px;color:var(--gold-dark);font-weight:500;
+  display:block;text-align:center;margin-bottom:2px;
 }
-/* ── MAIN LAYOUT ── */
-#app { display: none; min-height: 100vh; flex-direction: column; }
-.topbar {
-  background: var(--navy); border-bottom: 1px solid var(--border);
-  padding: 14px 24px; display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 50;
+
+/* ══════════════════════════════════════════════
+   LOGIN SCREEN
+   ══════════════════════════════════════════════ */
+#loginScreen{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--white);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  overflow:auto;
 }
-.nav-tabs {
-  background: rgba(10,15,30,0.95); border-bottom: 1px solid var(--border);
-  display: flex; overflow-x: auto; gap: 0; position: sticky; top: 65px; z-index: 40;
-  scrollbar-width: none;
+.login-ornament-top{
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--gold),var(--gold-dark),var(--gold),transparent);
 }
-.nav-tabs::-webkit-scrollbar { display: none; }
-.nav-tab {
-  flex-shrink: 0; padding: 14px 28px; font-size: 13px; font-weight: 700;
-  letter-spacing: 0.06em; text-transform: uppercase; color: #6B7280; cursor: pointer;
-  border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap;
+.login-ornament-bottom{
+  position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--gold),var(--gold-dark),var(--gold),transparent);
 }
-.nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-.nav-tab:hover:not(.active) { color: #9CA3AF; }
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-/* ── CARDS ── */
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; }
-.stat-card {
-  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
-  border-radius: 14px; padding: 20px 24px;
+.login-card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:2px;
+  padding:48px 44px 40px;
+  width:100%;max-width:420px;
+  box-shadow:0 8px 48px rgba(90,70,20,0.08);
+  position:relative;
 }
-.gold-badge {
-  background: linear-gradient(135deg, var(--gold), var(--gold-light));
-  color: #1a2744; font-weight: 800; border-radius: 8px;
-  padding: 3px 10px; font-size: 11px; letter-spacing: 0.06em;
+.login-card::before,.login-card::after{
+  content:'';position:absolute;
+  width:20px;height:20px;border-color:var(--gold);border-style:solid;
 }
-/* ── FILTERS ── */
-.filter-bar { background: rgba(10,15,30,0.8); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 14px 24px; }
-.sel {
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-  color: #fff; border-radius: 10px; padding: 8px 32px 8px 12px; font-size: 13px;
-  font-weight: 600; appearance: none; cursor: pointer; outline: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 5 5-5' stroke='%23C9A84C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 10px center;
+.login-card::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+.login-card::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+.login-divider{
+  height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);
+  margin:24px 0;
 }
-.sel:focus { border-color: var(--gold); }
-.sel option { background: #1a2744; }
-/* ── TABLES ── */
-.tbl-wrap { overflow-x: auto; border-radius: 12px; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-thead th {
-  background: rgba(26,39,68,0.9); color: var(--gold); font-weight: 700;
-  padding: 12px 14px; text-align: left; font-size: 11px; letter-spacing: 0.06em;
-  text-transform: uppercase; position: sticky; top: 0; white-space: nowrap; border-bottom: 1px solid var(--border);
+.login-label{
+  font-size:10px;letter-spacing:0.18em;color:var(--ink-light);
+  text-transform:uppercase;font-weight:600;margin-bottom:8px;
 }
-tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.12s; }
-tbody tr:hover { background: rgba(201,168,76,0.04); }
-tbody td { padding: 11px 14px; color: #D1D5DB; white-space: nowrap; }
-tbody td.num { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
-tbody td.sku-code { color: var(--gold); font-weight: 700; font-size: 11px; font-family: monospace; }
-/* ── INPUT ── */
-.inp {
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-  color: #fff; border-radius: 10px; padding: 10px 14px; font-size: 14px;
-  outline: none; width: 100%;
+.login-inp{
+  width:100%;border:1px solid var(--border);background:var(--cream);
+  color:var(--ink);font-family:'Montserrat',sans-serif;font-size:15px;
+  padding:13px 16px;outline:none;border-radius:1px;transition:border-color .2s;
 }
-.inp:focus { border-color: var(--gold); }
-/* ── BUTTONS ── */
-.btn-gold {
-  background: linear-gradient(135deg, var(--gold), var(--gold-light));
-  color: #1a2744; font-weight: 800; border: none; border-radius: 12px;
-  padding: 12px 24px; font-size: 14px; cursor: pointer; letter-spacing: 0.04em;
-  transition: opacity 0.15s, transform 0.1s;
+.login-inp:focus{border-color:var(--gold);}
+.login-btn{
+  width:100%;background:var(--gold-dark);color:var(--white);
+  font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:0.2em;text-transform:uppercase;
+  border:none;padding:16px;cursor:pointer;transition:background .2s;
+  margin-top:20px;
 }
-.btn-gold:hover { opacity: 0.9; }
-.btn-gold:active { transform: scale(0.97); }
-.btn-ghost {
-  background: rgba(255,255,255,0.06); color: #9CA3AF; border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 10px; padding: 8px 16px; font-size: 13px; cursor: pointer; font-weight: 600;
+.login-btn:hover{background:var(--gold-deeper);}
+
+/* ══════════════════════════════════════════════
+   APP SHELL
+   ══════════════════════════════════════════════ */
+#app{display:none;min-height:100vh;flex-direction:column;}
+
+/* ── TOPBAR ── */
+.topbar{
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  padding:0 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:68px;position:sticky;top:0;z-index:50;
 }
-.btn-ghost:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.topbar-brand{display:flex;align-items:center;gap:14px;}
+.topbar-divider{width:1px;height:28px;background:var(--border);}
+.topbar-portal-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px;font-weight:600;color:var(--ink-mid);letter-spacing:0.04em;
+}
+.topbar-actions{display:flex;align-items:center;gap:16px;}
+.topbar-badge{
+  background:var(--gold-pale);border:1px solid var(--gold-light);
+  color:var(--gold-dark);font-size:9px;font-weight:700;letter-spacing:0.14em;
+  text-transform:uppercase;padding:4px 10px;
+}
+.exit-btn{
+  font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;
+  letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-light);
+  background:none;border:1px solid var(--border);padding:8px 16px;cursor:pointer;
+  transition:all .2s;
+}
+.exit-btn:hover{border-color:var(--gold);color:var(--gold-dark);}
+
+/* ── NAV TABS ── */
+.nav-tabs{
+  background:var(--cream);border-bottom:1px solid var(--border);
+  display:flex;overflow-x:auto;scrollbar-width:none;
+  position:sticky;top:68px;z-index:40;
+}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.nav-tab{
+  flex-shrink:0;padding:0 28px;height:50px;
+  display:flex;align-items:center;gap:8px;
+  font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--ink-light);cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .2s;white-space:nowrap;
+}
+.nav-tab:hover{color:var(--gold-dark);}
+.nav-tab.active{color:var(--gold-dark);border-bottom-color:var(--gold-dark);background:var(--white);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── FILTER BAR ── */
+.filter-bar{
+  background:var(--white);border-bottom:1px solid var(--border-soft);
+  padding:14px 32px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+}
+.sel{
+  background:var(--white);border:1px solid var(--border);
+  color:var(--ink);font-family:'Montserrat',sans-serif;
+  font-size:11px;font-weight:600;letter-spacing:0.06em;
+  padding:9px 30px 9px 12px;outline:none;cursor:pointer;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 5 5-5' stroke='%237A6525' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+  transition:border-color .2s;
+}
+.sel:focus{border-color:var(--gold);}
+.sel option{background:var(--white);}
+.filter-btn{
+  font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;
+  letter-spacing:0.14em;text-transform:uppercase;
+  background:var(--gold-dark);color:var(--white);
+  border:none;padding:9px 20px;cursor:pointer;transition:background .2s;
+}
+.filter-btn:hover{background:var(--gold-deeper);}
+.filter-btn-ghost{
+  font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;
+  letter-spacing:0.14em;text-transform:uppercase;
+  background:none;color:var(--ink-light);
+  border:1px solid var(--border);padding:9px 20px;cursor:pointer;transition:all .2s;
+}
+.filter-btn-ghost:hover{border-color:var(--gold);color:var(--gold-dark);}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--border);}
+.stat-card{
+  background:var(--white);padding:24px 28px;
+}
+.stat-label{
+  font-size:9px;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--ink-light);font-weight:700;margin-bottom:10px;
+}
+.stat-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:38px;font-weight:600;color:var(--gold-dark);line-height:1;
+}
+.stat-sub{font-size:11px;color:var(--ink-light);margin-top:6px;}
+
+/* ── SECTION HEADER ── */
+.section-hd{
+  padding:20px 32px 0;
+  display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+}
+.section-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;font-weight:600;color:var(--ink);letter-spacing:0.02em;
+}
+.section-sub{font-size:11px;color:var(--ink-light);margin-top:2px;}
+
+/* ── TABLE ── */
+.tbl-card{
+  margin:16px 32px;
+  border:1px solid var(--border);
+  overflow:hidden;
+}
+.tbl-card-hd{
+  background:var(--cream);border-bottom:1px solid var(--border);
+  padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.tbl-card-title{
+  font-size:10px;letter-spacing:0.16em;font-weight:700;
+  text-transform:uppercase;color:var(--ink-mid);
+}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+thead th{
+  background:var(--cream-mid);
+  color:var(--gold-dark);font-size:9px;letter-spacing:0.14em;
+  text-transform:uppercase;font-weight:700;
+  padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+tbody tr{border-bottom:1px solid var(--border-soft);transition:background .12s;}
+tbody tr:hover{background:var(--gold-pale);}
+tbody td{padding:12px 16px;color:var(--ink-mid);white-space:nowrap;}
+tbody td.num{color:var(--ink);font-weight:600;text-align:right;font-variant-numeric:tabular-nums;}
+tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'Montserrat',sans-serif;letter-spacing:0.06em;}
+.tbl-search{
+  background:var(--white);border:1px solid var(--border);
+  font-family:'Montserrat',sans-serif;font-size:12px;
+  padding:8px 12px;outline:none;width:200px;
+}
+.tbl-search:focus{border-color:var(--gold);}
+
+/* ── REGION PILLS ── */
+.pill{
+  display:inline-block;padding:2px 9px;font-size:9px;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;
+}
+.pill-epp {background:#EAF0FF;color:#3B5BDB;}
+.pill-asl {background:#F3EEFF;color:#7048E8;}
+.pill-oman{background:#E6FBF3;color:#0B7A45;}
+.pill-ksa {background:#FFF8E1;color:#876A00;}
+
+/* ── SHARE BAR ── */
+.bar-track{height:4px;background:var(--border);flex:1;min-width:80px;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--gold-dark),var(--gold));}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--border);}
+.kpi-card{background:var(--white);padding:28px 24px;text-align:center;}
+.kpi-num{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:600;color:var(--gold-dark);line-height:1;}
+.kpi-lbl{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-light);margin-top:8px;font-weight:700;}
+
+/* ── UPLOAD ── */
+.upload-zone{
+  border:1px dashed var(--gold);background:var(--gold-pale);
+  padding:48px 32px;text-align:center;cursor:pointer;transition:all .2s;
+}
+.upload-zone:hover,.upload-zone.drag{background:var(--cream-mid);border-color:var(--gold-dark);}
+.upload-zone-icon{font-size:40px;margin-bottom:16px;opacity:0.6;}
+.upload-zone-text{font-size:13px;color:var(--ink-mid);font-weight:500;}
+.upload-zone-sub{font-size:11px;color:var(--ink-light);margin-top:4px;}
+
+/* ── ORNAMENT DIVIDER ── */
+.orn-divider{
+  display:flex;align-items:center;gap:16px;
+  padding:0 32px;margin:8px 0;
+}
+.orn-line{flex:1;height:1px;background:var(--border);}
+.orn-diamond{
+  width:6px;height:6px;background:var(--gold);
+  transform:rotate(45deg);flex-shrink:0;
+}
+
 /* ── LOADING ── */
-.spinner {
-  width: 36px; height: 36px; border: 3px solid rgba(201,168,76,0.2);
-  border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite;
+.spinner{
+  width:32px;height:32px;border:2px solid var(--border);
+  border-top-color:var(--gold-dark);border-radius:50%;
+  animation:spin .7s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-/* ── UPLOAD ZONE ── */
-.upload-zone {
-  border: 2px dashed rgba(201,168,76,0.3); border-radius: 16px; padding: 40px;
-  text-align: center; cursor: pointer; transition: all 0.2s;
-}
-.upload-zone:hover, .upload-zone.drag { border-color: var(--gold); background: rgba(201,168,76,0.04); }
-/* ── PILLS ── */
-.pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-.pill-epp { background: rgba(59,130,246,0.2); color: #93C5FD; }
-.pill-asl { background: rgba(168,85,247,0.2); color: #D8B4FE; }
-.pill-oman { background: rgba(16,185,129,0.2); color: #6EE7B7; }
-.pill-ksa { background: rgba(245,158,11,0.2); color: #FCD34D; }
-/* ── CHARTS (CSS bars) ── */
-.bar-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); flex: 1; min-width: 80px; }
-.bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
-/* ── TESTER KPI ── */
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 16px; }
-.kpi-card {
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px; padding: 20px; text-align: center;
-}
-.kpi-num { font-size: 32px; font-weight: 800; color: var(--gold); line-height: 1; }
-.kpi-lbl { font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; }
+@keyframes spin{to{transform:rotate(360deg);}}
+
 /* ── TOAST ── */
-#toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: #1a2744; border: 1px solid var(--border); border-radius: 12px;
-  padding: 12px 24px; font-size: 14px; font-weight: 600; color: #fff;
-  z-index: 99999; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+#toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  background:var(--ink);color:var(--white);
+  font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;
+  letter-spacing:0.06em;
+  padding:12px 28px;z-index:99999;
+  opacity:0;transition:opacity .2s;pointer-events:none;
+  border-left:3px solid var(--gold);
 }
-#toast.show { opacity: 1; }
-/* ── DEVIATION TABLE ── */
-.dev-high { color: #F87171; }
-.dev-low  { color: #FBBF24; }
-.dev-ok   { color: #34D399; }
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
-::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 3px; }
-/* ── RESPONSIVE ── */
-@media (max-width: 640px) {
-  .login-card { margin: 16px; padding: 28px 20px; }
-  .topbar { padding: 12px 16px; }
-  .filter-bar { padding: 12px 16px; gap: 8px; flex-wrap: wrap; }
+#toast.show{opacity:1;}
+
+/* ── INP ── */
+.inp{
+  background:var(--white);border:1px solid var(--border);
+  color:var(--ink);font-family:'Montserrat',sans-serif;font-size:13px;
+  padding:10px 14px;outline:none;transition:border-color .2s;
+}
+.inp:focus{border-color:var(--gold);}
+
+/* ── DEVIATION ── */
+.dev-up{color:#0B7A45;font-weight:700;}
+.dev-dn{color:#C0392B;font-weight:700;}
+.dev-ok{color:var(--ink-light);}
+.dev-new{color:#876A00;font-weight:700;}
+
+@media(max-width:640px){
+  .topbar{padding:0 16px;height:56px;}
+  .filter-bar{padding:12px 16px;}
+  .section-hd{padding:16px 16px 0;}
+  .tbl-card{margin:12px 16px;}
+  .stat-num{font-size:28px;}
+  .login-card{padding:32px 24px 28px;}
 }
 </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════ LOGIN SCREEN ════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════
+     EMIRATES PRIDE LOGO SVG (Arabesque Mandala)
+     ══════════════════════════════════════════════ -->
+<svg style="display:none" id="ep-svg-defs">
+  <defs>
+    <symbol id="ep-mandala" viewBox="0 0 100 100">
+      <!-- Outer ring -->
+      <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+      <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="0.4" opacity="0.3"/>
+      <!-- Arabesque petals — 8-fold symmetry -->
+      <g opacity="0.9">
+        <ellipse cx="50" cy="18" rx="5" ry="9" fill="currentColor" transform="rotate(0 50 50)"/>
+        <ellipse cx="50" cy="18" rx="5" ry="9" fill="currentColor" transform="rotate(45 50 50)"/>
+        <ellipse cx="50" cy="18" rx="5" ry="9" fill="currentColor" transform="rotate(90 50 50)"/>
+        <ellipse cx="50" cy="18" rx="5" ry="9" fill="currentColor" transform="rotate(135 50 50)"/>
+        <ellipse cx="50" cy="18" rx="5" ry="9" fill="currentColor" transform="rotate(180 50 50)"/>
+        <ellipse cx="50" cy="18" rx="5" ry="9" fill="currentColor" transform="rotate(225 50 50)"/>
+        <ellipse cx="50" cy="18" rx="5" ry="9" fill="currentColor" transform="rotate(270 50 50)"/>
+        <ellipse cx="50" cy="18" rx="5" ry="9" fill="currentColor" transform="rotate(315 50 50)"/>
+      </g>
+      <!-- Inner petals -->
+      <g opacity="0.7">
+        <ellipse cx="50" cy="28" rx="3.5" ry="7" fill="currentColor" transform="rotate(22.5 50 50)"/>
+        <ellipse cx="50" cy="28" rx="3.5" ry="7" fill="currentColor" transform="rotate(67.5 50 50)"/>
+        <ellipse cx="50" cy="28" rx="3.5" ry="7" fill="currentColor" transform="rotate(112.5 50 50)"/>
+        <ellipse cx="50" cy="28" rx="3.5" ry="7" fill="currentColor" transform="rotate(157.5 50 50)"/>
+        <ellipse cx="50" cy="28" rx="3.5" ry="7" fill="currentColor" transform="rotate(202.5 50 50)"/>
+        <ellipse cx="50" cy="28" rx="3.5" ry="7" fill="currentColor" transform="rotate(247.5 50 50)"/>
+        <ellipse cx="50" cy="28" rx="3.5" ry="7" fill="currentColor" transform="rotate(292.5 50 50)"/>
+        <ellipse cx="50" cy="28" rx="3.5" ry="7" fill="currentColor" transform="rotate(337.5 50 50)"/>
+      </g>
+      <!-- Centre detail -->
+      <circle cx="50" cy="50" r="12" fill="none" stroke="currentColor" stroke-width="1" opacity="0.8"/>
+      <circle cx="50" cy="50" r="8" fill="currentColor" opacity="0.15"/>
+      <circle cx="50" cy="50" r="5" fill="currentColor" opacity="0.5"/>
+      <!-- Arabic ا character suggestion in centre -->
+      <text x="50" y="55" text-anchor="middle" font-size="9" fill="currentColor" font-family="serif" opacity="0.9">الإ</text>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ══════════════════════════════════════════════
+     LOGIN SCREEN
+     ══════════════════════════════════════════════ -->
 <div id="loginScreen">
-  <div style="text-align:center;margin-bottom:32px;">
-    <div style="font-size:40px;margin-bottom:12px;">🌹</div>
-    <div style="font-size:11px;letter-spacing:0.2em;color:var(--gold);font-weight:800;text-transform:uppercase;margin-bottom:4px;">Emirates Pride Perfumes</div>
-    <div style="font-size:22px;font-weight:800;color:#fff;">S&OP Command Centre</div>
-    <div style="font-size:13px;color:#4B5563;margin-top:6px;">Sales · Inventory · Testers · Planning</div>
+  <div class="login-ornament-top"></div>
+
+  <!-- Logo -->
+  <div style="text-align:center;margin-bottom:40px;">
+    <div style="display:inline-block;position:relative;">
+      <svg width="90" height="90" viewBox="0 0 100 100" style="color:var(--gold-dark);">
+        <use href="#ep-mandala"/>
+      </svg>
+    </div>
+    <div class="ep-logo-text-ar" style="font-size:17px;margin-top:10px;">فخـر الإمارات</div>
+    <div class="ep-logo-text-en" style="font-size:12px;letter-spacing:0.28em;">EMIRATES PRIDE</div>
   </div>
+
   <div class="login-card">
-    <div style="font-size:12px;letter-spacing:0.12em;font-weight:700;color:#6B7280;margin-bottom:20px;text-transform:uppercase;">Management Access Only</div>
-    <div style="margin-bottom:16px;">
-      <label style="font-size:12px;color:#9CA3AF;font-weight:600;display:block;margin-bottom:8px;">Password</label>
-      <input type="password" id="loginPwd" class="inp" placeholder="Enter password"
-        style="font-size:18px;letter-spacing:0.3em;text-align:center;" autocomplete="off">
+    <!-- Corner ornaments via CSS -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink);letter-spacing:0.04em;">
+        S&OP Command Centre
+      </div>
+      <div style="font-size:10px;color:var(--ink-light);letter-spacing:0.14em;text-transform:uppercase;margin-top:6px;font-weight:600;">
+        Management Access Only
+      </div>
     </div>
-    <div id="loginErr" style="color:#F87171;font-size:13px;font-weight:600;text-align:center;margin-bottom:12px;display:none;"></div>
-    <button class="btn-gold w-full" onclick="doLogin()" style="width:100%;font-size:15px;padding:14px;">
-      ENTER COMMAND CENTRE
-    </button>
-    <div style="text-align:center;margin-top:20px;">
-      <a href="index.html" style="font-size:12px;color:#4B5563;text-decoration:none;">← Back to Operations</a>
+
+    <div class="login-divider"></div>
+
+    <div class="login-label">Password</div>
+    <input type="password" id="loginPwd" class="login-inp"
+      placeholder="Enter management password"
+      style="letter-spacing:0.08em;" autocomplete="off">
+    <div id="loginErr" style="color:#C0392B;font-size:11px;font-weight:600;letter-spacing:0.06em;margin-top:10px;display:none;text-align:center;"></div>
+    <button class="login-btn" onclick="doLogin()">Enter Command Centre →</button>
+
+    <div style="text-align:center;margin-top:24px;">
+      <a href="stock-register.html"
+        style="font-size:10px;color:var(--ink-light);text-decoration:none;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">
+        ← Return to Stock Register
+      </a>
     </div>
   </div>
-  <div style="position:fixed;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light),var(--gold));"></div>
+
+  <!-- Bottom ornament row -->
+  <div style="margin-top:40px;display:flex;align-items:center;gap:12px;opacity:0.4;">
+    <div style="width:60px;height:1px;background:var(--gold-dark);"></div>
+    <div style="width:5px;height:5px;background:var(--gold-dark);transform:rotate(45deg);"></div>
+    <div style="width:60px;height:1px;background:var(--gold-dark);"></div>
+  </div>
+
+  <div class="login-ornament-bottom"></div>
 </div>
 
-<!-- ════════════════════════════════ MAIN APP ════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════
+     MAIN APP
+     ══════════════════════════════════════════════ -->
 <div id="app">
 
   <!-- Top Bar -->
   <div class="topbar">
-    <div style="display:flex;align-items:center;gap:14px;">
-      <span style="font-size:22px;">🌹</span>
+    <div class="topbar-brand">
+      <svg width="40" height="40" viewBox="0 0 100 100" style="color:var(--gold-dark);flex-shrink:0;">
+        <use href="#ep-mandala"/>
+      </svg>
       <div>
-        <div style="font-size:10px;letter-spacing:0.18em;color:var(--gold);font-weight:800;text-transform:uppercase;">Emirates Pride</div>
-        <div style="font-size:16px;font-weight:800;line-height:1.2;">S&OP Command Centre</div>
+        <div class="ep-logo-text-ar" style="font-size:12px;text-align:left;margin-bottom:1px;">فخـر الإمارات</div>
+        <div class="ep-logo-text-en" style="font-size:9px;">EMIRATES PRIDE</div>
       </div>
-      <span class="gold-badge">MANAGEMENT</span>
+      <div class="topbar-divider"></div>
+      <div>
+        <div class="topbar-portal-name">S&OP Command Centre</div>
+        <div style="font-size:9px;color:var(--ink-light);letter-spacing:0.1em;text-transform:uppercase;font-weight:600;margin-top:1px;">Sales · Inventory · Testers</div>
+      </div>
     </div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div style="text-align:right;font-size:11px;color:#4B5563;" id="lastRefresh">—</div>
-      <button class="btn-ghost" onclick="doLogout()" style="font-size:12px;padding:7px 14px;">Exit</button>
+    <div class="topbar-actions">
+      <span class="topbar-badge">Management</span>
+      <div style="font-size:10px;color:var(--ink-light);letter-spacing:0.06em;" id="lastRefresh"></div>
+      <button class="exit-btn" onclick="doLogout()">Exit</button>
     </div>
   </div>
 
   <!-- Nav Tabs -->
   <div class="nav-tabs">
-    <div class="nav-tab active" data-tab="sales" onclick="switchTab('sales')">📊 Sales</div>
-    <div class="nav-tab" data-tab="inventory" onclick="switchTab('inventory')">📦 Inventory</div>
-    <div class="nav-tab" data-tab="testers" onclick="switchTab('testers')">🌸 Testers</div>
+    <div class="nav-tab active" data-tab="sales" onclick="switchTab('sales')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Sales
+    </div>
+    <div class="nav-tab" data-tab="inventory" onclick="switchTab('inventory')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Inventory
+    </div>
+    <div class="nav-tab" data-tab="testers" onclick="switchTab('testers')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4m0-6h10m0 0h4a2 2 0 0 0 2-2v-4m-6 6v4a2 2 0 0 0 2 2h4"/></svg>
+      Testers
+    </div>
   </div>
 
-  <!-- ════════════ TAB: SALES ════════════ -->
+  <!-- ══════════════════ TAB: SALES ══════════════════ -->
   <div id="tab-sales" class="tab-panel active">
+
     <!-- Filter Bar -->
-    <div class="filter-bar" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <div class="filter-bar">
       <select class="sel" id="f-region" onchange="applySalesFilters()">
         <option value="ALL">All Regions</option>
         <option value="EPP">EPP UAE</option>
@@ -240,184 +504,179 @@ tbody td.sku-code { color: var(--gold); font-weight: 700; font-size: 11px; font-
       </select>
       <select class="sel" id="f-month" onchange="applySalesFilters()">
         <option value="ALL">All Months</option>
-        <option value="01">January</option>
-        <option value="02">February</option>
-        <option value="03">March</option>
-        <option value="04">April</option>
-        <option value="05">May</option>
-        <option value="06">June</option>
-        <option value="07">July</option>
-        <option value="08">August</option>
-        <option value="09">September</option>
-        <option value="10">October</option>
-        <option value="11">November</option>
-        <option value="12">December</option>
+        <option value="01">January</option><option value="02">February</option>
+        <option value="03">March</option><option value="04">April</option>
+        <option value="05">May</option><option value="06">June</option>
+        <option value="07">July</option><option value="08">August</option>
+        <option value="09">September</option><option value="10">October</option>
+        <option value="11">November</option><option value="12">December</option>
       </select>
       <select class="sel" id="f-quarter" style="display:none;" onchange="applySalesFilters()">
-        <option value="1">Q1 (Jan–Mar)</option>
-        <option value="2">Q2 (Apr–Jun)</option>
-        <option value="3">Q3 (Jul–Sep)</option>
-        <option value="4">Q4 (Oct–Dec)</option>
+        <option value="1">Q1 — Jan, Feb, Mar</option>
+        <option value="2">Q2 — Apr, May, Jun</option>
+        <option value="3">Q3 — Jul, Aug, Sep</option>
+        <option value="4">Q4 — Oct, Nov, Dec</option>
       </select>
       <select class="sel" id="f-view" onchange="applySalesFilters()">
-        <option value="stores">View A — Stores Comparison</option>
+        <option value="stores">View A — Store Performance</option>
         <option value="sku">View B — SKU Performance</option>
       </select>
-      <button class="btn-ghost" onclick="exportSalesCsv()" style="margin-left:auto;">⬇ Export CSV</button>
+      <button class="filter-btn-ghost" onclick="exportSalesCsv()" style="margin-left:auto;">
+        ↓ Export CSV
+      </button>
     </div>
 
-    <!-- Summary Stats -->
-    <div style="padding:20px 24px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;" id="sales-stats">
+    <!-- Stats -->
+    <div class="stat-grid" style="margin-bottom:0;border-bottom:1px solid var(--border);">
       <div class="stat-card">
-        <div style="font-size:11px;color:#6B7280;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Total Units Sold</div>
-        <div id="stat-total" style="font-size:32px;font-weight:800;color:var(--gold);">—</div>
-        <div style="font-size:11px;color:#4B5563;margin-top:4px;" id="stat-period">Loading...</div>
+        <div class="stat-label">Total Units Sold</div>
+        <div class="stat-num" id="stat-total">—</div>
+        <div class="stat-sub" id="stat-period">Loading…</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:11px;color:#6B7280;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Stores Active</div>
-        <div id="stat-stores" style="font-size:32px;font-weight:800;color:#60A5FA;">—</div>
-        <div style="font-size:11px;color:#4B5563;margin-top:4px;">in selected period</div>
+        <div class="stat-label">Active Stores</div>
+        <div class="stat-num" id="stat-stores" style="color:#3B5BDB;">—</div>
+        <div class="stat-sub">in selected period</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:11px;color:#6B7280;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Active SKUs</div>
-        <div id="stat-skus" style="font-size:32px;font-weight:800;color:#A78BFA;">—</div>
-        <div style="font-size:11px;color:#4B5563;margin-top:4px;">with qty &gt; 0</div>
+        <div class="stat-label">Active SKUs</div>
+        <div class="stat-num" id="stat-skus" style="color:#7048E8;">—</div>
+        <div class="stat-sub">with qty &gt; 0</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:11px;color:#6B7280;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Top Store</div>
-        <div id="stat-top-store" style="font-size:18px;font-weight:800;color:#34D399;">—</div>
-        <div style="font-size:11px;color:#4B5563;margin-top:4px;" id="stat-top-store-qty">—</div>
+        <div class="stat-label">Top Store</div>
+        <div id="stat-top-store" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--gold-dark);margin-top:4px;">—</div>
+        <div class="stat-sub" id="stat-top-qty">—</div>
       </div>
     </div>
 
     <!-- Main Table -->
-    <div style="padding:20px 24px;">
-      <div class="card" style="padding:0;overflow:hidden;">
-        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:between;gap:16px;">
-          <div>
-            <div id="sales-table-title" style="font-size:15px;font-weight:800;">Sales Overview</div>
-            <div id="sales-table-sub" style="font-size:12px;color:#6B7280;margin-top:2px;">Loading data from Supabase…</div>
-          </div>
-          <div style="margin-left:auto;">
-            <input type="text" class="inp" id="sales-search" placeholder="🔍 Search SKU or product…"
-              style="width:220px;font-size:13px;padding:8px 12px;" oninput="renderSalesTable()">
-          </div>
+    <div class="tbl-card">
+      <div class="tbl-card-hd">
+        <div>
+          <div class="tbl-card-title" id="sales-table-title">Store Performance</div>
+          <div style="font-size:11px;color:var(--ink-light);margin-top:2px;" id="sales-table-sub">Loading from Supabase…</div>
         </div>
-        <div id="sales-loading" style="padding:60px;text-align:center;">
-          <div class="spinner" style="margin:0 auto 16px;"></div>
-          <div style="color:#6B7280;font-size:14px;">Loading sales data…</div>
-        </div>
-        <div class="tbl-wrap" id="sales-tbl-wrap" style="display:none;">
-          <table id="sales-table">
-            <thead id="sales-thead"></thead>
-            <tbody id="sales-tbody"></tbody>
-          </table>
-        </div>
-        <div id="sales-empty" style="display:none;padding:60px;text-align:center;color:#4B5563;">
-          <div style="font-size:40px;margin-bottom:12px;">📊</div>
-          <div style="font-size:15px;font-weight:600;">No data for selected filters</div>
-          <div style="font-size:13px;margin-top:4px;">Try changing the region, month, or year</div>
-        </div>
+        <input type="text" class="tbl-search" id="sales-search" placeholder="Search SKU or store…" oninput="renderSalesTable()">
+      </div>
+      <div id="sales-loading" style="padding:60px;text-align:center;">
+        <div class="spinner" style="margin:0 auto 16px;"></div>
+        <div style="font-size:12px;color:var(--ink-light);letter-spacing:0.08em;text-transform:uppercase;">Loading Sales Data</div>
+      </div>
+      <div class="tbl-wrap" id="sales-tbl-wrap" style="display:none;">
+        <table>
+          <thead id="sales-thead"></thead>
+          <tbody id="sales-tbody"></tbody>
+        </table>
+      </div>
+      <div id="sales-empty" style="display:none;padding:60px;text-align:center;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--ink-light);margin-bottom:8px;">No Data Found</div>
+        <div style="font-size:11px;color:var(--ink-light);">Adjust your region, store, or period filters</div>
       </div>
     </div>
 
-    <!-- Month-over-Month Trend (stores view) -->
-    <div style="padding:0 24px 24px;" id="mom-section">
-      <div class="card" style="padding:20px;">
-        <div style="font-size:14px;font-weight:800;margin-bottom:16px;color:var(--gold);">📈 Month-over-Month Trend</div>
-        <div style="overflow-x:auto;">
-          <table id="mom-table" style="font-size:12px;">
+    <!-- MoM Trend -->
+    <div id="mom-section" style="display:none;">
+      <div class="orn-divider"><div class="orn-line"></div><div class="orn-diamond"></div><div class="orn-line"></div></div>
+      <div class="tbl-card">
+        <div class="tbl-card-hd">
+          <div class="tbl-card-title">Month-over-Month Trend</div>
+        </div>
+        <div class="tbl-wrap">
+          <table style="font-size:12px;">
             <thead id="mom-thead"></thead>
             <tbody id="mom-tbody"></tbody>
           </table>
         </div>
       </div>
     </div>
+
+    <div style="height:40px;"></div>
   </div>
 
-  <!-- ════════════ TAB: INVENTORY ════════════ -->
+  <!-- ══════════════════ TAB: INVENTORY ══════════════════ -->
   <div id="tab-inventory" class="tab-panel">
-    <div style="padding:24px;max-width:1200px;">
+    <div style="max-width:1100px;padding:28px 32px;">
 
-      <!-- Upload Section -->
-      <div class="card" style="padding:24px;margin-bottom:24px;">
-        <div style="font-size:15px;font-weight:800;margin-bottom:6px;">📤 Upload Inventory Snapshot</div>
-        <div style="font-size:13px;color:#6B7280;margin-bottom:20px;">
-          Upload store inventory Excel. Format: SKU Code | Product Name | Quantity On Hand
+      <!-- Upload Card -->
+      <div style="border:1px solid var(--border);margin-bottom:24px;overflow:hidden;">
+        <div class="tbl-card-hd">
+          <div class="tbl-card-title">Upload Inventory Snapshot</div>
+          <div style="font-size:11px;color:var(--ink-light);">Format: SKU Code | Product Name | Quantity On Hand</div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;margin-bottom:16px;flex-wrap:wrap;">
-          <div>
-            <label style="font-size:12px;color:#9CA3AF;font-weight:600;display:block;margin-bottom:6px;">Select Store</label>
-            <select class="sel" id="inv-store-sel" style="width:100%;padding:10px 32px 10px 12px;">
-              <option value="">— Select Store —</option>
-              <optgroup label="Oman">
-                <option value="OM001">Mall Of Oman</option>
-                <option value="OM002">Muscat City Centre</option>
-                <option value="OM_ASL001">ASL-Mall Of Oman</option>
-              </optgroup>
-              <optgroup label="EPP UAE" id="eppa-optgroup"></optgroup>
-              <optgroup label="ASL UAE" id="asla-optgroup"></optgroup>
-            </select>
+        <div style="padding:24px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">Select Store</div>
+              <select class="sel" id="inv-store-sel" style="width:100%;padding:10px 30px 10px 12px;">
+                <option value="">— Select Store —</option>
+                <optgroup label="Oman">
+                  <option value="OM001">Mall Of Oman</option>
+                  <option value="OM002">Muscat City Centre</option>
+                  <option value="OM_ASL001">ASL-Mall Of Oman</option>
+                </optgroup>
+                <optgroup label="EPP UAE" id="inv-epp-grp"></optgroup>
+                <optgroup label="ASL UAE" id="inv-asl-grp"></optgroup>
+              </select>
+            </div>
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">Snapshot Date</div>
+              <input type="date" class="inp" id="inv-date" style="width:100%;">
+            </div>
           </div>
-          <div>
-            <label style="font-size:12px;color:#9CA3AF;font-weight:600;display:block;margin-bottom:6px;">Snapshot Date</label>
-            <input type="date" class="inp" id="inv-date" style="width:200px;">
+          <div class="upload-zone" id="inv-drop-zone" onclick="document.getElementById('inv-file').click()">
+            <input type="file" id="inv-file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleInvFile(this)">
+            <div class="upload-zone-icon">↑</div>
+            <div class="upload-zone-text">Drop your Excel file here, or click to browse</div>
+            <div class="upload-zone-sub">Supports .xlsx, .xls, .csv</div>
           </div>
-        </div>
-        <div class="upload-zone" id="inv-drop-zone" onclick="document.getElementById('inv-file').click()">
-          <input type="file" id="inv-file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleInvFile(this)">
-          <div style="font-size:36px;margin-bottom:12px;">📂</div>
-          <div style="font-weight:700;font-size:15px;color:#9CA3AF;">Drop Excel file here or click to browse</div>
-          <div style="font-size:12px;color:#4B5563;margin-top:6px;">Supports .xlsx, .xls, .csv</div>
-        </div>
-        <div id="inv-preview" style="display:none;margin-top:16px;">
-          <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:12px;" id="inv-preview-title"></div>
-          <div class="tbl-wrap">
-            <table id="inv-preview-table">
-              <thead><tr>
-                <th>SKU Code</th><th>Product Name</th><th>Qty in Upload</th><th>Qty in System</th><th>Variance</th>
-              </tr></thead>
-              <tbody id="inv-preview-tbody"></tbody>
-            </table>
-          </div>
-          <div style="margin-top:16px;display:flex;gap:12px;">
-            <button class="btn-gold" onclick="confirmInvUpload()">✓ Confirm Upload</button>
-            <button class="btn-ghost" onclick="cancelInvUpload()">Cancel</button>
+          <div id="inv-preview" style="display:none;margin-top:20px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:12px;" id="inv-preview-title"></div>
+            <div class="tbl-wrap" style="border:1px solid var(--border);max-height:320px;overflow-y:auto;">
+              <table>
+                <thead><tr>
+                  <th>SKU Code</th><th>Product Name</th><th>Qty (Upload)</th><th>Qty (System)</th><th>Variance</th>
+                </tr></thead>
+                <tbody id="inv-preview-tbody"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:16px;">
+              <button class="filter-btn" onclick="confirmInvUpload()">✓ Confirm Upload</button>
+              <button class="filter-btn-ghost" onclick="cancelInvUpload()">Cancel</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Upload History -->
-      <div class="card" style="padding:24px;margin-bottom:24px;">
-        <div style="font-size:15px;font-weight:800;margin-bottom:6px;">🕒 Upload History</div>
-        <div style="font-size:13px;color:#6B7280;margin-bottom:20px;">All previous inventory snapshots</div>
+      <!-- History -->
+      <div style="border:1px solid var(--border);margin-bottom:24px;overflow:hidden;">
+        <div class="tbl-card-hd">
+          <div class="tbl-card-title">Upload History</div>
+        </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>Date</th><th>Store</th><th>Region</th><th>SKUs Uploaded</th><th>Total Units</th><th>Uploaded By</th><th>Actions</th>
+              <th>Date</th><th>Store</th><th>Region</th><th>SKUs</th><th>Total Units</th><th>By</th><th>Action</th>
             </tr></thead>
             <tbody id="inv-history-tbody">
-              <tr><td colspan="7" style="text-align:center;padding:40px;color:#4B5563;">
-                <div style="font-size:30px;margin-bottom:8px;">📋</div>
-                No uploads yet. Upload your first inventory snapshot above.
+              <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--ink-light);">
+                <div style="font-family:'Cormorant Garamond',serif;font-size:18px;margin-bottom:6px;">No uploads yet</div>
+                Upload your first inventory snapshot above
               </td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Current Inventory View -->
-      <div class="card" style="padding:24px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-          <div>
-            <div style="font-size:15px;font-weight:800;">📦 Current Inventory</div>
-            <div style="font-size:12px;color:#6B7280;margin-top:2px;">Latest snapshot per store</div>
-          </div>
+      <!-- Current Inventory -->
+      <div style="border:1px solid var(--border);overflow:hidden;">
+        <div class="tbl-card-hd">
+          <div class="tbl-card-title">Current Inventory — Latest Snapshot</div>
           <div style="display:flex;gap:10px;">
-            <select class="sel" id="inv-view-store" onchange="loadCurrentInventory()">
+            <select class="sel" id="inv-view-store" onchange="loadCurrentInventory()" style="font-size:11px;">
               <option value="ALL">All Stores</option>
             </select>
-            <button class="btn-ghost" onclick="exportInventoryCsv()" style="font-size:12px;">⬇ Export</button>
+            <button class="filter-btn-ghost" onclick="exportInventoryCsv()" style="font-size:10px;padding:7px 14px;">↓ Export</button>
           </div>
         </div>
         <div class="tbl-wrap">
@@ -427,21 +686,17 @@ tbody td.sku-code { color: var(--gold); font-weight: 700; font-size: 11px; font-
               <th style="text-align:right;">On Hand</th><th>Store</th><th>Last Updated</th>
             </tr></thead>
             <tbody id="inv-current-tbody">
-              <tr><td colspan="6" style="text-align:center;padding:40px;color:#4B5563;">
-                No inventory data yet.
-              </td></tr>
+              <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-light);">No inventory data yet.</td></tr>
             </tbody>
           </table>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- ════════════ TAB: TESTERS ════════════ -->
+  <!-- ══════════════════ TAB: TESTERS ══════════════════ -->
   <div id="tab-testers" class="tab-panel">
-    <!-- Filter Bar -->
-    <div class="filter-bar" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <div class="filter-bar">
       <select class="sel" id="t-region" onchange="loadTesterData()">
         <option value="ALL">All Regions</option>
         <option value="EPP">EPP UAE</option>
@@ -451,139 +706,122 @@ tbody td.sku-code { color: var(--gold); font-weight: 700; font-size: 11px; font-
       <select class="sel" id="t-store" onchange="loadTesterData()">
         <option value="ALL">All Stores</option>
       </select>
-      <select class="sel" id="t-period" onchange="loadTesterData()">
-        <option value="2026-05">May 2026</option>
-        <option value="2026-04">April 2026</option>
-        <option value="2026-03">March 2026</option>
-        <option value="2026-02">February 2026</option>
-        <option value="2026-01">January 2026</option>
-        <option value="ALL">All Time</option>
-      </select>
-      <button class="btn-ghost" onclick="exportTesterCsv()" style="margin-left:auto;">⬇ Export</button>
+      <button class="filter-btn-ghost" onclick="exportTesterCsv()" style="margin-left:auto;">↓ Export</button>
     </div>
 
-    <div style="padding:20px 24px;">
-      <!-- KPI Cards -->
-      <div class="kpi-grid" style="margin-bottom:24px;" id="tester-kpis">
-        <div class="kpi-card">
-          <div class="kpi-num" id="kpi-issued">—</div>
-          <div class="kpi-lbl">Total Testers Issued</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-num" id="kpi-fg-conv" style="color:#A78BFA;">—</div>
-          <div class="kpi-lbl">FG → Tester Conversions</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-num" id="kpi-wastage" style="color:#F87171;">—</div>
-          <div class="kpi-lbl">Wastage / Write-offs</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-num" id="kpi-live" style="color:#34D399;">—</div>
-          <div class="kpi-lbl">Live Testers (Current)</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-num" id="kpi-conv-rate" style="color:#FBBF24;">—%</div>
-          <div class="kpi-lbl">FG Conversion Rate</div>
-        </div>
+    <!-- KPI Row -->
+    <div class="kpi-grid" style="border-bottom:1px solid var(--border);">
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpi-issued">—</div>
+        <div class="kpi-lbl">Testers Issued</div>
       </div>
-
-      <!-- Per-Store Breakdown -->
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:24px;">
-        <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
-          <div style="font-size:14px;font-weight:800;">Tester Status by Store</div>
-        </div>
-        <div class="tbl-wrap">
-          <table>
-            <thead><tr>
-              <th>Store</th><th>Region</th>
-              <th style="text-align:right;">Issued</th>
-              <th style="text-align:right;">FG Conv.</th>
-              <th style="text-align:right;">Wastage</th>
-              <th style="text-align:right;">Live</th>
-              <th>Conv. Rate</th>
-            </tr></thead>
-            <tbody id="tester-store-tbody">
-              <tr><td colspan="7" style="text-align:center;padding:40px;color:#4B5563;">
-                <div class="spinner" style="margin:0 auto 12px;width:28px;height:28px;border-width:2px;"></div>
-                Loading tester data…
-              </td></tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpi-fg-conv" style="color:#7048E8;">—</div>
+        <div class="kpi-lbl">FG → Tester Conversions</div>
       </div>
-
-      <!-- Top SKUs by Tester Activity -->
-      <div class="card" style="padding:0;overflow:hidden;">
-        <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
-          <div style="font-size:14px;font-weight:800;">Top SKUs by Tester Activity</div>
-          <div style="font-size:12px;color:#6B7280;margin-top:2px;">SKUs with highest tester usage</div>
-        </div>
-        <div class="tbl-wrap">
-          <table>
-            <thead><tr>
-              <th>SKU Code</th><th>Product Name</th>
-              <th style="text-align:right;">Testers Issued</th>
-              <th style="text-align:right;">FG Conv.</th>
-              <th style="text-align:right;">Wastage</th>
-              <th>Activity Bar</th>
-            </tr></thead>
-            <tbody id="tester-sku-tbody">
-              <tr><td colspan="6" style="text-align:center;padding:40px;color:#4B5563;">No tester data.</td></tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpi-wastage" style="color:#C0392B;">—</div>
+        <div class="kpi-lbl">Wastage / Write-offs</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpi-live" style="color:#0B7A45;">—</div>
+        <div class="kpi-lbl">Live Testers (Current)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpi-conv-rate" style="color:var(--gold-dark);">—%</div>
+        <div class="kpi-lbl">FG Conversion Rate</div>
       </div>
     </div>
+
+    <!-- Per-Store -->
+    <div class="tbl-card" style="margin-top:0;border-top:none;">
+      <div class="tbl-card-hd"><div class="tbl-card-title">Tester Status by Store</div></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Store</th><th>Region</th>
+            <th style="text-align:right;">Issued</th>
+            <th style="text-align:right;">FG Conv.</th>
+            <th style="text-align:right;">Wastage</th>
+            <th style="text-align:right;">Live</th>
+            <th>Rate</th>
+          </tr></thead>
+          <tbody id="tester-store-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:40px;">
+              <div class="spinner" style="margin:0 auto 12px;width:24px;height:24px;border-width:2px;"></div>
+              <div style="font-size:11px;color:var(--ink-light);letter-spacing:0.08em;text-transform:uppercase;">Loading</div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top SKUs -->
+    <div class="orn-divider"><div class="orn-line"></div><div class="orn-diamond"></div><div class="orn-line"></div></div>
+    <div class="tbl-card">
+      <div class="tbl-card-hd">
+        <div class="tbl-card-title">Top SKUs by Tester Activity</div>
+        <div style="font-size:11px;color:var(--ink-light);">Top 20 most active</div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>SKU Code</th><th>Product Name</th>
+            <th style="text-align:right;">Issued</th>
+            <th style="text-align:right;">FG Conv.</th>
+            <th style="text-align:right;">Wastage</th>
+            <th>Activity</th>
+          </tr></thead>
+          <tbody id="tester-sku-tbody">
+            <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-light);">No tester data yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div style="height:40px;"></div>
   </div>
 
 </div><!-- /app -->
-
 <div id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 // CONSTANTS
-// ════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 const SOP_PASS = 'Vinayak@1998';
 const SB_URL   = 'https://ncszurcrkngjcjqsowln.supabase.co';
 const SB_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
 
-// Store registry — all known stores with region + country metadata
 const STORES = [
-  // Oman
-  {code:'OM001',      name:'Mall Of Oman',            region:'OMAN', country:'Oman',  city:'Muscat',  type:'EPP'},
-  {code:'OM002',      name:'Muscat City Centre',       region:'OMAN', country:'Oman',  city:'Muscat',  type:'EPP'},
-  {code:'OM_ASL001',  name:'ASL-Mall Of Oman',         region:'OMAN', country:'Oman',  city:'Muscat',  type:'ASL'},
-  // EPP UAE
-  {code:'DX001',  name:'Dubai Mall',                region:'EPP', country:'UAE', city:'Dubai',       type:'EPP'},
-  {code:'DX004',  name:'Mall of Emirates',           region:'EPP', country:'UAE', city:'Dubai',       type:'EPP'},
-  {code:'DX005',  name:'Mirdif City Centre',         region:'EPP', country:'UAE', city:'Dubai',       type:'EPP'},
-  {code:'DX006',  name:'Dubai Hills Mall',           region:'EPP', country:'UAE', city:'Dubai',       type:'EPP'},
-  {code:'A0001',  name:'Bawabat al Sharq Shop',      region:'EPP', country:'UAE', city:'Abu Dhabi',   type:'EPP'},
-  {code:'A0002',  name:'Bawabat al Sharq Kiosk',     region:'EPP', country:'UAE', city:'Abu Dhabi',   type:'EPP'},
-  {code:'A0003',  name:'Dalma Mall Shop',            region:'EPP', country:'UAE', city:'Abu Dhabi',   type:'EPP'},
-  {code:'A0004',  name:'Dalma Mall Kiosk',           region:'EPP', country:'UAE', city:'Abu Dhabi',   type:'EPP'},
-  {code:'A0005',  name:'Deerfield Mall',             region:'EPP', country:'UAE', city:'Abu Dhabi',   type:'EPP'},
-  {code:'A0007',  name:'Yas Mall Kiosk 2',           region:'EPP', country:'UAE', city:'Abu Dhabi',   type:'EPP'},
-  {code:'A0008',  name:'Yas Mall Kiosk 3',           region:'EPP', country:'UAE', city:'Abu Dhabi',   type:'EPP'},
-  {code:'A0009',  name:'Yas Mall Podium',            region:'EPP', country:'UAE', city:'Abu Dhabi',   type:'EPP'},
-  {code:'A0010',  name:'Bawabat al Sharq Shop 2',    region:'EPP', country:'UAE', city:'Abu Dhabi',   type:'EPP'},
-  {code:'SH001',  name:'Zahia City Centre',          region:'EPP', country:'UAE', city:'Sharjah',     type:'EPP'},
-  {code:'AJ001',  name:'Ajman City Centre',          region:'EPP', country:'UAE', city:'Ajman',       type:'EPP'},
-  {code:'RK001',  name:'Manar Mall Shop',            region:'EPP', country:'UAE', city:'Ras Al Khaimah', type:'EPP'},
-  {code:'RK002',  name:'Manar Mall Kiosk',           region:'EPP', country:'UAE', city:'Ras Al Khaimah', type:'EPP'},
-  {code:'FJ001',  name:'Fujairah City Centre',       region:'EPP', country:'UAE', city:'Fujairah',    type:'EPP'},
-  {code:'AL001',  name:'Al Ain Mall',                region:'EPP', country:'UAE', city:'Al Ain',      type:'EPP'},
-  {code:'AL002',  name:'Bawadi Mall Shop 1',         region:'EPP', country:'UAE', city:'Al Ain',      type:'EPP'},
-  {code:'AL003',  name:'Bawadi Mall Shop 2',         region:'EPP', country:'UAE', city:'Al Ain',      type:'EPP'},
-  {code:'AL004',  name:'Jimi Mall',                  region:'EPP', country:'UAE', city:'Al Ain',      type:'EPP'},
-  {code:'AL006',  name:'Makani Mall',                region:'EPP', country:'UAE', city:'Al Ain',      type:'EPP'},
-  // ASL UAE
-  {code:'BAS001', name:'Bawabat al Sharq (ASL)',     region:'ASL', country:'UAE', city:'Abu Dhabi',   type:'ASL'},
-  {code:'WH001',  name:'Warehouse JAFZA',            region:'EPP', country:'UAE', city:'Dubai',       type:'WH'},
+  {code:'OM001',     name:'Mall Of Oman',           region:'OMAN',city:'Muscat',   type:'EPP'},
+  {code:'OM002',     name:'Muscat City Centre',      region:'OMAN',city:'Muscat',   type:'EPP'},
+  {code:'OM_ASL001', name:'ASL-Mall Of Oman',        region:'OMAN',city:'Muscat',   type:'ASL'},
+  {code:'DX001',  name:'Dubai Mall',              region:'EPP', city:'Dubai',      type:'EPP'},
+  {code:'DX004',  name:'Mall of Emirates',        region:'EPP', city:'Dubai',      type:'EPP'},
+  {code:'DX005',  name:'Mirdif City Centre',      region:'EPP', city:'Dubai',      type:'EPP'},
+  {code:'DX006',  name:'Dubai Hills Mall',        region:'EPP', city:'Dubai',      type:'EPP'},
+  {code:'A0001',  name:'Bawabat al Sharq Shop',   region:'EPP', city:'Abu Dhabi',  type:'EPP'},
+  {code:'A0002',  name:'Bawabat al Sharq Kiosk',  region:'EPP', city:'Abu Dhabi',  type:'EPP'},
+  {code:'A0003',  name:'Dalma Mall Shop',         region:'EPP', city:'Abu Dhabi',  type:'EPP'},
+  {code:'A0004',  name:'Dalma Mall Kiosk',        region:'EPP', city:'Abu Dhabi',  type:'EPP'},
+  {code:'A0005',  name:'Deerfield Mall',          region:'EPP', city:'Abu Dhabi',  type:'EPP'},
+  {code:'A0007',  name:'Yas Mall Kiosk 2',        region:'EPP', city:'Abu Dhabi',  type:'EPP'},
+  {code:'A0008',  name:'Yas Mall Kiosk 3',        region:'EPP', city:'Abu Dhabi',  type:'EPP'},
+  {code:'A0009',  name:'Yas Mall Podium',         region:'EPP', city:'Abu Dhabi',  type:'EPP'},
+  {code:'A0010',  name:'Bawabat al Sharq Shop 2', region:'EPP', city:'Abu Dhabi',  type:'EPP'},
+  {code:'SH001',  name:'Zahia City Centre',       region:'EPP', city:'Sharjah',    type:'EPP'},
+  {code:'AJ001',  name:'Ajman City Centre',       region:'EPP', city:'Ajman',      type:'EPP'},
+  {code:'RK001',  name:'Manar Mall Shop',         region:'EPP', city:'Ras Al Khaimah',type:'EPP'},
+  {code:'RK002',  name:'Manar Mall Kiosk',        region:'EPP', city:'Ras Al Khaimah',type:'EPP'},
+  {code:'FJ001',  name:'Fujairah City Centre',    region:'EPP', city:'Fujairah',   type:'EPP'},
+  {code:'AL001',  name:'Al Ain Mall',             region:'EPP', city:'Al Ain',     type:'EPP'},
+  {code:'AL002',  name:'Bawadi Mall Shop 1',      region:'EPP', city:'Al Ain',     type:'EPP'},
+  {code:'AL003',  name:'Bawadi Mall Shop 2',      region:'EPP', city:'Al Ain',     type:'EPP'},
+  {code:'AL004',  name:'Jimi Mall',               region:'EPP', city:'Al Ain',     type:'EPP'},
+  {code:'AL006',  name:'Makani Mall',             region:'EPP', city:'Al Ain',     type:'EPP'},
+  {code:'BAS001', name:'Bawabat al Sharq (ASL)',  region:'ASL', city:'Abu Dhabi',  type:'ASL'},
 ];
 
-// Product catalog — SKU → name mapping for display
 const SKU_NAMES = {
   'C00002':'White 100ml','C00013':'White Overdose','C00004':'Maroon 100ml','C00012':'Navy 100ml',
   'C00010':'Maroon Intense','C00011':'Violet 100ml','SP0005':'No.4','C00014':'Black 100ml',
@@ -591,7 +829,7 @@ const SKU_NAMES = {
   'B00007':'Peaceful Life','B00004':'Meydan','B00018':'Hidden Tobacco','B00003':'Amber Bel Oud',
   'B00017':'Thekrayat','B00001':'Bergamot Bel Amber','B00002':'Jasmine Bel Musk',
   'B00012':'Ambergris','B00014':'Firewood','B00020':'Master Signature','B00016':'Mysterious Rose',
-  'B00006':'Mersal','B00010':'Sakura','B00021':'Midnight Bloom','B00009':'Mersal 100ml',
+  'B00006':'Mersal','B00010':'Sakura','B00021':'Midnight Bloom',
   'SP0009':'White Oud Set','SP0012':'White Set Box','SP0006':'More of Oud','SP0013':'Maroon Set Box',
   'SP0022':'Reflection Set','SP0029':'Midnight Glow Set','SP0031':'Summer Collection Set',
   'SP0035':'Midnight Bloom Set','SP0037':'Future Bakhoor 100ml','SP0038':'Future Oud 100ml',
@@ -605,37 +843,35 @@ const SKU_NAMES = {
   'AP004':'Leather Intense 50ml','AP005':'Rich Vanilla 50ml','AP006':'Spicy Sandal 50ml',
   'AP007':'Velvet Amber 50ml','AP008':'Dark Musk 50ml','AP009':'Royal Tobacco 50ml',
   'AP010':'Patchouli Glow 50ml','AP011':'Dark Wood 50ml',
-  'AO001':'Black Vanilla Oil 6ml','AO002':'Secret Leather Oil','AO003':'White Bouquet Oil',
+  'AO001':'Black Vanilla Oil','AO002':'Secret Leather Oil','AO003':'White Bouquet Oil',
   'AO004':'Leather Intense Oil','AO005':'Rich Vanilla Oil','AO006':'Spicy Sandal Oil',
   'AO007':'Velvet Amber Oil','AO008':'Dark Musk Oil','AO009':'Royal Tobacco Oil',
   'AO010':'Patchouli Glow Oil','AO011':'Dark Wood Oil',
-  'AH003':'Velvet Amber Hair Mist','AH005':'Black Vanilla Hair Mist','AH006':'Secret Leather Hair Mist',
-  'AH008':'Dark Musk Hair Mist','AH009':'Royal Tobacco Hair Mist',
-  'ABL001':'Royal Tobacco Lotion','ABL002':'Velvet Amber Lotion','ABL003':'Secret Leather Lotion',
-  'ABL004':'Dark Musk Lotion',
+  'AH003':'Velvet Amber Hair Mist','AH005':'Black Vanilla Hair Mist',
+  'AH006':'Secret Leather Hair Mist','AH008':'Dark Musk Hair Mist','AH009':'Royal Tobacco Hair Mist',
+  'ABL001':'Royal Tobacco Lotion','ABL002':'Velvet Amber Lotion',
+  'ABL003':'Secret Leather Lotion','ABL004':'Dark Musk Lotion',
   'AAF001':'Cool Violet Air Freshener','AAF002':'White Bouquet Air Freshener',
   'ARD002':'Cool Violet Reed Diffuser','ARD003':'White Bouquet Reed Diffuser',
-  'AG001':'ASL Gift Set Box','AG013':'ASL Bundle Foldable 2','AG014':'ASL 3 Gift Set',
-  'AG015':'ASL Bundle Foldable 1',
+  'AG001':'ASL Gift Set Box','AG013':'ASL Bundle Foldable 2','AG014':'ASL 3 Gift Set','AG015':'ASL Bundle Foldable 1',
   'BX0002':'3 Bel Black Box','BX0011':'Dakhoon Gift Set','BX0014':'BOD Gift Box','BX0015':'Luxury Set Box',
-  'G00003':'White Oud 10ml','G00007':'Masters 10ml','G_PLIF10ML':'Peaceful Life 10ml',
-  'SET_2X10MS':'2x10 Masters & Signature','SPG_DAKH':'Dakhoon Sampler',
-  'AOG001':'Gift Black Vanilla Oil','AOG002':'Gift Secret Leather Oil','AOG003':'Gift White Bouquet Oil',
-  'I00003':'White Oil 8ml','I00004':'Maroon Oil 8ml','I00005':'No.4 Oil 8ml','I00006':'Musk Oil 8ml',
+  'G00003':'White Oud 10ml','G00007':'Masters 10ml',
+  'SET_2X10MS':'2x10 Masters & Signature','G_PLIF10ML':'Peaceful Life 10ml','SPG_DAKH':'Dakhoon Sampler',
 };
 
 const MONTHS = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
 const QUARTERS = {1:[1,2,3],2:[4,5,6],3:[7,8,9],4:[10,11,12]};
 
-// ════════════════════════════════════════════════════════════════════
-// AUTH
-// ════════════════════════════════════════════════════════════════════
-let sb = null;
-let salesData = [];
-let testerData = [];
-let filteredSales = [];
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let sb = null, salesData = [], filteredSales = [];
+let invHistory = JSON.parse(localStorage.getItem('sop_inv_v2') || '[]');
 let invUploadBuffer = null;
 
+// ══════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════
 function doLogin() {
   const pwd = document.getElementById('loginPwd').value;
   const err = document.getElementById('loginErr');
@@ -643,677 +879,529 @@ function doLogin() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     document.getElementById('app').style.flexDirection = 'column';
-    initSupabase();
+    initApp();
   } else {
     err.textContent = 'Incorrect password. Access denied.';
     err.style.display = 'block';
     document.getElementById('loginPwd').value = '';
     document.getElementById('loginPwd').focus();
-    setTimeout(() => { err.style.display = 'none'; }, 3000);
+    setTimeout(() => err.style.display = 'none', 3000);
   }
 }
-document.getElementById('loginPwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('loginPwd').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
 function doLogout() {
   document.getElementById('loginPwd').value = '';
   document.getElementById('app').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
-  salesData = []; testerData = []; filteredSales = [];
+  salesData = []; filteredSales = [];
 }
 
-// ════════════════════════════════════════════════════════════════════
-// SUPABASE INIT
-// ════════════════════════════════════════════════════════════════════
-function initSupabase() {
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+function initApp() {
   sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
-  loadAllData();
   populateStoreDropdowns();
   setInvDefaultDate();
+  refreshInvHistory();
+  loadSalesData();
 }
 
-async function loadAllData() {
-  await Promise.all([loadSalesData(), loadTesterData()]);
-  document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
-}
-
-// ════════════════════════════════════════════════════════════════════
-// SALES DATA
-// ════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// SALES
+// ══════════════════════════════════════════════
 async function loadSalesData() {
   try {
     const { data, error } = await sb.from('sales_history').select('*').limit(50000);
     if (error) throw error;
     salesData = data || [];
     applySalesFilters();
+    document.getElementById('lastRefresh').textContent =
+      'Updated ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
   } catch(e) {
-    showSalesError('Failed to load: ' + e.message);
+    document.getElementById('sales-loading').innerHTML =
+      `<div style="color:#C0392B;font-size:12px;letter-spacing:0.06em;">Failed to load: ${e.message}</div>`;
   }
 }
 
-function getStoreInfo(code) {
-  return STORES.find(s => s.code === code) || { code, name: code, region: 'EPP', country: 'UAE', city: '—', type: 'EPP' };
+function getStore(code) {
+  return STORES.find(s => s.code === code) || {code,name:code,region:'EPP',city:'—',type:'EPP'};
 }
 
 function applySalesFilters() {
-  const region     = document.getElementById('f-region').value;
-  const storeCode  = document.getElementById('f-store').value;
-  const periodType = document.getElementById('f-period-type').value;
-  const year       = document.getElementById('f-year').value;
-  const month      = document.getElementById('f-month').value;
-  const quarter    = document.getElementById('f-quarter').value;
+  const region = document.getElementById('f-region').value;
+  const store  = document.getElementById('f-store').value;
+  const ptype  = document.getElementById('f-period-type').value;
+  const year   = document.getElementById('f-year').value;
+  const month  = document.getElementById('f-month').value;
+  const qtr    = document.getElementById('f-quarter').value;
 
   filteredSales = salesData.filter(r => {
-    const si = getStoreInfo(r.store_code);
+    const si = getStore(r.store_code);
     if (region !== 'ALL' && si.region !== region) return false;
-    if (storeCode !== 'ALL' && r.store_code !== storeCode) return false;
-    const [ry, rm] = r.month_year.split('-');
+    if (store  !== 'ALL' && r.store_code !== store)  return false;
+    const [ry,rm] = r.month_year.split('-');
     if (ry !== year) return false;
-    if (periodType === 'monthly' && month !== 'ALL' && rm !== month) return false;
-    if (periodType === 'quarterly') {
-      const qMonths = QUARTERS[parseInt(quarter)];
-      if (!qMonths.includes(parseInt(rm))) return false;
-    }
+    if (ptype === 'monthly'   && month !== 'ALL' && rm !== month) return false;
+    if (ptype === 'quarterly' && !QUARTERS[+qtr].includes(+rm))   return false;
     return true;
   });
 
-  updateSalesStats();
-  renderSalesTable();
-  renderMoMTable();
+  updateStats(); renderSalesTable(); renderMoM();
 }
 
-function updateSalesStats() {
-  const total = filteredSales.reduce((s, r) => s + (r.qty_sold || 0), 0);
+function updateStats() {
+  const total  = filteredSales.reduce((s,r) => s+(r.qty_sold||0), 0);
   const stores = new Set(filteredSales.map(r => r.store_code)).size;
-  const skus   = new Set(filteredSales.filter(r => r.qty_sold > 0).map(r => r.sku_code)).size;
-
-  // Top store
-  const byStore = {};
-  filteredSales.forEach(r => { byStore[r.store_code] = (byStore[r.store_code] || 0) + (r.qty_sold || 0); });
-  const topEntry = Object.entries(byStore).sort((a,b) => b[1]-a[1])[0];
-
-  document.getElementById('stat-total').textContent = total.toLocaleString();
+  const skus   = new Set(filteredSales.filter(r=>r.qty_sold>0).map(r=>r.sku_code)).size;
+  const byStore= {};
+  filteredSales.forEach(r => { byStore[r.store_code]=(byStore[r.store_code]||0)+(r.qty_sold||0); });
+  const top    = Object.entries(byStore).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('stat-total').textContent  = total.toLocaleString();
   document.getElementById('stat-stores').textContent = stores;
-  document.getElementById('stat-skus').textContent = skus;
-  document.getElementById('stat-top-store').textContent = topEntry ? getStoreInfo(topEntry[0]).name : '—';
-  document.getElementById('stat-top-store-qty').textContent = topEntry ? topEntry[1].toLocaleString() + ' units' : '';
-
-  const pLabel = getPeriodLabel();
-  document.getElementById('stat-period').textContent = pLabel;
+  document.getElementById('stat-skus').textContent   = skus;
+  document.getElementById('stat-top-store').textContent = top ? getStore(top[0]).name : '—';
+  document.getElementById('stat-top-qty').textContent   = top ? top[1].toLocaleString()+' units' : '';
+  document.getElementById('stat-period').textContent    = getPeriodLabel();
 }
 
 function getPeriodLabel() {
-  const pt   = document.getElementById('f-period-type').value;
-  const yr   = document.getElementById('f-year').value;
-  const mo   = document.getElementById('f-month').value;
-  const qt   = document.getElementById('f-quarter').value;
-  if (pt === 'monthly' && mo !== 'ALL') return MONTHS[parseInt(mo)] + ' ' + yr;
-  if (pt === 'quarterly') return 'Q' + qt + ' ' + yr;
-  return 'Full Year ' + yr;
+  const pt=document.getElementById('f-period-type').value;
+  const yr=document.getElementById('f-year').value;
+  const mo=document.getElementById('f-month').value;
+  const qt=document.getElementById('f-quarter').value;
+  if(pt==='monthly'&&mo!=='ALL') return MONTHS[+mo]+' '+yr;
+  if(pt==='quarterly') return 'Q'+qt+' '+yr+' ('+['Jan–Mar','Apr–Jun','Jul–Sep','Oct–Dec'][+qt-1]+')';
+  return 'Full Year '+yr;
 }
 
 function renderSalesTable() {
   const view   = document.getElementById('f-view').value;
-  const search = (document.getElementById('sales-search').value || '').toLowerCase();
-
+  const search = (document.getElementById('sales-search').value||'').toLowerCase();
   document.getElementById('sales-loading').style.display = 'none';
+
+  if (!filteredSales.length) {
+    document.getElementById('sales-tbl-wrap').style.display = 'none';
+    document.getElementById('sales-empty').style.display = 'block';
+    return;
+  }
+  document.getElementById('sales-empty').style.display = 'none';
   document.getElementById('sales-tbl-wrap').style.display = 'block';
 
   if (view === 'stores') renderStoresView(search);
   else renderSkuView(search);
+}
 
-  if (filteredSales.length === 0) {
-    document.getElementById('sales-tbl-wrap').style.display = 'none';
-    document.getElementById('sales-empty').style.display = 'block';
-  } else {
-    document.getElementById('sales-empty').style.display = 'none';
-  }
+function regionPill(reg) {
+  const cls = {EPP:'pill-epp',ASL:'pill-asl',OMAN:'pill-oman',KSA:'pill-ksa'};
+  return `<span class="pill ${cls[reg]||'pill-epp'}">${reg}</span>`;
 }
 
 function renderStoresView(search) {
-  // Aggregate: per store, total qty
   const byStore = {};
-  filteredSales.forEach(r => {
-    if (!byStore[r.store_code]) byStore[r.store_code] = 0;
-    byStore[r.store_code] += (r.qty_sold || 0);
-  });
-
+  filteredSales.forEach(r => { byStore[r.store_code]=(byStore[r.store_code]||0)+(r.qty_sold||0); });
   const rows = Object.entries(byStore)
-    .map(([code, qty]) => ({ code, qty, info: getStoreInfo(code) }))
-    .filter(r => !search || r.info.name.toLowerCase().includes(search) || r.code.toLowerCase().includes(search))
-    .sort((a,b) => b.qty - a.qty);
-
-  const maxQty = rows[0]?.qty || 1;
-  const regionPill = (r) => {
-    const m = {EPP:'pill-epp',ASL:'pill-asl',OMAN:'pill-oman',KSA:'pill-ksa'};
-    return `<span class="pill ${m[r.region]||'pill-epp'}">${r.region}</span>`;
-  };
+    .map(([c,q]) => ({c,q,si:getStore(c)}))
+    .filter(r => !search || r.si.name.toLowerCase().includes(search) || r.c.toLowerCase().includes(search))
+    .sort((a,b)=>b.q-a.q);
+  const max = rows[0]?.q || 1;
 
   document.getElementById('sales-thead').innerHTML = `<tr>
-    <th>#</th><th>Store Code</th><th>Store Name</th><th>City</th><th>Region</th>
-    <th style="text-align:right;">Units Sold</th><th style="min-width:120px;">Share</th>
-  </tr>`;
-
-  document.getElementById('sales-tbody').innerHTML = rows.map((r, i) => `<tr>
-    <td style="color:#4B5563;font-size:11px;">${i+1}</td>
-    <td class="sku-code">${r.code}</td>
-    <td style="font-weight:600;">${r.info.name}</td>
-    <td style="color:#6B7280;">${r.info.city}</td>
-    <td>${regionPill(r.info)}</td>
-    <td class="num">${r.qty.toLocaleString()}</td>
-    <td>
+    <th>#</th><th>Code</th><th>Store Name</th><th>City</th><th>Region</th>
+    <th style="text-align:right;">Units Sold</th><th>Share</th></tr>`;
+  document.getElementById('sales-tbody').innerHTML = rows.map((r,i) => `<tr>
+    <td style="color:var(--ink-light);font-size:11px;">${i+1}</td>
+    <td class="sku">${r.c}</td>
+    <td style="font-weight:600;">${r.si.name}</td>
+    <td style="color:var(--ink-light);">${r.si.city}</td>
+    <td>${regionPill(r.si.region)}</td>
+    <td class="num">${r.q.toLocaleString()}</td>
+    <td style="min-width:120px;">
       <div style="display:flex;align-items:center;gap:8px;">
-        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(r.qty/maxQty*100)}%"></div></div>
-        <span style="font-size:11px;color:#6B7280;min-width:32px;">${Math.round(r.qty/maxQty*100)}%</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(r.q/max*100)}%"></div></div>
+        <span style="font-size:10px;color:var(--ink-light);min-width:28px;">${Math.round(r.q/max*100)}%</span>
       </div>
-    </td>
-  </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:30px;color:#4B5563;">No data</td></tr>';
+    </td></tr>`).join('') ||
+    `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-light);">No matching stores</td></tr>`;
 
-  document.getElementById('sales-table-title').textContent = 'Store Performance — ' + getPeriodLabel();
-  document.getElementById('sales-table-sub').textContent = rows.length + ' stores with sales data';
+  document.getElementById('sales-table-title').textContent = 'Store Performance — '+getPeriodLabel();
+  document.getElementById('sales-table-sub').textContent   = rows.length+' stores with sales data';
 }
 
 function renderSkuView(search) {
-  // Aggregate: per SKU, total qty, count of stores
   const bySku = {};
   filteredSales.forEach(r => {
-    if (!bySku[r.sku_code]) bySku[r.sku_code] = { qty: 0, stores: new Set() };
-    bySku[r.sku_code].qty += (r.qty_sold || 0);
+    if(!bySku[r.sku_code]) bySku[r.sku_code]={q:0,stores:new Set()};
+    bySku[r.sku_code].q += (r.qty_sold||0);
     bySku[r.sku_code].stores.add(r.store_code);
   });
-
   const rows = Object.entries(bySku)
-    .map(([sku, d]) => ({ sku, qty: d.qty, stores: d.stores.size, name: SKU_NAMES[sku] || sku }))
-    .filter(r => !search || r.sku.toLowerCase().includes(search) || r.name.toLowerCase().includes(search))
-    .sort((a,b) => b.qty - a.qty);
-
-  const maxQty = rows[0]?.qty || 1;
+    .map(([s,d]) => ({s,q:d.q,stores:d.stores.size,name:SKU_NAMES[s]||s}))
+    .filter(r => !search || r.s.toLowerCase().includes(search) || r.name.toLowerCase().includes(search))
+    .sort((a,b)=>b.q-a.q);
+  const max = rows[0]?.q || 1;
 
   document.getElementById('sales-thead').innerHTML = `<tr>
     <th>#</th><th>SKU Code</th><th>Product Name</th>
-    <th style="text-align:right;">Units Sold</th><th style="text-align:right;">Stores</th><th style="min-width:120px;">Share</th>
-  </tr>`;
-
-  document.getElementById('sales-tbody').innerHTML = rows.map((r, i) => `<tr>
-    <td style="color:#4B5563;font-size:11px;">${i+1}</td>
-    <td class="sku-code">${r.sku}</td>
+    <th style="text-align:right;">Units Sold</th><th style="text-align:right;">Stores</th><th>Share</th></tr>`;
+  document.getElementById('sales-tbody').innerHTML = rows.map((r,i) => `<tr>
+    <td style="color:var(--ink-light);font-size:11px;">${i+1}</td>
+    <td class="sku">${r.s}</td>
     <td style="font-weight:600;">${r.name}</td>
-    <td class="num">${r.qty.toLocaleString()}</td>
-    <td class="num" style="color:#6B7280;">${r.stores}</td>
-    <td>
+    <td class="num">${r.q.toLocaleString()}</td>
+    <td class="num" style="color:var(--ink-light);">${r.stores}</td>
+    <td style="min-width:120px;">
       <div style="display:flex;align-items:center;gap:8px;">
-        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(r.qty/maxQty*100)}%"></div></div>
-        <span style="font-size:11px;color:#6B7280;min-width:32px;">${Math.round(r.qty/maxQty*100)}%</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(r.q/max*100)}%"></div></div>
+        <span style="font-size:10px;color:var(--ink-light);min-width:28px;">${Math.round(r.q/max*100)}%</span>
       </div>
-    </td>
-  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:30px;color:#4B5563;">No data</td></tr>';
+    </td></tr>`).join('') ||
+    `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-light);">No matching SKUs</td></tr>`;
 
-  document.getElementById('sales-table-title').textContent = 'SKU Performance — ' + getPeriodLabel();
-  document.getElementById('sales-table-sub').textContent = rows.length + ' active SKUs';
+  document.getElementById('sales-table-title').textContent = 'SKU Performance — '+getPeriodLabel();
+  document.getElementById('sales-table-sub').textContent   = rows.length+' active SKUs';
 }
 
-function renderMoMTable() {
+function renderMoM() {
   const region = document.getElementById('f-region').value;
   const year   = document.getElementById('f-year').value;
-
-  // Get all months in the data for this year
-  let subset = salesData.filter(r => {
-    const si = getStoreInfo(r.store_code);
-    if (region !== 'ALL' && si.region !== region) return false;
+  const sub = salesData.filter(r => {
+    const si = getStore(r.store_code);
+    if(region!=='ALL' && si.region!==region) return false;
     return r.month_year.startsWith(year);
   });
+  const months = [...new Set(sub.map(r=>r.month_year.split('-')[1]))].sort();
+  if(!months.length){ document.getElementById('mom-section').style.display='none'; return; }
+  document.getElementById('mom-section').style.display='block';
 
-  const months = [...new Set(subset.map(r => r.month_year.split('-')[1]))].sort();
-  const stores  = [...new Set(subset.map(r => r.store_code))].sort();
+  const matrix={};
+  sub.forEach(r=>{ const m=r.month_year.split('-')[1]; if(!matrix[r.store_code]) matrix[r.store_code]={};
+    matrix[r.store_code][m]=(matrix[r.store_code][m]||0)+r.qty_sold; });
 
-  if (!months.length) { document.getElementById('mom-section').style.display = 'none'; return; }
-  document.getElementById('mom-section').style.display = 'block';
+  const storeRows = [...new Set(sub.map(r=>r.store_code))].map(c=>({
+    c, name:getStore(c).name,
+    total:months.reduce((s,m)=>s+(matrix[c]?.[m]||0),0),
+    vals:months.map(m=>matrix[c]?.[m]||0)
+  })).sort((a,b)=>b.total-a.total).slice(0,15);
 
-  // Build month × store matrix
-  const matrix = {};
-  subset.forEach(r => {
-    const mo = r.month_year.split('-')[1];
-    if (!matrix[r.store_code]) matrix[r.store_code] = {};
-    matrix[r.store_code][mo] = (matrix[r.store_code][mo] || 0) + r.qty_sold;
-  });
+  const mTotals = months.map(m=>sub.filter(r=>r.month_year.split('-')[1]===m).reduce((s,r)=>s+r.qty_sold,0));
 
   document.getElementById('mom-thead').innerHTML = `<tr>
-    <th>Store</th>
-    ${months.map(m => `<th style="text-align:right;">${MONTHS[parseInt(m)].slice(0,3)}</th>`).join('')}
-    <th style="text-align:right;">Total</th>
-  </tr>`;
-
-  // Limit to top 15 stores by total
-  const storeRows = stores.map(s => ({
-    code: s, name: getStoreInfo(s).name,
-    total: months.reduce((sum, m) => sum + (matrix[s]?.[m] || 0), 0),
-    vals: months.map(m => matrix[s]?.[m] || 0)
-  })).sort((a,b) => b.total-a.total).slice(0, 15);
-
-  const monthTotals = months.map(m => subset.filter(r => r.month_year.split('-')[1] === m).reduce((s,r) => s+r.qty_sold, 0));
-
+    <th>Store</th>${months.map(m=>`<th style="text-align:right;">${MONTHS[+m].slice(0,3)}</th>`).join('')}
+    <th style="text-align:right;">Total</th></tr>`;
   document.getElementById('mom-tbody').innerHTML = [
-    ...storeRows.map(r => `<tr>
-      <td style="font-weight:600;font-size:12px;">${r.name}</td>
-      ${r.vals.map(v => `<td class="num" style="font-size:12px;">${v ? v.toLocaleString() : '<span style="color:#374151;">—</span>'}</td>`).join('')}
-      <td class="num" style="font-size:12px;color:var(--gold);">${r.total.toLocaleString()}</td>
-    </tr>`),
+    ...storeRows.map(r=>`<tr>
+      <td style="font-weight:600;">${r.name}</td>
+      ${r.vals.map(v=>`<td class="num">${v?v.toLocaleString():'<span style="color:var(--border)">—</span>'}</td>`).join('')}
+      <td class="num" style="color:var(--gold-dark);font-weight:700;">${r.total.toLocaleString()}</td></tr>`),
     `<tr style="border-top:2px solid var(--border);">
-      <td style="font-weight:800;font-size:12px;color:var(--gold);">TOTAL</td>
-      ${monthTotals.map(v => `<td class="num" style="font-size:12px;font-weight:800;color:var(--gold);">${v.toLocaleString()}</td>`).join('')}
-      <td class="num" style="font-size:12px;font-weight:800;color:var(--gold);">${monthTotals.reduce((a,b)=>a+b,0).toLocaleString()}</td>
-    </tr>`
+      <td style="font-weight:800;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold-dark);">TOTAL</td>
+      ${mTotals.map(v=>`<td class="num" style="font-weight:800;color:var(--gold-dark);">${v.toLocaleString()}</td>`).join('')}
+      <td class="num" style="font-weight:800;color:var(--gold-dark);">${mTotals.reduce((a,b)=>a+b,0).toLocaleString()}</td></tr>`
   ].join('');
 }
 
 function onPeriodTypeChange() {
   const t = document.getElementById('f-period-type').value;
-  document.getElementById('f-month').style.display   = (t === 'monthly')   ? '' : 'none';
-  document.getElementById('f-quarter').style.display = (t === 'quarterly') ? '' : 'none';
+  document.getElementById('f-month').style.display   = t==='monthly'   ? '' : 'none';
+  document.getElementById('f-quarter').style.display = t==='quarterly' ? '' : 'none';
   applySalesFilters();
-}
-
-function showSalesError(msg) {
-  document.getElementById('sales-loading').innerHTML = `<div style="color:#F87171;font-size:14px;">⚠ ${msg}</div>`;
 }
 
 function exportSalesCsv() {
   const view = document.getElementById('f-view').value;
-  let csv = '';
-  if (view === 'stores') {
-    csv = 'Store Code,Store Name,City,Region,Units Sold\n';
-    const byStore = {};
-    filteredSales.forEach(r => { byStore[r.store_code] = (byStore[r.store_code]||0) + r.qty_sold; });
-    Object.entries(byStore).sort((a,b)=>b[1]-a[1]).forEach(([code,qty]) => {
-      const si = getStoreInfo(code);
-      csv += `${code},"${si.name}","${si.city}",${si.region},${qty}\n`;
-    });
+  let csv = view==='stores'
+    ? 'Store Code,Store Name,City,Region,Units Sold\n'
+    : 'SKU Code,Product Name,Units Sold,Stores\n';
+  if(view==='stores'){
+    const m={}; filteredSales.forEach(r=>{m[r.store_code]=(m[r.store_code]||0)+r.qty_sold;});
+    Object.entries(m).sort((a,b)=>b[1]-a[1]).forEach(([c,q])=>{
+      const s=getStore(c); csv+=`${c},"${s.name}","${s.city}",${s.region},${q}\n`;});
   } else {
-    csv = 'SKU Code,Product Name,Units Sold,Stores\n';
-    const bySku = {};
-    filteredSales.forEach(r => {
-      if (!bySku[r.sku_code]) bySku[r.sku_code] = { qty:0, stores:new Set() };
-      bySku[r.sku_code].qty += r.qty_sold;
-      bySku[r.sku_code].stores.add(r.store_code);
-    });
-    Object.entries(bySku).sort((a,b)=>b[1].qty-a[1].qty).forEach(([sku,d]) => {
-      csv += `${sku},"${SKU_NAMES[sku]||sku}",${d.qty},${d.stores.size}\n`;
-    });
+    const m={}; filteredSales.forEach(r=>{if(!m[r.sku_code])m[r.sku_code]={q:0,st:new Set()};m[r.sku_code].q+=r.qty_sold;m[r.sku_code].st.add(r.store_code);});
+    Object.entries(m).sort((a,b)=>b[1].q-a[1].q).forEach(([s,d])=>{ csv+=`${s},"${SKU_NAMES[s]||s}",${d.q},${d.st.size}\n`; });
   }
-  downloadFile('sop_sales_' + getPeriodLabel().replace(/ /g,'_') + '.csv', csv, 'text/csv');
-  toast('CSV downloaded');
+  dlFile('EP_Sales_'+getPeriodLabel().replace(/ /g,'_')+'.csv', csv, 'text/csv');
+  toast('CSV exported');
 }
 
-// ════════════════════════════════════════════════════════════════════
-// TESTER DATA
-// ════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// TESTERS
+// ══════════════════════════════════════════════
 async function loadTesterData() {
-  const tbody = document.getElementById('tester-store-tbody');
-  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:#4B5563;">
-    <div class="spinner" style="margin:0 auto 12px;width:28px;height:28px;border-width:2px;"></div>Loading…</td></tr>`;
-
+  document.getElementById('tester-store-tbody').innerHTML =
+    `<tr><td colspan="7" style="text-align:center;padding:40px;">
+      <div class="spinner" style="margin:0 auto 12px;width:24px;height:24px;border-width:2px;"></div>
+      <div style="font-size:11px;color:var(--ink-light);letter-spacing:0.08em;text-transform:uppercase;">Loading</div>
+    </td></tr>`;
   try {
-    // Pull tester data from Supabase — joining transfer logs
-    // Tester records are in the db.testers localStorage in the stock register,
-    // but we'll pull from Supabase transfer_history if available, else show guide
-    const { data: transfers, error } = await sb.from('transfer_history').select('*').limit(10000);
+    const { data, error } = await sb.from('transfer_history').select('*').limit(10000);
     if (error && error.code !== 'PGRST116') throw error;
-
-    const allTesters = transfers || [];
-    renderTesterData(allTesters);
-  } catch(e) {
-    // Graceful fallback — table might not exist yet
-    renderTesterFallback();
-  }
+    renderTesterData(data || []);
+  } catch { renderTesterFallback(); }
 }
 
-function renderTesterData(allTesters) {
-  // Calculate KPIs
-  const issued     = allTesters.filter(r => r.type === 'tester_issue').reduce((s,r) => s+(r.qty||0), 0);
-  const fgConv     = allTesters.filter(r => r.type === 'fg_to_tester').reduce((s,r) => s+(r.qty||0), 0);
-  const wastage    = allTesters.filter(r => r.type === 'tester_writeoff').reduce((s,r) => s+(r.qty||0), 0);
-  const live       = Math.max(0, fgConv - wastage);
-  const convRate   = fgConv > 0 ? Math.round(issued / fgConv * 100) : 0;
-
+function renderTesterData(rows) {
+  const issued  = rows.filter(r=>r.type==='tester_issue').reduce((s,r)=>s+(r.qty||0),0);
+  const fgConv  = rows.filter(r=>r.type==='fg_to_tester').reduce((s,r)=>s+(r.qty||0),0);
+  const wastage = rows.filter(r=>r.type==='tester_writeoff').reduce((s,r)=>s+(r.qty||0),0);
+  const live    = Math.max(0,fgConv-wastage);
+  const rate    = fgConv>0 ? Math.round(issued/fgConv*100) : 0;
   document.getElementById('kpi-issued').textContent    = issued.toLocaleString();
   document.getElementById('kpi-fg-conv').textContent   = fgConv.toLocaleString();
   document.getElementById('kpi-wastage').textContent   = wastage.toLocaleString();
   document.getElementById('kpi-live').textContent      = live.toLocaleString();
-  document.getElementById('kpi-conv-rate').textContent = convRate + '%';
+  document.getElementById('kpi-conv-rate').textContent = rate+'%';
+  if(!rows.length){ renderTesterFallback(); return; }
 
-  if (!allTesters.length) { renderTesterFallback(); return; }
-
-  // Per-store breakdown
-  const byStore = {};
-  allTesters.forEach(r => {
-    if (!byStore[r.store_code]) byStore[r.store_code] = { issued:0, fgConv:0, wastage:0 };
-    if (r.type === 'tester_issue')    byStore[r.store_code].issued  += r.qty||0;
-    if (r.type === 'fg_to_tester')    byStore[r.store_code].fgConv  += r.qty||0;
-    if (r.type === 'tester_writeoff') byStore[r.store_code].wastage += r.qty||0;
+  const byStore={};
+  rows.forEach(r=>{
+    if(!byStore[r.store_code]) byStore[r.store_code]={issued:0,fgConv:0,wastage:0};
+    if(r.type==='tester_issue')    byStore[r.store_code].issued+=r.qty||0;
+    if(r.type==='fg_to_tester')    byStore[r.store_code].fgConv+=r.qty||0;
+    if(r.type==='tester_writeoff') byStore[r.store_code].wastage+=r.qty||0;
   });
-
-  const regionPill = (r) => {
-    const m = {EPP:'pill-epp',ASL:'pill-asl',OMAN:'pill-oman',KSA:'pill-ksa'};
-    return `<span class="pill ${m[r.region]||'pill-epp'}">${r.region}</span>`;
-  };
-
   document.getElementById('tester-store-tbody').innerHTML = Object.entries(byStore)
-    .sort((a,b) => b[1].issued - a[1].issued)
-    .map(([code, d]) => {
-      const si = getStoreInfo(code);
-      const live = Math.max(0, d.fgConv - d.wastage);
-      const rate = d.fgConv > 0 ? Math.round(d.issued/d.fgConv*100) + '%' : '—';
-      return `<tr>
-        <td style="font-weight:600;">${si.name}</td>
-        <td>${regionPill(si)}</td>
-        <td class="num">${d.issued.toLocaleString()}</td>
-        <td class="num" style="color:#A78BFA;">${d.fgConv.toLocaleString()}</td>
-        <td class="num" style="color:#F87171;">${d.wastage.toLocaleString()}</td>
-        <td class="num" style="color:#34D399;">${live.toLocaleString()}</td>
-        <td><span style="font-size:13px;font-weight:700;${d.fgConv>0&&d.issued/d.fgConv>2?'color:#FBBF24;':''}">${rate}</span></td>
-      </tr>`;
-    }).join('') || '<tr><td colspan="7" style="text-align:center;padding:30px;color:#4B5563;">No store data</td></tr>';
+    .sort((a,b)=>b[1].issued-a[1].issued).map(([code,d])=>{
+      const si=getStore(code); const live=Math.max(0,d.fgConv-d.wastage);
+      const r=d.fgConv>0?Math.round(d.issued/d.fgConv*100)+'%':'—';
+      return `<tr><td style="font-weight:600;">${si.name}</td><td>${regionPill(si.region)}</td>
+        <td class="num">${d.issued}</td><td class="num" style="color:#7048E8;">${d.fgConv}</td>
+        <td class="num" style="color:#C0392B;">${d.wastage}</td>
+        <td class="num" style="color:#0B7A45;">${live}</td><td style="font-weight:700;">${r}</td></tr>`;
+    }).join('') || `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-light);">No store data</td></tr>`;
 
-  // Top SKUs
-  const bySku = {};
-  allTesters.forEach(r => {
-    if (!bySku[r.sku_code]) bySku[r.sku_code] = { issued:0, fgConv:0, wastage:0 };
-    if (r.type === 'tester_issue')    bySku[r.sku_code].issued  += r.qty||0;
-    if (r.type === 'fg_to_tester')    bySku[r.sku_code].fgConv  += r.qty||0;
-    if (r.type === 'tester_writeoff') bySku[r.sku_code].wastage += r.qty||0;
+  const bySku={};
+  rows.forEach(r=>{
+    if(!bySku[r.sku_code]) bySku[r.sku_code]={issued:0,fgConv:0,wastage:0};
+    if(r.type==='tester_issue')    bySku[r.sku_code].issued+=r.qty||0;
+    if(r.type==='fg_to_tester')    bySku[r.sku_code].fgConv+=r.qty||0;
+    if(r.type==='tester_writeoff') bySku[r.sku_code].wastage+=r.qty||0;
   });
-  const maxIssued = Math.max(1, ...Object.values(bySku).map(d => d.issued));
+  const maxI=Math.max(1,...Object.values(bySku).map(d=>d.issued));
   document.getElementById('tester-sku-tbody').innerHTML = Object.entries(bySku)
-    .sort((a,b) => b[1].issued - a[1].issued).slice(0,20)
-    .map(([sku, d]) => `<tr>
-      <td class="sku-code">${sku}</td>
-      <td style="font-weight:600;">${SKU_NAMES[sku]||sku}</td>
-      <td class="num">${d.issued.toLocaleString()}</td>
-      <td class="num" style="color:#A78BFA;">${d.fgConv.toLocaleString()}</td>
-      <td class="num" style="color:#F87171;">${d.wastage.toLocaleString()}</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="bar-track"><div class="bar-fill" style="width:${Math.round(d.issued/maxIssued*100)}%"></div></div>
-          <span style="font-size:11px;color:#6B7280;">${d.issued}</span>
-        </div>
-      </td>
-    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:30px;color:#4B5563;">No SKU data</td></tr>';
+    .sort((a,b)=>b[1].issued-a[1].issued).slice(0,20).map(([s,d])=>`<tr>
+      <td class="sku">${s}</td><td style="font-weight:600;">${SKU_NAMES[s]||s}</td>
+      <td class="num">${d.issued}</td><td class="num" style="color:#7048E8;">${d.fgConv}</td>
+      <td class="num" style="color:#C0392B;">${d.wastage}</td>
+      <td style="min-width:120px;"><div style="display:flex;align-items:center;gap:8px;">
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(d.issued/maxI*100)}%"></div></div>
+        <span style="font-size:10px;color:var(--ink-light);">${d.issued}</span></div></td></tr>`).join('') ||
+    `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-light);">No SKU data</td></tr>`;
 }
 
 function renderTesterFallback() {
-  const msg = `<tr><td colspan="7" style="text-align:center;padding:40px;">
-    <div style="font-size:30px;margin-bottom:12px;">🌸</div>
-    <div style="font-weight:700;color:#9CA3AF;margin-bottom:8px;">Tester data will appear here</div>
-    <div style="font-size:12px;color:#4B5563;max-width:400px;margin:0 auto;">
-      Tester records are tracked in the Stock Register (Operations 2.0). Once the
-      <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">transfer_history</code>
-      table in Supabase is populated, all 5 KPIs will display automatically.
-    </div>
-  </td></tr>`;
-  document.getElementById('tester-store-tbody').innerHTML = msg;
-  document.getElementById('tester-sku-tbody').innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:#4B5563;">No tester data yet.</td></tr>`;
+  ['kpi-issued','kpi-fg-conv','kpi-wastage','kpi-live','kpi-conv-rate'].forEach(id=>{ document.getElementById(id).textContent='0'; });
+  document.getElementById('tester-store-tbody').innerHTML =
+    `<tr><td colspan="7" style="text-align:center;padding:48px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--ink-light);margin-bottom:8px;">Awaiting Tester Data</div>
+      <div style="font-size:11px;color:var(--ink-light);max-width:360px;margin:0 auto;line-height:1.6;">
+        Tester records are logged in the Stock Register. Once the
+        <code style="background:var(--cream);padding:1px 6px;">transfer_history</code>
+        table in Supabase is populated, all KPIs will appear automatically.
+      </div>
+    </td></tr>`;
+  document.getElementById('tester-sku-tbody').innerHTML =
+    `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-light);">No tester data yet.</td></tr>`;
 }
+function exportTesterCsv(){ toast('Tester export — coming soon'); }
 
-function exportTesterCsv() { toast('Tester export — coming soon'); }
-
-// ════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 // INVENTORY
-// ════════════════════════════════════════════════════════════════════
-let invHistory = JSON.parse(localStorage.getItem('sop_inv_history') || '[]');
+// ══════════════════════════════════════════════
+function setInvDefaultDate(){ document.getElementById('inv-date').value=new Date().toISOString().split('T')[0]; }
 
-function setInvDefaultDate() {
-  document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
-}
-
-function handleInvFile(input) {
-  const file = input.files[0]; if (!file) return;
-  const store = document.getElementById('inv-store-sel').value;
-  const date  = document.getElementById('inv-date').value;
-  if (!store) { toast('Please select a store first', 'warn'); input.value=''; return; }
-  if (!date)  { toast('Please select a snapshot date', 'warn'); input.value=''; return; }
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const wb = XLSX.read(e.target.result, { type: 'binary' });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const raw = XLSX.utils.sheet_to_json(ws, { defval: '' });
-
-    // Try to auto-detect columns
-    const sample = raw[0] || {};
-    const keys = Object.keys(sample);
-    const skuKey  = keys.find(k => /sku|code|SKU|Code|product.*code/i.test(k)) || keys[0];
-    const nameKey = keys.find(k => /name|desc|product.*name|Product/i.test(k)) || keys[1];
-    const qtyKey  = keys.find(k => /qty|quantity|stock|on.*hand|balance/i.test(k)) || keys[2];
-
-    const parsed = raw.filter(r => r[skuKey]).map(r => ({
-      sku_code: String(r[skuKey]).trim(),
-      name: String(r[nameKey] || '').trim(),
-      qty_upload: parseInt(r[qtyKey]) || 0
+function handleInvFile(input){
+  const file=input.files[0]; if(!file) return;
+  const store=document.getElementById('inv-store-sel').value;
+  const date=document.getElementById('inv-date').value;
+  if(!store){ toast('Select a store first','warn'); input.value=''; return; }
+  if(!date){ toast('Select a snapshot date','warn'); input.value=''; return; }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const wb=XLSX.read(e.target.result,{type:'binary'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
+    const keys=Object.keys(raw[0]||{});
+    const skuKey=keys.find(k=>/sku|code/i.test(k))||keys[0];
+    const nameKey=keys.find(k=>/name|desc|product/i.test(k))||keys[1];
+    const qtyKey=keys.find(k=>/qty|quantity|stock|hand|balance/i.test(k))||keys[2];
+    const parsed=raw.filter(r=>r[skuKey]).map(r=>({
+      sku_code:String(r[skuKey]).trim(),
+      name:String(r[nameKey]||'').trim(),
+      qty_upload:parseInt(r[qtyKey])||0
     }));
-
-    invUploadBuffer = { store, date, data: parsed };
-    showInvPreview(parsed, store, date);
+    invUploadBuffer={store,date,data:parsed};
+    showInvPreview(parsed,store,date);
   };
   reader.readAsBinaryString(file);
 }
 
-function showInvPreview(parsed, store, date) {
-  const storeName = getStoreInfo(store).name;
-  document.getElementById('inv-preview').style.display = 'block';
-  document.getElementById('inv-preview-title').textContent =
-    `Preview: ${parsed.length} SKUs for ${storeName} on ${date} — review before confirming`;
-
-  // Get current inventory for this store
-  const current = (invHistory.filter(h => h.store === store).sort((a,b) => b.date.localeCompare(a.date))[0]?.data) || [];
-  const curMap = {};
-  current.forEach(r => { curMap[r.sku_code] = r.qty_upload; });
-
-  document.getElementById('inv-preview-tbody').innerHTML = parsed.map(r => {
-    const prev = curMap[r.sku_code];
-    let diff = '';
-    let cls = '';
-    if (prev !== undefined) {
-      const delta = r.qty_upload - prev;
-      if (delta > 0)  { diff = `<span class="dev-ok">+${delta}</span>`; cls=''; }
-      else if (delta < 0) { diff = `<span class="dev-high">${delta}</span>`; cls=''; }
-      else { diff = `<span style="color:#4B5563;">0</span>`; }
-    } else {
-      diff = `<span class="dev-low">NEW</span>`;
-    }
-    return `<tr>
-      <td class="sku-code">${r.sku_code}</td>
-      <td>${r.name || SKU_NAMES[r.sku_code] || '—'}</td>
+function showInvPreview(parsed,store,date){
+  const sn=getStore(store).name;
+  document.getElementById('inv-preview').style.display='block';
+  document.getElementById('inv-preview-title').textContent=
+    `Preview: ${parsed.length} SKUs for ${sn} on ${date} — review before confirming`;
+  const last=invHistory.find(h=>h.store===store);
+  const curMap={}; (last?.data||[]).forEach(r=>{curMap[r.sku_code]=r.qty_upload;});
+  document.getElementById('inv-preview-tbody').innerHTML=parsed.map(r=>{
+    const prev=curMap[r.sku_code];
+    let diff='';
+    if(prev!==undefined){ const d=r.qty_upload-prev;
+      if(d>0) diff=`<span class="dev-up">+${d}</span>`;
+      else if(d<0) diff=`<span class="dev-dn">${d}</span>`;
+      else diff=`<span class="dev-ok">0</span>`;
+    } else diff=`<span class="dev-new">NEW</span>`;
+    return `<tr><td class="sku">${r.sku_code}</td>
+      <td>${r.name||SKU_NAMES[r.sku_code]||'—'}</td>
       <td class="num">${r.qty_upload.toLocaleString()}</td>
-      <td class="num" style="color:#6B7280;">${prev !== undefined ? prev.toLocaleString() : '—'}</td>
-      <td>${diff}</td>
-    </tr>`;
+      <td class="num" style="color:var(--ink-light);">${prev!==undefined?prev.toLocaleString():'—'}</td>
+      <td>${diff}</td></tr>`;
   }).join('');
 }
 
-function confirmInvUpload() {
-  if (!invUploadBuffer) return;
-  const { store, date, data } = invUploadBuffer;
-
-  // Save to local history
-  invHistory.unshift({ store, date, data, skus: data.length,
-    total: data.reduce((s,r) => s+r.qty_upload, 0), by: 'S&OP Portal' });
-  localStorage.setItem('sop_inv_history', JSON.stringify(invHistory.slice(0, 100)));
-
-  document.getElementById('inv-preview').style.display = 'none';
-  invUploadBuffer = null;
-  document.getElementById('inv-file').value = '';
-
-  refreshInvHistory();
-  loadCurrentInventory();
-  toast(`✓ Inventory uploaded — ${data.length} SKUs for ${getStoreInfo(store).name}`);
+function confirmInvUpload(){
+  if(!invUploadBuffer) return;
+  const {store,date,data}=invUploadBuffer;
+  invHistory.unshift({store,date,data,skus:data.length,total:data.reduce((s,r)=>s+r.qty_upload,0),by:'S&OP Portal'});
+  localStorage.setItem('sop_inv_v2',JSON.stringify(invHistory.slice(0,100)));
+  document.getElementById('inv-preview').style.display='none';
+  invUploadBuffer=null; document.getElementById('inv-file').value='';
+  refreshInvHistory(); loadCurrentInventory();
+  toast(`Inventory uploaded — ${data.length} SKUs for ${getStore(store).name}`);
 }
+function cancelInvUpload(){ document.getElementById('inv-preview').style.display='none'; document.getElementById('inv-file').value=''; invUploadBuffer=null; }
 
-function cancelInvUpload() {
-  document.getElementById('inv-preview').style.display = 'none';
-  document.getElementById('inv-file').value = '';
-  invUploadBuffer = null;
-}
-
-function refreshInvHistory() {
-  if (!invHistory.length) return;
-  document.getElementById('inv-history-tbody').innerHTML = invHistory.map((h, i) => `<tr>
+function refreshInvHistory(){
+  if(!invHistory.length) return;
+  document.getElementById('inv-history-tbody').innerHTML=invHistory.map((h,i)=>`<tr>
     <td>${h.date}</td>
-    <td style="font-weight:600;">${getStoreInfo(h.store).name}</td>
-    <td><span class="pill pill-${getStoreInfo(h.store).region.toLowerCase()}">${getStoreInfo(h.store).region}</span></td>
+    <td style="font-weight:600;">${getStore(h.store).name}</td>
+    <td>${regionPill(getStore(h.store).region)}</td>
     <td class="num">${h.skus.toLocaleString()}</td>
     <td class="num">${h.total.toLocaleString()}</td>
-    <td style="color:#6B7280;">${h.by}</td>
-    <td>
-      <button class="btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="downloadInvSnapshot(${i})">⬇ CSV</button>
-    </td>
+    <td style="color:var(--ink-light);">${h.by}</td>
+    <td><button class="filter-btn-ghost" onclick="dlInvSnap(${i})" style="font-size:10px;padding:5px 12px;">↓ CSV</button></td>
   </tr>`).join('');
 }
 
-function loadCurrentInventory() {
-  const sel = document.getElementById('inv-view-store').value;
-  // Get latest per store
-  const latestByStore = {};
-  invHistory.forEach(h => {
-    if (!latestByStore[h.store]) latestByStore[h.store] = h;
+function loadCurrentInventory(){
+  const sel=document.getElementById('inv-view-store').value;
+  const latest={};
+  invHistory.forEach(h=>{ if(!latest[h.store]) latest[h.store]=h; });
+  let rows=[];
+  Object.entries(latest).forEach(([s,snap])=>{
+    if(sel!=='ALL'&&s!==sel) return;
+    snap.data.forEach(r=>rows.push({...r,store:s,date:snap.date,sname:getStore(s).name}));
   });
-
-  let rows = [];
-  Object.entries(latestByStore).forEach(([store, snap]) => {
-    if (sel !== 'ALL' && store !== sel) return;
-    snap.data.forEach(r => {
-      rows.push({ ...r, store, date: snap.date, storeName: getStoreInfo(store).name });
-    });
-  });
-
-  rows.sort((a,b) => b.qty_upload - a.qty_upload);
-  document.getElementById('inv-current-tbody').innerHTML = rows.map(r => `<tr>
-    <td class="sku-code">${r.sku_code}</td>
-    <td style="font-weight:600;">${r.name || SKU_NAMES[r.sku_code] || '—'}</td>
-    <td style="color:#6B7280;font-size:11px;">${getCategory(r.sku_code)}</td>
+  rows.sort((a,b)=>b.qty_upload-a.qty_upload);
+  document.getElementById('inv-current-tbody').innerHTML=rows.map(r=>`<tr>
+    <td class="sku">${r.sku_code}</td>
+    <td style="font-weight:600;">${r.name||SKU_NAMES[r.sku_code]||'—'}</td>
+    <td style="color:var(--ink-light);font-size:11px;">${getCategory(r.sku_code)}</td>
     <td class="num">${r.qty_upload.toLocaleString()}</td>
-    <td style="font-size:12px;">${r.storeName}</td>
-    <td style="color:#4B5563;font-size:11px;">${r.date}</td>
-  </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;padding:30px;color:#4B5563;">No inventory data yet.</td></tr>`;
+    <td style="font-size:12px;">${r.sname}</td>
+    <td style="color:var(--ink-light);font-size:11px;">${r.date}</td>
+  </tr>`).join('')||`<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-light);">No inventory data yet.</td></tr>`;
 }
 
-function getCategory(sku) {
-  if (!sku) return '—';
-  const p = sku.toUpperCase();
-  if (p.startsWith('AP') || p.startsWith('B0') || p.startsWith('C0')) return 'Perfume';
-  if (p.startsWith('AO') || p.startsWith('I0') || p.startsWith('O0')) return 'Oil / Oud';
-  if (p.startsWith('D0')) return 'Dakhoon';
-  if (p.startsWith('SP') || p.startsWith('BX') || p.startsWith('AG')) return 'Gift Set';
-  if (p.startsWith('AH') || p.startsWith('ABL') || p.startsWith('AAF')) return 'Bodycare';
-  if (p.startsWith('AC')) return 'Accessories';
+function getCategory(s){
+  if(!s) return '—'; const p=s.toUpperCase();
+  if(p.startsWith('AP')||p.startsWith('B0')||p.startsWith('C0')) return 'Perfume';
+  if(p.startsWith('AO')||p.startsWith('I0')||p.startsWith('O0')) return 'Oil / Oud';
+  if(p.startsWith('D0')) return 'Dakhoon';
+  if(p.startsWith('SP')||p.startsWith('BX')||p.startsWith('AG')) return 'Gift Set';
+  if(p.startsWith('AH')||p.startsWith('ABL')||p.startsWith('AAF')) return 'Bodycare';
+  if(p.startsWith('AC')) return 'Accessories';
   return '—';
 }
 
-function downloadInvSnapshot(idx) {
-  const snap = invHistory[idx];
-  let csv = 'SKU Code,Product Name,Quantity\n';
-  snap.data.forEach(r => { csv += `${r.sku_code},"${r.name||''}",${r.qty_upload}\n`; });
-  downloadFile(`inv_${getStoreInfo(snap.store).name}_${snap.date}.csv`, csv, 'text/csv');
+function dlInvSnap(i){
+  const snap=invHistory[i]; let csv='SKU Code,Product Name,Quantity\n';
+  snap.data.forEach(r=>{csv+=`${r.sku_code},"${r.name||''}",${r.qty_upload}\n`;});
+  dlFile(`Inventory_${getStore(snap.store).name}_${snap.date}.csv`,csv,'text/csv');
 }
-
-function exportInventoryCsv() {
-  const sel = document.getElementById('inv-view-store').value;
-  const latestByStore = {};
-  invHistory.forEach(h => { if (!latestByStore[h.store]) latestByStore[h.store] = h; });
-  let csv = 'Store,SKU Code,Product Name,Qty On Hand,Date\n';
-  Object.entries(latestByStore).forEach(([store, snap]) => {
-    if (sel !== 'ALL' && store !== sel) return;
-    snap.data.forEach(r => { csv += `"${getStoreInfo(store).name}",${r.sku_code},"${r.name||''}",${r.qty_upload},${snap.date}\n`; });
+function exportInventoryCsv(){
+  const sel=document.getElementById('inv-view-store').value; const latest={};
+  invHistory.forEach(h=>{if(!latest[h.store])latest[h.store]=h;});
+  let csv='Store,SKU Code,Product Name,Qty On Hand,Date\n';
+  Object.entries(latest).forEach(([s,snap])=>{
+    if(sel!=='ALL'&&s!==sel) return;
+    snap.data.forEach(r=>{csv+=`"${getStore(s).name}",${r.sku_code},"${r.name||''}",${r.qty_upload},${snap.date}\n`;});
   });
-  downloadFile('sop_inventory.csv', csv, 'text/csv');
-  toast('Inventory exported');
+  dlFile('EP_Inventory.csv',csv,'text/csv'); toast('Inventory exported');
 }
 
-// ════════════════════════════════════════════════════════════════════
-// UI HELPERS
-// ════════════════════════════════════════════════════════════════════
-function switchTab(id) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+function switchTab(id){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
   document.querySelector(`[data-tab="${id}"]`).classList.add('active');
-  if (id === 'testers') loadTesterData();
+  if(id==='testers') loadTesterData();
 }
 
-function populateStoreDropdowns() {
-  const fStore = document.getElementById('f-store');
-  const tStore = document.getElementById('t-store');
-  const invView = document.getElementById('inv-view-store');
-  const eppGroup = document.createElement('optgroup');
-  eppGroup.label = 'EPP UAE';
-  const aslGroup = document.createElement('optgroup');
-  aslGroup.label = 'ASL UAE';
-  const omanGroup = document.createElement('optgroup');
-  omanGroup.label = 'Oman';
+function populateStoreDropdowns(){
+  const fStore=document.getElementById('f-store');
+  const tStore=document.getElementById('t-store');
+  const invView=document.getElementById('inv-view-store');
+  const eppGrp=document.getElementById('inv-epp-grp');
+  const aslGrp=document.getElementById('inv-asl-grp');
 
-  STORES.filter(s => s.type !== 'WH').forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.code; opt.textContent = s.name;
-    if (s.region === 'EPP')  eppGroup.appendChild(opt.cloneNode(true));
-    else if (s.region === 'ASL')  aslGroup.appendChild(opt.cloneNode(true));
-    else if (s.region === 'OMAN') omanGroup.appendChild(opt.cloneNode(true));
+  const eppOpts=[]; const aslOpts=[]; const omanOpts=[];
+  STORES.filter(s=>s.type!=='WH').forEach(s=>{
+    const o=document.createElement('option'); o.value=s.code; o.textContent=s.name;
+    if(s.region==='EPP') eppOpts.push(o.cloneNode(true));
+    else if(s.region==='ASL') aslOpts.push(o.cloneNode(true));
+    else if(s.region==='OMAN') omanOpts.push(o.cloneNode(true));
   });
 
-  [fStore, tStore].forEach(sel => {
-    [eppGroup, aslGroup, omanGroup].forEach(g => sel.appendChild(g.cloneNode(true)));
+  [fStore,tStore].forEach(sel=>{
+    const og1=document.createElement('optgroup'); og1.label='EPP UAE';
+    const og2=document.createElement('optgroup'); og2.label='ASL UAE';
+    const og3=document.createElement('optgroup'); og3.label='Oman';
+    eppOpts.forEach(o=>og1.appendChild(o.cloneNode(true)));
+    aslOpts.forEach(o=>og2.appendChild(o.cloneNode(true)));
+    omanOpts.forEach(o=>og3.appendChild(o.cloneNode(true)));
+    sel.appendChild(og1); sel.appendChild(og2); sel.appendChild(og3);
   });
 
-  // inventory view dropdown
-  STORES.filter(s => s.type !== 'WH').forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.code; opt.textContent = s.name;
-    invView.appendChild(opt);
-  });
-
-  // EPP / ASL optgroups in upload
-  const eppOg = document.getElementById('eppa-optgroup');
-  const aslOg = document.getElementById('asla-optgroup');
-  STORES.filter(s => s.region === 'EPP' && s.type !== 'WH').forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.code; opt.textContent = s.name;
-    eppOg.appendChild(opt);
-  });
-  STORES.filter(s => s.region === 'ASL').forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.code; opt.textContent = s.name;
-    aslOg.appendChild(opt);
+  STORES.filter(s=>s.type!=='WH').forEach(s=>{
+    const o=document.createElement('option'); o.value=s.code; o.textContent=s.name;
+    invView.appendChild(o.cloneNode(true));
+    if(s.region==='EPP') eppGrp.appendChild(o.cloneNode(true));
+    if(s.region==='ASL') aslGrp.appendChild(o.cloneNode(true));
   });
 }
 
-function toast(msg, type='ok') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.style.borderColor = type === 'warn' ? 'rgba(251,191,36,0.4)' : 'var(--border)';
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2800);
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2800);
 }
 
-function downloadFile(name, content, mime) {
-  const blob = new Blob([content], { type: mime });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = name; a.click();
+function dlFile(name,content,mime){
+  const blob=new Blob([content],{type:mime});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name; a.click();
   URL.revokeObjectURL(url);
 }
 
-// drag & drop for inventory
-const dropZone = document.getElementById('inv-drop-zone');
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.classList.remove('drag');
-  const file = e.dataTransfer.files[0];
-  if (file) {
-    const dt = new DataTransfer(); dt.items.add(file);
-    document.getElementById('inv-file').files = dt.files;
-    handleInvFile(document.getElementById('inv-file'));
-  }
+// Drag & drop
+const dz=document.getElementById('inv-drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault(); dz.classList.remove('drag');
+  const f=e.dataTransfer.files[0]; if(!f) return;
+  const dt=new DataTransfer(); dt.items.add(f);
+  document.getElementById('inv-file').files=dt.files;
+  handleInvFile(document.getElementById('inv-file'));
 });
 
-// Load history on start
 refreshInvHistory();
 </script>
 </body>
