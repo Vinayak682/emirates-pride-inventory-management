@@ -819,39 +819,80 @@ const STORES = [
 ];
 
 const SKU_NAMES = {
-  'C00002':'White 100ml','C00013':'White Overdose','C00004':'Maroon 100ml','C00012':'Navy 100ml',
-  'C00010':'Maroon Intense','C00011':'Violet 100ml','SP0005':'No.4','C00014':'Black 100ml',
-  'B00015':'Hidden Leather','B00008':'Midnight Glow','B00019':'Masters','B00005':'Mystery',
-  'B00007':'Peaceful Life','B00004':'Meydan','B00018':'Hidden Tobacco','B00003':'Amber Bel Oud',
-  'B00017':'Thekrayat','B00001':'Bergamot Bel Amber','B00002':'Jasmine Bel Musk',
-  'B00012':'Ambergris','B00014':'Firewood','B00020':'Master Signature','B00016':'Mysterious Rose',
-  'B00006':'Mersal','B00010':'Sakura','B00021':'Midnight Bloom',
-  'SP0009':'White Oud Set','SP0012':'White Set Box','SP0006':'More of Oud','SP0013':'Maroon Set Box',
-  'SP0022':'Reflection Set','SP0029':'Midnight Glow Set','SP0031':'Summer Collection Set',
-  'SP0035':'Midnight Bloom Set','SP0037':'Future Bakhoor 100ml','SP0038':'Future Oud 100ml',
-  'SP0039':'Future Traditional Set','SP0033':'White Kit',
+  /* ── Caballo / C-series ── */
+  'C00002':'White 100ml','C00004':'Maroon 100ml','C00010':'Maroon Intense','C00011':'Violet 100ml',
+  'C00012':'Navy 100ml','C00013':'White Overdose','C00014':'Black 100ml',
+  /* ── Bakhoor / B-series ── */
+  'B00001':'Bergamot Bel Amber','B00002':'Jasmine Bel Musk','B00003':'Amber Bel Oud',
+  'B00004':'Meydan','B00005':'Mystery','B00006':'Mersal','B00007':'Peaceful Life',
+  'B00008':'Midnight Glow','B00010':'Sakura','B00012':'Ambergris','B00013':'Arabica',
+  'B00014':'Firewood','B00015':'Hidden Leather','B00016':'Mysterious Rose','B00017':'Thekrayat',
+  'B00018':'Hidden Tobacco','B00019':'Masters 100ml','B00020':'Master Signature',
+  'B00021':'Midnight Bloom',
+  /* ── Sets / SP-series ── */
+  'SP0005':'No.4','SP0006':'More Of Oud','SP0009':'White Oud Set Box','SP0012':'White Set Box',
+  'SP0013':'Maroon Set Box','SP0022':'Reflection Set Box','SP0023':'Masters Signature Booster Set',
+  'SP0029':'Midnight Glow Set Box','SP0031':'Summer Collection Set','SP0033':'White Kit',
+  'SP0037':'Future Bakhoor 100ml','SP0038':'Future Oud 100ml','SP0039':'Future Traditional Set',
+  /* ── Heritage / HR-series ── */
+  'HR0001':'Qalah Heritage Collection','HR0002':'Danah Heritage Collection',
+  'HR0003':'Al Emarat Heritage Collection','HR0004':'Barjeel Heritage Collection',
+  'HR0005':'Khaimah Heritage Collection','HR0006':'Safeena Heritage Collection',
+  'HR0007':'Dallah Heritage Collection',
+  /* ── Accessories / AC-series ── */
   'AC0001':'Medkhan Small','AC0002':'Charcoal','AC0003':'Lighter','AC0004':'Picker',
+  /* ── Oils / I-series ── */
+  'I00001':'Hindi Special','I00002':'Seufi Special','I00003':'White Oil 8ml',
+  'I00004':'Maroon Oil 8ml','I00005':'No.4 Oil 8ml','I00006':'Musk Oil 8ml',
+  /* ── Dakhoon / D-series ── */
   'D00001':'Dakhoon Al Emarat','D00002':'Dakhoon Al Marasim','D00003':'Dakhoon Badia',
   'D00004':'Dakhoon Al Dar','D00005':'Dakhoon Al Barzah','D00008':'Dakhoon Retaj',
-  'O00001':'Oud Amiri','O00002':'Oud Meydan','O00003':'Oud Al Emarat','O00006':'Oud Al Fakhamah',
-  'O00008':'Oud Hindi Malaki','O0007':'Oud Hindi Khas',
+  /* ── Oud / O-series ── */
+  'O00001':'Oud Amiri','O00002':'Oud Meydan','O00003':'Oud Al Emarat',
+  'O00006':'Oud Al Fakhamah','O00008':'Oud Hindi Malaki','O0007':'Oud Hindi Khas',
+  /* ── Box sets / BX-series ── */
+  'BX0002':'3 Bel Black Box','BX0011':'Dakhoon Gift Set','BX0012':'VIP Combo Box',
+  'BX0014':'BOD Gift Box','BX0015':'Luxury Set Box',
+  /* ── G-series (10ml) ── */
+  'G00003':'White Oud 10ml','G00007':'Masters 10ml',
+  /* ── ASL Perfumes / AP-series ── */
   'AP001':'Black Vanilla 50ml','AP002':'Secret Leather 50ml','AP003':'White Bouquet 50ml',
   'AP004':'Leather Intense 50ml','AP005':'Rich Vanilla 50ml','AP006':'Spicy Sandal 50ml',
   'AP007':'Velvet Amber 50ml','AP008':'Dark Musk 50ml','AP009':'Royal Tobacco 50ml',
   'AP010':'Patchouli Glow 50ml','AP011':'Dark Wood 50ml',
-  'AO001':'Black Vanilla Oil','AO002':'Secret Leather Oil','AO003':'White Bouquet Oil',
-  'AO004':'Leather Intense Oil','AO005':'Rich Vanilla Oil','AO006':'Spicy Sandal Oil',
-  'AO007':'Velvet Amber Oil','AO008':'Dark Musk Oil','AO009':'Royal Tobacco Oil',
-  'AO010':'Patchouli Glow Oil','AO011':'Dark Wood Oil',
+  /* ── ASL Oils / AO-series ── */
+  'AO001':'Black Vanilla Oil 6ml','AO002':'Secret Leather Oil 6ml','AO003':'White Bouquet Oil 6ml',
+  'AO004':'Leather Intense Oil 6ml','AO005':'Rich Vanilla Oil 6ml','AO006':'Spicy Sandal Oil 6ml',
+  'AO007':'Velvet Amber Oil 6ml','AO008':'Dark Musk Oil 6ml','AO009':'Royal Tobacco Oil 6ml',
+  'AO010':'Patchouli Glow Oil 6ml','AO011':'Dark Wood Oil 6ml',
+  /* ── ASL Hair & Body Mist / AH-series ── */
   'AH003':'Velvet Amber Hair Mist','AH005':'Black Vanilla Hair Mist',
   'AH006':'Secret Leather Hair Mist','AH008':'Dark Musk Hair Mist','AH009':'Royal Tobacco Hair Mist',
-  'ABL001':'Royal Tobacco Lotion','ABL002':'Velvet Amber Lotion',
-  'ABL003':'Secret Leather Lotion','ABL004':'Dark Musk Lotion',
+  /* ── ASL Body Lotions / ABL-series ── */
+  'ABL001':'Royal Tobacco Lotion 200ml','ABL002':'Velvet Amber Lotion 200ml',
+  'ABL003':'Secret Leather Lotion 200ml','ABL004':'Dark Musk Lotion 200ml',
+  /* ── ASL Reed Diffusers / ARD-series ── */
+  'ARD001':'Secret Leather Reed Diffuser','ARD002':'Cool Violet Reed Diffuser',
+  'ARD003':'White Bouquet Reed Diffuser',
+  /* ── ASL Air Fresheners / AAF-series ── */
   'AAF001':'Cool Violet Air Freshener','AAF002':'White Bouquet Air Freshener',
-  'ARD002':'Cool Violet Reed Diffuser','ARD003':'White Bouquet Reed Diffuser',
-  'AG001':'ASL Gift Set Box','AG013':'ASL Bundle Foldable 2','AG014':'ASL 3 Gift Set','AG015':'ASL Bundle Foldable 1',
-  'BX0002':'3 Bel Black Box','BX0011':'Dakhoon Gift Set','BX0014':'BOD Gift Box','BX0015':'Luxury Set Box',
-  'G00003':'White Oud 10ml','G00007':'Masters 10ml',
+  /* ── ASL Other ── */
+  'ATO001':'Sunbeam Tanning Oil 250ml',
+  /* ── ASL Gift Sets / AG-series ── */
+  'AG001':'ASL Gift Set Box','AG013':'ASL Bundle Foldable 2',
+  'AG014':'ASL 3 Gift Set','AG015':'ASL Bundle Foldable 1',
+  /* ── RIMAL / RM2-series ── */
+  'RM2001':'Velvet Topaz 100ml','RM2002':'Soft Turquoise 100ml','RM2003':'Smoky Jasper 100ml',
+  'RM2004':'Silky Crystal 100ml','RM2005':'Royal Garnet 100ml','RM2006':'Precious Quartz 100ml',
+  'RM2007':'Noir Obsidian 100ml','RM2008':'Light Jade 100ml',
+  /* ── Serenity / SR3-series ── */
+  'SR3001':'Golden Forest 65ml','SR3002':'Woody Horizon 65ml','SR3003':'Woodland Harmony 65ml',
+  'SR3004':'Rose Wood Noir 50ml','SR3005':'Mystic Garden 50ml','SR3006':'Woods Chill Black 50ml',
+  /* ── Flower Scent / FS1-series ── */
+  'FS1001':'Mimosa Glow 65ml','FS1002':'Pure Jasmin 65ml','FS1003':'Scarlet Rose 65ml',
+  'FS1004':'Tuberose Bloom 65ml','FS1005':'Timeless Sakura 65ml',
+  'FS1006':'Orange Blossom 65ml','FS1007':'Silky Violet 65ml',
+  /* ── Oman-only / pending confirmation ── */
   'SET_2X10MS':'2x10 Masters & Signature','G_PLIF10ML':'Peaceful Life 10ml','SPG_DAKH':'Dakhoon Sampler',
 };
 
