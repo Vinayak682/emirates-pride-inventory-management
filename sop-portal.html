@@ -479,7 +479,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
 
     <!-- Filter Bar -->
     <div class="filter-bar">
-      <select class="sel" id="f-region" onchange="applySalesFilters()">
+      <select class="sel" id="f-region" onchange="onRegionChange()">
         <option value="ALL">All Regions</option>
         <option value="EPP">EPP UAE</option>
         <option value="ASL">ASL UAE</option>
@@ -985,6 +985,21 @@ async function loadSalesData() {
 
 function getStore(code) {
   return STORES.find(s => s.code === code) || {code,name:code,region:'EPP',city:'—',type:'EPP'};
+}
+
+function onRegionChange() {
+  const region = document.getElementById('f-region').value;
+  const sel = document.getElementById('f-store');
+  sel.innerHTML = '<option value="ALL">All Stores</option>';
+  const stores = region === 'ALL'
+    ? STORES.filter(s => s.type !== 'WH')
+    : STORES.filter(s => s.region === region);
+  stores.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code; o.textContent = s.name;
+    sel.appendChild(o);
+  });
+  applySalesFilters();
 }
 
 function applySalesFilters() {
