@@ -951,9 +951,29 @@ function initApp() {
 // ══════════════════════════════════════════════
 async function loadSalesData() {
   try {
-    const { data, error } = await sb.from('sales_history').select('*').limit(50000);
-    if (error) throw error;
-    salesData = data || [];
+    const PAGE = 1000;
+    // Step 1: get total row count in one lightweight HEAD request
+    const { count, error: cErr } = await sb
+      .from('sales_history')
+      .select('*', { count: 'exact', head: true });
+    if (cErr) throw cErr;
+
+    // Step 2: fire all pages in parallel — fast regardless of dataset size
+    const pages = Math.ceil(count / PAGE);
+    const fetches = Array.from({ length: pages }, (_, i) =>
+      sb.from('sales_history')
+        .select('sku_code,store_code,month_year,qty_sold')
+        .range(i * PAGE, (i + 1) * PAGE - 1)
+    );
+    const results = await Promise.all(fetches);
+
+    // Step 3: combine pages
+    salesData = [];
+    for (const { data, error } of results) {
+      if (error) throw error;
+      salesData = salesData.concat(data || []);
+    }
+
     applySalesFilters();
     document.getElementById('lastRefresh').textContent =
       'Updated ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
@@ -964,11 +984,7 @@ async function loadSalesData() {
 }
 
 function getStore(code) {
-  const found = STORES.find(s => s.code === code);
-  if (found) return found;
-  if (code && code.startsWith('OM')) return {code,name:code,region:'OMAN',city:'Muscat',type:'EPP'};
-  if (code && (code.startsWith('ASL') || code.startsWith('BAS'))) return {code,name:code,region:'ASL',city:'—',type:'ASL'};
-  return {code,name:code,region:'EPP',city:'—',type:'EPP'};
+  return STORES.find(s => s.code === code) || {code,name:code,region:'EPP',city:'—',type:'EPP'};
 }
 
 function applySalesFilters() {
