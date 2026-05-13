@@ -495,6 +495,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
         <option value="ytd">Full Year</option>
       </select>
       <select class="sel" id="f-year" onchange="applySalesFilters()">
+        <option value="ALL">All Years</option>
         <option value="2026">2026</option>
         <option value="2025">2025</option>
       </select>
@@ -979,7 +980,7 @@ function applySalesFilters() {
     if (region !== 'ALL' && si.region !== region) return false;
     if (store  !== 'ALL' && r.store_code !== store)  return false;
     const [ry,rm] = r.month_year.split('-');
-    if (ry !== year) return false;
+    if (year !== 'ALL' && ry !== year) return false;
     if (ptype === 'monthly'   && month !== 'ALL' && rm !== month) return false;
     if (ptype === 'quarterly' && !QUARTERS[+qtr].includes(+rm))   return false;
     return true;
@@ -1106,7 +1107,8 @@ function renderMoM() {
   const sub = salesData.filter(r => {
     const si = getStore(r.store_code);
     if(region!=='ALL' && si.region!==region) return false;
-    return r.month_year.startsWith(year);
+    if(year!=='ALL' && !r.month_year.startsWith(year)) return false;
+    return true;
   });
   const months = [...new Set(sub.map(r=>r.month_year.split('-')[1]))].sort();
   if(!months.length){ document.getElementById('mom-section').style.display='none'; return; }
