@@ -964,7 +964,11 @@ async function loadSalesData() {
 }
 
 function getStore(code) {
-  return STORES.find(s => s.code === code) || {code,name:code,region:'EPP',city:'—',type:'EPP'};
+  const found = STORES.find(s => s.code === code);
+  if (found) return found;
+  if (code && code.startsWith('OM')) return {code,name:code,region:'OMAN',city:'Muscat',type:'EPP'};
+  if (code && (code.startsWith('ASL') || code.startsWith('BAS'))) return {code,name:code,region:'ASL',city:'—',type:'ASL'};
+  return {code,name:code,region:'EPP',city:'—',type:'EPP'};
 }
 
 function applySalesFilters() {
