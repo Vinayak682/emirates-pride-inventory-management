@@ -114,6 +114,14 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .top-btn.stores-btn{border-color:#3A3020;color:#9A7B4F;}
 .top-btn.logout{border-color:#3A2020;color:#C87070;}
 .top-btn.fullscreen-btn{border-color:rgba(100,180,255,0.3);color:#64B4FF;padding:6px 10px;font-size:13px;line-height:1;}
+/* Fullscreen: push topbar content right so iOS native exit button doesn't cover store name */
+:-webkit-full-screen .app-topbar{padding-left:72px;}
+:fullscreen .app-topbar{padding-left:72px;}
+/* iOS immersive mode — no native fullscreen API, use fixed overlay instead */
+#appShell.ios-fullscreen{
+  position:fixed;inset:0;z-index:8000;
+  height:100vh;height:100dvh;
+}
 
 /* ─── DAY TABS ─── */
 .day-tabs{
@@ -3274,21 +3282,33 @@ function doLogin(){
 }
 function toggleFullscreen(){
   const btn = document.getElementById('fsBtn');
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+
+  if(isIOS){
+    // iOS/iPadOS: Fullscreen API unreliable — toggle immersive CSS class instead
+    const shell = document.getElementById('appShell');
+    const active = shell.classList.toggle('ios-fullscreen');
+    btn.textContent = active ? '✕ Exit Full' : '⛶';
+    btn.title = active ? 'Exit Fullscreen' : 'Toggle Fullscreen';
+    return;
+  }
+
   if(!document.fullscreenElement){
-    document.documentElement.requestFullscreen().then(()=>{
-      btn.textContent='✕ Exit Full';
-      btn.title='Exit Fullscreen';
-    }).catch(()=>{});
+    (document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen).call(document.documentElement)
+      .then(()=>{btn.textContent='✕ Exit Full';btn.title='Exit Fullscreen';}).catch(()=>{});
   } else {
-    document.exitFullscreen().then(()=>{
-      btn.textContent='⛶';
-      btn.title='Toggle Fullscreen';
-    }).catch(()=>{});
+    (document.exitFullscreen||document.webkitExitFullscreen).call(document)
+      .then(()=>{btn.textContent='⛶';btn.title='Toggle Fullscreen';}).catch(()=>{});
   }
 }
 document.addEventListener('fullscreenchange',()=>{
   const btn=document.getElementById('fsBtn');
   if(btn){btn.textContent=document.fullscreenElement?'✕ Exit Full':'⛶';btn.title=document.fullscreenElement?'Exit Fullscreen':'Toggle Fullscreen';}
+});
+document.addEventListener('webkitfullscreenchange',()=>{
+  const btn=document.getElementById('fsBtn');
+  const fs=document.webkitFullscreenElement;
+  if(btn){btn.textContent=fs?'✕ Exit Full':'⛶';btn.title=fs?'Exit Fullscreen':'Toggle Fullscreen';}
 });
 
 function doLogout(){
