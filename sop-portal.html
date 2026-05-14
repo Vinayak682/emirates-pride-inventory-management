@@ -1145,24 +1145,31 @@ function renderMoM() {
     if(year!=='ALL' && !r.month_year.startsWith(year)) return false;
     return true;
   });
-  const months = [...new Set(sub.map(r=>r.month_year.split('-')[1]))].sort();
+  // Keep full month_year so cross-year data stays separated
+  const months = [...new Set(sub.map(r=>r.month_year))].sort();
   if(!months.length){ document.getElementById('mom-section').style.display='none'; return; }
   document.getElementById('mom-section').style.display='block';
 
   const matrix={};
-  sub.forEach(r=>{ const m=r.month_year.split('-')[1]; if(!matrix[r.store_code]) matrix[r.store_code]={};
-    matrix[r.store_code][m]=(matrix[r.store_code][m]||0)+r.qty_sold; });
+  sub.forEach(r=>{ const my=r.month_year; if(!matrix[r.store_code]) matrix[r.store_code]={};
+    matrix[r.store_code][my]=(matrix[r.store_code][my]||0)+r.qty_sold; });
 
   const storeRows = [...new Set(sub.map(r=>r.store_code))].map(c=>({
     c, name:getStore(c).name,
-    total:months.reduce((s,m)=>s+(matrix[c]?.[m]||0),0),
-    vals:months.map(m=>matrix[c]?.[m]||0)
+    total:months.reduce((s,my)=>s+(matrix[c]?.[my]||0),0),
+    vals:months.map(my=>matrix[c]?.[my]||0)
   })).sort((a,b)=>b.total-a.total).slice(0,15);
 
-  const mTotals = months.map(m=>sub.filter(r=>r.month_year.split('-')[1]===m).reduce((s,r)=>s+r.qty_sold,0));
+  const mTotals = months.map(my=>sub.filter(r=>r.month_year===my).reduce((s,r)=>s+r.qty_sold,0));
+
+  // Build header label: always show month + year (e.g. "JAN '25")
+  function momLabel(my) {
+    const [yr, mo] = my.split('-');
+    return MONTHS[+mo].slice(0,3) + " '" + yr.slice(2);
+  }
 
   document.getElementById('mom-thead').innerHTML = `<tr>
-    <th>Store</th>${months.map(m=>`<th style="text-align:right;">${MONTHS[+m].slice(0,3)}</th>`).join('')}
+    <th>Store</th>${months.map(my=>`<th style="text-align:right;">${momLabel(my)}</th>`).join('')}
     <th style="text-align:right;">Total</th></tr>`;
   document.getElementById('mom-tbody').innerHTML = [
     ...storeRows.map(r=>`<tr>

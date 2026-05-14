@@ -93,7 +93,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 .app-topbar{
   background:#111;border-bottom:1px solid #2A2A2A;
-  height:48px;display:flex;align-items:center;padding:0 12px;gap:12px;
+  height:48px;display:flex;align-items:center;padding:0 10px;gap:6px;
   flex-shrink:0;
 }
 .top-rose{display:none;}
@@ -113,6 +113,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .top-btn:active{background:#2A2010;opacity:0.9;}
 .top-btn.stores-btn{border-color:#3A3020;color:#9A7B4F;}
 .top-btn.logout{border-color:#3A2020;color:#C87070;}
+.top-btn.fullscreen-btn{border-color:rgba(100,180,255,0.3);color:#64B4FF;padding:6px 10px;font-size:13px;line-height:1;}
 
 /* ─── DAY TABS ─── */
 .day-tabs{
@@ -1720,6 +1721,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <button class="top-btn" onclick="openFGRequest()" style="border-color:rgba(255,150,50,0.3);color:#FF9632;">📦 Request Tester</button>
     <button class="top-btn stores-btn" id="allStoresBtn" onclick="openStores()">🏪 All Stores</button>
     <button class="top-btn logout" onclick="doLogout()">Logout</button>
+    <button class="top-btn fullscreen-btn" id="fsBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
   </div>
 
   <!-- Day tabs -->
@@ -3270,6 +3272,25 @@ function doLogin(){
     },1500);
   }
 }
+function toggleFullscreen(){
+  const btn = document.getElementById('fsBtn');
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().then(()=>{
+      btn.textContent='✕ Exit Full';
+      btn.title='Exit Fullscreen';
+    }).catch(()=>{});
+  } else {
+    document.exitFullscreen().then(()=>{
+      btn.textContent='⛶';
+      btn.title='Toggle Fullscreen';
+    }).catch(()=>{});
+  }
+}
+document.addEventListener('fullscreenchange',()=>{
+  const btn=document.getElementById('fsBtn');
+  if(btn){btn.textContent=document.fullscreenElement?'✕ Exit Full':'⛶';btn.title=document.fullscreenElement?'Exit Fullscreen':'Toggle Fullscreen';}
+});
+
 function doLogout(){
   mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;isMgrSession=false;
   me=null;pinBuf='';pc();
