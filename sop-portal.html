@@ -693,55 +693,79 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
 
   <!-- ══════════════════ TAB: TESTERS ══════════════════ -->
   <div id="tab-testers" class="tab-panel">
+
+    <!-- Filter Bar -->
     <div class="filter-bar">
-      <select class="sel" id="t-region" onchange="loadTesterData()">
-        <option value="ALL">All Regions</option>
+      <select class="sel" id="t-division" onchange="applyTesterFilters()">
+        <option value="ALL">EPP + ASL</option>
         <option value="EPP">EPP UAE</option>
         <option value="ASL">ASL UAE</option>
-        <option value="OMAN">Oman</option>
       </select>
-      <select class="sel" id="t-store" onchange="loadTesterData()">
+      <select class="sel" id="t-year" onchange="applyTesterFilters()">
+        <option value="ALL">All Years</option>
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+      </select>
+      <select class="sel" id="t-month" onchange="applyTesterFilters()">
+        <option value="ALL">All Months</option>
+        <option value="01">January</option><option value="02">February</option>
+        <option value="03">March</option><option value="04">April</option>
+        <option value="05">May</option><option value="06">June</option>
+        <option value="07">July</option><option value="08">August</option>
+        <option value="09">September</option><option value="10">October</option>
+        <option value="11">November</option><option value="12">December</option>
+      </select>
+      <select class="sel" id="t-store-filter" onchange="applyTesterFilters()">
         <option value="ALL">All Stores</option>
       </select>
-      <button class="filter-btn-ghost" onclick="exportTesterCsv()" style="margin-left:auto;">↓ Export</button>
+      <input type="text" class="tbl-search" id="t-search" placeholder="Search product…" oninput="applyTesterFilters()" style="width:180px;">
+      <button class="filter-btn-ghost" onclick="exportTesterCsv()" style="margin-left:auto;">↓ Export CSV</button>
     </div>
 
     <!-- KPI Row -->
     <div class="kpi-grid" style="border-bottom:1px solid var(--border);">
       <div class="kpi-card">
-        <div class="kpi-num" id="kpi-issued">—</div>
-        <div class="kpi-lbl">Testers Issued</div>
+        <div class="kpi-num" id="kpi-t-dispatched">—</div>
+        <div class="kpi-lbl">Testers Dispatched</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-num" id="kpi-fg-conv" style="color:#7048E8;">—</div>
-        <div class="kpi-lbl">FG → Tester Conversions</div>
+        <div class="kpi-num" id="kpi-t-sales" style="color:#0B7A45;">—</div>
+        <div class="kpi-lbl">Sales via Testers</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-num" id="kpi-wastage" style="color:#C0392B;">—</div>
-        <div class="kpi-lbl">Wastage / Write-offs</div>
+        <div class="kpi-num" id="kpi-t-contrib" style="color:var(--gold-dark);">—</div>
+        <div class="kpi-lbl">Avg Contrib Rate</div>
+        <div style="font-size:9px;color:var(--ink-light);margin-top:2px;letter-spacing:0.04em;">Testers ÷ Sales — lower = efficient</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-num" id="kpi-live" style="color:#0B7A45;">—</div>
-        <div class="kpi-lbl">Live Testers (Current)</div>
+        <div id="kpi-t-top-store" style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--gold-dark);margin-top:4px;">—</div>
+        <div class="kpi-lbl">Top Store (Sales)</div>
+        <div style="font-size:10px;color:var(--ink-light);margin-top:2px;" id="kpi-t-top-store-qty"></div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-num" id="kpi-conv-rate" style="color:var(--gold-dark);">—%</div>
-        <div class="kpi-lbl">FG Conversion Rate</div>
+        <div class="kpi-num" id="kpi-t-skus" style="color:#7048E8;">—</div>
+        <div class="kpi-lbl">SKUs Tested</div>
       </div>
     </div>
 
-    <!-- Per-Store -->
+    <!-- Store Performance Table -->
     <div class="tbl-card" style="margin-top:0;border-top:none;">
-      <div class="tbl-card-hd"><div class="tbl-card-title">Tester Status by Store</div></div>
-      <div class="tbl-wrap">
+      <div class="tbl-card-hd">
+        <div>
+          <div class="tbl-card-title">Store-wise Tester Performance</div>
+          <div id="t-loading-status" style="font-size:11px;color:var(--ink-light);margin-top:2px;">Loading from Supabase…</div>
+        </div>
+      </div>
+      <div class="tbl-wrap" id="tester-store-wrap">
         <table>
           <thead><tr>
-            <th>Store</th><th>Region</th>
-            <th style="text-align:right;">Issued</th>
-            <th style="text-align:right;">FG Conv.</th>
-            <th style="text-align:right;">Wastage</th>
-            <th style="text-align:right;">Live</th>
-            <th>Rate</th>
+            <th>Store</th>
+            <th>Division</th>
+            <th style="text-align:right;">Testers Out</th>
+            <th style="text-align:right;">Sales Generated</th>
+            <th style="text-align:right;">Contrib Rate</th>
+            <th style="text-align:right;">SKUs Active</th>
+            <th>Efficiency</th>
           </tr></thead>
           <tbody id="tester-store-tbody">
             <tr><td colspan="7" style="text-align:center;padding:40px;">
@@ -753,24 +777,47 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       </div>
     </div>
 
+    <!-- Monthly Trend -->
+    <div class="orn-divider"><div class="orn-line"></div><div class="orn-diamond"></div><div class="orn-line"></div></div>
+    <div class="tbl-card">
+      <div class="tbl-card-hd">
+        <div class="tbl-card-title">Month-over-Month Trend</div>
+        <div style="font-size:11px;color:var(--ink-light);">Testers dispatched vs sales generated</div>
+      </div>
+      <div class="tbl-wrap">
+        <table style="font-size:12px;">
+          <thead><tr>
+            <th>Month</th>
+            <th style="text-align:right;">Testers Out</th>
+            <th style="text-align:right;">Sales Generated</th>
+            <th style="text-align:right;">Contrib Rate</th>
+            <th style="text-align:right;">vs Prev Month</th>
+            <th>Trend</th>
+          </tr></thead>
+          <tbody id="t-trend-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Top SKUs -->
     <div class="orn-divider"><div class="orn-line"></div><div class="orn-diamond"></div><div class="orn-line"></div></div>
     <div class="tbl-card">
       <div class="tbl-card-hd">
         <div class="tbl-card-title">Top SKUs by Tester Activity</div>
-        <div style="font-size:11px;color:var(--ink-light);">Top 20 most active</div>
+        <div style="font-size:11px;color:var(--ink-light);">Top 25 products — most testers dispatched</div>
       </div>
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>SKU Code</th><th>Product Name</th>
-            <th style="text-align:right;">Issued</th>
-            <th style="text-align:right;">FG Conv.</th>
-            <th style="text-align:right;">Wastage</th>
-            <th>Activity</th>
+            <th>Product Name</th>
+            <th>Division</th>
+            <th style="text-align:right;">Testers Out</th>
+            <th style="text-align:right;">Sales Generated</th>
+            <th style="text-align:right;">Contrib Rate</th>
+            <th>Activity Bar</th>
           </tr></thead>
           <tbody id="tester-sku-tbody">
-            <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-light);">No tester data yet.</td></tr>
+            <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-light);">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -1210,83 +1257,243 @@ function exportSalesCsv() {
 // ══════════════════════════════════════════════
 // TESTERS
 // ══════════════════════════════════════════════
+let testerData = [], filteredTesters = [], testerLoaded = false;
+
 async function loadTesterData() {
+  if (testerLoaded) { applyTesterFilters(); return; }
+  document.getElementById('t-loading-status').textContent = 'Loading from Supabase…';
   document.getElementById('tester-store-tbody').innerHTML =
     `<tr><td colspan="7" style="text-align:center;padding:40px;">
       <div class="spinner" style="margin:0 auto 12px;width:24px;height:24px;border-width:2px;"></div>
       <div style="font-size:11px;color:var(--ink-light);letter-spacing:0.08em;text-transform:uppercase;">Loading</div>
     </td></tr>`;
   try {
-    const { data, error } = await sb.from('transfer_history').select('*').limit(10000);
-    if (error && error.code !== 'PGRST116') throw error;
-    renderTesterData(data || []);
-  } catch { renderTesterFallback(); }
+    const { count, error: cErr } = await sb
+      .from('tester_history').select('*', { count:'exact', head:true });
+    if (cErr) throw cErr;
+
+    const PAGE = 1000;
+    const pages = Math.ceil(count / PAGE);
+    const fetches = Array.from({ length: pages }, (_, i) =>
+      sb.from('tester_history')
+        .select('division,month_year,product_name,store_code,store_name,testers_dispatched,sales_generated,contrib_pct')
+        .range(i * PAGE, (i + 1) * PAGE - 1)
+    );
+    const results = await Promise.all(fetches);
+    testerData = [];
+    for (const { data, error } of results) {
+      if (error) throw error;
+      testerData = testerData.concat(data || []);
+    }
+    testerLoaded = true;
+    populateTesterStoreFilter();
+    applyTesterFilters();
+    document.getElementById('t-loading-status').textContent =
+      `${testerData.length.toLocaleString()} records — Jan 2025 to Apr 2026`;
+  } catch(e) {
+    document.getElementById('t-loading-status').textContent = 'Load failed: ' + e.message;
+    document.getElementById('tester-store-tbody').innerHTML =
+      `<tr><td colspan="7" style="text-align:center;padding:48px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--ink-light);margin-bottom:8px;">Tester Data Unavailable</div>
+        <div style="font-size:11px;color:var(--ink-light);max-width:380px;margin:0 auto;line-height:1.6;">
+          Run <code style="background:var(--cream);padding:1px 6px;">tester_history_upsert.sql</code>
+          in Supabase SQL Editor to upload tester data.
+        </div>
+      </td></tr>`;
+  }
 }
 
-function renderTesterData(rows) {
-  const issued  = rows.filter(r=>r.type==='tester_issue').reduce((s,r)=>s+(r.qty||0),0);
-  const fgConv  = rows.filter(r=>r.type==='fg_to_tester').reduce((s,r)=>s+(r.qty||0),0);
-  const wastage = rows.filter(r=>r.type==='tester_writeoff').reduce((s,r)=>s+(r.qty||0),0);
-  const live    = Math.max(0,fgConv-wastage);
-  const rate    = fgConv>0 ? Math.round(issued/fgConv*100) : 0;
-  document.getElementById('kpi-issued').textContent    = issued.toLocaleString();
-  document.getElementById('kpi-fg-conv').textContent   = fgConv.toLocaleString();
-  document.getElementById('kpi-wastage').textContent   = wastage.toLocaleString();
-  document.getElementById('kpi-live').textContent      = live.toLocaleString();
-  document.getElementById('kpi-conv-rate').textContent = rate+'%';
-  if(!rows.length){ renderTesterFallback(); return; }
-
-  const byStore={};
-  rows.forEach(r=>{
-    if(!byStore[r.store_code]) byStore[r.store_code]={issued:0,fgConv:0,wastage:0};
-    if(r.type==='tester_issue')    byStore[r.store_code].issued+=r.qty||0;
-    if(r.type==='fg_to_tester')    byStore[r.store_code].fgConv+=r.qty||0;
-    if(r.type==='tester_writeoff') byStore[r.store_code].wastage+=r.qty||0;
+function populateTesterStoreFilter() {
+  const sel = document.getElementById('t-store-filter');
+  sel.innerHTML = '<option value="ALL">All Stores</option>';
+  const seen = new Map();
+  testerData.forEach(r => {
+    if (!seen.has(r.store_code)) seen.set(r.store_code, r.store_name);
   });
-  document.getElementById('tester-store-tbody').innerHTML = Object.entries(byStore)
-    .sort((a,b)=>b[1].issued-a[1].issued).map(([code,d])=>{
-      const si=getStore(code); const live=Math.max(0,d.fgConv-d.wastage);
-      const r=d.fgConv>0?Math.round(d.issued/d.fgConv*100)+'%':'—';
-      return `<tr><td style="font-weight:600;">${si.name}</td><td>${regionPill(si.region)}</td>
-        <td class="num">${d.issued}</td><td class="num" style="color:#7048E8;">${d.fgConv}</td>
-        <td class="num" style="color:#C0392B;">${d.wastage}</td>
-        <td class="num" style="color:#0B7A45;">${live}</td><td style="font-weight:700;">${r}</td></tr>`;
-    }).join('') || `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-light);">No store data</td></tr>`;
-
-  const bySku={};
-  rows.forEach(r=>{
-    if(!bySku[r.sku_code]) bySku[r.sku_code]={issued:0,fgConv:0,wastage:0};
-    if(r.type==='tester_issue')    bySku[r.sku_code].issued+=r.qty||0;
-    if(r.type==='fg_to_tester')    bySku[r.sku_code].fgConv+=r.qty||0;
-    if(r.type==='tester_writeoff') bySku[r.sku_code].wastage+=r.qty||0;
+  [...seen.entries()].sort((a,b) => a[1].localeCompare(b[1])).forEach(([code, name]) => {
+    const o = document.createElement('option');
+    o.value = code; o.textContent = name || code;
+    sel.appendChild(o);
   });
-  const maxI=Math.max(1,...Object.values(bySku).map(d=>d.issued));
-  document.getElementById('tester-sku-tbody').innerHTML = Object.entries(bySku)
-    .sort((a,b)=>b[1].issued-a[1].issued).slice(0,20).map(([s,d])=>`<tr>
-      <td class="sku">${s}</td><td style="font-weight:600;">${SKU_NAMES[s]||s}</td>
-      <td class="num">${d.issued}</td><td class="num" style="color:#7048E8;">${d.fgConv}</td>
-      <td class="num" style="color:#C0392B;">${d.wastage}</td>
-      <td style="min-width:120px;"><div style="display:flex;align-items:center;gap:8px;">
-        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(d.issued/maxI*100)}%"></div></div>
-        <span style="font-size:10px;color:var(--ink-light);">${d.issued}</span></div></td></tr>`).join('') ||
-    `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-light);">No SKU data</td></tr>`;
 }
 
-function renderTesterFallback() {
-  ['kpi-issued','kpi-fg-conv','kpi-wastage','kpi-live','kpi-conv-rate'].forEach(id=>{ document.getElementById(id).textContent='0'; });
-  document.getElementById('tester-store-tbody').innerHTML =
-    `<tr><td colspan="7" style="text-align:center;padding:48px;">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--ink-light);margin-bottom:8px;">Awaiting Tester Data</div>
-      <div style="font-size:11px;color:var(--ink-light);max-width:360px;margin:0 auto;line-height:1.6;">
-        Tester records are logged in the Stock Register. Once the
-        <code style="background:var(--cream);padding:1px 6px;">transfer_history</code>
-        table in Supabase is populated, all KPIs will appear automatically.
-      </div>
-    </td></tr>`;
-  document.getElementById('tester-sku-tbody').innerHTML =
-    `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-light);">No tester data yet.</td></tr>`;
+function applyTesterFilters() {
+  const div   = document.getElementById('t-division').value;
+  const yr    = document.getElementById('t-year').value;
+  const mo    = document.getElementById('t-month').value;
+  const store = document.getElementById('t-store-filter').value;
+  const q     = (document.getElementById('t-search').value || '').toLowerCase().trim();
+
+  filteredTesters = testerData.filter(r => {
+    if (div   !== 'ALL' && r.division    !== div)   return false;
+    if (store !== 'ALL' && r.store_code  !== store) return false;
+    const [ry, rm] = (r.month_year || '').split('-');
+    if (yr !== 'ALL' && ry !== yr) return false;
+    if (mo !== 'ALL' && rm !== mo) return false;
+    if (q && !r.product_name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  renderTesterKPIs();
+  renderTesterStoreTable();
+  renderTesterTrend();
+  renderTesterSkuTable();
 }
-function exportTesterCsv(){ toast('Tester export — coming soon'); }
+
+function renderTesterKPIs() {
+  const totDisp  = filteredTesters.reduce((s,r) => s + (r.testers_dispatched||0), 0);
+  const totSales = filteredTesters.reduce((s,r) => s + (r.sales_generated||0),   0);
+  const contrib  = totSales > 0 ? (totDisp / totSales * 100).toFixed(1) + '%' : '—';
+
+  const byStore = {};
+  filteredTesters.forEach(r => {
+    if (!byStore[r.store_code]) byStore[r.store_code] = { name: r.store_name, sales: 0 };
+    byStore[r.store_code].sales += r.sales_generated || 0;
+  });
+  const topStore = Object.values(byStore).sort((a,b) => b.sales - a.sales)[0];
+
+  const uniqueSkus = new Set(filteredTesters.map(r => r.product_name)).size;
+
+  document.getElementById('kpi-t-dispatched').textContent = totDisp.toLocaleString();
+  document.getElementById('kpi-t-sales').textContent      = totSales.toLocaleString();
+  document.getElementById('kpi-t-contrib').textContent    = contrib;
+  document.getElementById('kpi-t-top-store').textContent  = topStore ? topStore.name : '—';
+  document.getElementById('kpi-t-top-store-qty').textContent = topStore ? topStore.sales.toLocaleString() + ' sales' : '';
+  document.getElementById('kpi-t-skus').textContent       = uniqueSkus;
+}
+
+function tContribBadge(d, s) {
+  if (!s) return '<span style="color:var(--ink-light);">—</span>';
+  const pct = d / s * 100;
+  const txt = pct.toFixed(1) + '%';
+  if (pct <= 10)  return `<span style="color:#0B7A45;font-weight:700;">🟢 ${txt}</span>`;
+  if (pct <= 20)  return `<span style="color:#E67E22;font-weight:700;">🟡 ${txt}</span>`;
+  return `<span style="color:#C0392B;font-weight:700;">🔴 ${txt}</span>`;
+}
+
+function renderTesterStoreTable() {
+  const byStore = {};
+  filteredTesters.forEach(r => {
+    if (!byStore[r.store_code]) byStore[r.store_code] = {
+      name: r.store_name, division: r.division, disp: 0, sales: 0, skus: new Set()
+    };
+    byStore[r.store_code].disp  += r.testers_dispatched || 0;
+    byStore[r.store_code].sales += r.sales_generated    || 0;
+    byStore[r.store_code].skus.add(r.product_name);
+  });
+
+  const rows = Object.entries(byStore).sort((a,b) => b[1].sales - a[1].sales);
+  if (!rows.length) {
+    document.getElementById('tester-store-tbody').innerHTML =
+      `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--ink-light);">No data for selected filters.</td></tr>`;
+    return;
+  }
+
+  document.getElementById('tester-store-tbody').innerHTML = rows.map(([code, d]) => {
+    const divPill = d.division === 'EPP'
+      ? `<span style="font-size:10px;background:#EAF3FF;color:#3B5BDB;padding:2px 8px;border-radius:2px;font-weight:600;letter-spacing:0.06em;">EPP</span>`
+      : `<span style="font-size:10px;background:#F3EFFF;color:#7048E8;padding:2px 8px;border-radius:2px;font-weight:600;letter-spacing:0.06em;">ASL</span>`;
+    return `<tr>
+      <td style="font-weight:600;">${d.name || code}</td>
+      <td>${divPill}</td>
+      <td class="num">${d.disp.toLocaleString()}</td>
+      <td class="num" style="color:#0B7A45;font-weight:600;">${d.sales.toLocaleString()}</td>
+      <td>${tContribBadge(d.disp, d.sales)}</td>
+      <td class="num" style="color:#7048E8;">${d.skus.size}</td>
+      <td><div style="display:flex;align-items:center;gap:8px;min-width:100px;">
+        <div class="bar-track" style="flex:1;"><div class="bar-fill"
+          style="width:${Math.round(d.sales/Math.max(1,...rows.map(r=>r[1].sales))*100)}%;"></div></div>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderTesterTrend() {
+  const byMonth = {};
+  filteredTesters.forEach(r => {
+    const m = r.month_year;
+    if (!byMonth[m]) byMonth[m] = { disp: 0, sales: 0 };
+    byMonth[m].disp  += r.testers_dispatched || 0;
+    byMonth[m].sales += r.sales_generated    || 0;
+  });
+
+  const months = Object.keys(byMonth).sort();
+  if (!months.length) {
+    document.getElementById('t-trend-tbody').innerHTML =
+      `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-light);">No data.</td></tr>`;
+    return;
+  }
+
+  document.getElementById('t-trend-tbody').innerHTML = months.map((m, i) => {
+    const d = byMonth[m];
+    const prev = i > 0 ? byMonth[months[i-1]] : null;
+    const contrib = d.sales > 0 ? (d.disp / d.sales * 100).toFixed(1) + '%' : '—';
+    let vsStr = '—', vsStyle = '';
+    if (prev && prev.disp > 0) {
+      const diff = d.disp - prev.disp;
+      const pct  = Math.round(diff / prev.disp * 100);
+      vsStr  = (diff >= 0 ? '+' : '') + pct + '%';
+      vsStyle = diff >= 0 ? 'color:#0B7A45;font-weight:700;' : 'color:#C0392B;font-weight:700;';
+    }
+    const [yr, mo] = m.split('-');
+    const monthLabel = MONTHS[+mo] + ' ' + yr;
+    const bar = Math.round(d.disp / Math.max(1, ...months.map(x => byMonth[x].disp)) * 100);
+    return `<tr>
+      <td style="font-weight:600;white-space:nowrap;">${monthLabel}</td>
+      <td class="num">${d.disp.toLocaleString()}</td>
+      <td class="num" style="color:#0B7A45;font-weight:600;">${d.sales.toLocaleString()}</td>
+      <td style="font-weight:600;">${contrib}</td>
+      <td style="${vsStyle}">${vsStr}</td>
+      <td><div class="bar-track" style="min-width:80px;"><div class="bar-fill" style="width:${bar}%;"></div></div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderTesterSkuTable() {
+  const bySku = {};
+  filteredTesters.forEach(r => {
+    const key = r.product_name;
+    if (!bySku[key]) bySku[key] = { div: r.division, disp: 0, sales: 0 };
+    bySku[key].disp  += r.testers_dispatched || 0;
+    bySku[key].sales += r.sales_generated    || 0;
+  });
+
+  const rows = Object.entries(bySku).sort((a,b) => b[1].disp - a[1].disp).slice(0, 25);
+  if (!rows.length) {
+    document.getElementById('tester-sku-tbody').innerHTML =
+      `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-light);">No data.</td></tr>`;
+    return;
+  }
+  const maxDisp = Math.max(1, rows[0][1].disp);
+  document.getElementById('tester-sku-tbody').innerHTML = rows.map(([name, d]) => {
+    const divPill = d.div === 'EPP'
+      ? `<span style="font-size:10px;background:#EAF3FF;color:#3B5BDB;padding:2px 8px;border-radius:2px;font-weight:600;">EPP</span>`
+      : `<span style="font-size:10px;background:#F3EFFF;color:#7048E8;padding:2px 8px;border-radius:2px;font-weight:600;">ASL</span>`;
+    const bar = Math.round(d.disp / maxDisp * 100);
+    return `<tr>
+      <td style="font-weight:600;max-width:240px;">${name}</td>
+      <td>${divPill}</td>
+      <td class="num">${d.disp.toLocaleString()}</td>
+      <td class="num" style="color:#0B7A45;font-weight:600;">${d.sales.toLocaleString()}</td>
+      <td>${tContribBadge(d.disp, d.sales)}</td>
+      <td><div style="display:flex;align-items:center;gap:8px;min-width:120px;">
+        <div class="bar-track" style="flex:1;"><div class="bar-fill" style="width:${bar}%;"></div></div>
+        <span style="font-size:10px;color:var(--ink-light);min-width:28px;">${d.disp}</span>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function exportTesterCsv() {
+  if (!filteredTesters.length) { toast('No data to export', 'warn'); return; }
+  let csv = 'Division,Month,Product Name,Store Code,Store Name,Testers Dispatched,Sales Generated,Contrib Rate\n';
+  filteredTesters.forEach(r => {
+    const contrib = r.sales_generated > 0 ? (r.testers_dispatched / r.sales_generated * 100).toFixed(1) + '%' : '—';
+    csv += `${r.division},${r.month_year},"${r.product_name}",${r.store_code},"${r.store_name}",${r.testers_dispatched},${r.sales_generated},${contrib}\n`;
+  });
+  dlFile('Tester_Export_' + new Date().toISOString().slice(0,10) + '.csv', csv, 'text/csv');
+  toast('Tester CSV exported');
+}
 
 // ══════════════════════════════════════════════
 // INVENTORY
@@ -1427,7 +1634,6 @@ function switchTab(id){
 
 function populateStoreDropdowns(){
   const fStore=document.getElementById('f-store');
-  const tStore=document.getElementById('t-store');
   const invView=document.getElementById('inv-view-store');
   const eppGrp=document.getElementById('inv-epp-grp');
   const aslGrp=document.getElementById('inv-asl-grp');
@@ -1440,7 +1646,7 @@ function populateStoreDropdowns(){
     else if(s.region==='OMAN') omanOpts.push(o.cloneNode(true));
   });
 
-  [fStore,tStore].forEach(sel=>{
+  [fStore].forEach(sel=>{
     const og1=document.createElement('optgroup'); og1.label='EPP UAE';
     const og2=document.createElement('optgroup'); og2.label='ASL UAE';
     const og3=document.createElement('optgroup'); og3.label='Oman';
