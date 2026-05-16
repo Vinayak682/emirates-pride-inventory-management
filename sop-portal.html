@@ -371,6 +371,60 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
 }
 .prod-mark-btn:hover{background:var(--gold);color:#fff;border-color:var(--gold);}
 .prod-panel{background:var(--cream);border-bottom:1px solid var(--border);padding:24px;}
+
+/* ── Monday Production Alert ── */
+.prod-alert-banner{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 24px;
+  background:linear-gradient(90deg,#1a2744 0%,#24356a 100%);
+  border-left:4px solid var(--gold);
+  border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.prod-alert-banner::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    90deg,transparent,transparent 8px,
+    rgba(201,168,76,0.04) 8px,rgba(201,168,76,0.04) 9px
+  );
+  pointer-events:none;
+}
+.prod-alert-icon{
+  font-size:22px;flex-shrink:0;
+  animation:alertPulse 1.8s ease-in-out infinite;
+}
+@keyframes alertPulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.prod-alert-text{flex:1;}
+.prod-alert-title{
+  font-size:12px;font-weight:700;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:2px;
+}
+.prod-alert-sub{font-size:11px;color:rgba(255,255,255,0.65);letter-spacing:0.04em;}
+.prod-alert-cta{
+  background:var(--gold);color:#1a2744;
+  border:none;border-radius:2px;padding:8px 18px;
+  font-family:'Montserrat',sans-serif;font-size:11px;
+  font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  cursor:pointer;flex-shrink:0;transition:background 0.15s;
+  white-space:nowrap;
+}
+.prod-alert-cta:hover{background:var(--gold-light);}
+.prod-alert-dismiss{
+  background:none;border:none;color:rgba(255,255,255,0.3);
+  font-size:16px;cursor:pointer;padding:4px 6px;flex-shrink:0;
+  transition:color 0.15s;
+}
+.prod-alert-dismiss:hover{color:rgba(255,255,255,0.7);}
+
+/* ── Nav tab alert dot ── */
+.nav-alert-dot{
+  display:inline-block;width:7px;height:7px;
+  background:#CC0000;border-radius:50%;
+  margin-left:5px;vertical-align:middle;
+  animation:dotPulse 1.4s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.7);}}
 </style>
 </head>
 <body>
@@ -511,7 +565,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
     </div>
     <div class="nav-tab" data-tab="production" onclick="switchTab('production')">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
-      Production
+      Production<span id="prod-nav-dot" class="nav-alert-dot" style="display:none;"></span>
     </div>
   </div>
 
@@ -869,6 +923,17 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
   <!-- ══════════════════ TAB: PRODUCTION ══════════════════ -->
   <div id="tab-production" class="tab-panel">
 
+    <!-- Monday Alert Banner -->
+    <div id="prod-monday-alert" class="prod-alert-banner" style="display:none;">
+      <div class="prod-alert-icon">⚠</div>
+      <div class="prod-alert-text">
+        <div class="prod-alert-title" id="prod-alert-title">Production Plan Not Uploaded</div>
+        <div class="prod-alert-sub" id="prod-alert-sub">No production schedule found for this week. Upload the plan from the production team.</div>
+      </div>
+      <button class="prod-alert-cta" onclick="triggerProdUpload()">Upload Plan Now →</button>
+      <button class="prod-alert-dismiss" onclick="dismissProdAlert()" title="Dismiss for today">✕</button>
+    </div>
+
     <!-- Filter Bar -->
     <div class="filter-bar">
       <select class="sel" id="p-week-sel" onchange="loadProductionData()">
@@ -1203,6 +1268,8 @@ function initApp() {
   setInvDefaultDate();
   refreshInvHistory();
   loadSalesData();
+  refreshWhBadge();         // restore WH stock status from localStorage
+  checkNavDotOnLoad();      // show alert dot on Production tab if week has no plan
 }
 
 // ══════════════════════════════════════════════
@@ -2012,6 +2079,7 @@ function renderProductionPlan(){
     document.getElementById('prod-schedule-body').style.display='none';
     renderProdKPIs([]);
     renderCoverageAnalysis();
+    checkProductionAlert();
     return;
   }
   document.getElementById('prod-empty').style.display='none';
@@ -2020,6 +2088,7 @@ function renderProductionPlan(){
   renderProdKPIs(rows);
   renderProdSchedule(rows);
   renderCoverageAnalysis();
+  checkProductionAlert();
 }
 
 // ── KPI cards ────────────────────────────────────────────────────
@@ -2357,6 +2426,7 @@ async function confirmProdUpload(){
   toast(`✓ ${records.length} production runs saved`);
   cancelProdUpload();
   toggleProdPanel('prod-upload-panel','p-upload-btn','↑ Upload Plan','↓ Close');
+  localStorage.removeItem('prod_alert_dismissed'); // force re-check; will auto-hide since plan now exists
   await loadProductionData();
 }
 
@@ -2431,6 +2501,87 @@ function toggleProdPanel(panelId,btnId,openLabel,closeLabel){
   const isOpen=panel.style.display!=='none';
   panel.style.display=isOpen?'none':'block';
   if(btn) btn.textContent=isOpen?openLabel:closeLabel;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MONDAY PRODUCTION ALERT
+// ══════════════════════════════════════════════════════════════════
+function checkProductionAlert(){
+  const today      = new Date();
+  const isMonday   = today.getDay() === 1;
+  const todayStr   = isoDate(today);
+  const dismissed  = localStorage.getItem('prod_alert_dismissed');
+  const weekHasPlan= prodData.length > 0;
+
+  const banner  = document.getElementById('prod-monday-alert');
+  const navDot  = document.getElementById('prod-nav-dot');
+  const title   = document.getElementById('prod-alert-title');
+  const sub     = document.getElementById('prod-alert-sub');
+
+  // Nav dot: always show when current week has no plan
+  if(navDot) navDot.style.display = weekHasPlan ? 'none' : 'inline-block';
+
+  // Banner: hide if plan exists OR user dismissed it today
+  if(weekHasPlan || dismissed === todayStr){
+    if(banner) banner.style.display = 'none';
+    return;
+  }
+
+  // No plan — show banner, tune message by day
+  if(isMonday){
+    title.textContent = 'TODAY IS MONDAY — Production Plan Required';
+    sub.textContent   = 'The production team sends the weekly schedule today. Upload it now to activate WH cover tracking.';
+    banner.style.borderLeftColor = '#CC0000';
+    banner.style.background      = 'linear-gradient(90deg,#3D0000 0%,#5C1010 100%)';
+  } else {
+    const daysAgo = (today.getDay() === 0 ? 6 : today.getDay() - 1); // days since Monday
+    title.textContent = `Production Plan Missing — Week of ${fmtDate(getWeekMonday(today))}`;
+    sub.textContent   = `No plan uploaded since Monday. ${daysAgo} day${daysAgo!==1?'s':''} without a production schedule in the system.`;
+    banner.style.borderLeftColor = 'var(--gold)';
+    banner.style.background      = 'linear-gradient(90deg,#1a2744 0%,#24356a 100%)';
+  }
+  if(banner) banner.style.display = 'flex';
+}
+
+function dismissProdAlert(){
+  // Suppress for the rest of today only
+  localStorage.setItem('prod_alert_dismissed', isoDate(new Date()));
+  document.getElementById('prod-monday-alert').style.display = 'none';
+}
+
+function triggerProdUpload(){
+  // Open the upload panel and scroll to it
+  const panel = document.getElementById('prod-upload-panel');
+  const btn   = document.getElementById('p-upload-btn');
+  if(panel && panel.style.display === 'none'){
+    panel.style.display = 'block';
+    if(btn) btn.textContent = '↓ Close';
+  }
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+  // Pre-fill week date to this Monday
+  const wd = document.getElementById('p-week-date');
+  if(wd && !wd.value){
+    const mon = getWeekMonday(new Date());
+    wd.value  = isoDate(mon);
+    const wn  = getISOWeek(mon);
+    document.getElementById('p-week-label').value = `Week ${wn} — ${fmtDate(mon)}`;
+  }
+}
+
+// Also check the nav dot on every app load (not just Production tab)
+function checkNavDotOnLoad(){
+  // Quick Supabase check: any rows for current week?
+  const mon = isoDate(getWeekMonday(new Date()));
+  const sun = isoDate(addDays(getWeekMonday(new Date()), 6));
+  if(!sb) return;
+  sb.from('production_plan')
+    .select('id', {count:'exact', head:true})
+    .gte('week_start', mon)
+    .lte('week_start', sun)
+    .then(({count})=>{
+      const dot = document.getElementById('prod-nav-dot');
+      if(dot) dot.style.display = (count && count > 0) ? 'none' : 'inline-block';
+    });
 }
 
 // ── Drag & drop for production upload ───────────────────────────
