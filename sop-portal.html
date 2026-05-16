@@ -2326,21 +2326,39 @@ function safeInt(v){
   return isNaN(n)||n<0?0:n;
 }
 function excelDateToISO(v){
-  if(v instanceof Date) return v.toISOString().split('T')[0];
-  if(typeof v==='number'){
-    // Excel serial date: 1900-01-01 = 1
+  if(!v) return null;
+  if(v instanceof Date){
+    const yr=v.getFullYear(); if(yr<2020||yr>2030) return null;
+    return v.toISOString().split('T')[0];
+  }
+  if(typeof v==='number' && v>40000 && v<55000){
+    // Excel serial date (valid range ~2009–2050)
     const d=new Date(Date.UTC(1899,11,30)+v*86400000);
     return d.toISOString().split('T')[0];
+  }
+  if(typeof v==='string'){
+    const d=new Date(v);
+    if(!isNaN(d.getTime())){
+      const yr=d.getFullYear(); if(yr<2020||yr>2030) return null;
+      return d.toISOString().split('T')[0];
+    }
   }
   return null;
 }
 function isoFromMonday(weekNum, year=2026){
-  // ISO week Monday: use Jan 4th anchor (always in week 1)
+  if(!weekNum||weekNum<1||weekNum>60) return null; // guard: only valid ISO week numbers
   const jan4=new Date(Date.UTC(year,0,4));
   const dayOfWeek=(jan4.getUTCDay()||7);
   const week1Mon=new Date(jan4.getTime()-((dayOfWeek-1)*86400000));
   const mon=new Date(week1Mon.getTime()+((weekNum-1)*7*86400000));
-  return mon.toISOString().split('T')[0];
+  const iso=mon.toISOString().split('T')[0];
+  const yr=parseInt(iso); if(yr<2024||yr>2028) return null; // final sanity check
+  return iso;
+}
+function validWeekStart(s){
+  if(!s||typeof s!=='string') return false;
+  const yr=parseInt(s.split('-')[0]);
+  return yr>=2024&&yr<=2028;
 }
 function addDaysISO(isoStr, days){
   const d=new Date(isoStr+'T00:00:00Z');
@@ -2352,7 +2370,7 @@ function handleProdFile(input){
   const file=input.files[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=e=>{
-    const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+    const wb=XLSX.read(e.target.result,{type:'array'});
     prodBuffer=parseAllProdSheets(wb);
     showProdPreview();
   };
@@ -2366,21 +2384,21 @@ function parseAllProdSheets(wb){
   // 1 — "Completed plan" (full history with actuals)
   const cpSheet=wb.SheetNames.find(n=>/completed\s*plan/i.test(n));
   if(cpSheet){
-    const rows=XLSX.utils.sheet_to_json(wb.Sheets[cpSheet],{header:1,defval:null,raw:false});
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[cpSheet],{header:1,defval:null,raw:true});
     all.push(...parseCompletedPlan(rows));
   }
 
   // 2 — "Weekly plan" (current week, day-by-day)
   const wpSheet=wb.SheetNames.find(n=>/weekly\s*plan/i.test(n));
   if(wpSheet){
-    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wpSheet],{header:1,defval:null,raw:false});
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wpSheet],{header:1,defval:null,raw:true});
     all.push(...parseWeeklyPlan(rows));
   }
 
   // 3 — April / May planning sheets (forward plans)
   wb.SheetNames.forEach(sn=>{
     if(/april|may/i.test(sn)){
-      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:null,raw:false});
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:null,raw:true});
       all.push(...parsePlanningSheet(rows,sn));
     }
   });
@@ -2391,7 +2409,8 @@ function parseAllProdSheets(wb){
     const key=`${r.product_name}||${r.week_start||''}||${r.plan_day||''}`;
     seen.set(key,r);
   });
-  return [...seen.values()];
+  // Final guard: drop any record whose week_start falls outside 2024–2028
+  return [...seen.values()].filter(r=>validWeekStart(r.week_start));
 }
 
 function parseCompletedPlan(rows){
