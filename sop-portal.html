@@ -1263,14 +1263,17 @@ function doLogout() {
 // ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
+let salesLoaded = false;
+
 function initApp() {
   sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
   populateStoreDropdowns();
   setInvDefaultDate();
-  refreshInvHistory();
-  loadSalesData();
-  refreshWhBadge();         // restore WH stock status from localStorage
-  checkNavDotOnLoad();      // show alert dot on Production tab if week has no plan
+  refreshWhBadge();
+  checkNavDotOnLoad();
+  // Defer sales fetch so the app renders immediately on login
+  // Sales tab is default, so load it after a short yield to let UI paint first
+  setTimeout(() => loadSalesData(), 50);
 }
 
 // ══════════════════════════════════════════════
@@ -1301,6 +1304,7 @@ async function loadSalesData() {
       salesData = salesData.concat(data || []);
     }
 
+    salesLoaded = true;
     applySalesFilters();
     document.getElementById('lastRefresh').textContent =
       'Updated ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
@@ -1909,6 +1913,7 @@ function switchTab(id){
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   document.querySelector(`[data-tab="${id}"]`).classList.add('active');
+  if(id==='sales'      && !salesLoaded) loadSalesData();
   if(id==='testers')    loadTesterData();
   if(id==='production') loadProductionTab();
 }
