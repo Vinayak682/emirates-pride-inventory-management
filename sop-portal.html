@@ -2319,67 +2319,275 @@ async function markProdDone(id){
 }
 
 // ── Excel Upload — Production Plan ───────────────────────────────
+// ── Helpers shared by all sheet parsers ───────────────────────────
+function safeInt(v){
+  if(v===null||v===undefined||v===''||v==='-') return 0;
+  const n=parseInt(parseFloat(String(v)));
+  return isNaN(n)||n<0?0:n;
+}
+function excelDateToISO(v){
+  if(v instanceof Date) return v.toISOString().split('T')[0];
+  if(typeof v==='number'){
+    // Excel serial date: 1900-01-01 = 1
+    const d=new Date(Date.UTC(1899,11,30)+v*86400000);
+    return d.toISOString().split('T')[0];
+  }
+  return null;
+}
+function isoFromMonday(weekNum, year=2026){
+  // ISO week Monday: use Jan 4th anchor (always in week 1)
+  const jan4=new Date(Date.UTC(year,0,4));
+  const dayOfWeek=(jan4.getUTCDay()||7);
+  const week1Mon=new Date(jan4.getTime()-((dayOfWeek-1)*86400000));
+  const mon=new Date(week1Mon.getTime()+((weekNum-1)*7*86400000));
+  return mon.toISOString().split('T')[0];
+}
+function addDaysISO(isoStr, days){
+  const d=new Date(isoStr+'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate()+days);
+  return d.toISOString().split('T')[0];
+}
+
 function handleProdFile(input){
   const file=input.files[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=e=>{
-    const wb=XLSX.read(e.target.result,{type:'array'});
-    // Prefer "Weekly plan" sheet, fallback to first sheet
-    const sheetName=wb.SheetNames.find(n=>/weekly\s*plan/i.test(n))||wb.SheetNames[0];
-    const ws=wb.Sheets[sheetName];
-    const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
-    prodBuffer=parseProdRows(raw);
+    const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+    prodBuffer=parseAllProdSheets(wb);
     showProdPreview();
   };
   reader.readAsArrayBuffer(file);
 }
 
-function parseProdRows(raw){
-  if(!raw||!raw.length) return [];
-  // Find header row (contains "product" or "FG")
-  let hdrIdx=0;
-  for(let i=0;i<Math.min(5,raw.length);i++){
-    const r=(raw[i]||[]).map(v=>String(v||'').toLowerCase());
-    if(r.some(v=>v.includes('product')||v.includes('fg'))){hdrIdx=i;break;}
+// ── Parse all sheets from the Production Plan workbook ───────────
+function parseAllProdSheets(wb){
+  const all=[];
+
+  // 1 — "Completed plan" (full history with actuals)
+  const cpSheet=wb.SheetNames.find(n=>/completed\s*plan/i.test(n));
+  if(cpSheet){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[cpSheet],{header:1,defval:null,raw:false});
+    all.push(...parseCompletedPlan(rows));
   }
-  const hdr=(raw[hdrIdx]||[]).map(v=>String(v||'').toLowerCase().trim());
 
-  // Map columns
-  const col={
-    sku   : hdr.findIndex(h=>h.includes('item')||h.includes('code')),
-    prod  : hdr.findIndex(h=>h.includes('product')),
-    fg    : hdr.findIndex(h=>h==='fg'||h.includes('fg')),
-    belbox: hdr.findIndex(h=>h.includes('bel')||h.includes('gift')||h.includes('paper')),
-    tester: hdr.findIndex(h=>h.includes('tester')),
-    remark: hdr.findIndex(h=>h.includes('remark')),
-    day   : hdr.findIndex(h=>h.includes('day')),
-  };
+  // 2 — "Weekly plan" (current week, day-by-day)
+  const wpSheet=wb.SheetNames.find(n=>/weekly\s*plan/i.test(n));
+  if(wpSheet){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wpSheet],{header:1,defval:null,raw:false});
+    all.push(...parseWeeklyPlan(rows));
+  }
 
-  const rows=[];
-  for(let i=hdrIdx+1;i<raw.length;i++){
-    const r=raw[i]; if(!r) continue;
-    const prodName=r[col.prod];
-    if(!prodName||typeof prodName!=='string') continue;
-    if(/total|^null$/i.test(String(prodName).trim())) continue;
-    const fg   =parseInt(r[col.fg])||0;
-    const test =parseInt(r[col.tester])||0;
-    const belb =parseInt(r[col.belbox])||0;
-    if(fg===0&&test===0&&belb===0) continue; // skip rows with no quantities
+  // 3 — April / May planning sheets (forward plans)
+  wb.SheetNames.forEach(sn=>{
+    if(/april|may/i.test(sn)){
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:null,raw:false});
+      all.push(...parsePlanningSheet(rows,sn));
+    }
+  });
 
-    const day=String(r[col.day]||'').trim()||'Monday';
-    rows.push({
-      sku_code      : col.sku>=0&&r[col.sku]?String(r[col.sku]).trim():null,
-      product_name  : String(prodName).trim(),
-      planned_fg    : fg,
-      planned_bel_box: belb,
-      planned_tester: test,
-      plan_day      : day,
-      plan_day_order: DAY_ORDER[day.toLowerCase()]??0,
-      remarks       : col.remark>=0&&r[col.remark]?String(r[col.remark]).trim():'',
+  // Deduplicate: keep last by (product_name, week_start, plan_day)
+  const seen=new Map();
+  all.forEach(r=>{
+    const key=`${r.product_name}||${r.week_start||''}||${r.plan_day||''}`;
+    seen.set(key,r);
+  });
+  return [...seen.values()];
+}
+
+function parseCompletedPlan(rows){
+  let hdrIdx=0;
+  for(let i=0;i<Math.min(5,rows.length);i++){
+    const vals=(rows[i]||[]).map(v=>String(v||'').toLowerCase());
+    if(vals.some(v=>v.includes('item')||v.includes('product'))){hdrIdx=i;break;}
+  }
+  const records=[];
+  for(let i=hdrIdx+1;i<rows.length;i++){
+    const r=rows[i]; if(!r||r.length<5) continue;
+    const product=r[1]?String(r[1]).trim():'';
+    if(!product) continue;
+    if(/production plan|epp\s*,?\s*asl|after production/i.test(product)) continue;
+
+    const sku=r[0]?String(r[0]).trim():null;
+    const fgP =safeInt(r[2]);
+    const belP=safeInt(r[3]);
+    const tstP=safeInt(r[4]);
+    const fgA =r.length>5?safeInt(r[5]):null;
+    const tstA=r.length>7?safeInt(r[7]):null;
+    const remarks=r.length>8&&r[8]?String(r[8]).trim():'';
+    const planDayRaw=r.length>10?r[10]:null;
+    const whRecv=r.length>11?excelDateToISO(r[11]):null;
+    const weekRaw=r.length>12&&r[12]?String(r[12]).trim():'';
+
+    if(fgP===0&&tstP===0&&belP===0) continue;
+
+    const rem=remarks.toLowerCase();
+    let status='Planned';
+    if(/removed|cancelled|not produced|rejected|cancel/i.test(rem)) status='Cancelled';
+    else if(fgA&&fgA>0) status='Completed';
+
+    let planDate=null, weekStart=null, planDay='Monday', dayOrder=0;
+    if(planDayRaw){
+      // Try as date string (XLSX raw:false gives date strings like "2026-04-07")
+      const d=new Date(planDayRaw);
+      if(!isNaN(d.getTime())){
+        planDate=d.toISOString().split('T')[0];
+        // Monday of that week
+        const dow=(d.getUTCDay()||7)-1; // 0=Mon
+        const mon=new Date(d.getTime()-dow*86400000);
+        weekStart=mon.toISOString().split('T')[0];
+        planDay=d.toLocaleDateString('en-US',{weekday:'long',timeZone:'UTC'});
+        dayOrder=DAY_ORDER[planDay.toLowerCase()]??0;
+      } else {
+        planDay=String(planDayRaw).trim()||'Monday';
+        dayOrder=DAY_ORDER[planDay.toLowerCase()]??0;
+      }
+    }
+
+    // Infer week from label if still missing
+    if(!weekStart){
+      const wm=weekRaw.match(/(\d+)/);
+      if(wm){
+        const wn=parseInt(wm[1]);
+        weekStart=isoFromMonday(wn);
+        if(!planDate) planDate=addDaysISO(weekStart,dayOrder);
+      }
+    }
+    if(!weekStart) continue; // can't place record without a week
+
+    records.push({
+      sku_code:       sku&&!/^(none|nan)$/i.test(sku)?sku:null,
+      product_name:   product,
+      planned_fg:     fgP,
+      planned_bel_box:belP,
+      planned_tester: tstP,
+      actual_fg:      fgA,
+      actual_tester:  tstA,
+      plan_day:       planDay,
+      plan_day_order: dayOrder,
+      plan_date:      planDate,
+      week_start:     weekStart,
+      week_label:     weekRaw,
+      status:         status,
+      wh_received_date:whRecv,
+      remarks:        remarks,
     });
   }
-  return rows;
+  return records;
 }
+
+function parseWeeklyPlan(rows){
+  let hdrIdx=0;
+  for(let i=0;i<Math.min(4,rows.length);i++){
+    const vals=(rows[i]||[]).map(v=>String(v||'').toLowerCase());
+    if(vals.some(v=>v.includes('product')||v.includes('item'))){hdrIdx=i;break;}
+  }
+  const hdr=(rows[hdrIdx]||[]).map(v=>String(v||'').toLowerCase().trim());
+  const col={
+    sku   :hdr.findIndex(h=>h.includes('item')||h.includes('code')),
+    prod  :hdr.findIndex(h=>h.includes('product')),
+    fg    :hdr.findIndex(h=>h==='fg'||h.startsWith('fg')),
+    belbox:hdr.findIndex(h=>h.includes('bel')||h.includes('gift')||h.includes('paper')),
+    tester:hdr.findIndex(h=>h.includes('tester')),
+    remark:hdr.findIndex(h=>h.includes('remark')),
+    day   :hdr.findIndex(h=>h==='day'||h.startsWith('day')),
+  };
+  if(col.prod<0) col.prod=1;
+
+  // Detect week start from sheet content (look for a date in first 5 rows above header)
+  let weekStart=isoDate(getWeekMonday(new Date())); // default current week
+  for(let i=0;i<hdrIdx;i++){
+    for(const cell of (rows[i]||[])){
+      if(!cell) continue;
+      const d=new Date(String(cell));
+      if(!isNaN(d.getTime())&&d.getFullYear()>=2025){
+        const dow=(d.getUTCDay()||7)-1;
+        const mon=new Date(d.getTime()-dow*86400000);
+        weekStart=mon.toISOString().split('T')[0];
+        break;
+      }
+    }
+  }
+  const wn=getISOWeek(new Date(weekStart+'T00:00:00Z'));
+  const weekLabel=`Week ${wn} — ${new Date(weekStart+'T00:00:00Z').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})}`;
+
+  const records=[];
+  for(let i=hdrIdx+1;i<rows.length;i++){
+    const r=rows[i]; if(!r) continue;
+    const product=r[col.prod]?String(r[col.prod]).trim():'';
+    if(!product||/^(total|none|nan)$/i.test(product)) continue;
+    const fg  =safeInt(r[col.fg]);
+    const belb=col.belbox>=0?safeInt(r[col.belbox]):0;
+    const test=col.tester>=0?safeInt(r[col.tester]):0;
+    if(fg===0&&test===0&&belb===0) continue;
+    const day=col.day>=0&&r[col.day]?String(r[col.day]).trim():'Monday';
+    const dayOrder=DAY_ORDER[day.toLowerCase()]??0;
+    records.push({
+      sku_code:       col.sku>=0&&r[col.sku]?String(r[col.sku]).trim():null,
+      product_name:   product,
+      planned_fg:     fg,
+      planned_bel_box:belb,
+      planned_tester: test,
+      actual_fg:      null,
+      actual_tester:  null,
+      plan_day:       day,
+      plan_day_order: dayOrder,
+      plan_date:      addDaysISO(weekStart,dayOrder),
+      week_start:     weekStart,
+      week_label:     weekLabel,
+      status:         'Planned',
+      wh_received_date:null,
+      remarks:        col.remark>=0&&r[col.remark]?String(r[col.remark]).trim():'',
+    });
+  }
+  return records;
+}
+
+function parsePlanningSheet(rows, sheetName){
+  let hdrIdx=0;
+  for(let i=0;i<Math.min(4,rows.length);i++){
+    const vals=(rows[i]||[]).map(v=>String(v||'').toLowerCase());
+    if(vals.some(v=>v.includes('product')||v.includes('p.code'))){hdrIdx=i;break;}
+  }
+  const hdr=(rows[hdrIdx]||[]).map(v=>String(v||'').toLowerCase().trim());
+  const colSku =hdr.findIndex(h=>h.includes('p.code')||h.includes('code'));
+  const colProd=hdr.findIndex(h=>h.includes('product'))||1;
+  const colWeek=hdr.findIndex(h=>h.includes('week'));
+
+  const records=[];
+  for(let i=hdrIdx+1;i<rows.length;i++){
+    const r=rows[i]; if(!r||r.length<3) continue;
+    const product=r[colProd]?String(r[colProd]).trim():'';
+    if(!product) continue;
+    const weekVal=colWeek>=0&&r[colWeek]?String(r[colWeek]).trim():'';
+    if(!weekVal||/^(none|discontinue|as per|end of|$)/i.test(weekVal)) continue;
+    const wm=weekVal.match(/(\d+)/);
+    if(!wm) continue;
+    const wn=parseInt(wm[1]);
+    const weekStart=isoFromMonday(wn);
+    const sku=colSku>=0&&r[colSku]?String(r[colSku]).trim():null;
+    records.push({
+      sku_code:       sku&&!/^(none|nan)$/i.test(sku)?sku:null,
+      product_name:   product,
+      planned_fg:     0,
+      planned_bel_box:0,
+      planned_tester: 0,
+      actual_fg:      null,
+      actual_tester:  null,
+      plan_day:       'Monday',
+      plan_day_order: 0,
+      plan_date:      weekStart,
+      week_start:     weekStart,
+      week_label:     `Week ${wn} — ${new Date(weekStart+'T00:00:00Z').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})} (${sheetName})`,
+      status:         'Planned',
+      wh_received_date:null,
+      remarks:        `From ${sheetName} planning sheet`,
+    });
+  }
+  return records;
+}
+
+// Legacy single-sheet fallback (kept for backward compatibility)
+function parseProdRows(raw){ return parseWeeklyPlan(raw); }
 
 function showProdPreview(){
   if(!prodBuffer.length){ toast('No rows parsed — check file format'); return; }
@@ -2415,31 +2623,38 @@ function getISOWeek(d){
 
 async function confirmProdUpload(){
   if(!prodBuffer.length) return;
-  const weekStart=document.getElementById('p-week-date').value;
-  const weekLabel=document.getElementById('p-week-label').value;
-  if(!weekStart){ toast('Please set a week start date'); return; }
 
+  // Records already have week_start/plan_date set by parsers.
+  // For any records still missing week_start, apply the manual week date picker as fallback.
+  const fallbackWeek=document.getElementById('p-week-date').value||isoDate(getWeekMonday(new Date()));
+  const fallbackLabel=document.getElementById('p-week-label').value||`Week of ${fallbackWeek}`;
   const records=prodBuffer.map(r=>({
     ...r,
-    week_start: weekStart,
-    week_label: weekLabel||`Week of ${weekStart}`,
-    status    : 'Planned',
-    plan_date : isoDate(addDays(weekStart, r.plan_day_order)),
+    week_start: r.week_start||fallbackWeek,
+    week_label: r.week_label||fallbackLabel,
   }));
 
-  // Delete existing rows for this week first (full replace)
-  await sb.from('production_plan').delete().eq('week_start',weekStart);
+  // Delete all existing rows for every week in this upload, then re-insert clean
+  const weeksInUpload=[...new Set(records.map(r=>r.week_start))];
+  for(const wk of weeksInUpload){
+    const {error}=await sb.from('production_plan').delete().eq('week_start',wk);
+    if(error){ toast('Clear failed: '+error.message); return; }
+  }
 
   const BATCH=200;
+  let uploaded=0;
   for(let i=0;i<records.length;i+=BATCH){
     const {error}=await sb.from('production_plan').insert(records.slice(i,i+BATCH));
     if(error){ toast('Upload failed: '+error.message); return; }
+    uploaded+=Math.min(BATCH,records.length-i);
+    // Brief progress toast every 200 rows
+    if(records.length>200) toast(`Uploading… ${uploaded}/${records.length}`);
   }
 
-  toast(`✓ ${records.length} production runs saved`);
+  toast(`✓ ${records.length} production records saved across ${weeksInUpload.length} week(s)`);
   cancelProdUpload();
   toggleProdPanel('prod-upload-panel','p-upload-btn','↑ Upload Plan','↓ Close');
-  localStorage.removeItem('prod_alert_dismissed'); // force re-check; will auto-hide since plan now exists
+  localStorage.removeItem('prod_alert_dismissed');
   await loadProductionData();
 }
 
