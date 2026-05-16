@@ -988,8 +988,9 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
           <tbody id="prod-preview-tbody"></tbody></table>
         </div>
         <div style="display:flex;gap:12px;margin-top:16px;">
-          <button class="filter-btn" onclick="confirmProdUpload()">✓ Save to Supabase</button>
+          <button class="filter-btn" onclick="confirmProdUpload()">✓ Save Plan</button>
           <button class="filter-btn-ghost" onclick="cancelProdUpload()">✕ Cancel</button>
+          <button class="filter-btn-ghost" style="margin-left:auto;color:#c0392b;border-color:#c0392b;" onclick="clearAllProdData()">⚠ Clear All Stored Data</button>
         </div>
       </div>
     </div>
@@ -2370,27 +2371,20 @@ function handleProdFile(input){
 function parseAllProdSheets(wb){
   const all=[];
 
-  // 1 — "Completed plan" (full history with actuals)
-  const cpSheet=wb.SheetNames.find(n=>/completed\s*plan/i.test(n));
-  if(cpSheet){
-    const rows=XLSX.utils.sheet_to_json(wb.Sheets[cpSheet],{header:1,defval:null,raw:true});
-    all.push(...parseCompletedPlan(rows));
-  }
-
-  // 2 — "Weekly plan" (current week, day-by-day)
+  // "Weekly plan" (current/upcoming week, day-by-day) — PRIMARY source
   const wpSheet=wb.SheetNames.find(n=>/weekly\s*plan/i.test(n));
   if(wpSheet){
     const rows=XLSX.utils.sheet_to_json(wb.Sheets[wpSheet],{header:1,defval:null,raw:true});
     all.push(...parseWeeklyPlan(rows));
+  } else {
+    // Fallback: use first sheet if no "Weekly plan" tab found
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null,raw:true});
+    all.push(...parseWeeklyPlan(rows));
   }
 
-  // 3 — April / May planning sheets (forward plans)
-  wb.SheetNames.forEach(sn=>{
-    if(/april|may/i.test(sn)){
-      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:null,raw:true});
-      all.push(...parsePlanningSheet(rows,sn));
-    }
-  });
+  // "Completed plan" is intentionally NOT imported here — it is historical
+  // archive data. Importing it floods the view with old weeks. History is
+  // preserved in localStorage from prior uploads; no need to re-import.
 
   // Deduplicate: keep last by (product_name, week_start, plan_day)
   const seen=new Map();
@@ -2634,14 +2628,17 @@ async function confirmProdUpload(){
 
   // Records already have week_start/plan_date set by parsers.
   // For any records still missing week_start, apply the manual week date picker as fallback.
-  const fallbackWeek=document.getElementById('p-week-date').value||isoDate(getWeekMonday(new Date()));
-  const fallbackLabel=document.getElementById('p-week-label').value||`Week of ${fallbackWeek}`;
+  const pickedWeek=document.getElementById('p-week-date').value;
+  const pickedLabel=document.getElementById('p-week-label').value;
+  const fallbackWeek=pickedWeek||isoDate(getWeekMonday(new Date()));
+  const fallbackLabel=pickedLabel||`Week of ${fallbackWeek}`;
   const ts=Date.now();
   const records=prodBuffer.map((r,i)=>({
     ...r,
     id: r.id||`local_${ts}_${i}`,
-    week_start: r.week_start||fallbackWeek,
-    week_label: r.week_label||fallbackLabel,
+    // If user explicitly picked a week date, it overrides whatever the parser found
+    week_start: pickedWeek||r.week_start||fallbackWeek,
+    week_label: pickedLabel||r.week_label||fallbackLabel,
   }));
 
   // Remove existing rows for these weeks, then append new ones
@@ -2660,6 +2657,14 @@ function cancelProdUpload(){
   prodBuffer=[];
   document.getElementById('prod-preview').style.display='none';
   document.getElementById('prod-file').value='';
+}
+
+function clearAllProdData(){
+  if(!confirm('This will delete ALL stored production plan data from this browser. Are you sure?')) return;
+  localStorage.removeItem(PROD_PLAN_KEY);
+  prodData=[];
+  toast('All production plan data cleared.');
+  loadProductionData();
 }
 
 // ── WH Stock Upload (RptStockOnHand.xlsx) ────────────────────────
