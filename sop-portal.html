@@ -2080,7 +2080,19 @@ async function loadProductionData(){
   let query=sb.from('production_plan').select('*').order('plan_day_order',{ascending:true});
   if(sel!=='all'){ query=query.gte('week_start',fromStr).lte('week_start',toStr); }
   const {data,error}=await query;
-  if(error){ toast('Load error: '+error.message); prodData=[]; renderProductionPlan(); return; }
+  if(error){
+    document.getElementById('prod-loading').style.display='none';
+    document.getElementById('prod-empty').style.display='block';
+    document.getElementById('prod-empty').innerHTML=`
+      <div style="color:#C0392B;font-size:22px;margin-bottom:16px;">⚠ Database Error</div>
+      <div style="font-size:14px;color:var(--ink-mid);max-width:480px;margin:0 auto;line-height:1.7;">
+        <strong>${error.message}</strong><br><br>
+        If you see <em>"relation production_plan does not exist"</em>, you need to create the table in Supabase.<br><br>
+        Go to <strong>Supabase → SQL Editor</strong> and run the setup SQL shared by your admin.
+      </div>`;
+    prodData=[];
+    return;
+  }
   prodData=data||[];
   renderProductionPlan();
 }
@@ -2711,7 +2723,7 @@ async function clearAllProdData(){
   if(error){ toast('Error: '+error.message); return; }
   prodData=[];
   toast('All production plan data cleared.');
-  loadProductionData();
+  await loadProductionData();
 }
 
 // ── WH Stock Upload (RptStockOnHand.xlsx) ────────────────────────
@@ -2835,7 +2847,7 @@ function triggerProdUpload(){
     panel.style.display = 'block';
     if(btn) btn.textContent = '↓ Close';
   }
-  panel.scrollIntoView({behavior:'smooth', block:'start'});
+  if(panel) panel.scrollIntoView({behavior:'smooth', block:'start'});
   // Pre-fill week date to this Monday
   const wd = document.getElementById('p-week-date');
   if(wd && !wd.value){
