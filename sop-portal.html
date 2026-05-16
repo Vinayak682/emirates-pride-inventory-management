@@ -3383,7 +3383,7 @@ async function loadIntelligenceData(){
   // Pull all needed data in parallel
   const [r1,r2,r3,r4]=await Promise.all([
     sb.from('sales_history').select('sku_code,store_code,month_year,qty_sold').limit(20000),
-    sb.from('wh_stock_on_hand').select('sku_code,item_name,qty,division,snapshot_date').order('qty',{ascending:false}).limit(2000),
+    sb.from('wh_stock_on_hand').select('sku_code,item_name,item_spec_name,qty,division,snapshot_date').order('qty',{ascending:false}).limit(2000),
     sb.from('wh_transfers').select('sku_code,item_name,to_location_code,qty_transferred,transfer_date,division').limit(5000),
     sb.from('production_history').select('sku_code,product_name,planned_fg_qty,actual_fg_qty,plan_date,record_status,week_label').limit(2000),
   ]);
@@ -3472,8 +3472,21 @@ function getWhQty(){
 }
 
 function getItemName(sku){
-  const r=intelWhSoh.find(x=>x.sku_code===sku)||intelProdHistory.find(x=>x.sku_code===sku);
-  return r?.item_name||r?.product_name||sku||'—';
+  // Try WH SOH item_name first
+  const wh=intelWhSoh.find(x=>x.sku_code===sku);
+  if(wh?.item_name) return wh.item_name;
+  // Extract name from item_spec_name: "SKU - Product Name" → "Product Name"
+  if(wh?.item_spec_name){
+    const m=wh.item_spec_name.match(/^[A-Z0-9\-_\.]+\s*[-–]\s*(.+)$/);
+    if(m) return m[1].trim();
+  }
+  // Try production history
+  const ph=intelProdHistory.find(x=>x.sku_code===sku);
+  if(ph?.product_name) return ph.product_name;
+  // Try any WH transfer record
+  const tr=intelTransfers.find(x=>x.sku_code===sku);
+  if(tr?.item_name) return tr.item_name;
+  return sku;
 }
 
 function coverBadgeIntel(wks){
