@@ -2040,12 +2040,11 @@ async function loadProductionData(){
     document.getElementById('prod-week-subtitle').textContent='All uploaded weeks';
   }
 
-  const all=getProdPlan();
-  const filtered=sel==='all'
-    ? all
-    : all.filter(r=>r.week_start>=fromStr && r.week_start<=toStr);
-  filtered.sort((a,b)=>(a.plan_day_order||0)-(b.plan_day_order||0));
-  prodData=filtered;
+  let query=sb.from('production_plan').select('*').order('plan_day_order',{ascending:true});
+  if(sel!=='all'){ query=query.gte('week_start',fromStr).lte('week_start',toStr); }
+  const {data,error}=await query;
+  if(error){ toast('Load error: '+error.message); prodData=[]; renderProductionPlan(); return; }
+  prodData=data||[];
   renderProductionPlan();
 }
 
@@ -2299,11 +2298,8 @@ function renderCoverageAnalysis(){
 
 // ── Mark run complete ─────────────────────────────────────────────
 async function markProdDone(id){
-  const all=getProdPlan();
-  const idx=all.findIndex(r=>r.id===id);
-  if(idx===-1){ toast('Record not found'); return; }
-  all[idx].status='Completed';
-  saveProdPlan(all);
+  const {error}=await sb.from('production_plan').update({status:'Completed'}).eq('id',id);
+  if(error){ toast('Error: '+error.message); return; }
   toast('Marked as Completed');
   await loadProductionData();
 }
@@ -2652,10 +2648,12 @@ async function confirmProdUpload(){
     week_label: pickedLabel||r.week_label||fallbackLabel,
   }));
 
-  // Remove existing rows for these weeks, then append new ones
+  // Delete existing rows for these weeks, then insert fresh
   const weeksInUpload=[...new Set(records.map(r=>r.week_start))];
-  const kept=getProdPlan().filter(r=>!weeksInUpload.includes(r.week_start));
-  saveProdPlan(kept.concat(records));
+  const {error:delErr}=await sb.from('production_plan').delete().in('week_start',weeksInUpload);
+  if(delErr){ toast('Delete error: '+delErr.message); return; }
+  const {error:insErr}=await sb.from('production_plan').insert(records);
+  if(insErr){ toast('Save error: '+insErr.message); return; }
 
   toast(`✓ ${records.length} production records saved across ${weeksInUpload.length} week(s)`);
   cancelProdUpload();
@@ -2670,9 +2668,10 @@ function cancelProdUpload(){
   document.getElementById('prod-file').value='';
 }
 
-function clearAllProdData(){
-  if(!confirm('This will delete ALL stored production plan data from this browser. Are you sure?')) return;
-  localStorage.removeItem(PROD_PLAN_KEY);
+async function clearAllProdData(){
+  if(!confirm('This will delete ALL production plan data from Supabase for everyone. Are you sure?')) return;
+  const {error}=await sb.from('production_plan').delete().neq('id','__never__');
+  if(error){ toast('Error: '+error.message); return; }
   prodData=[];
   toast('All production plan data cleared.');
   loadProductionData();
@@ -2814,7 +2813,7 @@ function triggerProdUpload(){
 function checkNavDotOnLoad(){
   const mon=isoDate(getWeekMonday(new Date()));
   const sun=isoDate(addDays(getWeekMonday(new Date()),6));
-  const count=getProdPlan().filter(r=>r.week_start>=mon&&r.week_start<=sun).length;
+  const {count}=await sb.from('production_plan').select('id',{count:'exact',head:true}).gte('week_start',mon).lte('week_start',sun);
   const dot=document.getElementById('prod-nav-dot');
   if(dot) dot.style.display=count>0?'none':'inline-block';
 }
