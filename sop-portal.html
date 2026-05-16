@@ -2250,7 +2250,6 @@ function renderProdSchedule(rows){
 
 function getDayDate(day,rows){
   const r=rows.find(x=>(x.plan_day||'').toLowerCase()===day.toLowerCase());
-  if(r&&r.plan_date) return fmtDate(r.plan_date);
   if(r&&r.week_start){
     const ord=DAY_ORDER[day.toLowerCase()]??0;
     return fmtDate(addDays(r.week_start,ord));
@@ -2691,8 +2690,11 @@ async function confirmProdUpload(){
   const records=prodBuffer.map(r=>{
     const rec={...r};
     delete rec.id; // Let Supabase auto-generate the id (bigint serial)
-    rec.week_start = pickedWeek||r.week_start||fallbackWeek;
+    const ws=pickedWeek||r.week_start||fallbackWeek;
+    rec.week_start = ws;
     rec.week_label = pickedLabel||r.week_label||fallbackLabel;
+    // If user picked a week, recompute plan_date so day headers show correct dates
+    if(pickedWeek) rec.plan_date=addDaysISO(ws, rec.plan_day_order||0);
     return rec;
   });
 
