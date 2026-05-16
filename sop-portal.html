@@ -1238,6 +1238,24 @@ let invUploadBuffer = null;
 function doLogin() {
   const pwd = document.getElementById('loginPwd').value;
   const err = document.getElementById('loginErr');
+  const btn = document.querySelector('.login-btn');
+
+  // Libraries still loading — show message and auto-retry once ready
+  if (!window.supabase) {
+    err.textContent = 'Loading resources… please wait.';
+    err.style.display = 'block';
+    if (btn) btn.textContent = 'Loading…';
+    const interval = setInterval(() => {
+      if (window.supabase) {
+        clearInterval(interval);
+        err.style.display = 'none';
+        if (btn) btn.textContent = 'Enter Command Centre →';
+        if (pwd === SOP_PASS) doLogin();
+      }
+    }, 200);
+    return;
+  }
+
   if (pwd === SOP_PASS) {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
@@ -1252,6 +1270,20 @@ function doLogin() {
   }
 }
 document.getElementById('loginPwd').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+// Show ready state on button once Supabase is available
+(function waitReady(){
+  const btn = document.querySelector('.login-btn');
+  if (!btn) return;
+  if (!window.supabase) {
+    btn.textContent = 'Loading…';
+    btn.style.opacity = '0.6';
+    setTimeout(waitReady, 200);
+  } else {
+    btn.textContent = 'Enter Command Centre →';
+    btn.style.opacity = '1';
+  }
+})();
 
 function doLogout() {
   document.getElementById('loginPwd').value = '';
