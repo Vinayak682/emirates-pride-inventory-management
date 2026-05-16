@@ -2688,14 +2688,13 @@ async function confirmProdUpload(){
   const pickedLabel=document.getElementById('p-week-label').value;
   const fallbackWeek=pickedWeek||isoDate(getWeekMonday(new Date()));
   const fallbackLabel=pickedLabel||`Week of ${fallbackWeek}`;
-  const ts=Date.now();
-  const records=prodBuffer.map((r,i)=>({
-    ...r,
-    id: r.id||`local_${ts}_${i}`,
-    // If user explicitly picked a week date, it overrides whatever the parser found
-    week_start: pickedWeek||r.week_start||fallbackWeek,
-    week_label: pickedLabel||r.week_label||fallbackLabel,
-  }));
+  const records=prodBuffer.map(r=>{
+    const rec={...r};
+    delete rec.id; // Let Supabase auto-generate the id (bigint serial)
+    rec.week_start = pickedWeek||r.week_start||fallbackWeek;
+    rec.week_label = pickedLabel||r.week_label||fallbackLabel;
+    return rec;
+  });
 
   // Delete existing rows for these weeks, then insert fresh
   const weeksInUpload=[...new Set(records.map(r=>r.week_start))];
