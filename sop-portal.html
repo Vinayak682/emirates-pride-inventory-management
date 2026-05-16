@@ -334,6 +334,43 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
   .stat-num{font-size:28px;}
   .login-card{padding:32px 24px 28px;}
 }
+
+/* ══ PRODUCTION TAB ══ */
+.prod-day-header{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 18px;
+  background:var(--cream-mid);border-top:2px solid var(--gold);
+  margin-top:16px;
+  font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--gold-dark);
+}
+.prod-day-date{font-weight:400;color:var(--ink-light);letter-spacing:0.06em;font-size:10px;}
+.prod-day-total{margin-left:auto;font-size:10px;font-weight:600;color:var(--ink-mid);}
+.prod-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;letter-spacing:0.04em;
+  padding:2px 8px;border-radius:2px;white-space:nowrap;
+}
+.prod-badge-red   {background:#FFE0E0;color:#CC0000;}
+.prod-badge-amber {background:#FFF0D0;color:#884400;}
+.prod-badge-green {background:#E2EFDA;color:#00703C;}
+.prod-badge-na    {background:var(--cream-mid);color:var(--ink-light);}
+.prod-status-chip{
+  display:inline-block;padding:2px 9px;border-radius:2px;
+  font-size:10px;font-weight:700;letter-spacing:0.06em;
+}
+.ps-planned   {background:#EAF3FF;color:#1F497D;}
+.ps-completed {background:#E2EFDA;color:#00703C;}
+.ps-cancelled {background:#F5F5F5;color:#888888;}
+.ps-inprog    {background:#FFF0D0;color:#884400;}
+.prod-mark-btn{
+  background:none;border:1px solid var(--border);border-radius:2px;
+  padding:3px 9px;font-size:10px;cursor:pointer;color:var(--ink-mid);
+  font-family:'Montserrat',sans-serif;letter-spacing:0.04em;
+  transition:all 0.15s;
+}
+.prod-mark-btn:hover{background:var(--gold);color:#fff;border-color:var(--gold);}
+.prod-panel{background:var(--cream);border-bottom:1px solid var(--border);padding:24px;}
 </style>
 </head>
 <body>
@@ -448,7 +485,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <div class="topbar-divider"></div>
       <div>
         <div class="topbar-portal-name">S&OP Command Centre</div>
-        <div style="font-size:9px;color:var(--ink-light);letter-spacing:0.1em;text-transform:uppercase;font-weight:600;margin-top:1px;">Sales · Inventory · Testers</div>
+        <div style="font-size:9px;color:var(--ink-light);letter-spacing:0.1em;text-transform:uppercase;font-weight:600;margin-top:1px;">Sales · Inventory · Production · Testers</div>
       </div>
     </div>
     <div class="topbar-actions">
@@ -471,6 +508,10 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
     <div class="nav-tab" data-tab="testers" onclick="switchTab('testers')">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4m0-6h10m0 0h4a2 2 0 0 0 2-2v-4m-6 6v4a2 2 0 0 0 2 2h4"/></svg>
       Testers
+    </div>
+    <div class="nav-tab" data-tab="production" onclick="switchTab('production')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      Production
     </div>
   </div>
 
@@ -824,6 +865,177 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
     </div>
     <div style="height:40px;"></div>
   </div>
+
+  <!-- ══════════════════ TAB: PRODUCTION ══════════════════ -->
+  <div id="tab-production" class="tab-panel">
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <select class="sel" id="p-week-sel" onchange="loadProductionData()">
+        <option value="current">This Week</option>
+        <option value="next">Next Week</option>
+        <option value="prev">Previous Week</option>
+        <option value="all">All Weeks</option>
+      </select>
+      <select class="sel" id="p-status-filter" onchange="renderProductionPlan()">
+        <option value="ALL">All Status</option>
+        <option value="Planned">Planned</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+      <button class="filter-btn-ghost" id="p-upload-btn" onclick="toggleProdPanel('prod-upload-panel','p-upload-btn','↑ Upload Plan','↓ Close')">↑ Upload Plan</button>
+      <button class="filter-btn-ghost" id="p-wh-btn" onclick="toggleProdPanel('prod-wh-panel','p-wh-btn','⬡ WH Stock','↓ Close WH')" style="margin-left:auto;">⬡ WH Stock</button>
+    </div>
+
+    <!-- ── Upload Production Plan Panel ── -->
+    <div id="prod-upload-panel" class="prod-panel" style="display:none;">
+      <div style="display:grid;grid-template-columns:200px 1fr 1fr;gap:20px;margin-bottom:20px;align-items:end;">
+        <div>
+          <div class="login-label" style="margin-bottom:6px;">Week Start (Monday)</div>
+          <input type="date" class="inp" id="p-week-date" style="width:100%;">
+        </div>
+        <div>
+          <div class="login-label" style="margin-bottom:6px;">Week Label</div>
+          <input type="text" class="inp" id="p-week-label" placeholder="e.g. Week 21 — 19 May 2026" style="width:100%;">
+        </div>
+        <div style="font-size:11px;color:var(--ink-light);line-height:1.6;padding-bottom:2px;">
+          Upload the <strong>"Weekly plan"</strong> sheet from your production Excel.<br>
+          Columns detected automatically: Item Code · Product · FG · Tester · Day.
+        </div>
+      </div>
+      <div class="upload-zone" id="prod-drop-zone" onclick="document.getElementById('prod-file').click()">
+        <input type="file" id="prod-file" accept=".xlsx,.xls" style="display:none;" onchange="handleProdFile(this)">
+        <div class="upload-zone-icon" style="font-size:32px;margin-bottom:10px;">⚙</div>
+        <div class="upload-zone-text">Drop Production Plan Excel here, or click to browse</div>
+        <div class="upload-zone-sub">Reads "Weekly plan" sheet automatically · .xlsx / .xls</div>
+      </div>
+      <div id="prod-preview" style="display:none;margin-top:20px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:12px;" id="prod-preview-title"></div>
+        <div class="tbl-wrap" style="border:1px solid var(--border);max-height:280px;overflow-y:auto;">
+          <table><thead><tr>
+            <th>Day</th><th>SKU Code</th><th>Product Name</th>
+            <th style="text-align:right;">FG Planned</th>
+            <th style="text-align:right;">Testers</th>
+            <th style="text-align:right;">Bel Box</th>
+            <th>Remarks</th>
+          </tr></thead>
+          <tbody id="prod-preview-tbody"></tbody></table>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:16px;">
+          <button class="filter-btn" onclick="confirmProdUpload()">✓ Save to Supabase</button>
+          <button class="filter-btn-ghost" onclick="cancelProdUpload()">✕ Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WH Stock Update Panel ── -->
+    <div id="prod-wh-panel" class="prod-panel" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:12px;">Upload RptStockOnHand.xlsx</div>
+          <div class="upload-zone" id="wh-drop-zone" onclick="document.getElementById('wh-file').click()" style="padding:20px 16px;">
+            <input type="file" id="wh-file" accept=".xlsx,.xls" style="display:none;" onchange="handleWhFile(this)">
+            <div class="upload-zone-icon" style="font-size:22px;margin-bottom:8px;">📦</div>
+            <div class="upload-zone-text" style="font-size:12px;">Drop RptStockOnHand.xlsx here</div>
+            <div class="upload-zone-sub">Reads "Good Stock" rows automatically</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:12px;">Current WH Stock Status</div>
+          <div id="wh-status-box">
+            <div style="font-size:12px;color:var(--ink-light);padding:8px 0;" id="wh-last-updated">No WH stock uploaded yet</div>
+          </div>
+          <div id="wh-stock-summary" style="font-size:11px;color:var(--ink-mid);margin-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="kpi-grid" style="border-bottom:1px solid var(--border);">
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpi-p-fg">—</div>
+        <div class="kpi-lbl">Total FG Planned</div>
+        <div style="font-size:9px;color:var(--ink-light);margin-top:2px;letter-spacing:0.04em;">units this week</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpi-p-tester" style="color:#7048E8;">—</div>
+        <div class="kpi-lbl">Testers Planned</div>
+        <div style="font-size:9px;color:var(--ink-light);margin-top:2px;letter-spacing:0.04em;">units this week</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpi-p-skus" style="color:var(--gold-dark);">—</div>
+        <div class="kpi-lbl">SKUs in Production</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpi-p-done" style="color:#0B7A45;">—</div>
+        <div class="kpi-lbl">Completed Runs</div>
+        <div style="font-size:9px;color:var(--ink-light);margin-top:2px;letter-spacing:0.04em;" id="kpi-p-done-pct"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpi-p-gaps" style="color:#CC0000;">—</div>
+        <div class="kpi-lbl">Critical WH Gaps</div>
+        <div style="font-size:9px;color:var(--ink-light);margin-top:2px;letter-spacing:0.04em;">SKUs &lt;4wk cover, no prod.</div>
+      </div>
+    </div>
+
+    <!-- Schedule Header -->
+    <div style="padding:20px 24px 4px;">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--ink);" id="prod-week-title">This Week's Production Schedule</div>
+          <div style="font-size:11px;color:var(--ink-light);margin-top:3px;letter-spacing:0.06em;" id="prod-week-subtitle">Select a week and upload a plan to get started</div>
+        </div>
+        <div id="prod-wh-badge" style="font-size:10px;color:var(--ink-light);text-align:right;"></div>
+      </div>
+    </div>
+
+    <!-- Day-by-Day Schedule -->
+    <div style="padding:0 24px 8px;">
+      <div style="text-align:center;padding:60px;" id="prod-loading">
+        <div class="spinner" style="margin:0 auto 16px;"></div>
+        <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-light);">Loading production data…</div>
+      </div>
+      <div id="prod-schedule-body" style="display:none;"></div>
+      <div id="prod-empty" style="display:none;text-align:center;padding:60px 24px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--ink-light);margin-bottom:8px;">No production plan for this week</div>
+        <div style="font-size:12px;color:var(--ink-light);">Use <strong>↑ Upload Plan</strong> above to push this week's schedule from your Excel</div>
+      </div>
+    </div>
+
+    <!-- WH Coverage Analysis -->
+    <div class="orn-divider"><div class="orn-line"></div><div class="orn-diamond"></div><div class="orn-line"></div></div>
+    <div style="padding:0 24px 40px;">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;">WH Coverage Analysis</div>
+          <div style="font-size:11px;color:var(--ink-light);margin-top:3px;">Active SKUs ranked by WH cover — linked to this week's production plan</div>
+        </div>
+        <button class="filter-btn-ghost" onclick="renderCoverageAnalysis()" style="font-size:10px;padding:7px 14px;">↺ Refresh</button>
+      </div>
+      <div class="tbl-wrap" style="border:1px solid var(--border);">
+        <table>
+          <thead><tr>
+            <th>SKU</th>
+            <th>Product Name</th>
+            <th style="text-align:right;">WH Stock</th>
+            <th style="text-align:right;">Weekly Rate</th>
+            <th>WH Cover Now</th>
+            <th style="text-align:right;">FG This Week</th>
+            <th>Cover After Prod.</th>
+            <th>In This Week's Plan</th>
+            <th>Alert</th>
+          </tr></thead>
+          <tbody id="prod-coverage-tbody">
+            <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--ink-light);">
+              Upload WH stock and production plan to see coverage analysis
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /tab-production -->
 
 </div><!-- /app -->
 <div id="toast"></div>
@@ -1629,7 +1841,8 @@ function switchTab(id){
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   document.querySelector(`[data-tab="${id}"]`).classList.add('active');
-  if(id==='testers') loadTesterData();
+  if(id==='testers')    loadTesterData();
+  if(id==='production') loadProductionTab();
 }
 
 function populateStoreDropdowns(){
@@ -1690,6 +1903,563 @@ dz.addEventListener('drop',e=>{
 });
 
 refreshInvHistory();
-</script>
+
+// ══════════════════════════════════════════════════════════════════
+// PRODUCTION TAB
+// ══════════════════════════════════════════════════════════════════
+let prodData       = [];          // rows from production_plan table
+let prodBuffer     = [];          // parsed rows awaiting confirm
+let prodRatesLoaded= false;
+let prodWeeklyRates= {};          // {sku_code: weekly_rate_per_week}
+let whStock        = JSON.parse(localStorage.getItem('ep_wh_stock_v1')||'{}');
+// whStock: {sku_code: {qty, name, updated}}
+
+const DAY_ORDER = {monday:0,tuesday:1,wednesday:2,thursday:3,friday:4,saturday:5,sunday:6};
+const DAY_LABELS= ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+// ── Date helpers ──────────────────────────────────────────────────
+function getWeekMonday(d){
+  const dt=new Date(d); const day=dt.getDay(); // 0=Sun
+  const diff=dt.getDate()-(day===0?6:day-1);
+  return new Date(dt.setDate(diff));
+}
+function fmtDate(d){
+  if(!d) return '';
+  const dt=new Date(d);
+  return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+function addDays(d,n){ const dt=new Date(d); dt.setDate(dt.getDate()+n); return dt; }
+function isoDate(d){ return new Date(d).toISOString().slice(0,10); }
+
+function getWeekRange(sel){
+  const today=new Date();
+  const mon=getWeekMonday(today);
+  if(sel==='current') return {from:mon, to:addDays(mon,6)};
+  if(sel==='next')    return {from:addDays(mon,7), to:addDays(mon,13)};
+  if(sel==='prev')    return {from:addDays(mon,-7), to:addDays(mon,-1)};
+  return {from:new Date('2026-01-01'), to:new Date('2027-12-31')};
+}
+
+// ── Load production tab ──────────────────────────────────────────
+async function loadProductionTab(){
+  refreshWhBadge();
+  await loadProductionData();
+  if(!prodRatesLoaded) await loadWeeklyRates();
+}
+
+async function loadProductionData(){
+  document.getElementById('prod-loading').style.display='block';
+  document.getElementById('prod-schedule-body').style.display='none';
+  document.getElementById('prod-empty').style.display='none';
+
+  const sel=document.getElementById('p-week-sel').value;
+  const {from,to}=getWeekRange(sel);
+  const fromStr=isoDate(from), toStr=isoDate(to);
+
+  // Update header title
+  if(sel==='current'||sel==='next'||sel==='prev'){
+    const mon=sel==='current'?from:sel==='next'?from:from;
+    document.getElementById('prod-week-title').textContent=
+      sel==='current'?'This Week\'s Production Schedule':
+      sel==='next'?'Next Week — Upcoming Plan':'Previous Week — History';
+    document.getElementById('prod-week-subtitle').textContent=
+      `${fmtDate(from)}  –  ${fmtDate(to)}`;
+  } else {
+    document.getElementById('prod-week-title').textContent='Full Production History';
+    document.getElementById('prod-week-subtitle').textContent='All uploaded weeks';
+  }
+
+  const {data,error}=await sb.from('production_plan')
+    .select('*')
+    .gte('week_start',fromStr)
+    .lte('week_start',toStr)
+    .order('plan_day_order',{ascending:true});
+
+  if(error){ toast('Error loading production data'); console.error(error); return; }
+  prodData=data||[];
+  renderProductionPlan();
+}
+
+async function loadWeeklyRates(){
+  // Fetch last 3 months of EPP sales, compute weekly rate per SKU
+  const {data}=await sb.from('sales_history')
+    .select('sku_code,qty_sold,month_year')
+    .gte('month_year','2026-02')
+    .lte('month_year','2026-04');
+  const totals={};
+  (data||[]).forEach(r=>{
+    if(!totals[r.sku_code]) totals[r.sku_code]=0;
+    totals[r.sku_code]+=r.qty_sold;
+  });
+  prodWeeklyRates={};
+  Object.entries(totals).forEach(([sku,tot])=>{
+    prodWeeklyRates[sku]=Math.max(1,Math.ceil(tot/3/4.33));
+  });
+  prodRatesLoaded=true;
+  renderCoverageAnalysis();
+}
+
+// ── Render the full plan ─────────────────────────────────────────
+function renderProductionPlan(){
+  const statusF=(document.getElementById('p-status-filter')||{}).value||'ALL';
+  let rows=prodData;
+  if(statusF!=='ALL') rows=rows.filter(r=>r.status===statusF);
+
+  document.getElementById('prod-loading').style.display='none';
+
+  if(!rows.length){
+    document.getElementById('prod-empty').style.display='block';
+    document.getElementById('prod-schedule-body').style.display='none';
+    renderProdKPIs([]);
+    renderCoverageAnalysis();
+    return;
+  }
+  document.getElementById('prod-empty').style.display='none';
+  document.getElementById('prod-schedule-body').style.display='block';
+
+  renderProdKPIs(rows);
+  renderProdSchedule(rows);
+  renderCoverageAnalysis();
+}
+
+// ── KPI cards ────────────────────────────────────────────────────
+function renderProdKPIs(rows){
+  const totalFG    =rows.reduce((s,r)=>s+(r.planned_fg||0),0);
+  const totalTest  =rows.reduce((s,r)=>s+(r.planned_tester||0),0);
+  const uniqueSkus =new Set(rows.map(r=>r.sku_code||r.product_name)).size;
+  const done       =rows.filter(r=>r.status==='Completed').length;
+  const total      =rows.length;
+  const donePct    =total?Math.round(done/total*100):0;
+
+  // Critical gaps = SKUs with weekly rate > 0, WH cover < 4wk, NOT in this week's plan
+  const plannedSkus=new Set(prodData.map(r=>r.sku_code).filter(Boolean));
+  let gaps=0;
+  Object.entries(prodWeeklyRates).forEach(([sku,rate])=>{
+    if(!rate) return;
+    const wh=(whStock[sku]||{}).qty||0;
+    const cover=wh/rate;
+    if(cover<4 && !plannedSkus.has(sku)) gaps++;
+  });
+
+  document.getElementById('kpi-p-fg').textContent    =totalFG.toLocaleString();
+  document.getElementById('kpi-p-tester').textContent=totalTest.toLocaleString();
+  document.getElementById('kpi-p-skus').textContent  =uniqueSkus;
+  document.getElementById('kpi-p-done').textContent  =done;
+  document.getElementById('kpi-p-done-pct').textContent=total?`${donePct}% of ${total} runs`:'';
+  document.getElementById('kpi-p-gaps').textContent  =gaps||'—';
+}
+
+// ── Day-grouped schedule table ────────────────────────────────────
+function renderProdSchedule(rows){
+  // Group by day
+  const byDay={};
+  rows.forEach(r=>{
+    const d=(r.plan_day||'Unknown').trim();
+    if(!byDay[d]) byDay[d]=[];
+    byDay[d].push(r);
+  });
+
+  // Sort days
+  const sortedDays=Object.keys(byDay).sort((a,b)=>{
+    const ao=DAY_ORDER[a.toLowerCase()]??99;
+    const bo=DAY_ORDER[b.toLowerCase()]??99;
+    return ao-bo;
+  });
+
+  let html='';
+  sortedDays.forEach(day=>{
+    const dayRows=byDay[day];
+    const dayFG  =dayRows.reduce((s,r)=>s+(r.planned_fg||0),0);
+    const dayTest=dayRows.reduce((s,r)=>s+(r.planned_tester||0),0);
+
+    html+=`<div class="prod-day-header">
+      <span>${day.toUpperCase()}</span>
+      <span class="prod-day-date">${getDayDate(day,rows)}</span>
+      <span class="prod-day-total">FG: ${dayFG.toLocaleString()} &nbsp;·&nbsp; Testers: ${dayTest.toLocaleString()}</span>
+    </div>
+    <div class="tbl-wrap" style="border:1px solid var(--border);border-top:none;margin-bottom:0;">
+    <table style="font-size:12px;">
+      <thead><tr>
+        <th>SKU Code</th>
+        <th>Product Name</th>
+        <th style="text-align:right;">FG Planned</th>
+        <th style="text-align:right;">Testers</th>
+        <th style="text-align:right;">Bel Box</th>
+        <th style="text-align:right;">WH Stock</th>
+        <th style="text-align:right;">Weekly Rate</th>
+        <th>WH Cover Now</th>
+        <th>Cover After Prod.</th>
+        <th>Status</th>
+        <th>Remarks</th>
+        <th></th>
+      </tr></thead>
+      <tbody>`;
+
+    dayRows.forEach(r=>{
+      const sku   =r.sku_code||'';
+      const wh    =(whStock[sku]||{}).qty;
+      const rate  =prodWeeklyRates[sku]||0;
+      const whNum =wh!=null?wh:null;
+      const coverNow =whNum!=null&&rate>0?+(whNum/rate).toFixed(1):null;
+      const coverAfter=whNum!=null&&rate>0?+((whNum+(r.planned_fg||0))/rate).toFixed(1):null;
+      const stripe=r.status==='Completed'?'background:#F8FFF8':
+                   r.status==='Cancelled'?'background:#F8F8F8;opacity:0.7':'';
+
+      html+=`<tr style="${stripe}">
+        <td style="font-family:'Courier New',monospace;font-size:11px;">${sku||'<span style="color:var(--ink-light)">—</span>'}</td>
+        <td style="font-weight:500;">${r.product_name||''}</td>
+        <td style="text-align:right;font-weight:700;color:var(--ink);">${(r.planned_fg||0).toLocaleString()}</td>
+        <td style="text-align:right;color:#7048E8;">${(r.planned_tester||0).toLocaleString()}</td>
+        <td style="text-align:right;">${(r.planned_bel_box||0)||'—'}</td>
+        <td style="text-align:right;">${whNum!=null?whNum.toLocaleString():'<span style="color:var(--ink-light);font-size:10px;">upload WH</span>'}</td>
+        <td style="text-align:right;">${rate||'<span style="color:var(--ink-light)">—</span>'}</td>
+        <td>${coverBadge(coverNow)}</td>
+        <td>${coverBadge(coverAfter,true)}</td>
+        <td><span class="prod-status-chip ${statusClass(r.status)}">${r.status||'Planned'}</span></td>
+        <td style="font-size:11px;color:var(--ink-light);max-width:160px;">${r.remarks||''}</td>
+        <td>${r.status!=='Completed'&&r.status!=='Cancelled'?
+          `<button class="prod-mark-btn" onclick="markProdDone(${r.id})">✓ Done</button>`:''}
+        </td>
+      </tr>`;
+    });
+
+    html+=`</tbody></table></div>`;
+  });
+
+  document.getElementById('prod-schedule-body').innerHTML=html;
+}
+
+function getDayDate(day,rows){
+  const r=rows.find(x=>(x.plan_day||'').toLowerCase()===day.toLowerCase());
+  if(r&&r.plan_date) return fmtDate(r.plan_date);
+  if(r&&r.week_start){
+    const ord=DAY_ORDER[day.toLowerCase()]??0;
+    return fmtDate(addDays(r.week_start,ord));
+  }
+  return '';
+}
+
+function coverBadge(weeks,isAfter=false){
+  if(weeks===null||weeks===undefined)
+    return '<span style="font-size:10px;color:var(--ink-light);">—</span>';
+  const w=Math.round(weeks);
+  const cls=w<4?'prod-badge-red':w<8?'prod-badge-amber':'prod-badge-green';
+  const arrow=isAfter?'':'';
+  return `<span class="prod-badge ${cls}">${w}w</span>`;
+}
+
+function statusClass(s){
+  if(s==='Completed')   return 'ps-completed';
+  if(s==='Cancelled')   return 'ps-cancelled';
+  if(s==='In Progress') return 'ps-inprog';
+  return 'ps-planned';
+}
+
+// ── Coverage Analysis ─────────────────────────────────────────────
+function renderCoverageAnalysis(){
+  const tbody=document.getElementById('prod-coverage-tbody');
+  if(!tbody) return;
+
+  const hasWH=Object.keys(whStock).length>0;
+  const hasRates=Object.keys(prodWeeklyRates).length>0;
+  if(!hasWH&&!hasRates){
+    tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--ink-light);">
+      Upload WH stock (⬡ WH Stock button) to activate coverage analysis</td></tr>`;
+    return;
+  }
+
+  // Build coverage rows from all SKUs with either WH stock or a sales rate
+  const skuSet=new Set([...Object.keys(whStock),...Object.keys(prodWeeklyRates)]);
+  const plannedThisWeek={};
+  prodData.forEach(r=>{ if(r.sku_code) plannedThisWeek[r.sku_code]=(plannedThisWeek[r.sku_code]||0)+(r.planned_fg||0); });
+
+  const coverRows=[];
+  skuSet.forEach(sku=>{
+    const wh=(whStock[sku]||{}).qty;
+    const rate=prodWeeklyRates[sku]||0;
+    if(!rate&&(!wh||wh===0)) return; // skip inactive
+    const coverNow   =wh!=null&&rate>0?wh/rate:null;
+    const thisFG     =plannedThisWeek[sku]||0;
+    const coverAfter =wh!=null&&rate>0?(wh+thisFG)/rate:null;
+    const name=(whStock[sku]||{}).name||SKU_NAMES[sku]||sku;
+    coverRows.push({sku,name,wh,rate,coverNow,thisFG,coverAfter});
+  });
+
+  // Sort: critical first (lowest cover), then by cover
+  coverRows.sort((a,b)=>{
+    const ac=a.coverNow??999, bc=b.coverNow??999;
+    return ac-bc;
+  });
+
+  if(!coverRows.length){
+    tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--ink-light);">No data available</td></tr>`;
+    return;
+  }
+
+  let html='';
+  coverRows.forEach(r=>{
+    // Only show rows with some relevance: WH cover < 12 weeks, or in this week's plan
+    if(r.coverNow!==null && r.coverNow>12 && !r.thisFG) return;
+
+    const inPlan  =r.thisFG>0;
+    const alert   =r.coverNow===null?'':
+                   r.coverNow<4?'<span class="prod-badge prod-badge-red">CRITICAL</span>':
+                   r.coverNow<8?'<span class="prod-badge prod-badge-amber">LOW</span>':
+                   r.coverNow<12?'<span class="prod-badge prod-badge-green">WATCH</span>':'';
+    const planBadge=inPlan
+      ?`<span class="prod-badge prod-badge-green">✓ ${r.thisFG.toLocaleString()} FG</span>`
+      :`<span class="prod-badge prod-badge-na">Not scheduled</span>`;
+    const stripe=r.coverNow<4?'background:#FFF8F8':r.coverNow<8?'background:#FFFBF0':'';
+
+    html+=`<tr style="${stripe}">
+      <td style="font-family:'Courier New',monospace;font-size:11px;">${r.sku}</td>
+      <td style="font-weight:500;">${r.name}</td>
+      <td style="text-align:right;">${r.wh!=null?r.wh.toLocaleString():'<span style="color:var(--ink-light)">—</span>'}</td>
+      <td style="text-align:right;">${r.rate||'—'}</td>
+      <td>${coverBadge(r.coverNow)}</td>
+      <td style="text-align:right;font-weight:600;">${r.thisFG||'—'}</td>
+      <td>${coverBadge(r.coverAfter,true)}</td>
+      <td>${planBadge}</td>
+      <td>${alert}</td>
+    </tr>`;
+  });
+  tbody.innerHTML=html||`<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--ink-light);">All active SKUs have adequate WH cover (>12 weeks)</td></tr>`;
+}
+
+// ── Mark run complete ─────────────────────────────────────────────
+async function markProdDone(id){
+  const {error}=await sb.from('production_plan')
+    .update({status:'Completed'})
+    .eq('id',id);
+  if(error){ toast('Update failed'); return; }
+  toast('Marked as Completed');
+  await loadProductionData();
+}
+
+// ── Excel Upload — Production Plan ───────────────────────────────
+function handleProdFile(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const wb=XLSX.read(e.target.result,{type:'array'});
+    // Prefer "Weekly plan" sheet, fallback to first sheet
+    const sheetName=wb.SheetNames.find(n=>/weekly\s*plan/i.test(n))||wb.SheetNames[0];
+    const ws=wb.Sheets[sheetName];
+    const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+    prodBuffer=parseProdRows(raw);
+    showProdPreview();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseProdRows(raw){
+  if(!raw||!raw.length) return [];
+  // Find header row (contains "product" or "FG")
+  let hdrIdx=0;
+  for(let i=0;i<Math.min(5,raw.length);i++){
+    const r=(raw[i]||[]).map(v=>String(v||'').toLowerCase());
+    if(r.some(v=>v.includes('product')||v.includes('fg'))){hdrIdx=i;break;}
+  }
+  const hdr=(raw[hdrIdx]||[]).map(v=>String(v||'').toLowerCase().trim());
+
+  // Map columns
+  const col={
+    sku   : hdr.findIndex(h=>h.includes('item')||h.includes('code')),
+    prod  : hdr.findIndex(h=>h.includes('product')),
+    fg    : hdr.findIndex(h=>h==='fg'||h.includes('fg')),
+    belbox: hdr.findIndex(h=>h.includes('bel')||h.includes('gift')||h.includes('paper')),
+    tester: hdr.findIndex(h=>h.includes('tester')),
+    remark: hdr.findIndex(h=>h.includes('remark')),
+    day   : hdr.findIndex(h=>h.includes('day')),
+  };
+
+  const rows=[];
+  for(let i=hdrIdx+1;i<raw.length;i++){
+    const r=raw[i]; if(!r) continue;
+    const prodName=r[col.prod];
+    if(!prodName||typeof prodName!=='string') continue;
+    if(/total|^null$/i.test(String(prodName).trim())) continue;
+    const fg   =parseInt(r[col.fg])||0;
+    const test =parseInt(r[col.tester])||0;
+    const belb =parseInt(r[col.belbox])||0;
+    if(fg===0&&test===0&&belb===0) continue; // skip rows with no quantities
+
+    const day=String(r[col.day]||'').trim()||'Monday';
+    rows.push({
+      sku_code      : col.sku>=0&&r[col.sku]?String(r[col.sku]).trim():null,
+      product_name  : String(prodName).trim(),
+      planned_fg    : fg,
+      planned_bel_box: belb,
+      planned_tester: test,
+      plan_day      : day,
+      plan_day_order: DAY_ORDER[day.toLowerCase()]??0,
+      remarks       : col.remark>=0&&r[col.remark]?String(r[col.remark]).trim():'',
+    });
+  }
+  return rows;
+}
+
+function showProdPreview(){
+  if(!prodBuffer.length){ toast('No rows parsed — check file format'); return; }
+  const tbody=document.getElementById('prod-preview-tbody');
+  tbody.innerHTML=prodBuffer.map(r=>`<tr>
+    <td>${r.plan_day}</td>
+    <td style="font-family:'Courier New',monospace;font-size:11px;">${r.sku_code||'—'}</td>
+    <td>${r.product_name}</td>
+    <td style="text-align:right;font-weight:600;">${r.planned_fg.toLocaleString()}</td>
+    <td style="text-align:right;">${r.planned_tester||'—'}</td>
+    <td style="text-align:right;">${r.planned_bel_box||'—'}</td>
+    <td style="font-size:11px;color:var(--ink-light);">${r.remarks||''}</td>
+  </tr>`).join('');
+  document.getElementById('prod-preview-title').textContent=`${prodBuffer.length} production runs parsed — review and confirm`;
+  document.getElementById('prod-preview').style.display='block';
+  // Auto-fill week date to Monday of current week if empty
+  const wd=document.getElementById('p-week-date');
+  if(!wd.value) wd.value=isoDate(getWeekMonday(new Date()));
+  const wl=document.getElementById('p-week-label');
+  if(!wl.value){
+    const mon=getWeekMonday(new Date());
+    const wn=getISOWeek(mon);
+    wl.value=`Week ${wn} — ${fmtDate(mon)}`;
+  }
+}
+
+function getISOWeek(d){
+  const dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  dt.setUTCDate(dt.getUTCDate()+4-(dt.getUTCDay()||7));
+  const yearStart=new Date(Date.UTC(dt.getUTCFullYear(),0,1));
+  return Math.ceil((((dt-yearStart)/86400000)+1)/7);
+}
+
+async function confirmProdUpload(){
+  if(!prodBuffer.length) return;
+  const weekStart=document.getElementById('p-week-date').value;
+  const weekLabel=document.getElementById('p-week-label').value;
+  if(!weekStart){ toast('Please set a week start date'); return; }
+
+  const records=prodBuffer.map(r=>({
+    ...r,
+    week_start: weekStart,
+    week_label: weekLabel||`Week of ${weekStart}`,
+    status    : 'Planned',
+    plan_date : isoDate(addDays(weekStart, r.plan_day_order)),
+  }));
+
+  // Delete existing rows for this week first (full replace)
+  await sb.from('production_plan').delete().eq('week_start',weekStart);
+
+  const BATCH=200;
+  for(let i=0;i<records.length;i+=BATCH){
+    const {error}=await sb.from('production_plan').insert(records.slice(i,i+BATCH));
+    if(error){ toast('Upload failed: '+error.message); return; }
+  }
+
+  toast(`✓ ${records.length} production runs saved`);
+  cancelProdUpload();
+  toggleProdPanel('prod-upload-panel','p-upload-btn','↑ Upload Plan','↓ Close');
+  await loadProductionData();
+}
+
+function cancelProdUpload(){
+  prodBuffer=[];
+  document.getElementById('prod-preview').style.display='none';
+  document.getElementById('prod-file').value='';
+}
+
+// ── WH Stock Upload (RptStockOnHand.xlsx) ────────────────────────
+function handleWhFile(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const wb=XLSX.read(e.target.result,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+    const parsed={};
+    raw.forEach(row=>{
+      if(!row||row.length<11) return;
+      const spec=row[3], statusCol=row[8], qtyCol=row[10];
+      if(!spec||!statusCol) return;
+      if(String(statusCol).trim()!=='Good Stock') return;
+      if(qtyCol===null||qtyCol===undefined||qtyCol==='') return;
+      const specStr=String(spec).trim();
+      const sku=specStr.split(' - ')[0].trim();
+      if(!sku) return;
+      const name=row[7]?String(row[7]).trim():'';
+      const qty=parseInt(parseFloat(String(qtyCol)))||0;
+      if(!parsed[sku]) parsed[sku]={qty:0,name};
+      parsed[sku].qty+=qty;
+    });
+    const count=Object.keys(parsed).length;
+    if(!count){ toast('No "Good Stock" rows found — check file'); return; }
+    // Save with timestamp
+    const now=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    Object.entries(parsed).forEach(([sku,v])=>{ parsed[sku].updated=now; });
+    whStock=parsed;
+    localStorage.setItem('ep_wh_stock_v1',JSON.stringify(whStock));
+    toast(`✓ WH stock updated — ${count} SKUs loaded`);
+    refreshWhBadge();
+    renderCoverageAnalysis();
+    renderProductionPlan();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function refreshWhBadge(){
+  const badge=document.getElementById('prod-wh-badge');
+  const status=document.getElementById('wh-last-updated');
+  const summary=document.getElementById('wh-stock-summary');
+  const count=Object.keys(whStock).length;
+  if(!count){
+    if(badge)  badge.innerHTML='';
+    if(status) status.textContent='No WH stock uploaded yet';
+    return;
+  }
+  const sample=Object.values(whStock)[0];
+  const updText=sample?.updated||'';
+  if(badge)  badge.innerHTML=`<span class="prod-badge prod-badge-green">WH: ${count} SKUs · ${updText}</span>`;
+  if(status) status.innerHTML=`<span style="color:#0B7A45;font-weight:600;">✓ ${count} SKUs loaded</span> · Last updated: ${updText}`;
+  if(summary){
+    const totalUnits=Object.values(whStock).reduce((s,v)=>s+(v.qty||0),0);
+    summary.textContent=`Total WH units on hand: ${totalUnits.toLocaleString()}`;
+  }
+}
+
+// ── Panel toggle ─────────────────────────────────────────────────
+function toggleProdPanel(panelId,btnId,openLabel,closeLabel){
+  const panel=document.getElementById(panelId);
+  const btn=document.getElementById(btnId);
+  const isOpen=panel.style.display!=='none';
+  panel.style.display=isOpen?'none':'block';
+  if(btn) btn.textContent=isOpen?openLabel:closeLabel;
+}
+
+// ── Drag & drop for production upload ───────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  const pdz=document.getElementById('prod-drop-zone');
+  const wdz=document.getElementById('wh-drop-zone');
+  if(pdz){
+    pdz.addEventListener('dragover',e=>{e.preventDefault();pdz.classList.add('drag');});
+    pdz.addEventListener('dragleave',()=>pdz.classList.remove('drag'));
+    pdz.addEventListener('drop',e=>{
+      e.preventDefault();pdz.classList.remove('drag');
+      const f=e.dataTransfer.files[0]; if(!f) return;
+      const dt=new DataTransfer(); dt.items.add(f);
+      document.getElementById('prod-file').files=dt.files;
+      handleProdFile(document.getElementById('prod-file'));
+    });
+  }
+  if(wdz){
+    wdz.addEventListener('dragover',e=>{e.preventDefault();wdz.classList.add('drag');});
+    wdz.addEventListener('dragleave',()=>wdz.classList.remove('drag'));
+    wdz.addEventListener('drop',e=>{
+      e.preventDefault();wdz.classList.remove('drag');
+      const f=e.dataTransfer.files[0]; if(!f) return;
+      const dt=new DataTransfer(); dt.items.add(f);
+      document.getElementById('wh-file').files=dt.files;
+      handleWhFile(document.getElementById('wh-file'));
+    });
+  }
+});
+
 </body>
 </html>
