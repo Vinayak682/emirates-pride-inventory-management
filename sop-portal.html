@@ -567,6 +567,14 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
       Production<span id="prod-nav-dot" class="nav-alert-dot" style="display:none;"></span>
     </div>
+    <div class="nav-tab" data-tab="warehouse" onclick="switchTab('warehouse')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Warehouse
+    </div>
+    <div class="nav-tab" data-tab="intelligence" onclick="switchTab('intelligence')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      Intelligence<span id="intel-nav-dot" class="nav-alert-dot" style="display:none;"></span>
+    </div>
   </div>
 
   <!-- ══════════════════ TAB: SALES ══════════════════ -->
@@ -1105,6 +1113,114 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
     </div>
 
   </div><!-- /tab-production -->
+
+  <!-- ══════════════════ TAB: WAREHOUSE ══════════════════ -->
+  <div id="tab-warehouse" class="tab-panel">
+    <div class="filter-bar">
+      <select class="sel" id="wh-division-sel" onchange="loadWarehouseData()">
+        <option value="ALL">All Divisions</option>
+        <option value="EPP">EPP UAE</option>
+        <option value="ASL">ASL UAE</option>
+        <option value="Oman">Oman</option>
+      </select>
+      <select class="sel" id="wh-view-sel" onchange="renderWarehouseView()">
+        <option value="soh">Stock on Hand</option>
+        <option value="transfers">Transfer History</option>
+      </select>
+      <button class="btn-outline" onclick="togglePanel('wh-upload-panel','wh-upload-btn','↑ Upload Report','↓ Close')" id="wh-upload-btn">↑ Upload Report</button>
+    </div>
+
+    <!-- Upload Panel -->
+    <div id="wh-upload-panel" style="display:none;background:var(--cream);border-bottom:1px solid var(--border);padding:20px 28px;">
+      <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
+        <div>
+          <label style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-light);display:block;margin-bottom:6px;">Division</label>
+          <select class="sel" id="wh-up-div">
+            <option value="EPP">EPP UAE</option>
+            <option value="ASL">ASL UAE</option>
+            <option value="Oman">Oman</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-light);display:block;margin-bottom:6px;">Report Type</label>
+          <select class="sel" id="wh-up-type">
+            <option value="soh">Stock on Hand (RptStockOnHand)</option>
+            <option value="transfer">Transfers (RptItemWiseStockTransfer)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-light);display:block;margin-bottom:6px;">Snapshot Date</label>
+          <input type="date" class="sel" id="wh-up-date" style="padding:7px 12px;">
+        </div>
+        <div>
+          <label style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-light);display:block;margin-bottom:6px;">File</label>
+          <input type="file" id="wh-up-file" accept=".xlsx,.xls,.csv" style="font-size:12px;" onchange="previewWhFile(this)">
+        </div>
+        <button class="btn-primary" onclick="confirmWhUpload()" id="wh-upload-confirm-btn" style="display:none;">Upload to Supabase</button>
+      </div>
+      <div id="wh-preview-info" style="margin-top:12px;font-size:12px;color:var(--ink-mid);"></div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="kpi-row" id="wh-kpi-row" style="padding:16px 24px;display:flex;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border);">
+      <div class="kpi-card"><div class="kpi-val" id="wh-kpi-skus">—</div><div class="kpi-label">Total SKUs</div></div>
+      <div class="kpi-card"><div class="kpi-val" id="wh-kpi-units">—</div><div class="kpi-label">Total Units in WH</div></div>
+      <div class="kpi-card"><div class="kpi-val" id="wh-kpi-zero" style="color:#C0392B;">—</div><div class="kpi-label">Zero Stock SKUs</div></div>
+      <div class="kpi-card"><div class="kpi-val" id="wh-kpi-snapshot">—</div><div class="kpi-label">Snapshot Date</div></div>
+      <div class="kpi-card"><div class="kpi-val" id="wh-kpi-trf-count">—</div><div class="kpi-label">Transfers (Jan–Now)</div></div>
+      <div class="kpi-card"><div class="kpi-val" id="wh-kpi-trf-skus">—</div><div class="kpi-label">SKUs Replenished</div></div>
+    </div>
+
+    <!-- Main content area -->
+    <div style="padding:20px 24px;">
+      <div id="wh-loading" style="text-align:center;padding:60px;color:var(--ink-light);">Loading warehouse data…</div>
+      <div id="wh-empty" style="display:none;text-align:center;padding:60px;color:var(--ink-light);">
+        <div style="font-size:22px;margin-bottom:8px;">No warehouse data uploaded yet</div>
+        <div style="font-size:13px;">Use ↑ Upload Report to add EPP or ASL stock data</div>
+      </div>
+      <div id="wh-content" style="display:none;"></div>
+    </div>
+  </div><!-- /tab-warehouse -->
+
+  <!-- ══════════════════ TAB: INTELLIGENCE ══════════════════ -->
+  <div id="tab-intelligence" class="tab-panel">
+    <div class="filter-bar">
+      <select class="sel" id="intel-div-sel" onchange="loadIntelligenceData()">
+        <option value="ALL">All Divisions</option>
+        <option value="EPP">EPP UAE</option>
+        <option value="ASL">ASL UAE</option>
+      </select>
+      <select class="sel" id="intel-view-sel" onchange="renderIntelView()">
+        <option value="coverage">SKU Coverage by Store</option>
+        <option value="fastmovers">Fast Movers</option>
+        <option value="slowmovers">Slow Movers / Dead Stock</option>
+        <option value="replenishment">Replenishment Patterns</option>
+        <option value="production">Production Delivery Tracker</option>
+      </select>
+    </div>
+
+    <!-- Alert Summary Bar -->
+    <div id="intel-alert-bar" style="display:none;background:#FFF3CD;border-bottom:2px solid #FFC107;padding:12px 24px;font-size:12px;display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+      <span style="font-weight:700;letter-spacing:0.05em;">⚡ DEMAND ALERTS</span>
+      <span id="intel-alert-lowcover" style="color:#C0392B;font-weight:600;"></span>
+      <span id="intel-alert-deadstock" style="color:#7F6000;"></span>
+      <span id="intel-alert-notransfer" style="color:#555;"></span>
+    </div>
+
+    <!-- KPI Row -->
+    <div style="padding:16px 24px;display:flex;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border);">
+      <div class="kpi-card"><div class="kpi-val" id="intel-kpi-active-skus">—</div><div class="kpi-label">Active SKUs (sold)</div></div>
+      <div class="kpi-card"><div class="kpi-val" id="intel-kpi-fast" style="color:#27AE60;">—</div><div class="kpi-label">Fast Movers (>50/wk)</div></div>
+      <div class="kpi-card"><div class="kpi-val" id="intel-kpi-slow" style="color:#E67E22;">—</div><div class="kpi-label">Slow Movers (<5/wk)</div></div>
+      <div class="kpi-card"><div class="kpi-val" id="intel-kpi-dead" style="color:#C0392B;">—</div><div class="kpi-label">No WH Movement 8wk+</div></div>
+      <div class="kpi-card"><div class="kpi-val" id="intel-kpi-lowcover">—</div><div class="kpi-label">SKUs &lt;2wk WH Cover</div></div>
+    </div>
+
+    <div style="padding:20px 24px;">
+      <div id="intel-loading" style="text-align:center;padding:60px;color:var(--ink-light);">Loading intelligence data…</div>
+      <div id="intel-content" style="display:none;"></div>
+    </div>
+  </div><!-- /tab-intelligence -->
 
 </div><!-- /app -->
 <div id="toast"></div>
@@ -1948,9 +2064,20 @@ function switchTab(id){
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   document.querySelector(`[data-tab="${id}"]`).classList.add('active');
-  if(id==='sales'      && !salesLoaded) loadSalesData();
-  if(id==='testers')    loadTesterData();
-  if(id==='production') loadProductionTab();
+  if(id==='sales'       && !salesLoaded) loadSalesData();
+  if(id==='testers')     loadTesterData();
+  if(id==='production')  loadProductionTab();
+  if(id==='warehouse')   loadWarehouseTab();
+  if(id==='intelligence') loadIntelligenceTab();
+}
+
+function togglePanel(panelId,btnId,openLabel,closeLabel){
+  const p=document.getElementById(panelId);
+  const b=document.getElementById(btnId);
+  if(!p) return;
+  const isOpen=p.style.display!=='none';
+  p.style.display=isOpen?'none':'block';
+  if(b) b.textContent=isOpen?openLabel:closeLabel;
 }
 
 function populateStoreDropdowns(){
@@ -2204,16 +2331,14 @@ function renderProdSchedule(rows){
       <thead><tr>
         <th>SKU Code</th>
         <th>Product Name</th>
-        <th style="text-align:right;">FG Planned</th>
+        <th style="text-align:right;">FG Delivery</th>
         <th style="text-align:right;">Testers</th>
         <th style="text-align:right;">Bel Box</th>
         <th style="text-align:right;">WH Stock</th>
         <th style="text-align:right;">Weekly Rate</th>
         <th>WH Cover Now</th>
-        <th>Cover After Prod.</th>
-        <th>Status</th>
+        <th>Cover After Delivery</th>
         <th>Remarks</th>
-        <th></th>
       </tr></thead>
       <tbody>`;
 
@@ -2224,24 +2349,17 @@ function renderProdSchedule(rows){
       const whNum =wh!=null?wh:null;
       const coverNow =whNum!=null&&rate>0?+(whNum/rate).toFixed(1):null;
       const coverAfter=whNum!=null&&rate>0?+((whNum+(r.planned_fg||0))/rate).toFixed(1):null;
-      const stripe=r.status==='Completed'?'background:#F8FFF8':
-                   r.status==='Cancelled'?'background:#F8F8F8;opacity:0.7':'';
-
-      html+=`<tr style="${stripe}">
+      html+=`<tr>
         <td style="font-family:'Courier New',monospace;font-size:11px;">${sku||'<span style="color:var(--ink-light)">—</span>'}</td>
         <td style="font-weight:500;">${r.product_name||''}</td>
         <td style="text-align:right;font-weight:700;color:var(--ink);">${(r.planned_fg||0).toLocaleString()}</td>
         <td style="text-align:right;color:#7048E8;">${(r.planned_tester||0).toLocaleString()}</td>
         <td style="text-align:right;">${(r.planned_bel_box||0)||'—'}</td>
-        <td style="text-align:right;">${whNum!=null?whNum.toLocaleString():'<span style="color:var(--ink-light);font-size:10px;">upload WH</span>'}</td>
+        <td style="text-align:right;">${whNum!=null?whNum.toLocaleString():'<span style="color:var(--ink-light);font-size:10px;">—</span>'}</td>
         <td style="text-align:right;">${rate||'<span style="color:var(--ink-light)">—</span>'}</td>
         <td>${coverBadge(coverNow)}</td>
         <td>${coverBadge(coverAfter,true)}</td>
-        <td><span class="prod-status-chip ${statusClass(r.status)}">${r.status||'Planned'}</span></td>
-        <td style="font-size:11px;color:var(--ink-light);max-width:160px;">${r.remarks||''}</td>
-        <td>${r.status!=='Completed'&&r.status!=='Cancelled'?
-          `<button class="prod-mark-btn" onclick="markProdDone(${r.id})">✓ Done</button>`:''}
-        </td>
+        <td style="font-size:11px;color:var(--ink-light);max-width:180px;">${r.remarks||''}</td>
       </tr>`;
     });
 
@@ -2974,6 +3092,578 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   }
 });
+
+// ══════════════════════════════════════════════════════════════════
+// WAREHOUSE TAB
+// ══════════════════════════════════════════════════════════════════
+let whSohData=[], whTrfData=[], whLoaded=false;
+
+async function loadWarehouseTab(){
+  if(!whLoaded){ await loadWarehouseData(); }
+  else renderWarehouseView();
+}
+
+async function loadWarehouseData(){
+  const div=document.getElementById('wh-division-sel').value;
+  document.getElementById('wh-loading').style.display='block';
+  document.getElementById('wh-content').style.display='none';
+  document.getElementById('wh-empty').style.display='none';
+
+  // Set today as default snapshot date
+  const dateEl=document.getElementById('wh-up-date');
+  if(dateEl&&!dateEl.value) dateEl.value=isoDate(new Date());
+
+  let sohQ=sb.from('wh_stock_on_hand').select('*').order('qty',{ascending:false}).limit(2000);
+  let trfQ=sb.from('wh_transfers').select('*').order('transfer_date',{ascending:false}).limit(5000);
+  if(div!=='ALL'){ sohQ=sohQ.eq('division',div); trfQ=trfQ.eq('division',div); }
+
+  const [{data:soh,error:e1},{data:trf,error:e2}]=await Promise.all([sohQ,trfQ]);
+  if(e1||e2){
+    document.getElementById('wh-loading').style.display='none';
+    document.getElementById('wh-empty').style.display='block';
+    document.getElementById('wh-empty').innerHTML=`<div style="color:#C0392B;font-size:18px;margin-bottom:8px;">⚠ No warehouse data yet</div><div style="font-size:13px;">Run the SQL in Supabase to create tables, then use ↑ Upload Report to add data</div>`;
+    return;
+  }
+  whSohData=soh||[]; whTrfData=trf||[]; whLoaded=true;
+  document.getElementById('wh-loading').style.display='none';
+  renderWarehouseKPIs(); renderWarehouseView();
+}
+
+function renderWarehouseKPIs(){
+  const totalSkus=new Set(whSohData.map(r=>r.sku_code).filter(Boolean)).size;
+  const totalUnits=whSohData.reduce((s,r)=>s+(r.qty||0),0);
+  const zeroStock=whSohData.filter(r=>(r.qty||0)===0).length;
+  const snapDate=whSohData.length?whSohData[0].snapshot_date:'—';
+  const trfCount=whTrfData.length;
+  const trfSkus=new Set(whTrfData.map(r=>r.sku_code).filter(Boolean)).size;
+  document.getElementById('wh-kpi-skus').textContent=totalSkus.toLocaleString();
+  document.getElementById('wh-kpi-units').textContent=Math.round(totalUnits).toLocaleString();
+  document.getElementById('wh-kpi-zero').textContent=zeroStock;
+  document.getElementById('wh-kpi-snapshot').textContent=snapDate||'—';
+  document.getElementById('wh-kpi-trf-count').textContent=trfCount.toLocaleString();
+  document.getElementById('wh-kpi-trf-skus').textContent=trfSkus.toLocaleString();
+}
+
+function renderWarehouseView(){
+  const view=document.getElementById('wh-view-sel').value;
+  if(!whLoaded){ loadWarehouseData(); return; }
+  const cont=document.getElementById('wh-content');
+  cont.style.display='block';
+  document.getElementById('wh-empty').style.display='none';
+  if(view==='soh') cont.innerHTML=renderSOHTable();
+  else cont.innerHTML=renderTransferTable();
+}
+
+function renderSOHTable(){
+  if(!whSohData.length) return `<div style="color:var(--ink-light);padding:40px;text-align:center;">No Stock on Hand data. Upload EPP or ASL SOH report.</div>`;
+
+  // Group by division
+  const byDiv={};
+  whSohData.forEach(r=>{ const d=r.division||'?'; if(!byDiv[d]) byDiv[d]=[]; byDiv[d].push(r); });
+
+  let html='';
+  Object.entries(byDiv).forEach(([div,rows])=>{
+    const totalUnits=rows.reduce((s,r)=>s+(r.qty||0),0);
+    const snapshot=rows[0]?.snapshot_date||'';
+    html+=`<div style="margin-bottom:32px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div>
+          <span style="font-weight:700;font-size:16px;letter-spacing:0.05em;">${div}</span>
+          <span style="margin-left:12px;font-size:12px;color:var(--ink-light);">Snapshot: ${snapshot} &nbsp;·&nbsp; ${rows.length} SKUs &nbsp;·&nbsp; ${Math.round(totalUnits).toLocaleString()} units</span>
+        </div>
+      </div>
+      <div class="tbl-wrap" style="border:1px solid var(--border);">
+      <table style="font-size:12px;">
+        <thead><tr>
+          <th>SKU Code</th><th>Item Name</th><th>Stock Type</th>
+          <th style="text-align:right;">Qty on Hand</th>
+          <th style="text-align:right;">Stock Status</th>
+        </tr></thead><tbody>`;
+    rows.forEach(r=>{
+      const qty=r.qty||0;
+      const badge=qty===0?`<span style="background:#FDECEA;color:#C0392B;border-radius:4px;padding:2px 8px;font-size:10px;">ZERO</span>`:
+                  qty<50?`<span style="background:#FFF3CD;color:#856404;border-radius:4px;padding:2px 8px;font-size:10px;">LOW</span>`:
+                  `<span style="background:#D4EDDA;color:#155724;border-radius:4px;padding:2px 8px;font-size:10px;">OK</span>`;
+      html+=`<tr>
+        <td style="font-family:'Courier New',monospace;font-size:11px;">${r.sku_code||'—'}</td>
+        <td style="font-weight:500;">${r.item_name||r.item_spec_name||'—'}</td>
+        <td style="font-size:11px;color:var(--ink-light);">${r.stock_type||'—'}</td>
+        <td style="text-align:right;font-weight:700;">${qty.toLocaleString()}</td>
+        <td style="text-align:right;">${badge}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  });
+  return html;
+}
+
+function renderTransferTable(){
+  if(!whTrfData.length) return `<div style="color:var(--ink-light);padding:40px;text-align:center;">No transfer data. Upload EPP or ASL transfer report.</div>`;
+
+  // Top 10 stores by qty received
+  const byStore={};
+  whTrfData.forEach(r=>{
+    const k=r.to_location_code||r.to_location_name||'?';
+    if(!byStore[k]){byStore[k]={name:r.to_location_name||k,qty:0,txns:0,skus:new Set()};}
+    byStore[k].qty+=(r.qty_transferred||0);
+    byStore[k].txns++;
+    if(r.sku_code) byStore[k].skus.add(r.sku_code);
+  });
+  const topStores=Object.entries(byStore).sort((a,b)=>b[1].qty-a[1].qty).slice(0,20);
+
+  let html=`<div style="margin-bottom:32px;">
+    <div style="font-weight:700;font-size:15px;margin-bottom:12px;letter-spacing:0.05em;">REPLENISHMENT BY STORE — Jan to Apr 2026</div>
+    <div class="tbl-wrap" style="border:1px solid var(--border);">
+    <table style="font-size:12px;">
+      <thead><tr>
+        <th>Store Code</th><th>Store Name</th>
+        <th style="text-align:right;">Total Units Received</th>
+        <th style="text-align:right;">Transactions</th>
+        <th style="text-align:right;">Unique SKUs</th>
+        <th>Avg per Txn</th>
+      </tr></thead><tbody>`;
+  topStores.forEach(([code,s])=>{
+    const avg=s.txns?Math.round(s.qty/s.txns):0;
+    html+=`<tr>
+      <td style="font-family:'Courier New',monospace;font-size:11px;">${code}</td>
+      <td style="font-weight:500;max-width:200px;">${s.name.replace(/ - .*/,'')}</td>
+      <td style="text-align:right;font-weight:700;">${Math.round(s.qty).toLocaleString()}</td>
+      <td style="text-align:right;">${s.txns.toLocaleString()}</td>
+      <td style="text-align:right;">${s.skus.size}</td>
+      <td style="text-align:right;color:var(--ink-light);">${avg}</td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div></div>`;
+
+  // Recent 100 transfers detail
+  html+=`<div style="font-weight:700;font-size:15px;margin-bottom:12px;margin-top:24px;letter-spacing:0.05em;">RECENT TRANSFERS</div>
+  <div class="tbl-wrap" style="border:1px solid var(--border);">
+  <table style="font-size:12px;">
+    <thead><tr>
+      <th>Date</th><th>Doc No.</th><th>Division</th><th>SKU</th><th>Item</th>
+      <th>From</th><th>To</th>
+      <th style="text-align:right;">Qty</th><th>Status</th>
+    </tr></thead><tbody>`;
+  whTrfData.slice(0,200).forEach(r=>{
+    html+=`<tr>
+      <td style="white-space:nowrap;color:var(--ink-light);">${r.transfer_date||'—'}</td>
+      <td style="font-size:10px;">${r.doc_number||'—'}</td>
+      <td><span style="background:var(--cream);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:10px;">${r.division||'—'}</span></td>
+      <td style="font-family:'Courier New',monospace;font-size:11px;">${r.sku_code||'—'}</td>
+      <td style="font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.item_name||'—'}</td>
+      <td style="font-size:10px;color:var(--ink-light);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(r.from_location_name||'—').replace(/ - .*/,'')}</td>
+      <td style="font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(r.to_location_name||'—').replace(/ - .*/,'')}</td>
+      <td style="text-align:right;font-weight:700;">${(r.qty_transferred||0).toLocaleString()}</td>
+      <td><span style="background:${r.transfer_status==='Completed'?'#D4EDDA':'#FFF3CD'};color:${r.transfer_status==='Completed'?'#155724':'#856404'};border-radius:4px;padding:1px 6px;font-size:10px;">${r.transfer_status||'—'}</span></td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  return html;
+}
+
+// ── WH Upload (browser-side parse → Supabase) ────────────────────────────
+let whUploadBuffer=[];
+
+async function previewWhFile(input){
+  const file=input.files[0]; if(!file) return;
+  const type=document.getElementById('wh-up-type').value;
+  const div=document.getElementById('wh-up-div').value;
+  const info=document.getElementById('wh-preview-info');
+  const btn=document.getElementById('wh-upload-confirm-btn');
+  info.textContent='Parsing file…'; whUploadBuffer=[];
+
+  const buf=await file.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array',cellDates:true});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true});
+
+  if(type==='soh') whUploadBuffer=parseSOHRows(raw,div);
+  else whUploadBuffer=parseTransferRows(raw,div);
+
+  info.textContent=`✓ ${whUploadBuffer.length} records parsed from "${file.name}"`;
+  btn.style.display=whUploadBuffer.length?'inline-block':'none';
+}
+
+function parseSOHRows(raw,division){
+  const snapDate=document.getElementById('wh-up-date').value||isoDate(new Date());
+  let wh=''; let hdrFound=false; const out=[];
+  raw.forEach((row,i)=>{
+    if(i<10){ const v=String(row[6]||row[10]||''); if(v.toLowerCase().includes('warehouse')) wh=v.substring(0,120); }
+    const rv=row.map(v=>String(v||'').trim());
+    if(!hdrFound){ if(rv.includes('Qty')||rv.includes('Item Name')) { hdrFound=true; return; } return; }
+    const sl=row[1]; if(!sl||isNaN(Number(sl))) return;
+    const spec=String(row[3]||'').trim();
+    const iname=String(row[7]||'').trim();
+    const stype=String(row[8]||'').trim();
+    const qty=parseFloat(row[10])||0;
+    const cost=parseFloat(row[11])||0;
+    const amt=parseFloat(row[15])||0;
+    if(!spec&&!iname) return;
+    const m=spec.match(/^([A-Z0-9\-_\.]+)\s*[-–]/);
+    const sku=m?m[1].trim():null;
+    out.push({snapshot_date:snapDate,division,warehouse_name:wh||null,
+      sku_code:sku,item_spec_name:spec.substring(0,200)||null,
+      item_name:iname.substring(0,200)||null,stock_type:stype||null,
+      unit:String(row[9]||'').trim()||null,qty,cost_price:cost,amount:amt});
+  });
+  return out;
+}
+
+function parseTransferRows(raw,division){
+  let hdrFound=false; const out=[];
+  raw.forEach(row=>{
+    if(!row||row.length<20) return;
+    if(String(row[1]||'').trim()==='Date'&&String(row[2]||'').trim()==='No.'){hdrFound=true;return;}
+    if(!hdrFound) return;
+    const rawDate=row[1]; if(!rawDate) return;
+    let tDate=null;
+    if(rawDate instanceof Date) tDate=isoDate(rawDate);
+    else{ const m=String(rawDate).match(/(\d{2})-([A-Za-z]{3})-(\d{4})/);
+      if(m){ const months={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+        tDate=`${m[3]}-${String(months[m[2]]||0).padStart(2,'0')}-${m[1]}`; } }
+    if(!tDate) return;
+    const iname=String(row[18]||'').trim();
+    const mc=iname.match(/^([A-Z0-9\-_\.]+)\s*[-–]/);
+    const sku=mc?mc[1].trim():null;
+    const fromLoc=String(row[8]||'').trim();
+    const toLoc=String(row[11]||'').trim();
+    const mf=fromLoc.match(/^([A-Z0-9\-_]+)\s*[-–]/); const mt=toLoc.match(/^([A-Z0-9\-_]+)\s*[-–]/);
+    out.push({division,transfer_date:tDate,
+      doc_number:String(row[2]||'').trim().substring(0,50)||null,
+      doc_type:String(row[5]||'').trim().substring(0,100)||null,
+      from_location_code:mf?mf[1].trim():null, from_location_name:fromLoc.substring(0,150)||null,
+      to_location_code:mt?mt[1].trim():null, to_location_name:toLoc.substring(0,150)||null,
+      from_stock_type:String(row[14]||'').trim().substring(0,50)||null,
+      to_stock_type:String(row[15]||'').trim().substring(0,50)||null,
+      category:String(row[16]||'').trim().substring(0,100)||null,
+      brand:String(row[17]||'').trim().substring(0,100)||null,
+      sku_code:sku, item_name:iname.substring(0,200)||null,
+      unit:String(row[23]||'').trim().substring(0,20)||null,
+      qty_transferred:parseFloat(row[24])||0,
+      qty_received:parseFloat(row[25])||0,
+      transfer_status:String(row[26]||'').trim().substring(0,50)||null,
+      remarks:String(row[27]||'').trim().substring(0,300)||null});
+  });
+  return out;
+}
+
+async function confirmWhUpload(){
+  if(!whUploadBuffer.length){ toast('Nothing to upload'); return; }
+  const type=document.getElementById('wh-up-type').value;
+  const table=type==='soh'?'wh_stock_on_hand':'wh_transfers';
+  const btn=document.getElementById('wh-upload-confirm-btn');
+  btn.textContent='Uploading…'; btn.disabled=true;
+  let done=0;
+  for(let i=0;i<whUploadBuffer.length;i+=200){
+    const batch=whUploadBuffer.slice(i,i+200);
+    const {error}=await sb.from(table).insert(batch);
+    if(error){ toast('Upload error: '+error.message); break; }
+    done+=batch.length;
+  }
+  btn.textContent='Upload to Supabase'; btn.disabled=false;
+  toast(`✓ ${done} records uploaded to ${table}`);
+  whLoaded=false; await loadWarehouseData();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INTELLIGENCE TAB
+// ══════════════════════════════════════════════════════════════════
+let intelLoaded=false, intelSalesData=[], intelWhSoh=[], intelTransfers=[], intelProdHistory=[];
+
+async function loadIntelligenceTab(){
+  if(!intelLoaded) await loadIntelligenceData();
+  else renderIntelView();
+}
+
+async function loadIntelligenceData(){
+  document.getElementById('intel-loading').style.display='block';
+  document.getElementById('intel-content').style.display='none';
+  const div=document.getElementById('intel-div-sel').value;
+
+  // Pull all needed data in parallel
+  const [r1,r2,r3,r4]=await Promise.all([
+    sb.from('sales_history').select('sku_code,store_code,month_year,qty_sold').limit(20000),
+    sb.from('wh_stock_on_hand').select('sku_code,item_name,qty,division,snapshot_date').order('qty',{ascending:false}).limit(2000),
+    sb.from('wh_transfers').select('sku_code,item_name,to_location_code,qty_transferred,transfer_date,division').limit(5000),
+    sb.from('production_history').select('sku_code,product_name,planned_fg_qty,actual_fg_qty,plan_date,record_status,week_label').limit(2000),
+  ]);
+
+  intelSalesData =(r1.data||[]).filter(r=>div==='ALL'||r.store_code?.startsWith(div==='EPP'?'':'ASL'));
+  intelWhSoh     =(r2.data||[]).filter(r=>div==='ALL'||r.division===div);
+  intelTransfers =(r3.data||[]).filter(r=>div==='ALL'||r.division===div);
+  intelProdHistory=r4.data||[];
+  intelLoaded=true;
+
+  renderIntelKPIs();
+  document.getElementById('intel-loading').style.display='none';
+  document.getElementById('intel-content').style.display='block';
+  renderIntelView();
+}
+
+function renderIntelKPIs(){
+  // Sales velocity per SKU (monthly avg)
+  const skuSales={};
+  intelSalesData.forEach(r=>{ if(!skuSales[r.sku_code]) skuSales[r.sku_code]=0; skuSales[r.sku_code]+=(r.qty_sold||0); });
+  const months=new Set(intelSalesData.map(r=>r.month_year)).size||1;
+  const weeklyRate={};
+  Object.entries(skuSales).forEach(([k,v])=>weeklyRate[k]=+(v/months*12/52).toFixed(1));
+
+  const activeSkus=Object.keys(skuSales).filter(k=>skuSales[k]>0).length;
+  const fast=Object.values(weeklyRate).filter(v=>v>50).length;
+  const slow=Object.values(weeklyRate).filter(v=>v>0&&v<5).length;
+
+  // Dead stock: in WH, no transfers in last 8 weeks
+  const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-56);
+  const recentSkus=new Set(intelTransfers.filter(r=>new Date(r.transfer_date)>=cutoff).map(r=>r.sku_code));
+  const whSkus=new Set(intelWhSoh.filter(r=>r.qty>0).map(r=>r.sku_code));
+  const dead=[...whSkus].filter(s=>!recentSkus.has(s)).length;
+
+  // Low WH cover (< 2 weeks)
+  const sohBySkus={};
+  intelWhSoh.forEach(r=>{ if(r.sku_code) sohBySkus[r.sku_code]=(sohBySkus[r.sku_code]||0)+(r.qty||0); });
+  const lowCover=Object.entries(sohBySkus).filter(([k,v])=>weeklyRate[k]>0&&v/weeklyRate[k]<2).length;
+
+  document.getElementById('intel-kpi-active-skus').textContent=activeSkus.toLocaleString();
+  document.getElementById('intel-kpi-fast').textContent=fast;
+  document.getElementById('intel-kpi-slow').textContent=slow;
+  document.getElementById('intel-kpi-dead').textContent=dead;
+  document.getElementById('intel-kpi-lowcover').textContent=lowCover;
+
+  // Alert bar
+  const bar=document.getElementById('intel-alert-bar');
+  if(lowCover>0||dead>0){
+    bar.style.display='flex';
+    document.getElementById('intel-alert-lowcover').textContent=lowCover?`🔴 ${lowCover} SKUs under 2 weeks WH cover`:'';
+    document.getElementById('intel-alert-deadstock').textContent=dead?`🟡 ${dead} SKUs in WH with no store replenishment in 8+ weeks`:'';
+    document.getElementById('intel-nav-dot').style.display='inline-block';
+  }
+}
+
+function renderIntelView(){
+  const view=document.getElementById('intel-view-sel').value;
+  const cont=document.getElementById('intel-content');
+  if(!intelLoaded){ loadIntelligenceData(); return; }
+  if(view==='fastmovers')    cont.innerHTML=renderFastMovers();
+  else if(view==='slowmovers')  cont.innerHTML=renderSlowMovers();
+  else if(view==='replenishment') cont.innerHTML=renderReplenishment();
+  else if(view==='production') cont.innerHTML=renderProdTracker();
+  else cont.innerHTML=renderCoverageIntel();
+}
+
+function getWeeklyRates(){
+  const skuSales={}, skuMonths={};
+  intelSalesData.forEach(r=>{
+    if(!skuSales[r.sku_code]) { skuSales[r.sku_code]=0; skuMonths[r.sku_code]=new Set(); }
+    skuSales[r.sku_code]+=(r.qty_sold||0);
+    skuMonths[r.sku_code].add(r.month_year);
+  });
+  const rates={};
+  Object.keys(skuSales).forEach(k=>{
+    const m=skuMonths[k].size||1;
+    rates[k]=+(skuSales[k]/m*12/52).toFixed(1);
+  });
+  return rates;
+}
+
+function getWhQty(){
+  const soh={};
+  intelWhSoh.forEach(r=>{ if(r.sku_code) soh[r.sku_code]=(soh[r.sku_code]||0)+(r.qty||0); });
+  return soh;
+}
+
+function getItemName(sku){
+  const r=intelWhSoh.find(x=>x.sku_code===sku)||intelProdHistory.find(x=>x.sku_code===sku);
+  return r?.item_name||r?.product_name||sku||'—';
+}
+
+function coverBadgeIntel(wks){
+  if(wks===null||wks===undefined) return '<span style="color:var(--ink-light);font-size:10px;">—</span>';
+  const c=wks<2?'#FDECEA;color:#C0392B':wks<4?'#FFF3CD;color:#856404':'#D4EDDA;color:#155724';
+  return `<span style="background:${c};border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;">${wks.toFixed(1)} wks</span>`;
+}
+
+function renderFastMovers(){
+  const rates=getWeeklyRates();
+  const soh=getWhQty();
+  const sorted=Object.entries(rates).sort((a,b)=>b[1]-a[1]).slice(0,30);
+  let html=`<div style="font-weight:700;font-size:15px;margin-bottom:12px;letter-spacing:0.05em;">TOP 30 FAST MOVERS — by weekly sales velocity</div>
+  <div class="tbl-wrap" style="border:1px solid var(--border);">
+  <table style="font-size:12px;"><thead><tr>
+    <th>#</th><th>SKU</th><th>Product</th>
+    <th style="text-align:right;">Weekly Rate</th>
+    <th style="text-align:right;">WH Stock</th>
+    <th>WH Cover</th>
+    <th>Action</th>
+  </tr></thead><tbody>`;
+  sorted.forEach(([sku,rate],i)=>{
+    const whQty=soh[sku]||0;
+    const cover=rate>0?+(whQty/rate).toFixed(1):null;
+    const action=cover!==null&&cover<2?`<span style="background:#FDECEA;color:#C0392B;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">🔴 REPLENISH NOW</span>`:
+                 cover!==null&&cover<4?`<span style="background:#FFF3CD;color:#856404;border-radius:4px;padding:2px 8px;font-size:10px;">🟡 Plan Replenishment</span>`:
+                 `<span style="color:var(--ink-light);font-size:10px;">✓ OK</span>`;
+    html+=`<tr>
+      <td style="color:var(--ink-light);text-align:right;">${i+1}</td>
+      <td style="font-family:'Courier New',monospace;font-size:11px;">${sku}</td>
+      <td style="font-weight:500;">${getItemName(sku)}</td>
+      <td style="text-align:right;font-weight:700;color:var(--gold-dark);">${rate}</td>
+      <td style="text-align:right;">${whQty.toLocaleString()}</td>
+      <td>${coverBadgeIntel(cover)}</td>
+      <td>${action}</td>
+    </tr>`;
+  });
+  return html+`</tbody></table></div>`;
+}
+
+function renderSlowMovers(){
+  const rates=getWeeklyRates();
+  const soh=getWhQty();
+  const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-56);
+  const recentTrf=new Set(intelTransfers.filter(r=>new Date(r.transfer_date)>=cutoff).map(r=>r.sku_code));
+
+  const dead=Object.entries(soh).filter(([sku,qty])=>qty>0&&!recentTrf.has(sku))
+    .map(([sku,qty])=>({sku,qty,rate:rates[sku]||0,name:getItemName(sku)}))
+    .sort((a,b)=>b.qty-a.qty);
+
+  const slowSellers=Object.entries(rates).filter(([,r])=>r>0&&r<5)
+    .map(([sku,rate])=>({sku,rate,qty:soh[sku]||0,name:getItemName(sku)}))
+    .sort((a,b)=>a.rate-b.rate);
+
+  let html=`<div style="font-weight:700;font-size:15px;margin-bottom:12px;letter-spacing:0.05em;">DEAD STOCK — In WH, no store replenishment in 8+ weeks</div>`;
+  if(!dead.length) html+=`<div style="color:#155724;background:#D4EDDA;padding:16px 20px;border-radius:6px;margin-bottom:24px;">No dead stock detected — all WH items have been replenished recently.</div>`;
+  else {
+    html+=`<div style="background:#FFF3CD;border:1px solid #FFC107;padding:12px 16px;border-radius:6px;margin-bottom:12px;font-size:12px;">
+      ⚠ ${dead.length} SKUs have inventory in warehouse but NO replenishment to stores in the last 8 weeks. Review with Marketing team.</div>
+    <div class="tbl-wrap" style="border:1px solid var(--border);margin-bottom:32px;">
+    <table style="font-size:12px;"><thead><tr>
+      <th>SKU</th><th>Product</th><th style="text-align:right;">WH Qty</th><th style="text-align:right;">Weekly Sales</th><th>Months of Cover</th><th>Recommendation</th>
+    </tr></thead><tbody>`;
+    dead.forEach(r=>{
+      const months=r.rate>0?(r.qty/r.rate/4.33).toFixed(1):null;
+      html+=`<tr>
+        <td style="font-family:'Courier New',monospace;font-size:11px;">${r.sku}</td>
+        <td style="font-weight:500;">${r.name}</td>
+        <td style="text-align:right;font-weight:700;">${r.qty.toLocaleString()}</td>
+        <td style="text-align:right;">${r.rate||'<span style=color:var(--ink-light)>No sales</span>'}</td>
+        <td>${months?`<span style="background:#FDECEA;color:#C0392B;border-radius:4px;padding:2px 8px;font-size:10px;">${months} mo</span>`:'—'}</td>
+        <td style="font-size:11px;color:#856404;">${months&&parseFloat(months)>3?'Consider promotion / markdown':'Transfer to high-demand stores'}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+
+  html+=`<div style="font-weight:700;font-size:15px;margin-bottom:12px;letter-spacing:0.05em;">SLOW SELLERS — Under 5 units/week</div>
+  <div class="tbl-wrap" style="border:1px solid var(--border);">
+  <table style="font-size:12px;"><thead><tr>
+    <th>SKU</th><th>Product</th><th style="text-align:right;">Weekly Rate</th><th style="text-align:right;">WH Stock</th><th>Months of Cover</th>
+  </tr></thead><tbody>`;
+  slowSellers.slice(0,25).forEach(r=>{
+    const months=r.rate>0?(r.qty/r.rate/4.33).toFixed(1):null;
+    html+=`<tr>
+      <td style="font-family:'Courier New',monospace;font-size:11px;">${r.sku}</td>
+      <td style="font-weight:500;">${r.name}</td>
+      <td style="text-align:right;color:var(--ink-light);">${r.rate}</td>
+      <td style="text-align:right;">${r.qty.toLocaleString()}</td>
+      <td>${months?`<span style="border-radius:4px;padding:2px 8px;font-size:10px;background:${parseFloat(months)>6?'#FDECEA':'#FFF3CD'};color:${parseFloat(months)>6?'#C0392B':'#856404'};">${months} mo</span>`:'—'}</td>
+    </tr>`;
+  });
+  return html+`</tbody></table></div>`;
+}
+
+function renderReplenishment(){
+  const byStore={};
+  intelTransfers.forEach(r=>{
+    const k=r.to_location_code||'?';
+    if(!byStore[k]){byStore[k]={skus:{},totalQty:0,txns:0};}
+    byStore[k].totalQty+=(r.qty_transferred||0);
+    byStore[k].txns++;
+    if(r.sku_code){ byStore[k].skus[r.sku_code]=(byStore[k].skus[r.sku_code]||0)+(r.qty_transferred||0); }
+  });
+
+  let html=`<div style="font-weight:700;font-size:15px;margin-bottom:12px;letter-spacing:0.05em;">REPLENISHMENT ANALYSIS — Store-level view</div>
+  <div class="tbl-wrap" style="border:1px solid var(--border);">
+  <table style="font-size:12px;"><thead><tr>
+    <th>Store Code</th><th style="text-align:right;">Total Units Received</th><th style="text-align:right;">Transactions</th>
+    <th style="text-align:right;">Unique SKUs</th><th>Top SKU Received</th>
+  </tr></thead><tbody>`;
+  Object.entries(byStore).sort((a,b)=>b[1].totalQty-a[1].totalQty).forEach(([code,s])=>{
+    const topSku=Object.entries(s.skus).sort((a,b)=>b[1]-a[1])[0];
+    html+=`<tr>
+      <td style="font-family:'Courier New',monospace;font-size:11px;">${code}</td>
+      <td style="text-align:right;font-weight:700;">${Math.round(s.totalQty).toLocaleString()}</td>
+      <td style="text-align:right;">${s.txns}</td>
+      <td style="text-align:right;">${Object.keys(s.skus).length}</td>
+      <td style="font-size:11px;">${topSku?`${topSku[0]} (${Math.round(topSku[1])} units)`:'—'}</td>
+    </tr>`;
+  });
+  return html+`</tbody></table></div>`;
+}
+
+function renderProdTracker(){
+  const rows=intelProdHistory.filter(r=>r.plan_date).sort((a,b)=>new Date(b.plan_date)-new Date(a.plan_date));
+  let html=`<div style="font-weight:700;font-size:15px;margin-bottom:12px;letter-spacing:0.05em;">PRODUCTION DELIVERY TRACKER — Planned vs Actual</div>
+  <div class="tbl-wrap" style="border:1px solid var(--border);">
+  <table style="font-size:12px;"><thead><tr>
+    <th>Week</th><th>Date</th><th>SKU</th><th>Product</th>
+    <th style="text-align:right;">Planned FG</th><th style="text-align:right;">Actual FG</th>
+    <th>Variance</th><th>Status</th>
+  </tr></thead><tbody>`;
+  rows.slice(0,100).forEach(r=>{
+    const var_=r.actual_fg_qty&&r.planned_fg_qty?(r.actual_fg_qty-r.planned_fg_qty):null;
+    const varHtml=var_===null?'—':var_>=0?
+      `<span style="color:#155724;font-size:11px;">+${var_.toLocaleString()}</span>`:
+      `<span style="color:#C0392B;font-size:11px;">${var_.toLocaleString()}</span>`;
+    const statusColors={completed:'#D4EDDA;color:#155724',cancelled:'#FDECEA;color:#C0392B',
+      not_produced:'#FFF3CD;color:#856404',rejected:'#FDECEA;color:#7B2020',planned:'#E9F0FB;color:#1A5276'};
+    const sc=statusColors[r.record_status]||'#F5F5F5;color:#555';
+    html+=`<tr>
+      <td style="font-size:11px;color:var(--ink-light);">${r.week_label||'—'}</td>
+      <td style="white-space:nowrap;font-size:11px;">${r.plan_date||'—'}</td>
+      <td style="font-family:'Courier New',monospace;font-size:11px;">${r.sku_code||'—'}</td>
+      <td style="font-weight:500;max-width:160px;">${r.product_name||'—'}</td>
+      <td style="text-align:right;">${(r.planned_fg_qty||0).toLocaleString()}</td>
+      <td style="text-align:right;font-weight:700;">${r.actual_fg_qty?r.actual_fg_qty.toLocaleString():'—'}</td>
+      <td style="text-align:right;">${varHtml}</td>
+      <td><span style="background:${sc};border-radius:4px;padding:2px 8px;font-size:10px;">${r.record_status||'—'}</span></td>
+    </tr>`;
+  });
+  return html+`</tbody></table></div>`;
+}
+
+function renderCoverageIntel(){
+  const rates=getWeeklyRates();
+  const soh=getWhQty();
+  // Build coverage table: top SKUs by risk (low cover + high velocity)
+  const coverage=Object.entries(rates).filter(([,r])=>r>0).map(([sku,rate])=>{
+    const whQty=soh[sku]||0;
+    const cover=+(whQty/rate).toFixed(1);
+    return {sku,rate,whQty,cover,name:getItemName(sku)};
+  }).sort((a,b)=>a.cover-b.cover);
+
+  let html=`<div style="font-weight:700;font-size:15px;margin-bottom:6px;letter-spacing:0.05em;">SKU COVERAGE — WH Stock vs Weekly Sales Rate</div>
+  <div style="font-size:12px;color:var(--ink-light);margin-bottom:14px;">Shows how many weeks of warehouse stock remain at current sales pace. Red = under 2 weeks — immediate action needed.</div>
+  <div class="tbl-wrap" style="border:1px solid var(--border);">
+  <table style="font-size:12px;"><thead><tr>
+    <th>SKU</th><th>Product</th>
+    <th style="text-align:right;">Weekly Rate</th>
+    <th style="text-align:right;">WH Stock</th>
+    <th>WH Cover</th>
+    <th>Risk Level</th>
+  </tr></thead><tbody>`;
+  coverage.slice(0,50).forEach(r=>{
+    const risk=r.cover<2?`<span style="background:#FDECEA;color:#C0392B;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">CRITICAL</span>`:
+               r.cover<4?`<span style="background:#FFF3CD;color:#856404;border-radius:4px;padding:2px 8px;font-size:10px;">WATCH</span>`:
+               `<span style="background:#D4EDDA;color:#155724;border-radius:4px;padding:2px 8px;font-size:10px;">SAFE</span>`;
+    html+=`<tr style="${r.cover<2?'background:#FFFAF9':''}">
+      <td style="font-family:'Courier New',monospace;font-size:11px;">${r.sku}</td>
+      <td style="font-weight:500;">${r.name}</td>
+      <td style="text-align:right;color:var(--gold-dark);font-weight:600;">${r.rate}/wk</td>
+      <td style="text-align:right;">${r.whQty.toLocaleString()}</td>
+      <td>${coverBadgeIntel(r.cover)}</td>
+      <td>${risk}</td>
+    </tr>`;
+  });
+  return html+`</tbody></table></div>`;
+}
 
 </script>
 </body>
