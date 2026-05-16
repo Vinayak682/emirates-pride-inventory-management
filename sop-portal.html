@@ -2847,7 +2847,7 @@ function triggerProdUpload(){
 }
 
 // Also check the nav dot on every app load (not just Production tab)
-function checkNavDotOnLoad(){
+async function checkNavDotOnLoad(){
   const mon=isoDate(getWeekMonday(new Date()));
   const sun=isoDate(addDays(getWeekMonday(new Date()),6));
   const {count}=await sb.from('production_plan').select('id',{count:'exact',head:true}).gte('week_start',mon).lte('week_start',sun);
