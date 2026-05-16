@@ -973,7 +973,10 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
         <input type="file" id="prod-file" accept=".xlsx,.xls" style="display:none;" onchange="handleProdFile(this)">
         <div class="upload-zone-icon" style="font-size:32px;margin-bottom:10px;">⚙</div>
         <div class="upload-zone-text">Drop Production Plan Excel here, or click to browse</div>
-        <div class="upload-zone-sub">Reads "Weekly plan" sheet automatically · .xlsx / .xls</div>
+        <div class="upload-zone-sub">
+          <strong>Weekly format</strong> (sent every Monday): DATE · PRODUCT · FG · TESTER · Bel Box — dates auto-detected from file<br>
+          <strong>Monthly / Completed plan</strong>: reads "Completed plan" sheet for full history · .xlsx / .xls
+        </div>
       </div>
       <div id="prod-preview" style="display:none;margin-top:20px;">
         <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:12px;" id="prod-preview-title"></div>
@@ -2532,71 +2535,107 @@ function parseCompletedPlan(rows){
   return records;
 }
 
+// Parse "Weekly plan" sheet — format: DATE | PRODUCT | FG | TESTER | Bel Box
+// Dates appear as "04/05/2026 (Monday)" in merged cells; products follow beneath each date.
 function parseWeeklyPlan(rows){
+  // Find the header row containing 'fg' and 'product' (may be a sub-header row)
   let hdrIdx=0;
-  for(let i=0;i<Math.min(4,rows.length);i++){
-    const vals=(rows[i]||[]).map(v=>String(v||'').toLowerCase());
-    if(vals.some(v=>v.includes('product')||v.includes('item'))){hdrIdx=i;break;}
+  for(let i=0;i<Math.min(6,rows.length);i++){
+    const vals=(rows[i]||[]).map(v=>String(v||'').toLowerCase().trim());
+    if(vals.some(v=>v==='fg'||v.includes('tester'))){hdrIdx=i;break;}
+    if(vals.some(v=>v.includes('product'))&&vals.some(v=>v.includes('date'))){hdrIdx=i;break;}
   }
+
   const hdr=(rows[hdrIdx]||[]).map(v=>String(v||'').toLowerCase().trim());
-  const col={
-    sku   :hdr.findIndex(h=>h.includes('item')||h.includes('code')),
-    prod  :hdr.findIndex(h=>h.includes('product')),
-    fg    :hdr.findIndex(h=>h==='fg'||h.startsWith('fg')),
-    belbox:hdr.findIndex(h=>h.includes('bel')||h.includes('gift')||h.includes('paper')),
-    tester:hdr.findIndex(h=>h.includes('tester')),
-    remark:hdr.findIndex(h=>h.includes('remark')),
-    day   :hdr.findIndex(h=>h==='day'||h.startsWith('day')),
-  };
-  if(col.prod<0) col.prod=1;
+  const colDate =hdr.findIndex(h=>h.includes('date'));
+  const colProd =hdr.findIndex(h=>h.includes('product'));
+  const colFG   =hdr.findIndex(h=>h==='fg'||h.startsWith('fg'));
+  const colTest =hdr.findIndex(h=>h.includes('tester'));
+  const colBel  =hdr.findIndex(h=>h.includes('bel')||h.includes('1.5')||h.includes('box'));
+  const colRem  =hdr.findIndex(h=>h.includes('remark'));
 
-  // Detect week start from sheet content (look for a date in first 5 rows above header)
-  let weekStart=isoDate(getWeekMonday(new Date())); // default current week
-  for(let i=0;i<hdrIdx;i++){
-    for(const cell of (rows[i]||[])){
-      if(!cell) continue;
-      const d=new Date(String(cell));
-      if(!isNaN(d.getTime())&&d.getFullYear()>=2025){
-        const dow=(d.getUTCDay()||7)-1;
-        const mon=new Date(d.getTime()-dow*86400000);
-        weekStart=mon.toISOString().split('T')[0];
-        break;
-      }
-    }
-  }
-  const wn=getISOWeek(new Date(weekStart+'T00:00:00Z'));
-  const weekLabel=`Week ${wn} — ${new Date(weekStart+'T00:00:00Z').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})}`;
+  // Fallback column positions if headers not detected
+  const dCol = colDate>=0?colDate:0;
+  const pCol = colProd>=0?colProd:1;
+  const fCol = colFG  >=0?colFG  :2;
+  const tCol = colTest>=0?colTest:3;
+  const bCol = colBel >=0?colBel :4;
 
+  const DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const records=[];
+  let curDate=null, curDay='Monday', curOrder=0, curWeekStart=null, curWeekLabel='';
+
   for(let i=hdrIdx+1;i<rows.length;i++){
     const r=rows[i]; if(!r) continue;
-    const product=r[col.prod]?String(r[col.prod]).trim():'';
-    if(!product||/^(total|none|nan)$/i.test(product)) continue;
-    const fg  =safeInt(r[col.fg]);
-    const belb=col.belbox>=0?safeInt(r[col.belbox]):0;
-    const test=col.tester>=0?safeInt(r[col.tester]):0;
-    if(fg===0&&test===0&&belb===0) continue;
-    const day=col.day>=0&&r[col.day]?String(r[col.day]).trim():'Monday';
-    const dayOrder=DAY_ORDER[day.toLowerCase()]??0;
+
+    // Try to read a date from the first column (merged cells → non-null only on first row of group)
+    const dateCell=r[dCol];
+    if(dateCell!==null&&dateCell!==undefined&&String(dateCell).trim()!==''){
+      const parsed=parseProdDateCell(dateCell);
+      if(parsed){
+        curDate=parsed;
+        const d=new Date(curDate+'T00:00:00Z');
+        const dow=d.getUTCDay();
+        curDay=DAY_NAMES[dow];
+        curOrder=DAY_ORDER[curDay.toLowerCase()]??dow;
+        // Monday of this week
+        const mondayOff=(dow===0?-6:1-dow);
+        const mon=new Date(d.getTime()+mondayOff*86400000);
+        curWeekStart=mon.toISOString().split('T')[0];
+        const wn=getISOWeek(mon);
+        curWeekLabel=`Week ${wn} — ${mon.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})}`;
+      }
+    }
+
+    if(!curDate||!curWeekStart) continue;
+
+    const product=r[pCol]?String(r[pCol]).trim():'';
+    if(!product||/^(total|target|qty|planned|fg|tester)/i.test(product)) continue;
+
+    const fg  =safeInt(r[fCol]);
+    const test=safeInt(r[tCol]);
+    const bel =bCol>=0?safeInt(r[bCol]):0;
+    if(fg===0&&test===0&&bel===0) continue;
+
     records.push({
-      sku_code:       col.sku>=0&&r[col.sku]?String(r[col.sku]).trim():null,
-      product_name:   product,
-      planned_fg:     fg,
-      planned_bel_box:belb,
-      planned_tester: test,
-      actual_fg:      null,
-      actual_tester:  null,
-      plan_day:       day,
-      plan_day_order: dayOrder,
-      plan_date:      addDaysISO(weekStart,dayOrder),
-      week_start:     weekStart,
-      week_label:     weekLabel,
-      status:         'Planned',
+      sku_code:        null,
+      product_name:    product,
+      planned_fg:      fg,
+      planned_bel_box: bel,
+      planned_tester:  test,
+      actual_fg:       null,
+      actual_tester:   null,
+      plan_day:        curDay,
+      plan_day_order:  curOrder,
+      plan_date:       curDate,
+      week_start:      curWeekStart,
+      week_label:      curWeekLabel,
+      status:          'Planned',
       wh_received_date:null,
-      remarks:        col.remark>=0&&r[col.remark]?String(r[col.remark]).trim():'',
+      remarks:         colRem>=0&&r[colRem]?String(r[colRem]).trim():'',
     });
   }
   return records;
+}
+
+// Parse a date cell that may be: Excel serial, "DD/MM/YYYY", "DD/MM/YYYY (Monday)", ISO string
+function parseProdDateCell(v){
+  if(!v) return null;
+  // Excel date serial number
+  if(typeof v==='number'&&v>40000&&v<60000){
+    const epoch=new Date(Date.UTC(1899,11,30));
+    return new Date(epoch.getTime()+v*86400000).toISOString().split('T')[0];
+  }
+  const s=String(v).trim();
+  // DD/MM/YYYY (with optional weekday in parens)
+  const dmy=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(dmy){ const[,d,m,y]=dmy; return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`; }
+  // ISO YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+  // JS Date fallback
+  const dt=new Date(s);
+  if(!isNaN(dt.getTime())&&dt.getFullYear()>=2024) return dt.toISOString().split('T')[0];
+  return null;
 }
 
 function parsePlanningSheet(rows, sheetName){
