@@ -2371,20 +2371,31 @@ function handleProdFile(input){
 function parseAllProdSheets(wb){
   const all=[];
 
-  // "Weekly plan" (current/upcoming week, day-by-day) — PRIMARY source
+  // 1 — "Completed plan" (full history with actuals) — kept for planning reference
+  const cpSheet=wb.SheetNames.find(n=>/completed\s*plan/i.test(n));
+  if(cpSheet){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[cpSheet],{header:1,defval:null,raw:true});
+    all.push(...parseCompletedPlan(rows));
+  }
+
+  // 2 — "Weekly plan" (current/upcoming week, day-by-day) — PRIMARY source
   const wpSheet=wb.SheetNames.find(n=>/weekly\s*plan/i.test(n));
   if(wpSheet){
     const rows=XLSX.utils.sheet_to_json(wb.Sheets[wpSheet],{header:1,defval:null,raw:true});
     all.push(...parseWeeklyPlan(rows));
-  } else {
-    // Fallback: use first sheet if no "Weekly plan" tab found
+  } else if(!cpSheet){
+    // Fallback: use first sheet if no named tabs found
     const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null,raw:true});
     all.push(...parseWeeklyPlan(rows));
   }
 
-  // "Completed plan" is intentionally NOT imported here — it is historical
-  // archive data. Importing it floods the view with old weeks. History is
-  // preserved in localStorage from prior uploads; no need to re-import.
+  // 3 — Month planning sheets (April / May / June etc.)
+  wb.SheetNames.forEach(sn=>{
+    if(/april|may|june|july|august|september|october|november|december|january|february|march/i.test(sn)){
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:null,raw:true});
+      all.push(...parsePlanningSheet(rows,sn));
+    }
+  });
 
   // Deduplicate: keep last by (product_name, week_start, plan_day)
   const seen=new Map();
