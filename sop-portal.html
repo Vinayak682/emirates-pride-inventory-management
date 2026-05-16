@@ -1974,7 +1974,10 @@ refreshInvHistory();
 // ══════════════════════════════════════════════════════════════════
 // PRODUCTION TAB
 // ══════════════════════════════════════════════════════════════════
-let prodData       = [];          // rows from production_plan table
+let prodData       = [];          // rows from production_plan (localStorage)
+const PROD_PLAN_KEY='ep_prod_plan_v1';
+function getProdPlan(){return JSON.parse(localStorage.getItem(PROD_PLAN_KEY)||'[]');}
+function saveProdPlan(rows){localStorage.setItem(PROD_PLAN_KEY,JSON.stringify(rows));}
 let prodBuffer     = [];          // parsed rows awaiting confirm
 let prodRatesLoaded= false;
 let prodWeeklyRates= {};          // {sku_code: weekly_rate_per_week}
@@ -2036,27 +2039,12 @@ async function loadProductionData(){
     document.getElementById('prod-week-subtitle').textContent='All uploaded weeks';
   }
 
-  const {data,error}=await sb.from('production_plan')
-    .select('*')
-    .gte('week_start',fromStr)
-    .lte('week_start',toStr)
-    .order('plan_day_order',{ascending:true});
-
-  if(error){
-    // Table likely doesn't exist yet — show setup prompt instead of infinite spinner
-    document.getElementById('prod-loading').style.display='none';
-    document.getElementById('prod-empty').style.display='block';
-    document.getElementById('prod-empty').innerHTML=`
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--ink-light);margin-bottom:12px;">
-        Production table not set up yet
-      </div>
-      <div style="font-size:12px;color:var(--ink-light);max-width:420px;margin:0 auto;line-height:1.8;">
-        Run <strong>create_production_plan_table.sql</strong> in your Supabase SQL Editor first,<br>
-        then upload your production plan using the <strong>↑ Upload Plan</strong> button above.
-      </div>`;
-    return;
-  }
-  prodData=data||[];
+  const all=getProdPlan();
+  const filtered=sel==='all'
+    ? all
+    : all.filter(r=>r.week_start>=fromStr && r.week_start<=toStr);
+  filtered.sort((a,b)=>(a.plan_day_order||0)-(b.plan_day_order||0));
+  prodData=filtered;
   renderProductionPlan();
 }
 
@@ -2310,10 +2298,11 @@ function renderCoverageAnalysis(){
 
 // ── Mark run complete ─────────────────────────────────────────────
 async function markProdDone(id){
-  const {error}=await sb.from('production_plan')
-    .update({status:'Completed'})
-    .eq('id',id);
-  if(error){ toast('Update failed'); return; }
+  const all=getProdPlan();
+  const idx=all.findIndex(r=>r.id===id);
+  if(idx===-1){ toast('Record not found'); return; }
+  all[idx].status='Completed';
+  saveProdPlan(all);
   toast('Marked as Completed');
   await loadProductionData();
 }
@@ -2647,28 +2636,18 @@ async function confirmProdUpload(){
   // For any records still missing week_start, apply the manual week date picker as fallback.
   const fallbackWeek=document.getElementById('p-week-date').value||isoDate(getWeekMonday(new Date()));
   const fallbackLabel=document.getElementById('p-week-label').value||`Week of ${fallbackWeek}`;
-  const records=prodBuffer.map(r=>({
+  const ts=Date.now();
+  const records=prodBuffer.map((r,i)=>({
     ...r,
+    id: r.id||`local_${ts}_${i}`,
     week_start: r.week_start||fallbackWeek,
     week_label: r.week_label||fallbackLabel,
   }));
 
-  // Delete all existing rows for every week in this upload, then re-insert clean
+  // Remove existing rows for these weeks, then append new ones
   const weeksInUpload=[...new Set(records.map(r=>r.week_start))];
-  for(const wk of weeksInUpload){
-    const {error}=await sb.from('production_plan').delete().eq('week_start',wk);
-    if(error){ toast('Clear failed: '+error.message); return; }
-  }
-
-  const BATCH=200;
-  let uploaded=0;
-  for(let i=0;i<records.length;i+=BATCH){
-    const {error}=await sb.from('production_plan').insert(records.slice(i,i+BATCH));
-    if(error){ toast('Upload failed: '+error.message); return; }
-    uploaded+=Math.min(BATCH,records.length-i);
-    // Brief progress toast every 200 rows
-    if(records.length>200) toast(`Uploading… ${uploaded}/${records.length}`);
-  }
+  const kept=getProdPlan().filter(r=>!weeksInUpload.includes(r.week_start));
+  saveProdPlan(kept.concat(records));
 
   toast(`✓ ${records.length} production records saved across ${weeksInUpload.length} week(s)`);
   cancelProdUpload();
@@ -2817,18 +2796,11 @@ function triggerProdUpload(){
 
 // Also check the nav dot on every app load (not just Production tab)
 function checkNavDotOnLoad(){
-  // Quick Supabase check: any rows for current week?
-  const mon = isoDate(getWeekMonday(new Date()));
-  const sun = isoDate(addDays(getWeekMonday(new Date()), 6));
-  if(!sb) return;
-  sb.from('production_plan')
-    .select('id', {count:'exact', head:true})
-    .gte('week_start', mon)
-    .lte('week_start', sun)
-    .then(({count})=>{
-      const dot = document.getElementById('prod-nav-dot');
-      if(dot) dot.style.display = (count && count > 0) ? 'none' : 'inline-block';
-    });
+  const mon=isoDate(getWeekMonday(new Date()));
+  const sun=isoDate(addDays(getWeekMonday(new Date()),6));
+  const count=getProdPlan().filter(r=>r.week_start>=mon&&r.week_start<=sun).length;
+  const dot=document.getElementById('prod-nav-dot');
+  if(dot) dot.style.display=count>0?'none':'inline-block';
 }
 
 // ── Drag & drop for production upload ───────────────────────────
