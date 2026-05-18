@@ -3890,8 +3890,26 @@ async function confirmWhUpload(){
 let intelLoaded=false, intelSalesData=[], intelWhSoh=[], intelTransfers=[], intelProdHistory=[];
 let intelReplSchedule=[], intelConsumables=[], intelConsStock=[];
 // default delivery interval (days) used when no schedule table entry exists
-const INTEL_DEFAULT_INTERVAL = 7;
+const INTEL_DEFAULT_INTERVAL = 7;   // fallback only — DB schedule takes priority
 const INTEL_SAFETY_DAYS = 3;
+
+// Region-aware fallback interval when store not in DB schedule
+function _storeInterval(code) {
+  const sched = intelReplSchedule.find(s => s.store_code === code);
+  if (sched?.lead_time_days) return sched.lead_time_days;
+  const s = getStore(code);
+  if (s.city === 'Dubai')      return 3;   // 2-3x/week
+  if (s.city === 'Abu Dhabi')  return 4;   // 2x/week
+  if (s.region === 'OMAN')     return 30;  // monthly
+  return 7;                                // all other UAE — weekly
+}
+function _storeSafety(code) {
+  const sched = intelReplSchedule.find(s => s.store_code === code);
+  if (sched?.safety_days != null) return sched.safety_days;
+  if (getStore(code).region === 'OMAN') return 7;
+  if (['Dubai','Abu Dhabi'].includes(getStore(code).city)) return 1;
+  return 3;
+}
 
 async function loadIntelligenceTab(){
   if(!intelLoaded) await loadIntelligenceData();
@@ -3978,8 +3996,7 @@ function _calcStoresNeedingAction(rates, soh){
     if(!lastTrfByStore[k]||d>lastTrfByStore[k]) lastTrfByStore[k]=d;
   });
   Object.entries(lastTrfByStore).forEach(([store,dt])=>{
-    const sched=intelReplSchedule.find(s=>s.store_code===store);
-    const interval=(sched?.lead_time_days||INTEL_DEFAULT_INTERVAL)+INTEL_SAFETY_DAYS;
+    const interval=_storeInterval(store)+_storeSafety(store);
     const daysSince=Math.floor((today-dt)/86400000);
     if(daysSince>interval*1.5) storeSet.add(store);
   });
@@ -4246,8 +4263,7 @@ function renderAlertsView(){
     if(!lastTrfByStore[k]||d>lastTrfByStore[k]) lastTrfByStore[k]=d;
   });
   Object.entries(lastTrfByStore).forEach(([store,dt])=>{
-    const sched=intelReplSchedule.find(s=>s.store_code===store);
-    const interval=(sched?.lead_time_days||INTEL_DEFAULT_INTERVAL)+INTEL_SAFETY_DAYS;
+    const interval=_storeInterval(store)+_storeSafety(store);
     const daysSince=Math.floor((today-dt)/86400000);
     const storeName=getStore(store).name||store;
     if(daysSince>interval*1.5){
@@ -4410,15 +4426,13 @@ function renderStoreReplenPlan(){
   let html=`<div style="font-weight:700;font-size:15px;margin-bottom:4px;letter-spacing:0.05em;">STORE REPLENISHMENT PLAN</div>
   <div style="font-size:12px;color:var(--ink-light);margin-bottom:16px;">
     Recommended order quantities for each store based on weekly sales velocity.
-    <span style="color:#856404;">⚙ Delivery schedule: using ${intelReplSchedule.length>0?intelReplSchedule.length+' configured stores':'default 7-day interval for all stores'}.</span>
-    ${intelReplSchedule.length===0?'<a href="#" onclick="toast(\'Run the store_replenishment_schedule SQL in Supabase to configure exact delivery days per store\');return false;" style="color:var(--gold-dark);text-decoration:underline;font-size:11px;">Configure schedule →</a>':''}
+    <span style="color:#155724;">✓ ${intelReplSchedule.length} stores configured — Dubai 3×/wk · Abu Dhabi 2×/wk · Other UAE weekly · Oman monthly.</span>
   </div>`;
 
   activeStores.forEach(store=>{
     const skuData=storeSku[store.code]||{};
-    const sched=intelReplSchedule.find(s=>s.store_code===store.code);
-    const interval=(sched?.lead_time_days||INTEL_DEFAULT_INTERVAL);
-    const safety=(sched?.safety_days||INTEL_SAFETY_DAYS);
+    const interval=_storeInterval(store.code);
+    const safety=_storeSafety(store.code);
 
     // Find SKUs needing replenishment: active velocity + overdue or WH has stock
     const replenItems=[];
