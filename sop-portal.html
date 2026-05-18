@@ -575,6 +575,10 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
       Intelligence<span id="intel-nav-dot" class="nav-alert-dot" style="display:none;"></span>
     </div>
+    <div class="nav-tab" data-tab="campaigns" onclick="switchTab('campaigns')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Campaigns &amp; Orders<span id="camp-nav-dot" class="nav-alert-dot" style="display:none;"></span>
+    </div>
   </div>
 
   <!-- ══════════════════ TAB: SALES ══════════════════ -->
@@ -620,6 +624,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <select class="sel" id="f-view" onchange="applySalesFilters()">
         <option value="stores">View A — Store Performance</option>
         <option value="sku">View B — SKU Performance</option>
+        <option value="targets">View C — Targets vs Actuals</option>
       </select>
       <button class="filter-btn-ghost" onclick="exportSalesCsv()" style="margin-left:auto;">
         ↓ Export CSV
@@ -687,6 +692,47 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
             <thead id="mom-thead"></thead>
             <tbody id="mom-tbody"></tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKU Rankings (Top 10 / Bottom 10) -->
+    <div id="rankings-section" style="display:none;">
+      <div class="orn-divider"><div class="orn-line"></div><div class="orn-diamond"></div><div class="orn-line"></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <!-- Top 10 -->
+        <div class="tbl-card">
+          <div class="tbl-card-hd">
+            <div>
+              <div class="tbl-card-title" style="color:var(--gold-dark);">Top 10 SKUs</div>
+              <div style="font-size:11px;color:var(--ink-light);margin-top:2px;" id="top10-sub">by units sold in selected period</div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table style="font-size:12px;">
+              <thead><tr>
+                <th>#</th><th>SKU</th><th>Product</th><th style="text-align:right;">Units</th>
+              </tr></thead>
+              <tbody id="top10-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Bottom 10 -->
+        <div class="tbl-card">
+          <div class="tbl-card-hd">
+            <div>
+              <div class="tbl-card-title" style="color:#888;">Bottom 10 Active SKUs</div>
+              <div style="font-size:11px;color:var(--ink-light);margin-top:2px;" id="bottom10-sub">lowest performers with at least 1 sale</div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table style="font-size:12px;">
+              <thead><tr>
+                <th>#</th><th>SKU</th><th>Product</th><th style="text-align:right;">Units</th>
+              </tr></thead>
+              <tbody id="bottom10-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -1191,36 +1237,233 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
         <option value="ASL">ASL UAE</option>
       </select>
       <select class="sel" id="intel-view-sel" onchange="renderIntelView()">
-        <option value="coverage">SKU Coverage by Store</option>
-        <option value="fastmovers">Fast Movers</option>
-        <option value="slowmovers">Slow Movers / Dead Stock</option>
-        <option value="replenishment">Replenishment Patterns</option>
-        <option value="production">Production Delivery Tracker</option>
+        <option value="alerts">🔔 Proactive Alerts</option>
+        <option value="replen_plan">📦 Store Replenishment Plan</option>
+        <option value="coverage">📊 SKU Coverage (WH)</option>
+        <option value="fastmovers">🚀 Fast Movers</option>
+        <option value="slowmovers">⚠ Slow Movers / Dead Stock</option>
+        <option value="replenishment">🚚 Replenishment History</option>
+        <option value="production">🏭 Production Delivery</option>
+        <option value="consumables">🛍 Consumables & Non-Product</option>
       </select>
-    </div>
-
-    <!-- Alert Summary Bar -->
-    <div id="intel-alert-bar" style="display:none;background:#FFF3CD;border-bottom:2px solid #FFC107;padding:12px 24px;font-size:12px;display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
-      <span style="font-weight:700;letter-spacing:0.05em;">⚡ DEMAND ALERTS</span>
-      <span id="intel-alert-lowcover" style="color:#C0392B;font-weight:600;"></span>
-      <span id="intel-alert-deadstock" style="color:#7F6000;"></span>
-      <span id="intel-alert-notransfer" style="color:#555;"></span>
+      <button class="filter-btn-ghost" onclick="intelLoaded=false;loadIntelligenceData();" style="margin-left:auto;font-size:11px;">↺ Refresh Data</button>
+      <button class="filter-btn-ghost" id="intel-export-btn" onclick="exportIntelReport()" style="font-size:11px;display:none;">↓ Export Report</button>
     </div>
 
     <!-- KPI Row -->
-    <div style="padding:16px 24px;display:flex;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border);">
-      <div class="kpi-card"><div class="kpi-val" id="intel-kpi-active-skus">—</div><div class="kpi-label">Active SKUs (sold)</div></div>
-      <div class="kpi-card"><div class="kpi-val" id="intel-kpi-fast" style="color:#27AE60;">—</div><div class="kpi-label">Fast Movers (>50/wk)</div></div>
-      <div class="kpi-card"><div class="kpi-val" id="intel-kpi-slow" style="color:#E67E22;">—</div><div class="kpi-label">Slow Movers (<5/wk)</div></div>
-      <div class="kpi-card"><div class="kpi-val" id="intel-kpi-dead" style="color:#C0392B;">—</div><div class="kpi-label">No WH Movement 8wk+</div></div>
-      <div class="kpi-card"><div class="kpi-val" id="intel-kpi-lowcover">—</div><div class="kpi-label">SKUs &lt;2wk WH Cover</div></div>
+    <div style="padding:12px 24px;display:flex;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border);">
+      <div class="kpi-card" style="padding:16px 18px;"><div class="kpi-val" id="intel-kpi-active-skus" style="font-size:22px;">—</div><div class="kpi-label">Active SKUs</div></div>
+      <div class="kpi-card" style="padding:16px 18px;"><div class="kpi-val" id="intel-kpi-fast" style="color:#27AE60;font-size:22px;">—</div><div class="kpi-label">Fast Movers >50/wk</div></div>
+      <div class="kpi-card" style="padding:16px 18px;"><div class="kpi-val" id="intel-kpi-slow" style="color:#E67E22;font-size:22px;">—</div><div class="kpi-label">Slow Movers <5/wk</div></div>
+      <div class="kpi-card" style="padding:16px 18px;"><div class="kpi-val" id="intel-kpi-dead" style="color:#C0392B;font-size:22px;">—</div><div class="kpi-label">Dead Stock 8wk+</div></div>
+      <div class="kpi-card" style="padding:16px 18px;"><div class="kpi-val" id="intel-kpi-lowcover" style="font-size:22px;">—</div><div class="kpi-label">SKUs &lt;2wk Cover</div></div>
+      <div class="kpi-card" style="padding:16px 18px;cursor:pointer;" onclick="document.getElementById('intel-view-sel').value='alerts';renderIntelView();">
+        <div class="kpi-val" id="intel-kpi-stores-alert" style="color:#C0392B;font-size:22px;">—</div>
+        <div class="kpi-label">Stores Need Action ↗</div>
+      </div>
     </div>
 
     <div style="padding:20px 24px;">
-      <div id="intel-loading" style="text-align:center;padding:60px;color:var(--ink-light);">Loading intelligence data…</div>
+      <div id="intel-loading" style="text-align:center;padding:60px;color:var(--ink-light);">
+        <div class="spinner" style="margin:0 auto 16px;"></div>
+        <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">Loading Intelligence Data</div>
+      </div>
       <div id="intel-content" style="display:none;"></div>
     </div>
   </div><!-- /tab-intelligence -->
+
+  <!-- ══════════════════ TAB: CAMPAIGNS & ORDERS ══════════════════ -->
+  <div id="tab-campaigns" class="tab-panel">
+
+    <!-- Filter / Action Bar -->
+    <div class="filter-bar" style="gap:8px;flex-wrap:wrap;">
+      <select class="sel" id="camp-view-sel" onchange="renderCampView()">
+        <option value="campaigns">📣 Marketing Campaigns</option>
+        <option value="exports">📦 Export &amp; Private Orders</option>
+        <option value="demand">📊 Combined Demand Picture</option>
+      </select>
+      <button class="filter-btn" id="camp-add-btn" onclick="openCampForm()" style="font-size:11px;">+ New Campaign</button>
+      <button class="filter-btn-ghost" id="order-add-btn" onclick="openOrderForm()" style="font-size:11px;display:none;">+ New Order</button>
+      <button class="filter-btn-ghost" onclick="campLoaded=false;loadCampaignsTab();" style="font-size:11px;margin-left:auto;">↺ Refresh</button>
+      <button class="filter-btn-ghost" onclick="exportCampReport()" style="font-size:11px;">↓ Export</button>
+    </div>
+
+    <!-- KPI strip -->
+    <div style="padding:12px 24px;display:flex;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border);">
+      <div class="kpi-card" style="padding:14px 18px;"><div class="kpi-val" id="camp-kpi-active" style="font-size:22px;color:var(--gold-dark);">—</div><div class="kpi-label">Active Campaigns</div></div>
+      <div class="kpi-card" style="padding:14px 18px;"><div class="kpi-val" id="camp-kpi-upcoming" style="font-size:22px;color:#3B5BDB;">—</div><div class="kpi-label">Upcoming</div></div>
+      <div class="kpi-card" style="padding:14px 18px;"><div class="kpi-val" id="camp-kpi-orders" style="font-size:22px;color:#0B7A45;">—</div><div class="kpi-label">Open Export Orders</div></div>
+      <div class="kpi-card" style="padding:14px 18px;"><div class="kpi-val" id="camp-kpi-units" style="font-size:22px;">—</div><div class="kpi-label">Units Reserved (Campaigns)</div></div>
+      <div class="kpi-card" style="padding:14px 18px;"><div class="kpi-val" id="camp-kpi-export-units" style="font-size:22px;color:#876A00;">—</div><div class="kpi-label">Units Pending (Export)</div></div>
+      <div class="kpi-card" style="padding:14px 18px;cursor:pointer;" onclick="document.getElementById('camp-view-sel').value='demand';renderCampView();">
+        <div class="kpi-val" id="camp-kpi-shortfalls" style="font-size:22px;color:#C0392B;">—</div>
+        <div class="kpi-label">SKU Shortfalls ↗</div>
+      </div>
+    </div>
+
+    <!-- Main content area -->
+    <div style="padding:20px 24px;">
+      <div id="camp-loading" style="text-align:center;padding:60px;color:var(--ink-light);">
+        <div class="spinner" style="margin:0 auto 16px;"></div>
+        <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">Loading Campaigns & Orders</div>
+      </div>
+      <div id="camp-content" style="display:none;"></div>
+    </div>
+
+    <!-- ── CAMPAIGN FORM MODAL ─────────────────────────────────────── -->
+    <div id="camp-form-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;overflow-y:auto;">
+      <div style="max-width:760px;margin:40px auto;background:var(--white);border:1px solid var(--border);">
+        <div style="background:var(--navy);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold-light);" id="camp-form-title">New Marketing Campaign</div>
+          <button onclick="closeCampForm()" style="background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;">✕</button>
+        </div>
+        <div style="padding:24px;">
+          <!-- Campaign meta -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div style="grid-column:1/-1;">
+              <div class="login-label" style="margin-bottom:6px;">Campaign Name *</div>
+              <input type="text" id="cf-name" class="inp" placeholder="e.g. Ramadan Promotion 2026" style="width:100%;">
+            </div>
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">Type</div>
+              <select id="cf-type" class="sel" style="width:100%;padding:10px 30px 10px 12px;">
+                <option value="PROMOTION">Promotion / Discount</option>
+                <option value="SEASONAL">Seasonal Campaign</option>
+                <option value="LAUNCH">Product Launch</option>
+                <option value="CLEARANCE">Clearance</option>
+                <option value="ACTIVATION">Brand Activation</option>
+                <option value="EVENT">Event / Exhibition</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">Status</div>
+              <select id="cf-status" class="sel" style="width:100%;padding:10px 30px 10px 12px;">
+                <option value="UPCOMING">Upcoming</option>
+                <option value="ACTIVE">Active</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">Start Date *</div>
+              <input type="date" id="cf-start" class="inp" style="width:100%;">
+            </div>
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">End Date</div>
+              <input type="date" id="cf-end" class="inp" style="width:100%;">
+            </div>
+          </div>
+          <!-- Stores affected -->
+          <div style="margin-bottom:16px;">
+            <div class="login-label" style="margin-bottom:6px;">Stores Affected</div>
+            <select id="cf-store-scope" class="sel" style="width:100%;padding:10px 30px 10px 12px;" onchange="document.getElementById('cf-store-specific').style.display=this.value==='SPECIFIC'?'block':'none'">
+              <option value="ALL">All Stores (campaign applies everywhere)</option>
+              <option value="SPECIFIC">Specific Stores Only</option>
+            </select>
+            <div id="cf-store-specific" style="display:none;margin-top:10px;">
+              <div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;border:1px solid var(--border);border-radius:4px;background:var(--bg);max-height:160px;overflow-y:auto;" id="cf-store-checkboxes">
+                <!-- populated by JS -->
+              </div>
+            </div>
+          </div>
+          <!-- Notes / email paste -->
+          <div style="margin-bottom:20px;">
+            <div class="login-label" style="margin-bottom:6px;">Marketing Email / Notes <span style="font-size:10px;color:var(--ink-light);font-weight:400;">(paste the email from marketing team here for reference)</span></div>
+            <textarea id="cf-notes" style="width:100%;height:100px;background:var(--surface);border:1px solid var(--border);color:var(--ink);padding:10px;font-size:12px;resize:vertical;border-radius:4px;" placeholder="Paste the marketing email or campaign brief here…"></textarea>
+          </div>
+          <!-- SKU requirements -->
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div class="login-label">Stock Requirements — SKU × Store × Qty *</div>
+              <button onclick="addCampSkuRow()" style="background:var(--gold-dark);color:#000;border:none;padding:5px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;">+ Add Row</button>
+            </div>
+            <div style="font-size:11px;color:var(--ink-light);margin-bottom:8px;">One row = one SKU for one store. Use "ALL STORES" to apply the same qty across every store.</div>
+            <div id="cf-sku-rows" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;">
+              <!-- rows added dynamically -->
+            </div>
+          </div>
+          <div id="cf-error" style="color:#C0392B;font-size:12px;margin-bottom:10px;display:none;"></div>
+          <input type="hidden" id="cf-edit-id" value="">
+          <div style="display:flex;gap:10px;">
+            <button onclick="saveCampaign()" style="background:var(--gold-dark);color:#000;border:none;padding:10px 24px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.06em;">SAVE CAMPAIGN</button>
+            <button onclick="closeCampForm()" style="background:none;border:1px solid var(--border);color:var(--ink);padding:10px 20px;border-radius:4px;font-size:12px;cursor:pointer;">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EXPORT ORDER FORM MODAL ──────────────────────────────────── -->
+    <div id="order-form-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;overflow-y:auto;">
+      <div style="max-width:720px;margin:40px auto;background:var(--white);border:1px solid var(--border);">
+        <div style="background:var(--navy);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold-light);" id="order-form-title">New Export / Private Client Order</div>
+          <button onclick="closeOrderForm()" style="background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;">✕</button>
+        </div>
+        <div style="padding:24px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">Order Reference *</div>
+              <input type="text" id="of-ref" class="inp" placeholder="EXP-2026-001" style="width:100%;">
+            </div>
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">Order Type</div>
+              <select id="of-type" class="sel" style="width:100%;padding:10px 30px 10px 12px;">
+                <option value="EXPORT">Export Order</option>
+                <option value="PRIVATE_CLIENT">Private Client</option>
+                <option value="CORPORATE">Corporate / B2B</option>
+                <option value="GIFTING">Gifting / Event</option>
+              </select>
+            </div>
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">Client / Company *</div>
+              <input type="text" id="of-client" class="inp" placeholder="Client or company name" style="width:100%;">
+            </div>
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">Country / Region</div>
+              <input type="text" id="of-country" class="inp" placeholder="e.g. Saudi Arabia, UK, USA" style="width:100%;">
+            </div>
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">Expected Delivery Date</div>
+              <input type="date" id="of-date" class="inp" style="width:100%;">
+            </div>
+            <div>
+              <div class="login-label" style="margin-bottom:6px;">Status</div>
+              <select id="of-status" class="sel" style="width:100%;padding:10px 30px 10px 12px;">
+                <option value="PENDING">Pending Confirmation</option>
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="PACKING">Packing</option>
+                <option value="SHIPPED">Shipped</option>
+                <option value="DELIVERED">Delivered</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:20px;">
+            <div class="login-label" style="margin-bottom:6px;">Email / Notes <span style="font-size:10px;color:var(--ink-light);font-weight:400;">(paste the order email here)</span></div>
+            <textarea id="of-notes" style="width:100%;height:90px;background:var(--surface);border:1px solid var(--border);color:var(--ink);padding:10px;font-size:12px;resize:vertical;border-radius:4px;" placeholder="Paste the order email or brief here…"></textarea>
+          </div>
+          <!-- Order lines -->
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div class="login-label">Order Lines — SKU × Quantity *</div>
+              <button onclick="addOrderLineRow()" style="background:var(--gold-dark);color:#000;border:none;padding:5px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;">+ Add SKU</button>
+            </div>
+            <div id="of-line-rows" style="display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;">
+              <!-- rows added dynamically -->
+            </div>
+          </div>
+          <div id="of-error" style="color:#C0392B;font-size:12px;margin-bottom:10px;display:none;"></div>
+          <input type="hidden" id="of-edit-id" value="">
+          <div style="display:flex;gap:10px;">
+            <button onclick="saveExportOrder()" style="background:var(--gold-dark);color:#000;border:none;padding:10px 24px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.06em;">SAVE ORDER</button>
+            <button onclick="closeOrderForm()" style="background:none;border:1px solid var(--border);color:var(--ink);padding:10px 20px;border-radius:4px;font-size:12px;cursor:pointer;">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-campaigns -->
 
 </div><!-- /app -->
 <div id="toast"></div>
@@ -1261,6 +1504,10 @@ const STORES = [
   {code:'AL004',  name:'Jimi Mall',               region:'EPP', city:'Al Ain',     type:'EPP'},
   {code:'AL006',  name:'Makani Mall',             region:'EPP', city:'Al Ain',     type:'EPP'},
   {code:'BAS001', name:'Bawabat al Sharq (ASL)',  region:'ASL', city:'Abu Dhabi',  type:'ASL'},
+  {code:'YMK001', name:'Yas Mall ASL',             region:'ASL', city:'Abu Dhabi',  type:'ASL'},
+  {code:'BAW001', name:'Bawadi Mall ASL',           region:'ASL', city:'Al Ain',    type:'ASL'},
+  {code:'MAK001', name:'Makhani Zakhar Mall ASL',   region:'ASL', city:'Al Ain',    type:'ASL'},
+  {code:'FJ001A', name:'Fujairah City Centre ASL',  region:'ASL', city:'Fujairah',  type:'ASL'},
 ];
 
 const SKU_NAMES = {
@@ -1337,6 +1584,67 @@ const SKU_NAMES = {
   'FS1001':'Mimosa Glow 65ml','FS1002':'Pure Jasmin 65ml','FS1003':'Scarlet Rose 65ml',
   'FS1004':'Tuberose Bloom 65ml','FS1005':'Timeless Sakura 65ml',
   'FS1006':'Orange Blossom 65ml','FS1007':'Silky Violet 65ml',
+  /* ── Caballo (C-series) — additional variants ── */
+  'C00005':'Gold 100ml','C00006':'Silver 100ml','C00006-NA':'Silver 100ml (NA)',
+  'C00007':'Blue 100ml','C00008':'Green 100ml',
+  /* ── Bakhoor Pocket Bakhoor (PB-series) ── */
+  'B0001-PB':'Bergamot Bel Amber (Pocket)','B0002-PB':'Jasmine Bel Musk (Pocket)',
+  'B0003-PB':'Amber Bel Oud (Pocket)','B0004-PB':'Meydan (Pocket)',
+  'B0005-PB':'Mystery (Pocket)','B0006-PB':'Mersal (Pocket)',
+  'B0007-PB':'Peaceful Life (Pocket)','B0008-PB':'Midnight Glow (Pocket)',
+  'B0010-PB':'Sakura (Pocket)','B0011-PB':'Ambergris (Pocket)',
+  'B0013-PB':'Arabica (Pocket)','B0014-PB':'Firewood (Pocket)',
+  'B0016-PB':'Mysterious Rose (Pocket)','B0017-PB':'Thekrayat (Pocket)',
+  'B0018-PB':'Hidden Tobacco (Pocket)',
+  'B00009':'Moonlight Glow',
+  'B00020-PB':'Master Signature (Pocket)','B00021-PB':'Midnight Bloom (Pocket)',
+  /* ── BX-series (Box sets) — additional ── */
+  'BX0001':'Classic Gift Box','BX0005':'Premium Gift Box','BX0007':'Heritage Box Set',
+  /* ── G-series (10ml) — additional ── */
+  'G00001':'Oud Amiri 10ml','G00009':'White Intense 10ml','G00010':'Maroon 10ml',
+  /* ── D-series (Dakhoon) — additional ── */
+  'D00006':'Dakhoon Jood',
+  /* ── O-series (Oud) — additional ── */
+  'O00004':'Oud Al Sultani','O00005':'Oud Royale','O00007':'Oud Hindi Khas',
+  /* ── HR-series (Heritage) — additional ── */
+  'HR0008':'Hattah Heritage Collection','HR0009':'Liwa Heritage Collection','HR-DISC':'Heritage Disc',
+  /* ── AOG-series (ASL Oil Gift sets) ── */
+  'AOG001':'Black Vanilla Oil Gift','AOG002':'Secret Leather Oil Gift','AOG003':'White Bouquet Oil Gift',
+  'AOG004':'Leather Intense Oil Gift','AOG005':'Rich Vanilla Oil Gift','AOG006':'Spicy Sandal Oil Gift',
+  'AOG007':'Velvet Amber Oil Gift','AOG008':'Dark Musk Oil Gift','AOG009':'Royal Tobacco Oil Gift',
+  'AOG010':'Patchouli Glow Oil Gift','AOG011':'Dark Wood Oil Gift',
+  /* ── AOS-series (ASL Oil Special) ── */
+  'AOS007':'Velvet Amber Oil Special','AOS008':'Dark Musk Oil Special',
+  /* ── ASL-prefixed variants ── */
+  'ASLAF-001':'Cool Violet Air Freshener (ASL)','ASLAF-007':'Velvet Amber Air Freshener (ASL)',
+  'ASLAOS-002':'Secret Leather Oil Special (ASL)','ASLAOS-003':'White Bouquet Oil Special (ASL)',
+  'ASLAOS-008':'Dark Musk Oil Special (ASL)',
+  'ASLRD-002':'Cool Violet Reed Diffuser (ASL)','ASLRD-007':'Velvet Amber Reed Diffuser (ASL)',
+  /* ── AH-series (Hair & Body) — additional ── */
+  'AH007':'Rich Vanilla Hair Mist','AH010':'Patchouli Glow Hair Mist',
+  /* ── ACC-series (Accessories) ── */
+  'ACC001':'Accessory Set 1','ACC002':'Accessory Set 2',
+  /* ── FT-series (Flower/Fragrance Tester sets) ── */
+  'FT0001':'Fragrance Tester Set 1','FT0002':'Fragrance Tester Set 2','FT0003':'Fragrance Tester Set 3',
+  'FT0004':'Fragrance Tester Set 4','FT0005':'Fragrance Tester Set 5','FT0006':'Fragrance Tester Set 6',
+  /* ── BG-series ── */
+  'BG0001':'Bakhoor Gift Collection',
+  /* ── CDL-series ── */
+  'CDL0001':'Candle Collection',
+  /* ── DIF-series ── */
+  'DIF-001':'Diffuser Set',
+  /* ── ADS-series ── */
+  'ADS03':'ASL Display Stand',
+  /* ── SP-series — additional sets ── */
+  'SP0001':'Classic Gift Set','SP0002':'Signature Set','SP0003':'Heritage Gift Set',
+  'SP0004':'Premium Collection Set','SP0008':'Oud Gift Set',
+  'SP0015':'Masters Set Box','SP0016':'Caballo Gift Set',
+  'SP0019':'Bakhoor Collection Set','SP0021':'Dakhoon Set Box',
+  'SP0024':'Oud Sampler Set','SP0025':'Caballo Discovery Set','SP0026':'Bakhoor Discovery Set',
+  'SP0027':'ASL Discovery Set','SP0028':'Heritage Discovery Set',
+  'SP0030':'Ramadan Gift Set','SP0035':'Summer Gift Set',
+  /* ── SPG-series ── */
+  'SPG001':'Special Gift Pack 1','SPG002':'Special Gift Pack 2',
   /* ── Oman-only / pending confirmation ── */
   'SET_2X10MS':'2x10 Masters & Signature','G_PLIF10ML':'Peaceful Life 10ml','SPG_DAKH':'Dakhoon Sampler',
 };
@@ -1350,6 +1658,9 @@ const QUARTERS = {1:[1,2,3],2:[4,5,6],3:[7,8,9],4:[10,11,12]};
 let sb = null, salesData = [], filteredSales = [];
 let invHistory = JSON.parse(localStorage.getItem('sop_inv_v2') || '[]');
 let invUploadBuffer = null;
+let targetsCache = {};        // key: "store_month" → {sku_code: target_qty}
+let targetsEditMode = false;
+let targetsLoadKey = null;    // tracks which store+month is currently loaded
 
 // ══════════════════════════════════════════════
 // AUTH
@@ -1503,7 +1814,7 @@ function applySalesFilters() {
     return true;
   });
 
-  updateStats(); renderSalesTable(); renderMoM();
+  updateStats(); renderSalesTable(); renderMoM(); renderRankings();
 }
 
 function updateStats() {
@@ -1545,7 +1856,8 @@ function renderSalesTable() {
   document.getElementById('sales-tbl-wrap').style.display = 'block';
 
   if (view === 'stores') renderStoresView(search);
-  else renderSkuView(search);
+  else if (view === 'sku') renderSkuView(search);
+  else renderTargetsView(search);
 }
 
 function regionPill(reg) {
@@ -1687,6 +1999,211 @@ function exportSalesCsv() {
   }
   dlFile('EP_Sales_'+getPeriodLabel().replace(/ /g,'_')+'.csv', csv, 'text/csv');
   toast('CSV exported');
+}
+
+// ══════════════════════════════════════════════
+// RANKINGS — Top 10 / Bottom 10 SKUs
+// ══════════════════════════════════════════════
+function renderRankings() {
+  const view = document.getElementById('f-view').value;
+  const sec  = document.getElementById('rankings-section');
+  if (view === 'targets' || !filteredSales.length) { sec.style.display = 'none'; return; }
+
+  const bySku = {};
+  filteredSales.forEach(r => { bySku[r.sku_code] = (bySku[r.sku_code] || 0) + (r.qty_sold || 0); });
+  const sorted = Object.entries(bySku).filter(([,q]) => q > 0).sort((a,b) => b[1] - a[1]);
+  if (!sorted.length) { sec.style.display = 'none'; return; }
+
+  const period = getPeriodLabel();
+  document.getElementById('top10-sub').textContent    = 'by units sold — ' + period;
+  document.getElementById('bottom10-sub').textContent = 'lowest performers with ≥1 sale — ' + period;
+
+  function rankRow(sku, qty, rank, isBottom) {
+    const name = SKU_NAMES[sku] || sku;
+    const colour = isBottom ? 'color:#888;' : 'color:var(--gold-dark);font-weight:700;';
+    return `<tr>
+      <td style="font-size:11px;color:var(--ink-light);width:24px;">${rank}</td>
+      <td class="sku">${sku}</td>
+      <td style="font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</td>
+      <td class="num" style="${colour}">${qty.toLocaleString()}</td>
+    </tr>`;
+  }
+
+  const top10    = sorted.slice(0, 10);
+  const bottom10 = sorted.length > 10 ? sorted.slice(-10).reverse() : [];
+
+  document.getElementById('top10-tbody').innerHTML =
+    top10.map(([s,q], i) => rankRow(s, q, i + 1, false)).join('') ||
+    `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--ink-light);">No data</td></tr>`;
+
+  document.getElementById('bottom10-tbody').innerHTML =
+    bottom10.length
+      ? bottom10.map(([s,q], i) => rankRow(s, q, sorted.length - bottom10.length + i + 1, true)).join('')
+      : `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--ink-light);">Need more than 10 SKUs to show bottom ranking</td></tr>`;
+
+  sec.style.display = 'block';
+}
+
+// ══════════════════════════════════════════════
+// TARGETS vs ACTUALS — View C
+// ══════════════════════════════════════════════
+async function renderTargetsView(search) {
+  document.getElementById('rankings-section').style.display = 'none';
+  document.getElementById('mom-section').style.display = 'none';
+
+  const store = document.getElementById('f-store').value;
+  const ptype = document.getElementById('f-period-type').value;
+  const month = document.getElementById('f-month').value;
+  const year  = document.getElementById('f-year').value;
+
+  // Require a specific store + specific month
+  if (store === 'ALL' || ptype !== 'monthly' || month === 'ALL' || year === 'ALL') {
+    document.getElementById('sales-tbl-wrap').style.display = 'none';
+    document.getElementById('sales-empty').style.display    = 'block';
+    document.getElementById('sales-empty').innerHTML = `
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--ink-light);margin-bottom:8px;">Select a Store &amp; Month</div>
+      <div style="font-size:12px;color:var(--ink-light);max-width:360px;margin:0 auto;line-height:1.6;">
+        Targets vs Actuals requires a specific <strong style="color:var(--gold-dark);">store</strong>
+        and <strong style="color:var(--gold-dark);">month</strong> to be selected in the filters above.
+      </div>`;
+    return;
+  }
+
+  const monthYear = year + '-' + month;
+  const cacheKey  = store + '_' + monthYear;
+
+  document.getElementById('sales-empty').style.display    = 'none';
+  document.getElementById('sales-tbl-wrap').style.display = 'block';
+  document.getElementById('sales-table-title').textContent = 'Targets vs Actuals — ' + getStore(store).name + ' — ' + getPeriodLabel();
+  document.getElementById('sales-table-sub').textContent  = 'Loading targets…';
+
+  // Load targets from Supabase if not cached
+  if (targetsLoadKey !== cacheKey) {
+    try {
+      const { data, error } = await sb
+        .from('sales_targets')
+        .select('sku_code,target_qty')
+        .eq('store_code', store)
+        .eq('month_year', monthYear);
+      if (error) throw error;
+      targetsCache[cacheKey] = {};
+      (data || []).forEach(r => { targetsCache[cacheKey][r.sku_code] = r.target_qty; });
+      targetsLoadKey = cacheKey;
+    } catch(e) {
+      targetsCache[cacheKey] = {};
+      targetsLoadKey = cacheKey;
+    }
+  }
+
+  const targets = targetsCache[cacheKey] || {};
+
+  // Build actuals map from filteredSales
+  const actuals = {};
+  filteredSales.forEach(r => { actuals[r.sku_code] = (actuals[r.sku_code] || 0) + (r.qty_sold || 0); });
+
+  // Merge: all SKUs with either a target or actual sales
+  const allSkus = new Set([...Object.keys(actuals), ...Object.keys(targets)]);
+  let rows = [...allSkus].map(sku => ({
+    sku,
+    name:   SKU_NAMES[sku] || sku,
+    target: targets[sku] || 0,
+    actual: actuals[sku]  || 0,
+  }));
+
+  if (search) rows = rows.filter(r => r.sku.toLowerCase().includes(search) || r.name.toLowerCase().includes(search));
+  rows.sort((a, b) => b.actual - a.actual);
+
+  const totalTarget = rows.reduce((s,r) => s + r.target, 0);
+  const totalActual = rows.reduce((s,r) => s + r.actual, 0);
+  const overallPct  = totalTarget > 0 ? Math.round(totalActual / totalTarget * 100) : null;
+
+  document.getElementById('sales-table-sub').textContent =
+    rows.length + ' SKUs' +
+    (totalTarget > 0 ? ' — Overall achievement: ' + overallPct + '%' : ' — No targets set yet');
+
+  function achieveBadge(actual, target) {
+    if (!target) return `<span style="font-size:10px;color:var(--ink-light);font-style:italic;">No target</span>`;
+    const pct = Math.round(actual / target * 100);
+    const color = pct >= 100 ? '#2A6A2A' : pct >= 80 ? '#7A5C00' : '#7A1A1A';
+    const bg    = pct >= 100 ? '#1A3A1A' : pct >= 80 ? '#2B2200' : '#2B0A0A';
+    const icon  = pct >= 100 ? '✓' : pct >= 80 ? '~' : '✗';
+    return `<span style="background:${bg};color:${pct>=100?'#6FCF97':pct>=80?'#C9A44E':'#E87070'};border:1px solid ${color};padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">${icon} ${pct}%</span>`;
+  }
+
+  function targetCell(sku, target) {
+    if (!targetsEditMode) return `<span id="tval-${sku}">${target || '—'}</span>`;
+    return `<input id="tinp-${sku}" type="number" min="0" value="${target || ''}" placeholder="0"
+      style="width:70px;background:var(--surface);border:1px solid var(--gold-dark);color:var(--ink);
+             padding:3px 6px;border-radius:4px;font-size:12px;text-align:right;">`;
+  }
+
+  document.getElementById('sales-thead').innerHTML = `<tr>
+    <th>#</th><th>SKU</th><th>Product Name</th>
+    <th style="text-align:right;">Target</th>
+    <th style="text-align:right;">Actual</th>
+    <th style="text-align:right;">Gap</th>
+    <th style="text-align:center;">Achievement</th>
+    <th style="text-align:right;">
+      ${!targetsEditMode
+        ? `<button onclick="toggleTargetsEdit()" style="background:var(--gold-dark);color:#000;border:none;padding:4px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.06em;">✎ SET TARGETS</button>`
+        : `<span style="display:flex;gap:6px;justify-content:flex-end;">
+             <button onclick="saveTargets('${store}','${monthYear}')" style="background:#1A4A1A;color:#6FCF97;border:1px solid #2A6A2A;padding:4px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;">✓ SAVE</button>
+             <button onclick="cancelTargetsEdit()" style="background:var(--surface);color:var(--ink-light);border:1px solid var(--border);padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;">✕</button>
+           </span>`
+      }
+    </th></tr>`;
+
+  document.getElementById('sales-tbody').innerHTML = rows.map((r, i) => {
+    const gap = r.actual - r.target;
+    const gapStr = r.target ? (gap >= 0 ? `<span style="color:#6FCF97;">+${gap}</span>` : `<span style="color:#E87070;">${gap}</span>`) : '—';
+    return `<tr>
+      <td style="color:var(--ink-light);font-size:11px;">${i+1}</td>
+      <td class="sku">${r.sku}</td>
+      <td style="font-weight:500;">${r.name}</td>
+      <td class="num" style="color:var(--ink-light);">${targetCell(r.sku, r.target)}</td>
+      <td class="num" style="font-weight:600;">${r.actual.toLocaleString()}</td>
+      <td class="num">${gapStr}</td>
+      <td style="text-align:center;">${achieveBadge(r.actual, r.target)}</td>
+      <td></td>
+    </tr>`;
+  }).join('') ||
+  `<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--ink-light);">No SKU data for this period</td></tr>`;
+}
+
+async function saveTargets(storeCode, monthYear) {
+  const inputs = document.querySelectorAll('[id^="tinp-"]');
+  const rows = [];
+  inputs.forEach(inp => {
+    const sku = inp.id.replace('tinp-', '');
+    const qty = parseInt(inp.value, 10);
+    if (!isNaN(qty) && qty >= 0) {
+      rows.push({ sku_code: sku, store_code: storeCode, month_year: monthYear, target_qty: qty, set_by: 'MGR', updated_at: new Date().toISOString() });
+    }
+  });
+  if (!rows.length) { toast('No targets to save'); return; }
+  try {
+    const { error } = await sb.from('sales_targets').upsert(rows, { onConflict: 'sku_code,store_code,month_year' });
+    if (error) throw error;
+    const cacheKey = storeCode + '_' + monthYear;
+    targetsCache[cacheKey] = {};
+    rows.forEach(r => { targetsCache[cacheKey][r.sku_code] = r.target_qty; });
+    targetsLoadKey = null; // force reload next render
+    targetsEditMode = false;
+    toast('Targets saved — ' + rows.length + ' SKUs');
+    applySalesFilters();
+  } catch(e) {
+    toast('Save failed: ' + e.message);
+  }
+}
+
+function toggleTargetsEdit() {
+  targetsEditMode = true;
+  applySalesFilters();
+}
+
+function cancelTargetsEdit() {
+  targetsEditMode = false;
+  applySalesFilters();
 }
 
 // ══════════════════════════════════════════════
@@ -2069,6 +2586,7 @@ function switchTab(id){
   if(id==='production')  loadProductionTab();
   if(id==='warehouse')   loadWarehouseTab();
   if(id==='intelligence') loadIntelligenceTab();
+  if(id==='campaigns')   loadCampaignsTab();
 }
 
 function togglePanel(panelId,btnId,openLabel,closeLabel){
@@ -3368,7 +3886,12 @@ async function confirmWhUpload(){
 // ══════════════════════════════════════════════════════════════════
 // INTELLIGENCE TAB
 // ══════════════════════════════════════════════════════════════════
+// ══ INTEL STATE ══════════════════════════════════════════════════════
 let intelLoaded=false, intelSalesData=[], intelWhSoh=[], intelTransfers=[], intelProdHistory=[];
+let intelReplSchedule=[], intelConsumables=[], intelConsStock=[];
+// default delivery interval (days) used when no schedule table entry exists
+const INTEL_DEFAULT_INTERVAL = 7;
+const INTEL_SAFETY_DAYS = 3;
 
 async function loadIntelligenceTab(){
   if(!intelLoaded) await loadIntelligenceData();
@@ -3380,74 +3903,110 @@ async function loadIntelligenceData(){
   document.getElementById('intel-content').style.display='none';
   const div=document.getElementById('intel-div-sel').value;
 
-  // Pull all needed data in parallel
-  const [r1,r2,r3,r4]=await Promise.all([
-    sb.from('sales_history').select('sku_code,store_code,month_year,qty_sold').limit(20000),
+  // Reuse Sales tab cache if already loaded, otherwise fetch fresh
+  const salesSrc = (salesLoaded && salesData.length)
+    ? Promise.resolve({data:salesData,error:null})
+    : sb.from('sales_history').select('sku_code,store_code,month_year,qty_sold').limit(20000);
+
+  const [r1,r2,r3,r4,r5,r6,r7]=await Promise.allSettled([
+    salesSrc,
     sb.from('wh_stock_on_hand').select('sku_code,item_name,item_spec_name,qty,division,snapshot_date').order('qty',{ascending:false}).limit(2000),
-    sb.from('wh_transfers').select('sku_code,item_name,to_location_code,qty_transferred,transfer_date,division').limit(5000),
+    sb.from('wh_transfers').select('sku_code,item_name,to_location_code,qty_transferred,transfer_date,division').limit(10000),
     sb.from('production_history').select('sku_code,product_name,planned_fg_qty,actual_fg_qty,plan_date,record_status,week_label').limit(2000),
+    sb.from('store_replenishment_schedule').select('*').limit(100),
+    sb.from('consumable_items').select('*').limit(200),
+    sb.from('consumable_stock').select('*').order('snapshot_date',{ascending:false}).limit(2000),
   ]);
 
-  intelSalesData =(r1.data||[]).filter(r=>div==='ALL'||r.store_code?.startsWith(div==='EPP'?'':'ASL'));
-  intelWhSoh     =(r2.data||[]).filter(r=>div==='ALL'||r.division===div);
-  intelTransfers =(r3.data||[]).filter(r=>div==='ALL'||r.division===div);
-  intelProdHistory=r4.data||[];
+  const g = r => r.status==='fulfilled' ? (r.value.data||[]) : [];
+  const rawSales = g(r1);
+  intelSalesData  = rawSales.filter(r=>div==='ALL'||r.store_code?.startsWith(div==='EPP'?'':'ASL'));
+  intelWhSoh      = g(r2).filter(r=>div==='ALL'||r.division===div);
+  intelTransfers  = g(r3).filter(r=>div==='ALL'||r.division===div);
+  intelProdHistory= g(r4);
+  intelReplSchedule=g(r5);
+  intelConsumables = g(r6);
+  intelConsStock   = g(r7);
   intelLoaded=true;
 
   renderIntelKPIs();
   document.getElementById('intel-loading').style.display='none';
   document.getElementById('intel-content').style.display='block';
+  document.getElementById('intel-export-btn').style.display='inline-flex';
   renderIntelView();
 }
 
 function renderIntelKPIs(){
-  // Sales velocity per SKU (monthly avg)
+  const rates = getWeeklyRates();
   const skuSales={};
-  intelSalesData.forEach(r=>{ if(!skuSales[r.sku_code]) skuSales[r.sku_code]=0; skuSales[r.sku_code]+=(r.qty_sold||0); });
-  const months=new Set(intelSalesData.map(r=>r.month_year)).size||1;
-  const weeklyRate={};
-  Object.entries(skuSales).forEach(([k,v])=>weeklyRate[k]=+(v/months*12/52).toFixed(1));
+  intelSalesData.forEach(r=>{ skuSales[r.sku_code]=(skuSales[r.sku_code]||0)+(r.qty_sold||0); });
 
-  const activeSkus=Object.keys(skuSales).filter(k=>skuSales[k]>0).length;
-  const fast=Object.values(weeklyRate).filter(v=>v>50).length;
-  const slow=Object.values(weeklyRate).filter(v=>v>0&&v<5).length;
+  const activeSkus = Object.keys(skuSales).filter(k=>skuSales[k]>0).length;
+  const fast   = Object.values(rates).filter(v=>v>50).length;
+  const slow   = Object.values(rates).filter(v=>v>0&&v<5).length;
 
-  // Dead stock: in WH, no transfers in last 8 weeks
-  const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-56);
-  const recentSkus=new Set(intelTransfers.filter(r=>new Date(r.transfer_date)>=cutoff).map(r=>r.sku_code));
-  const whSkus=new Set(intelWhSoh.filter(r=>r.qty>0).map(r=>r.sku_code));
-  const dead=[...whSkus].filter(s=>!recentSkus.has(s)).length;
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-56);
+  const recentSkus = new Set(intelTransfers.filter(r=>new Date(r.transfer_date)>=cutoff).map(r=>r.sku_code));
+  const whSkus     = new Set(intelWhSoh.filter(r=>r.qty>0).map(r=>r.sku_code));
+  const dead       = [...whSkus].filter(s=>!recentSkus.has(s)).length;
 
-  // Low WH cover (< 2 weeks)
-  const sohBySkus={};
-  intelWhSoh.forEach(r=>{ if(r.sku_code) sohBySkus[r.sku_code]=(sohBySkus[r.sku_code]||0)+(r.qty||0); });
-  const lowCover=Object.entries(sohBySkus).filter(([k,v])=>weeklyRate[k]>0&&v/weeklyRate[k]<2).length;
+  const soh = getWhQty();
+  const lowCover = Object.entries(soh).filter(([k,v])=>rates[k]>0&&v/rates[k]<2).length;
 
-  document.getElementById('intel-kpi-active-skus').textContent=activeSkus.toLocaleString();
-  document.getElementById('intel-kpi-fast').textContent=fast;
-  document.getElementById('intel-kpi-slow').textContent=slow;
-  document.getElementById('intel-kpi-dead').textContent=dead;
-  document.getElementById('intel-kpi-lowcover').textContent=lowCover;
+  // Count stores needing action (overdue delivery or critical cover)
+  const storesNeedAction = _calcStoresNeedingAction(rates, soh);
 
-  // Alert bar
-  const bar=document.getElementById('intel-alert-bar');
-  if(lowCover>0||dead>0){
-    bar.style.display='flex';
-    document.getElementById('intel-alert-lowcover').textContent=lowCover?`🔴 ${lowCover} SKUs under 2 weeks WH cover`:'';
-    document.getElementById('intel-alert-deadstock').textContent=dead?`🟡 ${dead} SKUs in WH with no store replenishment in 8+ weeks`:'';
+  document.getElementById('intel-kpi-active-skus').textContent = activeSkus.toLocaleString();
+  document.getElementById('intel-kpi-fast').textContent        = fast;
+  document.getElementById('intel-kpi-slow').textContent        = slow;
+  document.getElementById('intel-kpi-dead').textContent        = dead;
+  document.getElementById('intel-kpi-lowcover').textContent    = lowCover;
+  document.getElementById('intel-kpi-stores-alert').textContent= storesNeedAction;
+
+  if(storesNeedAction>0||lowCover>0||dead>0)
     document.getElementById('intel-nav-dot').style.display='inline-block';
-  }
+}
+
+function _calcStoresNeedingAction(rates, soh){
+  const today = new Date();
+  const storeSet = new Set();
+  // Overdue delivery per store
+  const lastTrfByStore={};
+  intelTransfers.forEach(r=>{
+    const k=r.to_location_code; if(!k) return;
+    const d=new Date(r.transfer_date);
+    if(!lastTrfByStore[k]||d>lastTrfByStore[k]) lastTrfByStore[k]=d;
+  });
+  Object.entries(lastTrfByStore).forEach(([store,dt])=>{
+    const sched=intelReplSchedule.find(s=>s.store_code===store);
+    const interval=(sched?.lead_time_days||INTEL_DEFAULT_INTERVAL)+INTEL_SAFETY_DAYS;
+    const daysSince=Math.floor((today-dt)/86400000);
+    if(daysSince>interval*1.5) storeSet.add(store);
+  });
+  // Critical WH cover for fast-moving SKUs
+  Object.entries(soh).forEach(([sku,qty])=>{
+    const rate=rates[sku]||0;
+    if(rate>10&&qty/rate<2){
+      // Flag all stores selling this SKU
+      intelSalesData.filter(r=>r.sku_code===sku&&r.qty_sold>0)
+        .forEach(r=>storeSet.add(r.store_code));
+    }
+  });
+  return storeSet.size;
 }
 
 function renderIntelView(){
-  const view=document.getElementById('intel-view-sel').value;
-  const cont=document.getElementById('intel-content');
+  const view = document.getElementById('intel-view-sel').value;
+  const cont = document.getElementById('intel-content');
   if(!intelLoaded){ loadIntelligenceData(); return; }
-  if(view==='fastmovers')    cont.innerHTML=renderFastMovers();
-  else if(view==='slowmovers')  cont.innerHTML=renderSlowMovers();
-  else if(view==='replenishment') cont.innerHTML=renderReplenishment();
-  else if(view==='production') cont.innerHTML=renderProdTracker();
-  else cont.innerHTML=renderCoverageIntel();
+  if     (view==='alerts')       cont.innerHTML = renderAlertsView();
+  else if(view==='replen_plan')  cont.innerHTML = renderStoreReplenPlan();
+  else if(view==='fastmovers')   cont.innerHTML = renderFastMovers();
+  else if(view==='slowmovers')   cont.innerHTML = renderSlowMovers();
+  else if(view==='replenishment')cont.innerHTML = renderReplenishment();
+  else if(view==='production')   cont.innerHTML = renderProdTracker();
+  else if(view==='consumables')  cont.innerHTML = renderConsumables();
+  else                            cont.innerHTML = renderCoverageIntel();
 }
 
 function getWeeklyRates(){
@@ -3486,6 +4045,8 @@ function getItemName(sku){
   // Try any WH transfer record
   const tr=intelTransfers.find(x=>x.sku_code===sku);
   if(tr?.item_name) return tr.item_name;
+  // Fall back to static SKU_NAMES map
+  if(SKU_NAMES[sku]) return SKU_NAMES[sku];
   return sku;
 }
 
@@ -3582,35 +4143,6 @@ function renderSlowMovers(){
   return html+`</tbody></table></div>`;
 }
 
-function renderReplenishment(){
-  const byStore={};
-  intelTransfers.forEach(r=>{
-    const k=r.to_location_code||'?';
-    if(!byStore[k]){byStore[k]={skus:{},totalQty:0,txns:0};}
-    byStore[k].totalQty+=(r.qty_transferred||0);
-    byStore[k].txns++;
-    if(r.sku_code){ byStore[k].skus[r.sku_code]=(byStore[k].skus[r.sku_code]||0)+(r.qty_transferred||0); }
-  });
-
-  let html=`<div style="font-weight:700;font-size:15px;margin-bottom:12px;letter-spacing:0.05em;">REPLENISHMENT ANALYSIS — Store-level view</div>
-  <div class="tbl-wrap" style="border:1px solid var(--border);">
-  <table style="font-size:12px;"><thead><tr>
-    <th>Store Code</th><th style="text-align:right;">Total Units Received</th><th style="text-align:right;">Transactions</th>
-    <th style="text-align:right;">Unique SKUs</th><th>Top SKU Received</th>
-  </tr></thead><tbody>`;
-  Object.entries(byStore).sort((a,b)=>b[1].totalQty-a[1].totalQty).forEach(([code,s])=>{
-    const topSku=Object.entries(s.skus).sort((a,b)=>b[1]-a[1])[0];
-    html+=`<tr>
-      <td style="font-family:'Courier New',monospace;font-size:11px;">${code}</td>
-      <td style="text-align:right;font-weight:700;">${Math.round(s.totalQty).toLocaleString()}</td>
-      <td style="text-align:right;">${s.txns}</td>
-      <td style="text-align:right;">${Object.keys(s.skus).length}</td>
-      <td style="font-size:11px;">${topSku?`${topSku[0]} (${Math.round(topSku[1])} units)`:'—'}</td>
-    </tr>`;
-  });
-  return html+`</tbody></table></div>`;
-}
-
 function renderProdTracker(){
   const rows=intelProdHistory.filter(r=>r.plan_date).sort((a,b)=>new Date(b.plan_date)-new Date(a.plan_date));
   let html=`<div style="font-weight:700;font-size:15px;margin-bottom:12px;letter-spacing:0.05em;">PRODUCTION DELIVERY TRACKER — Planned vs Actual</div>
@@ -3645,37 +4177,1284 @@ function renderProdTracker(){
 function renderCoverageIntel(){
   const rates=getWeeklyRates();
   const soh=getWhQty();
-  // Build coverage table: top SKUs by risk (low cover + high velocity)
   const coverage=Object.entries(rates).filter(([,r])=>r>0).map(([sku,rate])=>{
     const whQty=soh[sku]||0;
     const cover=+(whQty/rate).toFixed(1);
     return {sku,rate,whQty,cover,name:getItemName(sku)};
   }).sort((a,b)=>a.cover-b.cover);
 
-  let html=`<div style="font-weight:700;font-size:15px;margin-bottom:6px;letter-spacing:0.05em;">SKU COVERAGE — WH Stock vs Weekly Sales Rate</div>
-  <div style="font-size:12px;color:var(--ink-light);margin-bottom:14px;">Shows how many weeks of warehouse stock remain at current sales pace. Red = under 2 weeks — immediate action needed.</div>
+  const critN=coverage.filter(r=>r.cover<2).length;
+  const watchN=coverage.filter(r=>r.cover>=2&&r.cover<4).length;
+
+  let html=`<div style="display:flex;align-items:baseline;gap:16px;margin-bottom:6px;">
+    <div style="font-weight:700;font-size:15px;letter-spacing:0.05em;">SKU COVERAGE — WH Stock vs Weekly Sales Rate</div>
+    <span style="background:#FDECEA;color:#C0392B;border-radius:4px;padding:2px 10px;font-size:11px;font-weight:700;">${critN} CRITICAL</span>
+    <span style="background:#FFF3CD;color:#856404;border-radius:4px;padding:2px 10px;font-size:11px;">${watchN} WATCH</span>
+  </div>
+  <div style="font-size:12px;color:var(--ink-light);margin-bottom:14px;">Weeks of WH stock at current sales pace. CRITICAL = under 2 weeks — act immediately.</div>
   <div class="tbl-wrap" style="border:1px solid var(--border);">
   <table style="font-size:12px;"><thead><tr>
     <th>SKU</th><th>Product</th>
     <th style="text-align:right;">Weekly Rate</th>
     <th style="text-align:right;">WH Stock</th>
-    <th>WH Cover</th>
-    <th>Risk Level</th>
+    <th>WH Cover</th><th>Risk</th>
   </tr></thead><tbody>`;
-  coverage.slice(0,50).forEach(r=>{
-    const risk=r.cover<2?`<span style="background:#FDECEA;color:#C0392B;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">CRITICAL</span>`:
-               r.cover<4?`<span style="background:#FFF3CD;color:#856404;border-radius:4px;padding:2px 8px;font-size:10px;">WATCH</span>`:
-               `<span style="background:#D4EDDA;color:#155724;border-radius:4px;padding:2px 8px;font-size:10px;">SAFE</span>`;
+  coverage.slice(0,60).forEach(r=>{
+    const risk=r.cover<2
+      ?`<span style="background:#FDECEA;color:#C0392B;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">CRITICAL</span>`
+      :r.cover<4
+      ?`<span style="background:#FFF3CD;color:#856404;border-radius:4px;padding:2px 8px;font-size:10px;">WATCH</span>`
+      :`<span style="background:#D4EDDA;color:#155724;border-radius:4px;padding:2px 8px;font-size:10px;">SAFE</span>`;
     html+=`<tr style="${r.cover<2?'background:#FFFAF9':''}">
       <td style="font-family:'Courier New',monospace;font-size:11px;">${r.sku}</td>
       <td style="font-weight:500;">${r.name}</td>
       <td style="text-align:right;color:var(--gold-dark);font-weight:600;">${r.rate}/wk</td>
       <td style="text-align:right;">${r.whQty.toLocaleString()}</td>
       <td>${coverBadgeIntel(r.cover)}</td>
-      <td>${risk}</td>
+      <td>${risk}</td></tr>`;
+  });
+  return html+`</tbody></table></div>`;
+}
+
+// ══ NEW VIEW: PROACTIVE ALERTS DASHBOARD ═════════════════════════════
+function renderAlertsView(){
+  const rates = getWeeklyRates();
+  const soh   = getWhQty();
+  const today = new Date();
+  const alerts = { critical:[], warning:[], info:[] };
+
+  // ── 1. CRITICAL: WH cover < 2 weeks for fast movers ─────────────
+  Object.entries(soh).forEach(([sku,qty])=>{
+    const rate=rates[sku]||0;
+    if(rate>5 && qty/rate<2){
+      const cover=(qty/rate).toFixed(1);
+      const stores=[...new Set(intelSalesData.filter(r=>r.sku_code===sku&&r.qty_sold>0).map(r=>r.store_code))];
+      alerts.critical.push({
+        type:'LOW_WH_COVER', sku,
+        msg:`<strong>${getItemName(sku)}</strong> (${sku}) — WH cover: <strong>${cover} wks</strong> at ${rate}/wk. Affects ${stores.length} store(s).`,
+        detail:`Stores receiving this SKU: ${stores.map(c=>getStore(c).name||c).join(', ')}`,
+        action:'Escalate to production / source urgently'
+      });
+    }
+  });
+
+  // ── 2. CRITICAL: Stores overdue for delivery ──────────────────────
+  const lastTrfByStore={};
+  intelTransfers.forEach(r=>{
+    const k=r.to_location_code; if(!k) return;
+    const d=new Date(r.transfer_date);
+    if(!lastTrfByStore[k]||d>lastTrfByStore[k]) lastTrfByStore[k]=d;
+  });
+  Object.entries(lastTrfByStore).forEach(([store,dt])=>{
+    const sched=intelReplSchedule.find(s=>s.store_code===store);
+    const interval=(sched?.lead_time_days||INTEL_DEFAULT_INTERVAL)+INTEL_SAFETY_DAYS;
+    const daysSince=Math.floor((today-dt)/86400000);
+    const storeName=getStore(store).name||store;
+    if(daysSince>interval*1.5){
+      alerts.critical.push({
+        type:'OVERDUE_DELIVERY', store,
+        msg:`<strong>${storeName}</strong> — Last delivery was <strong>${daysSince} days ago</strong> (expected every ${interval} days).`,
+        detail:`Store code: ${store} | Last delivery: ${dt.toLocaleDateString('en-GB')}`,
+        action:'Schedule immediate delivery from Nad Al Hammar'
+      });
+    } else if(daysSince>interval){
+      alerts.warning.push({
+        type:'DELIVERY_DUE', store,
+        msg:`<strong>${storeName}</strong> — Delivery overdue by ${daysSince-interval} day(s).`,
+        detail:`Last delivery: ${dt.toLocaleDateString('en-GB')} | Interval: ${interval} days`,
+        action:'Schedule delivery in next run'
+      });
+    }
+  });
+
+  // ── 3. WARNING: Dead stock in WH ─────────────────────────────────
+  const cutoff56=new Date(); cutoff56.setDate(cutoff56.getDate()-56);
+  const recentTrf=new Set(intelTransfers.filter(r=>new Date(r.transfer_date)>=cutoff56).map(r=>r.sku_code));
+  const deadItems=Object.entries(soh).filter(([sku,qty])=>qty>0&&!recentTrf.has(sku));
+  if(deadItems.length){
+    alerts.warning.push({
+      type:'DEAD_STOCK',
+      msg:`<strong>${deadItems.length} SKUs</strong> have WH stock but zero store replenishment in 8+ weeks.`,
+      detail:deadItems.slice(0,5).map(([s,q])=>`${getItemName(s)} (${q} units)`).join(' · ')+(deadItems.length>5?` + ${deadItems.length-5} more`:''),
+      action:'Review for promotion, markdown, or inter-store transfer. Switch to Slow Movers view for details.'
+    });
+  }
+
+  // ── 4. WARNING: WH cover 2–4 weeks for fast movers ───────────────
+  const watchSkus=Object.entries(soh).filter(([sku,qty])=>{
+    const r=rates[sku]||0; return r>10&&qty/r>=2&&qty/r<4;
+  });
+  if(watchSkus.length){
+    alerts.warning.push({
+      type:'WATCH_COVER',
+      msg:`<strong>${watchSkus.length} SKUs</strong> are in the Watch zone (2–4 weeks WH cover). Plan replenishment soon.`,
+      detail:watchSkus.slice(0,5).map(([s,q])=>`${s}: ${(q/(rates[s]||1)).toFixed(1)}wks`).join(' · '),
+      action:'Switch to SKU Coverage view. Include in next production batch.'
+    });
+  }
+
+  // ── 5. INFO: Production delays ───────────────────────────────────
+  const prodDelays=intelProdHistory.filter(r=>r.record_status==='not_produced'&&r.plan_date&&new Date(r.plan_date)<today);
+  if(prodDelays.length){
+    alerts.info.push({
+      type:'PROD_DELAY',
+      msg:`<strong>${prodDelays.length} production batch(es)</strong> are past their planned date with status "Not Produced".`,
+      detail:prodDelays.slice(0,3).map(r=>`${r.sku_code||'—'} (${r.plan_date})`).join(' · '),
+      action:'Follow up with production team. Switch to Production Delivery view.'
+    });
+  }
+
+  // ── 6. INFO: Consumable low stock ────────────────────────────────
+  if(intelConsumables.length&&intelConsStock.length){
+    const latest={};
+    intelConsStock.forEach(r=>{ const k=r.item_code+'_'+r.store_code; if(!latest[k]||r.snapshot_date>latest[k].snapshot_date) latest[k]=r; });
+    const lowCons=Object.values(latest).filter(r=>{
+      const item=intelConsumables.find(i=>i.item_code===r.item_code);
+      return item&&r.qty_on_hand<(r.reorder_qty||item.reorder_threshold||50);
+    });
+    if(lowCons.length){
+      alerts.warning.push({
+        type:'CONSUMABLE_LOW',
+        msg:`<strong>${lowCons.length} consumable item(s)</strong> are below reorder threshold across stores.`,
+        detail:lowCons.slice(0,4).map(r=>`${r.store_code}: ${r.item_code} (${r.qty_on_hand} left)`).join(' · '),
+        action:'Include consumables in next store delivery. Switch to Consumables view.'
+      });
+    }
+  }
+
+  const total=alerts.critical.length+alerts.warning.length+alerts.info.length;
+  if(!total) return `<div style="background:#D4EDDA;border:1px solid #28A745;border-radius:8px;padding:32px;text-align:center;">
+    <div style="font-size:24px;margin-bottom:8px;">✓</div>
+    <div style="font-weight:700;color:#155724;font-size:15px;">All Clear — No Active Alerts</div>
+    <div style="color:#155724;font-size:12px;margin-top:6px;">All stores and WH stock levels are within normal parameters.</div>
+  </div>`;
+
+  function alertCard(a, bg, border, iconColor, icon){
+    return `<div style="background:${bg};border:1px solid ${border};border-radius:6px;padding:14px 18px;margin-bottom:10px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="font-size:16px;margin-top:1px;">${icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;line-height:1.5;">${a.msg}</div>
+          <div style="font-size:11px;color:#555;margin-top:4px;">${a.detail||''}</div>
+          <div style="font-size:11px;font-weight:700;color:${iconColor};margin-top:6px;">→ ${a.action}</div>
+        </div>
+        <span style="background:${border};color:#fff;border-radius:12px;padding:1px 8px;font-size:10px;font-weight:700;white-space:nowrap;">${a.type?.replace(/_/g,' ')}</span>
+      </div>
+    </div>`;
+  }
+
+  let html=`<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+    <div style="background:#FDECEA;border:1px solid #C0392B;border-radius:6px;padding:10px 20px;text-align:center;">
+      <div style="font-size:22px;font-weight:800;color:#C0392B;">${alerts.critical.length}</div>
+      <div style="font-size:11px;color:#C0392B;font-weight:700;letter-spacing:0.08em;">CRITICAL</div>
+    </div>
+    <div style="background:#FFF3CD;border:1px solid #FFC107;border-radius:6px;padding:10px 20px;text-align:center;">
+      <div style="font-size:22px;font-weight:800;color:#856404;">${alerts.warning.length}</div>
+      <div style="font-size:11px;color:#856404;font-weight:700;letter-spacing:0.08em;">WARNING</div>
+    </div>
+    <div style="background:#E9F0FB;border:1px solid #3B5BDB;border-radius:6px;padding:10px 20px;text-align:center;">
+      <div style="font-size:22px;font-weight:800;color:#1A5276;">${alerts.info.length}</div>
+      <div style="font-size:11px;color:#1A5276;font-weight:700;letter-spacing:0.08em;">INFO</div>
+    </div>
+    <div style="margin-left:auto;align-self:center;font-size:11px;color:var(--ink-light);">
+      Last refreshed: ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}
+    </div>
+  </div>`;
+
+  if(alerts.critical.length){
+    html+=`<div style="font-weight:700;letter-spacing:0.08em;font-size:11px;color:#C0392B;text-transform:uppercase;margin-bottom:8px;">🔴 Critical — Immediate Action Required</div>`;
+    alerts.critical.forEach(a=>{ html+=alertCard(a,'#FFFAF9','#C0392B','#C0392B','🔴'); });
+    html+=`<div style="height:16px;"></div>`;
+  }
+  if(alerts.warning.length){
+    html+=`<div style="font-weight:700;letter-spacing:0.08em;font-size:11px;color:#856404;text-transform:uppercase;margin-bottom:8px;">🟡 Warnings — Action This Week</div>`;
+    alerts.warning.forEach(a=>{ html+=alertCard(a,'#FFFEF5','#FFC107','#856404','🟡'); });
+    html+=`<div style="height:16px;"></div>`;
+  }
+  if(alerts.info.length){
+    html+=`<div style="font-weight:700;letter-spacing:0.08em;font-size:11px;color:#1A5276;text-transform:uppercase;margin-bottom:8px;">🔵 Info — Monitor</div>`;
+    alerts.info.forEach(a=>{ html+=alertCard(a,'#F0F5FF','#3B5BDB','#1A5276','🔵'); });
+  }
+  return html;
+}
+
+// ══ NEW VIEW: STORE REPLENISHMENT PLAN ══════════════════════════════
+function renderStoreReplenPlan(){
+  const rates  = getWeeklyRates();
+  const soh    = getWhQty();
+  const today  = new Date();
+
+  // Build per-store velocity from sales_history
+  const storeSku={}; // storeCode → { skuCode → weeklyRate }
+  const skuMonths={};
+  intelSalesData.forEach(r=>{
+    if(!storeSku[r.store_code]) storeSku[r.store_code]={};
+    if(!skuMonths[r.store_code]) skuMonths[r.store_code]={};
+    if(!skuMonths[r.store_code][r.sku_code]) skuMonths[r.store_code][r.sku_code]=new Set();
+    storeSku[r.store_code][r.sku_code]=(storeSku[r.store_code][r.sku_code]||0)+(r.qty_sold||0);
+    skuMonths[r.store_code][r.sku_code].add(r.month_year);
+  });
+
+  // Last transfer date per store per SKU
+  const lastTrf={}; // storeCode → { skuCode → Date }
+  intelTransfers.forEach(r=>{
+    const k=r.to_location_code; if(!k) return;
+    if(!lastTrf[k]) lastTrf[k]={};
+    const d=new Date(r.transfer_date);
+    if(!lastTrf[k][r.sku_code]||d>lastTrf[k][r.sku_code]) lastTrf[k][r.sku_code]=d;
+  });
+
+  // Build store cards
+  const activeStores=STORES.filter(s=>s.code!=='MGR'&&s.code!=='WH001'&&storeSku[s.code]);
+  let urgentStores=0;
+  let html=`<div style="font-weight:700;font-size:15px;margin-bottom:4px;letter-spacing:0.05em;">STORE REPLENISHMENT PLAN</div>
+  <div style="font-size:12px;color:var(--ink-light);margin-bottom:16px;">
+    Recommended order quantities for each store based on weekly sales velocity.
+    <span style="color:#856404;">⚙ Delivery schedule: using ${intelReplSchedule.length>0?intelReplSchedule.length+' configured stores':'default 7-day interval for all stores'}.</span>
+    ${intelReplSchedule.length===0?'<a href="#" onclick="toast(\'Run the store_replenishment_schedule SQL in Supabase to configure exact delivery days per store\');return false;" style="color:var(--gold-dark);text-decoration:underline;font-size:11px;">Configure schedule →</a>':''}
+  </div>`;
+
+  activeStores.forEach(store=>{
+    const skuData=storeSku[store.code]||{};
+    const sched=intelReplSchedule.find(s=>s.store_code===store.code);
+    const interval=(sched?.lead_time_days||INTEL_DEFAULT_INTERVAL);
+    const safety=(sched?.safety_days||INTEL_SAFETY_DAYS);
+
+    // Find SKUs needing replenishment: active velocity + overdue or WH has stock
+    const replenItems=[];
+    Object.entries(skuData).forEach(([sku,totalSold])=>{
+      const months=skuMonths[store.code]?.[sku]?.size||1;
+      const storeRate=+(totalSold/months*12/52).toFixed(2);
+      if(storeRate<0.3) return; // skip very rare sellers
+      const whAvail=soh[sku]||0;
+      if(whAvail===0) return; // WH out of stock — nothing to send
+      const lastDate=lastTrf[store.code]?.[sku];
+      const daysSince=lastDate?Math.floor((today-lastDate)/86400000):999;
+      const recQty=Math.max(Math.ceil(storeRate*((interval+safety)/7)),1);
+      const urgency=daysSince>interval*1.5?'URGENT':daysSince>interval?'DUE':'OK';
+      if(urgency!=='OK'||(rates[sku]>10&&(whAvail/rates[sku])<3)){
+        replenItems.push({sku,name:getItemName(sku),storeRate,whAvail,daysSince,recQty,urgency,lastDate});
+      }
+    });
+    if(!replenItems.length) return;
+
+    replenItems.sort((a,b)=>{ const o={URGENT:0,DUE:1,OK:2}; return o[a.urgency]-o[b.urgency]||b.storeRate-a.storeRate; });
+    const urgentN=replenItems.filter(r=>r.urgency==='URGENT').length;
+    if(urgentN>0) urgentStores++;
+    const headerColor=urgentN>0?'#C0392B':replenItems.some(r=>r.urgency==='DUE')?'#856404':'#155724';
+    const headerBg=urgentN>0?'#FDECEA':replenItems.some(r=>r.urgency==='DUE')?'#FFF3CD':'#D4EDDA';
+    const badgeTxt=urgentN>0?`🔴 ${urgentN} URGENT`:replenItems.some(r=>r.urgency==='DUE')?`🟡 ${replenItems.length} DUE`:'✓ Plan Ahead';
+
+    html+=`<details style="border:1px solid var(--border);margin-bottom:8px;border-radius:6px;overflow:hidden;" ${urgentN>0?'open':''}>
+      <summary style="background:${headerBg};padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;list-style:none;">
+        <span style="font-weight:700;font-size:13px;color:${headerColor};">${store.name}</span>
+        <span style="font-size:11px;color:var(--ink-light);">${store.city} · ${store.code}</span>
+        <span style="margin-left:auto;background:${headerColor};color:#fff;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;">${badgeTxt}</span>
+        <span style="font-size:11px;color:var(--ink-light);">${replenItems.length} SKUs</span>
+      </summary>
+      <div style="padding:0;">
+        <div class="tbl-wrap"><table style="font-size:12px;"><thead><tr>
+          <th>SKU</th><th>Product</th>
+          <th style="text-align:right;">Store Rate/wk</th>
+          <th style="text-align:right;">WH Available</th>
+          <th style="text-align:right;">Days Since Last</th>
+          <th style="text-align:right;">Rec. Qty</th>
+          <th>Status</th>
+        </tr></thead><tbody>
+        ${replenItems.map(r=>{
+          const badge=r.urgency==='URGENT'
+            ?`<span style="background:#FDECEA;color:#C0392B;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">URGENT</span>`
+            :r.urgency==='DUE'
+            ?`<span style="background:#FFF3CD;color:#856404;border-radius:4px;padding:2px 8px;font-size:10px;">DUE</span>`
+            :`<span style="background:#D4EDDA;color:#155724;border-radius:4px;padding:2px 8px;font-size:10px;">PLAN</span>`;
+          return `<tr style="${r.urgency==='URGENT'?'background:#FFFAF9':''}">
+            <td style="font-family:'Courier New',monospace;font-size:11px;">${r.sku}</td>
+            <td style="font-weight:500;">${r.name}</td>
+            <td style="text-align:right;color:var(--gold-dark);font-weight:600;">${r.storeRate}</td>
+            <td style="text-align:right;">${r.whAvail.toLocaleString()}</td>
+            <td style="text-align:right;${r.daysSince>interval*1.5?'color:#C0392B;font-weight:700;':''}">${r.daysSince===999?'Never':r.daysSince+'d'}</td>
+            <td style="text-align:right;font-weight:700;color:var(--gold-dark);">${r.recQty}</td>
+            <td>${badge}</td>
+          </tr>`;
+        }).join('')}
+        </tbody></table></div>
+        <div style="padding:10px 16px;display:flex;gap:8px;background:var(--bg);">
+          <button onclick="exportStoreOrder('${store.code}','${store.name}')" style="background:var(--gold-dark);color:#000;border:none;padding:6px 14px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;">↓ Export Order Sheet</button>
+          <span style="font-size:11px;color:var(--ink-light);align-self:center;">Delivery interval: ${interval}d · Safety buffer: ${safety}d · Total rec. qty: ${replenItems.reduce((s,r)=>s+r.recQty,0)} units</span>
+        </div>
+      </div>
+    </details>`;
+  });
+
+  if(urgentStores===0&&html.indexOf('<details')===-1)
+    html+=`<div style="background:#D4EDDA;border:1px solid #28A745;border-radius:8px;padding:32px;text-align:center;">
+      <div style="font-size:24px;margin-bottom:8px;">✓</div>
+      <div style="font-weight:700;color:#155724;">All Stores Are Stocked</div>
+      <div style="color:#155724;font-size:12px;margin-top:6px;">No replenishment required based on current velocity and delivery schedule.</div>
+    </div>`;
+  return html;
+}
+
+function exportStoreOrder(storeCode, storeName){
+  const rates=getWeeklyRates();
+  const soh=getWhQty();
+  const today=new Date();
+  const skuData={}, skuMonths={};
+  intelSalesData.filter(r=>r.store_code===storeCode).forEach(r=>{
+    skuData[r.sku_code]=(skuData[r.sku_code]||0)+(r.qty_sold||0);
+    if(!skuMonths[r.sku_code]) skuMonths[r.sku_code]=new Set();
+    skuMonths[r.sku_code].add(r.month_year);
+  });
+  let csv=`Emirates Pride — Store Order Sheet\nStore: ${storeName} (${storeCode})\nDate: ${today.toLocaleDateString('en-GB')}\n\nSKU Code,Product Name,Store Weekly Rate,WH Available,Recommended Qty\n`;
+  Object.entries(skuData).forEach(([sku,total])=>{
+    const m=skuMonths[sku]?.size||1;
+    const r=+(total/m*12/52).toFixed(2);
+    if(r<0.3) return;
+    const whQ=soh[sku]||0;
+    if(!whQ) return;
+    const rec=Math.max(Math.ceil(r*2),1);
+    csv+=`${sku},"${getItemName(sku)}",${r},${whQ},${rec}\n`;
+  });
+  dlFile(`Order_${storeCode}_${today.toISOString().slice(0,10)}.csv`,csv,'text/csv');
+  toast('Order sheet exported for '+storeName);
+}
+
+// ══ NEW VIEW: CONSUMABLES & NON-PRODUCT ITEMS ════════════════════════
+function renderConsumables(){
+  if(!intelConsumables.length){
+    return `<div style="border:2px dashed var(--border);border-radius:8px;padding:40px;text-align:center;max-width:600px;margin:0 auto;">
+      <div style="font-size:28px;margin-bottom:12px;">🛍</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Consumables Tracking Not Yet Set Up</div>
+      <div style="font-size:12px;color:var(--ink-light);line-height:1.7;margin-bottom:20px;">
+        Track shopping bags, packing materials, promotional items and stationery for every store.
+        To enable this feature, run the following SQL in your <strong>Supabase SQL Editor</strong>:
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px;text-align:left;font-family:'Courier New',monospace;font-size:11px;line-height:1.6;margin-bottom:20px;">
+        CREATE TABLE consumable_items (item_code TEXT PRIMARY KEY, item_name TEXT NOT NULL,<br>
+        &nbsp;category TEXT, unit TEXT DEFAULT 'pcs', reorder_threshold INT DEFAULT 50);<br><br>
+        CREATE TABLE consumable_stock (id BIGSERIAL PRIMARY KEY, item_code TEXT NOT NULL,<br>
+        &nbsp;store_code TEXT NOT NULL, qty_on_hand INT DEFAULT 0, weekly_usage NUMERIC(8,1),<br>
+        &nbsp;snapshot_date DATE NOT NULL, UNIQUE(item_code, store_code, snapshot_date));<br><br>
+        -- Enable public access (same as other tables)<br>
+        ALTER TABLE consumable_items ENABLE ROW LEVEL SECURITY;<br>
+        CREATE POLICY "allow_all" ON consumable_items FOR ALL USING (true) WITH CHECK (true);<br>
+        ALTER TABLE consumable_stock ENABLE ROW LEVEL SECURITY;<br>
+        CREATE POLICY "allow_all" ON consumable_stock FOR ALL USING (true) WITH CHECK (true);
+      </div>
+      <div style="font-size:12px;color:var(--ink-light);">Full SQL with seed data for bags, packing &amp; promo items is in <strong>INTELLIGENCE_SKILL.md</strong> in your project folder.</div>
+    </div>`;
+  }
+
+  // Group consumable stock by store (latest snapshot per item per store)
+  const latest={};
+  intelConsStock.forEach(r=>{
+    const k=r.item_code+'|'+r.store_code;
+    if(!latest[k]||r.snapshot_date>latest[k].snapshot_date) latest[k]=r;
+  });
+
+  const byStore={};
+  Object.values(latest).forEach(r=>{
+    if(!byStore[r.store_code]) byStore[r.store_code]=[];
+    const item=intelConsumables.find(i=>i.item_code===r.item_code);
+    byStore[r.store_code].push({...r, item_name:item?.item_name||r.item_code,
+      category:item?.category||'MISC', threshold:r.reorder_qty||item?.reorder_threshold||50,
+      unit:item?.unit||'pcs'});
+  });
+
+  const cats=['BAGS','PACKING','PROMO','STATIONERY','MISC'];
+  const catColors={BAGS:'#3B5BDB',PACKING:'#0B7A45',PROMO:'#876A00',STATIONERY:'#555',MISC:'#888'};
+
+  let html=`<div style="font-weight:700;font-size:15px;margin-bottom:14px;letter-spacing:0.05em;">CONSUMABLES & NON-PRODUCT ITEMS — Store Stock Levels</div>`;
+  Object.entries(byStore).sort().forEach(([storeCode,items])=>{
+    const store=getStore(storeCode);
+    const lowItems=items.filter(i=>i.qty_on_hand<i.threshold);
+    const hdr=lowItems.length>0?`<span style="background:#FDECEA;color:#C0392B;border-radius:12px;padding:1px 8px;font-size:10px;font-weight:700;margin-left:8px;">⚠ ${lowItems.length} Low</span>`:'';
+    html+=`<details style="border:1px solid var(--border);margin-bottom:8px;border-radius:6px;overflow:hidden;" ${lowItems.length>0?'open':''}>
+      <summary style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:8px;list-style:none;background:var(--surface);">
+        <span style="font-weight:700;font-size:13px;">${store.name||storeCode}</span>${hdr}
+        <span style="margin-left:auto;font-size:11px;color:var(--ink-light);">${items.length} items tracked</span>
+      </summary>
+      <div class="tbl-wrap"><table style="font-size:12px;"><thead><tr>
+        <th>Item</th><th>Category</th><th style="text-align:right;">On Hand</th>
+        <th style="text-align:right;">Weekly Use</th><th style="text-align:right;">Reorder At</th>
+        <th>Status</th><th>Est. Runout</th>
+      </tr></thead><tbody>
+      ${items.map(i=>{
+        const runout=i.weekly_usage>0?Math.floor(i.qty_on_hand/i.weekly_usage*7):null;
+        const statusBadge=i.qty_on_hand<i.threshold
+          ?`<span style="background:#FDECEA;color:#C0392B;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;">LOW</span>`
+          :`<span style="background:#D4EDDA;color:#155724;border-radius:4px;padding:2px 6px;font-size:10px;">OK</span>`;
+        return `<tr style="${i.qty_on_hand<i.threshold?'background:#FFFAF9':''}">
+          <td style="font-weight:500;">${i.item_name}</td>
+          <td><span style="color:${catColors[i.category]||'#555'};font-size:10px;font-weight:700;">${i.category}</span></td>
+          <td style="text-align:right;font-weight:${i.qty_on_hand<i.threshold?'700':'400'};color:${i.qty_on_hand<i.threshold?'#C0392B':'inherit'};">${i.qty_on_hand.toLocaleString()} ${i.unit}</td>
+          <td style="text-align:right;color:var(--ink-light);">${i.weekly_usage||'—'}</td>
+          <td style="text-align:right;color:var(--ink-light);">${i.threshold}</td>
+          <td>${statusBadge}</td>
+          <td style="font-size:11px;color:var(--ink-light);">${runout!==null?runout+'d':'—'}</td>
+        </tr>`;
+      }).join('')}
+      </tbody></table></div>
+    </details>`;
+  });
+  return html;
+}
+
+// ══ ENHANCED REPLENISHMENT HISTORY VIEW ══════════════════════════════
+function renderReplenishment(){
+  const byStore={};
+  const today=new Date();
+  intelTransfers.forEach(r=>{
+    const k=r.to_location_code||'?';
+    if(!byStore[k]){byStore[k]={skus:{},totalQty:0,txns:0,lastDate:null};}
+    byStore[k].totalQty+=(r.qty_transferred||0);
+    byStore[k].txns++;
+    if(r.sku_code){ byStore[k].skus[r.sku_code]=(byStore[k].skus[r.sku_code]||0)+(r.qty_transferred||0); }
+    const d=new Date(r.transfer_date);
+    if(!byStore[k].lastDate||d>byStore[k].lastDate) byStore[k].lastDate=d;
+  });
+
+  let html=`<div style="font-weight:700;font-size:15px;margin-bottom:12px;letter-spacing:0.05em;">REPLENISHMENT HISTORY — WH → Store Transfers</div>
+  <div class="tbl-wrap" style="border:1px solid var(--border);">
+  <table style="font-size:12px;"><thead><tr>
+    <th>Store</th><th>Code</th>
+    <th style="text-align:right;">Total Units</th>
+    <th style="text-align:right;">Deliveries</th>
+    <th style="text-align:right;">SKUs</th>
+    <th>Last Delivery</th>
+    <th>Days Ago</th>
+    <th>Top SKU Sent</th>
+  </tr></thead><tbody>`;
+  Object.entries(byStore).sort((a,b)=>b[1].totalQty-a[1].totalQty).forEach(([code,s])=>{
+    const topSku=Object.entries(s.skus).sort((a,b)=>b[1]-a[1])[0];
+    const daysAgo=s.lastDate?Math.floor((today-s.lastDate)/86400000):null;
+    const daysColor=daysAgo===null?'var(--ink-light)':daysAgo>14?'#C0392B':daysAgo>7?'#856404':'#155724';
+    const store=getStore(code);
+    html+=`<tr>
+      <td style="font-weight:600;">${store.name||code}</td>
+      <td style="font-family:'Courier New',monospace;font-size:11px;">${code}</td>
+      <td style="text-align:right;font-weight:700;">${Math.round(s.totalQty).toLocaleString()}</td>
+      <td style="text-align:right;">${s.txns}</td>
+      <td style="text-align:right;">${Object.keys(s.skus).length}</td>
+      <td style="font-size:11px;">${s.lastDate?s.lastDate.toLocaleDateString('en-GB'):'—'}</td>
+      <td style="text-align:right;font-weight:700;color:${daysColor};">${daysAgo!==null?daysAgo+'d':'—'}</td>
+      <td style="font-size:11px;">${topSku?`${topSku[0]}: ${Math.round(topSku[1])} units`:'—'}</td>
     </tr>`;
   });
   return html+`</tbody></table></div>`;
+}
+
+// ══ EXPORT FULL INTEL REPORT ══════════════════════════════════════════
+function exportIntelReport(){
+  const rates=getWeeklyRates();
+  const soh=getWhQty();
+  const today=new Date().toLocaleDateString('en-GB');
+  let csv=`Emirates Pride — Intelligence Report\nDate: ${today}\n\nSKU COVERAGE\nSKU,Product,Weekly Rate,WH Stock,Cover (weeks),Risk\n`;
+  Object.entries(rates).filter(([,r])=>r>0).sort((a,b)=>{
+    const ca=(soh[a[0]]||0)/a[1], cb=(soh[b[0]]||0)/b[1]; return ca-cb;
+  }).forEach(([sku,rate])=>{
+    const wh=soh[sku]||0;
+    const cover=+(wh/rate).toFixed(1);
+    const risk=cover<2?'CRITICAL':cover<4?'WATCH':'SAFE';
+    csv+=`${sku},"${getItemName(sku)}",${rate},${wh},${cover},${risk}\n`;
+  });
+  dlFile(`Intel_Report_${new Date().toISOString().slice(0,10)}.csv`,csv,'text/csv');
+  toast('Intelligence report exported');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// CAMPAIGNS & ORDERS TAB
+// ══════════════════════════════════════════════════════════════════════════
+let campLoaded = false;
+let campCampaigns = [];    // array of campaign rows
+let campRequirements = []; // array of campaign_requirements rows
+let campOrders = [];       // array of export_orders rows
+let campOrderLines = [];   // array of export_order_lines rows
+let campWhStock = {};      // sku_code → qty (from wh_stock_on_hand)
+
+async function loadCampaignsTab() {
+  if (campLoaded) { renderCampView(); return; }
+  document.getElementById('camp-loading').style.display = 'block';
+  document.getElementById('camp-content').style.display  = 'none';
+
+  const [r1, r2, r3, r4, r5] = await Promise.allSettled([
+    sb.from('campaigns').select('*').order('start_date', { ascending: false }).limit(200),
+    sb.from('campaign_requirements').select('*').limit(2000),
+    sb.from('export_orders').select('*').order('created_at', { ascending: false }).limit(200),
+    sb.from('export_order_lines').select('*').limit(2000),
+    sb.from('wh_stock_on_hand').select('sku_code,qty').limit(5000),
+  ]);
+
+  campCampaigns    = (r1.status==='fulfilled' && !r1.value.error) ? (r1.value.data||[]) : [];
+  campRequirements = (r2.status==='fulfilled' && !r2.value.error) ? (r2.value.data||[]) : [];
+  campOrders       = (r3.status==='fulfilled' && !r3.value.error) ? (r3.value.data||[]) : [];
+  campOrderLines   = (r4.status==='fulfilled' && !r4.value.error) ? (r4.value.data||[]) : [];
+
+  const whRows     = (r5.status==='fulfilled' && !r5.value.error) ? (r5.value.data||[]) : [];
+  campWhStock = {};
+  whRows.forEach(r => { campWhStock[r.sku_code] = (campWhStock[r.sku_code]||0) + r.qty; });
+
+  campLoaded = true;
+  campKpiUpdate();
+
+  document.getElementById('camp-loading').style.display = 'none';
+  document.getElementById('camp-content').style.display  = 'block';
+  renderCampView();
+}
+
+function campKpiUpdate() {
+  const today = new Date().toISOString().slice(0,10);
+  const active   = campCampaigns.filter(c => c.status==='ACTIVE').length;
+  const upcoming = campCampaigns.filter(c => c.status==='UPCOMING').length;
+  const openOrders = campOrders.filter(o => !['DELIVERED','CANCELLED'].includes(o.status)).length;
+
+  // sum campaign reserved units (all active/upcoming)
+  const activeCampIds = new Set(campCampaigns.filter(c=>['ACTIVE','UPCOMING'].includes(c.status)).map(c=>c.id));
+  let reservedUnits = 0;
+  campRequirements.forEach(r => { if(activeCampIds.has(r.campaign_id)) reservedUnits += (r.qty_required||0); });
+
+  // sum export pending units
+  const openOrderIds = new Set(campOrders.filter(o=>!['DELIVERED','CANCELLED'].includes(o.status)).map(o=>o.id));
+  let exportUnits = 0;
+  campOrderLines.forEach(l => { if(openOrderIds.has(l.order_id)) exportUnits += (l.qty||0); });
+
+  // shortfall = SKUs where total demand (campaign + export) > WH stock
+  const demandBySku = _buildCombinedDemand();
+  const shortfalls = Object.entries(demandBySku).filter(([sku, d]) => {
+    const wh = campWhStock[sku] || 0;
+    return (d.camp + d.export) > wh;
+  }).length;
+
+  document.getElementById('camp-kpi-active').textContent        = active;
+  document.getElementById('camp-kpi-upcoming').textContent      = upcoming;
+  document.getElementById('camp-kpi-orders').textContent        = openOrders;
+  document.getElementById('camp-kpi-units').textContent         = reservedUnits.toLocaleString();
+  document.getElementById('camp-kpi-export-units').textContent  = exportUnits.toLocaleString();
+  document.getElementById('camp-kpi-shortfalls').textContent    = shortfalls;
+  document.getElementById('camp-nav-dot').style.display         = shortfalls > 0 ? 'inline-block' : 'none';
+}
+
+// ── build combined demand map: { sku: { camp, export } } ──────────────────
+function _buildCombinedDemand() {
+  const map = {};
+  const activeCampIds = new Set(campCampaigns.filter(c=>['ACTIVE','UPCOMING'].includes(c.status)).map(c=>c.id));
+  campRequirements.forEach(r => {
+    if (!activeCampIds.has(r.campaign_id)) return;
+    const sku = r.sku_code;
+    if (!map[sku]) map[sku] = { camp:0, export:0 };
+    // if applies to ALL stores, count once per store (rough: ×1 unless expandAllStores needed)
+    map[sku].camp += (r.qty_required || 0);
+  });
+  const openOrderIds = new Set(campOrders.filter(o=>!['DELIVERED','CANCELLED'].includes(o.status)).map(o=>o.id));
+  campOrderLines.forEach(l => {
+    if (!openOrderIds.has(l.order_id)) return;
+    const sku = l.sku_code;
+    if (!map[sku]) map[sku] = { camp:0, export:0 };
+    map[sku].export += (l.qty || 0);
+  });
+  return map;
+}
+
+function renderCampView() {
+  const view = document.getElementById('camp-view-sel').value;
+  const addBtn   = document.getElementById('camp-add-btn');
+  const orderBtn = document.getElementById('order-add-btn');
+  addBtn.style.display   = view === 'campaigns' ? 'inline-flex' : 'none';
+  orderBtn.style.display = view === 'exports'   ? 'inline-flex' : 'none';
+
+  if (view === 'campaigns') renderCampaignsView();
+  else if (view === 'exports') renderExportOrdersView();
+  else renderDemandPicture();
+}
+
+// ── STATUS BADGE ─────────────────────────────────────────────────────────
+function _statusBadge(status) {
+  const MAP = {
+    ACTIVE:    {bg:'#D1FAE5',color:'#065F46',label:'Active'},
+    UPCOMING:  {bg:'#DBEAFE',color:'#1E40AF',label:'Upcoming'},
+    COMPLETED: {bg:'#F3F4F6',color:'#6B7280',label:'Completed'},
+    CANCELLED: {bg:'#FEE2E2',color:'#991B1B',label:'Cancelled'},
+    PENDING:   {bg:'#FEF3C7',color:'#92400E',label:'Pending'},
+    CONFIRMED: {bg:'#D1FAE5',color:'#065F46',label:'Confirmed'},
+    PACKING:   {bg:'#EDE9FE',color:'#5B21B6',label:'Packing'},
+    SHIPPED:   {bg:'#DBEAFE',color:'#1E40AF',label:'Shipped'},
+    DELIVERED: {bg:'#F3F4F6',color:'#6B7280',label:'Delivered'},
+  };
+  const s = MAP[status] || {bg:'#F3F4F6',color:'#6B7280',label:status};
+  return `<span style="background:${s.bg};color:${s.color};padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.05em;">${s.label}</span>`;
+}
+
+// ── TYPE BADGE ────────────────────────────────────────────────────────────
+function _typeBadge(type) {
+  const MAP = {
+    PROMOTION:      '🎁 Promotion',
+    SEASONAL:       '🌙 Seasonal',
+    LAUNCH:         '🚀 Launch',
+    CLEARANCE:      '🏷️ Clearance',
+    ACTIVATION:     '✨ Activation',
+    EVENT:          '🎪 Event',
+    EXPORT:         '📦 Export',
+    PRIVATE_CLIENT: '👤 Private Client',
+    CORPORATE:      '🏢 Corporate',
+    GIFTING:        '🎀 Gifting',
+    OTHER:          '📋 Other',
+  };
+  return MAP[type] || type;
+}
+
+// ── CAMPAIGNS VIEW ────────────────────────────────────────────────────────
+function renderCampaignsView() {
+  const el = document.getElementById('camp-content');
+  if (!campCampaigns.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--ink-light);">
+      <div style="font-size:32px;margin-bottom:12px;">📣</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px;">No campaigns yet</div>
+      <div style="font-size:12px;">Click <b>+ New Campaign</b> to add your first marketing campaign.</div>
+    </div>`;
+    return;
+  }
+
+  // group by status order
+  const order = ['ACTIVE','UPCOMING','COMPLETED','CANCELLED'];
+  const grouped = {};
+  order.forEach(s => { grouped[s] = campCampaigns.filter(c=>c.status===s); });
+
+  let html = '';
+  order.forEach(status => {
+    const list = grouped[status];
+    if (!list.length) return;
+    html += `<div style="margin-bottom:24px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:10px;">${status}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;">`;
+    list.forEach(c => {
+      // count requirements for this campaign
+      const reqs = campRequirements.filter(r => r.campaign_id === c.id);
+      const totalUnits = reqs.reduce((s,r)=>s+(r.qty_required||0),0);
+      const uniqueSkus = new Set(reqs.map(r=>r.sku_code)).size;
+      const storeScope = c.store_scope==='ALL' ? 'All Stores' : (c.stores_json ? JSON.parse(c.stores_json||'[]').length+' stores' : '—');
+
+      // shortfall check
+      const demandBySku = {};
+      reqs.forEach(r => { demandBySku[r.sku_code] = (demandBySku[r.sku_code]||0) + (r.qty_required||0); });
+      const shortfallSkus = Object.entries(demandBySku).filter(([sku,qty])=>(campWhStock[sku]||0)<qty);
+
+      html += `<div style="border:1px solid ${shortfallSkus.length?'#FCA5A5':'var(--border)'};border-radius:6px;padding:16px;background:var(--white);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div style="font-weight:700;font-size:13px;flex:1;margin-right:8px;">${c.name}</div>
+          ${_statusBadge(c.status)}
+        </div>
+        <div style="font-size:11px;color:var(--ink-light);margin-bottom:6px;">${_typeBadge(c.type)}&nbsp;·&nbsp;${storeScope}</div>
+        <div style="font-size:11px;color:var(--ink-light);margin-bottom:10px;">
+          ${c.start_date ? `📅 ${c.start_date}${c.end_date?' → '+c.end_date:''}` : 'No dates set'}
+        </div>
+        <div style="display:flex;gap:16px;margin-bottom:10px;">
+          <div style="text-align:center;">
+            <div style="font-size:16px;font-weight:700;color:var(--gold-dark);">${uniqueSkus}</div>
+            <div style="font-size:10px;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.05em;">SKUs</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:16px;font-weight:700;">${totalUnits.toLocaleString()}</div>
+            <div style="font-size:10px;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.05em;">Units</div>
+          </div>
+          ${shortfallSkus.length ? `<div style="text-align:center;">
+            <div style="font-size:16px;font-weight:700;color:#C0392B;">${shortfallSkus.length}</div>
+            <div style="font-size:10px;color:#C0392B;text-transform:uppercase;letter-spacing:0.05em;">Shortfalls</div>
+          </div>` : '<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#065F46;">✓</div><div style="font-size:10px;color:#065F46;text-transform:uppercase;letter-spacing:0.05em;">WH OK</div></div>'}
+        </div>
+        ${shortfallSkus.length ? `<div style="background:#FEF2F2;border:1px solid #FCA5A5;border-radius:4px;padding:8px;margin-bottom:10px;font-size:11px;color:#991B1B;">
+          ⚠ WH stock insufficient for: ${shortfallSkus.slice(0,3).map(([sku])=>`<b>${sku}</b>`).join(', ')}${shortfallSkus.length>3?` +${shortfallSkus.length-3} more`:''}
+        </div>` : ''}
+        ${reqs.length ? `<details style="margin-bottom:10px;">
+          <summary style="font-size:11px;cursor:pointer;color:var(--gold-dark);font-weight:600;">View SKU requirements (${reqs.length} rows)</summary>
+          <div style="margin-top:8px;overflow-x:auto;">
+            <table style="width:100%;font-size:11px;border-collapse:collapse;">
+              <thead><tr style="background:var(--cream);">
+                <th style="padding:4px 8px;text-align:left;">SKU</th>
+                <th style="padding:4px 8px;text-align:left;">Product</th>
+                <th style="padding:4px 8px;text-align:left;">Store</th>
+                <th style="padding:4px 8px;text-align:right;">Req.</th>
+                <th style="padding:4px 8px;text-align:right;">WH</th>
+                <th style="padding:4px 8px;text-align:right;">Gap</th>
+              </tr></thead><tbody>
+              ${reqs.map(r=>{
+                const wh=campWhStock[r.sku_code]||0;
+                const gap=wh-(r.qty_required||0);
+                const gapColor=gap<0?'#C0392B':'#065F46';
+                const storeName = r.store_code==='ALL'?'All Stores':(getStore(r.store_code).name||r.store_code);
+                return `<tr style="border-bottom:1px solid var(--border-soft);">
+                  <td style="padding:4px 8px;font-family:'Courier New',monospace;">${r.sku_code}</td>
+                  <td style="padding:4px 8px;">${getItemName(r.sku_code)}</td>
+                  <td style="padding:4px 8px;font-size:10px;">${storeName}</td>
+                  <td style="padding:4px 8px;text-align:right;font-weight:700;">${r.qty_required||0}</td>
+                  <td style="padding:4px 8px;text-align:right;">${wh}</td>
+                  <td style="padding:4px 8px;text-align:right;font-weight:700;color:${gapColor};">${gap>=0?'+'+gap:gap}</td>
+                </tr>`;
+              }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </details>` : ''}
+        <div style="display:flex;gap:8px;">
+          <button onclick="openCampForm('${c.id}')" style="flex:1;background:none;border:1px solid var(--gold-dark);color:var(--gold-dark);padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;">Edit</button>
+          <button onclick="updateCampaignStatus('${c.id}','${c.status==='ACTIVE'?'COMPLETED':c.status==='UPCOMING'?'ACTIVE':c.status}')" style="flex:1;background:var(--gold-dark);color:#000;border:none;padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:700;">
+            ${c.status==='ACTIVE'?'Mark Complete':c.status==='UPCOMING'?'Activate':'—'}
+          </button>
+          <button onclick="deleteCampaign('${c.id}')" style="background:none;border:1px solid #FCA5A5;color:#C0392B;padding:6px 10px;border-radius:4px;font-size:11px;cursor:pointer;">✕</button>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+// ── EXPORT ORDERS VIEW ────────────────────────────────────────────────────
+function renderExportOrdersView() {
+  const el = document.getElementById('camp-content');
+  if (!campOrders.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--ink-light);">
+      <div style="font-size:32px;margin-bottom:12px;">📦</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px;">No export orders yet</div>
+      <div style="font-size:12px;">Click <b>+ New Order</b> to track an export or private client order.</div>
+    </div>`;
+    return;
+  }
+
+  const order = ['PENDING','CONFIRMED','PACKING','SHIPPED','DELIVERED','CANCELLED'];
+  const grouped = {};
+  order.forEach(s => { grouped[s] = campOrders.filter(o=>o.status===s); });
+
+  let html = '';
+  order.forEach(status => {
+    const list = grouped[status];
+    if (!list.length) return;
+    html += `<div style="margin-bottom:24px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:10px;">${status}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px;">`;
+    list.forEach(o => {
+      const lines = campOrderLines.filter(l => l.order_id === o.id);
+      const totalUnits = lines.reduce((s,l)=>s+(l.qty||0),0);
+      const uniqueSkus = new Set(lines.map(l=>l.sku_code)).size;
+
+      // stock check
+      const shortfallLines = lines.filter(l => (campWhStock[l.sku_code]||0) < (l.qty||0));
+
+      const daysToDelivery = o.expected_date
+        ? Math.round((new Date(o.expected_date) - new Date()) / 86400000)
+        : null;
+      const urgencyColor = daysToDelivery===null ? 'var(--ink-light)'
+        : daysToDelivery < 0 ? '#C0392B'
+        : daysToDelivery < 7 ? '#856404' : '#155724';
+
+      html += `<div style="border:1px solid ${shortfallLines.length?'#FCA5A5':'var(--border)'};border-radius:6px;padding:16px;background:var(--white);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div>
+            <div style="font-weight:700;font-size:13px;">${o.order_ref}</div>
+            <div style="font-size:11px;color:var(--ink-light);margin-top:2px;">${_typeBadge(o.order_type)} — ${o.client_name||'—'}</div>
+          </div>
+          ${_statusBadge(o.status)}
+        </div>
+        <div style="font-size:11px;color:var(--ink-light);margin-bottom:8px;">
+          ${o.country ? `🌍 ${o.country}&nbsp;·&nbsp;` : ''}
+          ${o.expected_date ? `<span style="color:${urgencyColor};font-weight:600;">📅 ${o.expected_date} (${daysToDelivery!==null?(daysToDelivery<0?Math.abs(daysToDelivery)+'d overdue':daysToDelivery+'d away'):'—'})</span>` : 'No date'}
+        </div>
+        <div style="display:flex;gap:16px;margin-bottom:10px;">
+          <div style="text-align:center;">
+            <div style="font-size:16px;font-weight:700;color:var(--gold-dark);">${uniqueSkus}</div>
+            <div style="font-size:10px;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.05em;">SKUs</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:16px;font-weight:700;">${totalUnits.toLocaleString()}</div>
+            <div style="font-size:10px;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.05em;">Units</div>
+          </div>
+          ${shortfallLines.length ? `<div style="text-align:center;">
+            <div style="font-size:16px;font-weight:700;color:#C0392B;">${shortfallLines.length}</div>
+            <div style="font-size:10px;color:#C0392B;text-transform:uppercase;letter-spacing:0.05em;">Shortfalls</div>
+          </div>` : '<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#065F46;">✓</div><div style="font-size:10px;color:#065F46;text-transform:uppercase;letter-spacing:0.05em;">WH OK</div></div>'}
+        </div>
+        ${lines.length ? `<details style="margin-bottom:10px;">
+          <summary style="font-size:11px;cursor:pointer;color:var(--gold-dark);font-weight:600;">Order lines (${lines.length})</summary>
+          <div style="margin-top:8px;overflow-x:auto;">
+            <table style="width:100%;font-size:11px;border-collapse:collapse;">
+              <thead><tr style="background:var(--cream);">
+                <th style="padding:4px 8px;text-align:left;">SKU</th>
+                <th style="padding:4px 8px;text-align:left;">Product</th>
+                <th style="padding:4px 8px;text-align:right;">Qty</th>
+                <th style="padding:4px 8px;text-align:right;">WH</th>
+                <th style="padding:4px 8px;text-align:right;">Gap</th>
+              </tr></thead><tbody>
+              ${lines.map(l=>{
+                const wh=campWhStock[l.sku_code]||0;
+                const gap=wh-(l.qty||0);
+                const gapColor=gap<0?'#C0392B':'#065F46';
+                return `<tr style="border-bottom:1px solid var(--border-soft);">
+                  <td style="padding:4px 8px;font-family:'Courier New',monospace;">${l.sku_code}</td>
+                  <td style="padding:4px 8px;">${getItemName(l.sku_code)}</td>
+                  <td style="padding:4px 8px;text-align:right;font-weight:700;">${l.qty||0}</td>
+                  <td style="padding:4px 8px;text-align:right;">${wh}</td>
+                  <td style="padding:4px 8px;text-align:right;font-weight:700;color:${gapColor};">${gap>=0?'+'+gap:gap}</td>
+                </tr>`;
+              }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </details>` : ''}
+        <div style="display:flex;gap:8px;">
+          <button onclick="openOrderForm('${o.id}')" style="flex:1;background:none;border:1px solid var(--gold-dark);color:var(--gold-dark);padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;">Edit</button>
+          <button onclick="cycleOrderStatus('${o.id}')" style="flex:1;background:var(--gold-dark);color:#000;border:none;padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:700;">
+            ${o.status==='PENDING'?'Confirm':o.status==='CONFIRMED'?'→ Packing':o.status==='PACKING'?'→ Shipped':o.status==='SHIPPED'?'Mark Delivered':'—'}
+          </button>
+          <button onclick="deleteExportOrder('${o.id}')" style="background:none;border:1px solid #FCA5A5;color:#C0392B;padding:6px 10px;border-radius:4px;font-size:11px;cursor:pointer;">✕</button>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+// ── COMBINED DEMAND PICTURE ───────────────────────────────────────────────
+function renderDemandPicture() {
+  const el = document.getElementById('camp-content');
+  const demandBySku = _buildCombinedDemand();
+
+  if (!Object.keys(demandBySku).length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--ink-light);">
+      <div style="font-size:32px;margin-bottom:12px;">📊</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px;">No active demand</div>
+      <div style="font-size:12px;">Add active campaigns or confirmed export orders to see the demand picture.</div>
+    </div>`;
+    return;
+  }
+
+  const rows = Object.entries(demandBySku).map(([sku, d]) => {
+    const wh = campWhStock[sku] || 0;
+    const total = d.camp + d.export;
+    const gap = wh - total;
+    return { sku, ...d, total, wh, gap };
+  }).sort((a,b) => a.gap - b.gap); // shortfalls first
+
+  let html = `<div style="margin-bottom:12px;font-size:12px;color:var(--ink-light);">
+    Combined view of all <b>active & upcoming campaign requirements</b> + <b>open export/private orders</b> against current warehouse stock.
+  </div>
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead>
+        <tr style="background:var(--navy);color:#fff;">
+          <th style="padding:10px 12px;text-align:left;font-weight:600;font-size:11px;letter-spacing:0.05em;">SKU</th>
+          <th style="padding:10px 12px;text-align:left;font-weight:600;font-size:11px;letter-spacing:0.05em;">Product</th>
+          <th style="padding:10px 12px;text-align:right;font-weight:600;font-size:11px;letter-spacing:0.05em;">Campaign</th>
+          <th style="padding:10px 12px;text-align:right;font-weight:600;font-size:11px;letter-spacing:0.05em;">Export</th>
+          <th style="padding:10px 12px;text-align:right;font-weight:600;font-size:11px;letter-spacing:0.05em;">Total Demand</th>
+          <th style="padding:10px 12px;text-align:right;font-weight:600;font-size:11px;letter-spacing:0.05em;">WH Stock</th>
+          <th style="padding:10px 12px;text-align:right;font-weight:600;font-size:11px;letter-spacing:0.05em;">Gap</th>
+          <th style="padding:10px 12px;text-align:center;font-weight:600;font-size:11px;letter-spacing:0.05em;">Status</th>
+        </tr>
+      </thead><tbody>`;
+
+  rows.forEach((r, i) => {
+    const isShortfall = r.gap < 0;
+    const isWarning = r.gap >= 0 && r.gap < (r.total * 0.2);
+    const rowBg = isShortfall ? '#FFF5F5' : (i%2===0 ? 'var(--white)' : 'var(--cream)');
+    const gapColor = isShortfall ? '#C0392B' : isWarning ? '#856404' : '#155724';
+    const statusPill = isShortfall
+      ? `<span style="background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;">SHORTFALL</span>`
+      : isWarning
+      ? `<span style="background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;">WATCH</span>`
+      : `<span style="background:#D1FAE5;color:#065F46;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;">OK</span>`;
+
+    html += `<tr style="background:${rowBg};border-bottom:1px solid var(--border-soft);">
+      <td style="padding:9px 12px;font-family:'Courier New',monospace;font-size:11px;">${r.sku}</td>
+      <td style="padding:9px 12px;">${getItemName(r.sku)}</td>
+      <td style="padding:9px 12px;text-align:right;">${r.camp||0}</td>
+      <td style="padding:9px 12px;text-align:right;">${r.export||0}</td>
+      <td style="padding:9px 12px;text-align:right;font-weight:700;">${r.total}</td>
+      <td style="padding:9px 12px;text-align:right;">${r.wh}</td>
+      <td style="padding:9px 12px;text-align:right;font-weight:700;color:${gapColor};">${r.gap>=0?'+'+r.gap:r.gap}</td>
+      <td style="padding:9px 12px;text-align:center;">${statusPill}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  el.innerHTML = html;
+}
+
+// ── OPEN/CLOSE CAMPAIGN FORM ──────────────────────────────────────────────
+function openCampForm(editId) {
+  const overlay = document.getElementById('camp-form-overlay');
+  const title   = document.getElementById('camp-form-title');
+
+  // Populate store checkboxes
+  const cbContainer = document.getElementById('cf-store-checkboxes');
+  cbContainer.innerHTML = STORES.map(s =>
+    `<label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;min-width:180px;">
+      <input type="checkbox" class="cf-store-cb" value="${s.code}" style="accent-color:var(--gold-dark);">
+      ${s.name} <span style="font-size:10px;color:var(--ink-light);">(${s.code})</span>
+    </label>`
+  ).join('');
+
+  if (editId) {
+    const camp = campCampaigns.find(c => c.id == editId);
+    if (!camp) return;
+    title.textContent = 'Edit Campaign';
+    document.getElementById('cf-name').value    = camp.name || '';
+    document.getElementById('cf-type').value    = camp.type || 'PROMOTION';
+    document.getElementById('cf-status').value  = camp.status || 'UPCOMING';
+    document.getElementById('cf-start').value   = camp.start_date || '';
+    document.getElementById('cf-end').value     = camp.end_date || '';
+    document.getElementById('cf-notes').value   = camp.notes || '';
+    document.getElementById('cf-edit-id').value = camp.id;
+    document.getElementById('cf-store-scope').value = camp.store_scope || 'ALL';
+    document.getElementById('cf-store-specific').style.display = camp.store_scope==='SPECIFIC' ? 'block' : 'none';
+
+    if (camp.store_scope === 'SPECIFIC') {
+      const selected = JSON.parse(camp.stores_json || '[]');
+      cbContainer.querySelectorAll('.cf-store-cb').forEach(cb => {
+        cb.checked = selected.includes(cb.value);
+      });
+    }
+
+    // load existing requirements as rows
+    const rowContainer = document.getElementById('cf-sku-rows');
+    rowContainer.innerHTML = '';
+    const reqs = campRequirements.filter(r => r.campaign_id == editId);
+    if (reqs.length) {
+      reqs.forEach(r => addCampSkuRow(r.sku_code, r.store_code, r.qty_required));
+    } else {
+      addCampSkuRow();
+    }
+  } else {
+    title.textContent = 'New Marketing Campaign';
+    document.getElementById('cf-name').value    = '';
+    document.getElementById('cf-type').value    = 'PROMOTION';
+    document.getElementById('cf-status').value  = 'UPCOMING';
+    document.getElementById('cf-start').value   = '';
+    document.getElementById('cf-end').value     = '';
+    document.getElementById('cf-notes').value   = '';
+    document.getElementById('cf-edit-id').value = '';
+    document.getElementById('cf-store-scope').value = 'ALL';
+    document.getElementById('cf-store-specific').style.display = 'none';
+    document.getElementById('cf-sku-rows').innerHTML = '';
+    addCampSkuRow();
+  }
+  document.getElementById('cf-error').style.display = 'none';
+  overlay.style.display = 'block';
+}
+
+function closeCampForm() {
+  document.getElementById('camp-form-overlay').style.display = 'none';
+}
+
+// ── ADD SKU ROW (campaign form) ───────────────────────────────────────────
+function addCampSkuRow(skuVal, storeVal, qtyVal) {
+  const container = document.getElementById('cf-sku-rows');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:grid;grid-template-columns:140px 1fr 80px 32px;gap:6px;align-items:center;';
+  div.innerHTML = `
+    <input type="text" class="inp cf-sku-input" placeholder="SKU code" value="${skuVal||''}" style="padding:7px 10px;font-size:11px;font-family:'Courier New',monospace;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+    <select class="sel cf-store-sel" style="padding:7px 10px;font-size:11px;">
+      <option value="ALL">ALL STORES</option>
+      ${STORES.map(s=>`<option value="${s.code}" ${storeVal===s.code?'selected':''}>${s.name} (${s.code})</option>`).join('')}
+    </select>
+    <input type="number" class="inp cf-qty-input" placeholder="Qty" min="1" value="${qtyVal||''}" style="padding:7px 10px;font-size:11px;text-align:right;">
+    <button onclick="this.parentElement.remove()" style="background:#FEE2E2;border:none;color:#C0392B;padding:0;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:14px;font-weight:700;">×</button>
+  `;
+  if (storeVal === 'ALL' || !storeVal) div.querySelector('.cf-store-sel').value = 'ALL';
+  container.appendChild(div);
+}
+
+// ── SAVE CAMPAIGN ─────────────────────────────────────────────────────────
+async function saveCampaign() {
+  const name   = document.getElementById('cf-name').value.trim();
+  const type   = document.getElementById('cf-type').value;
+  const status = document.getElementById('cf-status').value;
+  const start  = document.getElementById('cf-start').value;
+  const end    = document.getElementById('cf-end').value;
+  const notes  = document.getElementById('cf-notes').value.trim();
+  const editId = document.getElementById('cf-edit-id').value;
+  const scope  = document.getElementById('cf-store-scope').value;
+  const errEl  = document.getElementById('cf-error');
+
+  if (!name) { errEl.textContent='Campaign name is required.'; errEl.style.display='block'; return; }
+  if (!start) { errEl.textContent='Start date is required.'; errEl.style.display='block'; return; }
+
+  // collect stores
+  let storesJson = '[]';
+  if (scope === 'SPECIFIC') {
+    const selected = [...document.querySelectorAll('.cf-store-cb:checked')].map(cb => cb.value);
+    if (!selected.length) { errEl.textContent='Select at least one store, or choose "All Stores".'; errEl.style.display='block'; return; }
+    storesJson = JSON.stringify(selected);
+  }
+
+  // collect SKU rows
+  const skuInputs  = [...document.querySelectorAll('.cf-sku-input')];
+  const storeSels  = [...document.querySelectorAll('.cf-store-sel')];
+  const qtyInputs  = [...document.querySelectorAll('.cf-qty-input')];
+  const reqs = [];
+  for (let i = 0; i < skuInputs.length; i++) {
+    const sku = skuInputs[i].value.trim().toUpperCase();
+    const st  = storeSels[i].value;
+    const qty = parseInt(qtyInputs[i].value) || 0;
+    if (!sku || qty <= 0) continue;
+    reqs.push({ sku_code: sku, store_code: st, qty_required: qty });
+  }
+  if (!reqs.length) { errEl.textContent='Add at least one SKU requirement.'; errEl.style.display='block'; return; }
+
+  errEl.style.display = 'none';
+
+  const campPayload = { name, type, status, start_date: start, end_date: end||null, notes, store_scope: scope, stores_json: storesJson };
+
+  let campId = editId ? parseInt(editId) : null;
+
+  if (editId) {
+    const { error } = await sb.from('campaigns').update(campPayload).eq('id', editId);
+    if (error) { errEl.textContent='Save failed: '+error.message; errEl.style.display='block'; return; }
+    // delete existing requirements for this campaign before re-inserting
+    await sb.from('campaign_requirements').delete().eq('campaign_id', editId);
+  } else {
+    const { data, error } = await sb.from('campaigns').insert(campPayload).select('id').single();
+    if (error) { errEl.textContent='Save failed: '+error.message; errEl.style.display='block'; return; }
+    campId = data.id;
+  }
+
+  // insert requirements
+  const reqRows = reqs.map(r => ({ campaign_id: campId, ...r }));
+  const { error: reqErr } = await sb.from('campaign_requirements').insert(reqRows);
+  if (reqErr) { errEl.textContent='Requirements save failed: '+reqErr.message; errEl.style.display='block'; return; }
+
+  closeCampForm();
+  campLoaded = false;
+  await loadCampaignsTab();
+  toast(editId ? 'Campaign updated' : 'Campaign saved');
+}
+
+// ── CAMPAIGN STATUS UPDATE ────────────────────────────────────────────────
+async function updateCampaignStatus(id, newStatus) {
+  if (!newStatus || newStatus === id) return;
+  const { error } = await sb.from('campaigns').update({ status: newStatus }).eq('id', id);
+  if (error) { toast('Update failed: '+error.message); return; }
+  campLoaded = false;
+  await loadCampaignsTab();
+  toast('Campaign status updated');
+}
+
+// ── DELETE CAMPAIGN ───────────────────────────────────────────────────────
+async function deleteCampaign(id) {
+  if (!confirm('Delete this campaign and all its requirements?')) return;
+  await sb.from('campaign_requirements').delete().eq('campaign_id', id);
+  const { error } = await sb.from('campaigns').delete().eq('id', id);
+  if (error) { toast('Delete failed: '+error.message); return; }
+  campLoaded = false;
+  await loadCampaignsTab();
+  toast('Campaign deleted');
+}
+
+// ── OPEN/CLOSE ORDER FORM ─────────────────────────────────────────────────
+function openOrderForm(editId) {
+  const overlay = document.getElementById('order-form-overlay');
+  const title   = document.getElementById('order-form-title');
+
+  if (editId) {
+    const o = campOrders.find(o => o.id == editId);
+    if (!o) return;
+    title.textContent = 'Edit Order';
+    document.getElementById('of-ref').value     = o.order_ref || '';
+    document.getElementById('of-type').value    = o.order_type || 'EXPORT';
+    document.getElementById('of-client').value  = o.client_name || '';
+    document.getElementById('of-country').value = o.country || '';
+    document.getElementById('of-date').value    = o.expected_date || '';
+    document.getElementById('of-status').value  = o.status || 'PENDING';
+    document.getElementById('of-notes').value   = o.notes || '';
+    document.getElementById('of-edit-id').value = o.id;
+
+    const rowContainer = document.getElementById('of-line-rows');
+    rowContainer.innerHTML = '';
+    const lines = campOrderLines.filter(l => l.order_id == editId);
+    if (lines.length) {
+      lines.forEach(l => addOrderLineRow(l.sku_code, l.qty));
+    } else {
+      addOrderLineRow();
+    }
+  } else {
+    title.textContent = 'New Export / Private Client Order';
+    document.getElementById('of-ref').value     = '';
+    document.getElementById('of-type').value    = 'EXPORT';
+    document.getElementById('of-client').value  = '';
+    document.getElementById('of-country').value = '';
+    document.getElementById('of-date').value    = '';
+    document.getElementById('of-status').value  = 'PENDING';
+    document.getElementById('of-notes').value   = '';
+    document.getElementById('of-edit-id').value = '';
+    document.getElementById('of-line-rows').innerHTML = '';
+    addOrderLineRow();
+  }
+  document.getElementById('of-error').style.display = 'none';
+  overlay.style.display = 'block';
+}
+
+function closeOrderForm() {
+  document.getElementById('order-form-overlay').style.display = 'none';
+}
+
+// ── ADD ORDER LINE ROW ────────────────────────────────────────────────────
+function addOrderLineRow(skuVal, qtyVal) {
+  const container = document.getElementById('of-line-rows');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:grid;grid-template-columns:150px 1fr 80px 32px;gap:6px;align-items:center;';
+  div.innerHTML = `
+    <input type="text" class="inp of-sku-input" placeholder="SKU code" value="${skuVal||''}" style="padding:7px 10px;font-size:11px;font-family:'Courier New',monospace;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+    <div style="font-size:11px;color:var(--ink-light);padding:7px 4px;" class="of-sku-name">${skuVal ? getItemName(skuVal) : 'Enter SKU to see product name'}</div>
+    <input type="number" class="inp of-qty-input" placeholder="Qty" min="1" value="${qtyVal||''}" style="padding:7px 10px;font-size:11px;text-align:right;">
+    <button onclick="this.parentElement.remove()" style="background:#FEE2E2;border:none;color:#C0392B;padding:0;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:14px;font-weight:700;">×</button>
+  `;
+  // live SKU name lookup
+  div.querySelector('.of-sku-input').addEventListener('input', function() {
+    div.querySelector('.of-sku-name').textContent = getItemName(this.value.trim().toUpperCase()) || 'Unknown SKU';
+  });
+  container.appendChild(div);
+}
+
+// ── SAVE EXPORT ORDER ─────────────────────────────────────────────────────
+async function saveExportOrder() {
+  const ref     = document.getElementById('of-ref').value.trim();
+  const type    = document.getElementById('of-type').value;
+  const client  = document.getElementById('of-client').value.trim();
+  const country = document.getElementById('of-country').value.trim();
+  const date    = document.getElementById('of-date').value;
+  const status  = document.getElementById('of-status').value;
+  const notes   = document.getElementById('of-notes').value.trim();
+  const editId  = document.getElementById('of-edit-id').value;
+  const errEl   = document.getElementById('of-error');
+
+  if (!ref)    { errEl.textContent='Order reference is required.'; errEl.style.display='block'; return; }
+  if (!client) { errEl.textContent='Client / company name is required.'; errEl.style.display='block'; return; }
+
+  const skuInputs = [...document.querySelectorAll('.of-sku-input')];
+  const qtyInputs = [...document.querySelectorAll('.of-qty-input')];
+  const lines = [];
+  for (let i = 0; i < skuInputs.length; i++) {
+    const sku = skuInputs[i].value.trim().toUpperCase();
+    const qty = parseInt(qtyInputs[i].value) || 0;
+    if (!sku || qty <= 0) continue;
+    lines.push({ sku_code: sku, qty });
+  }
+  if (!lines.length) { errEl.textContent='Add at least one order line.'; errEl.style.display='block'; return; }
+
+  errEl.style.display = 'none';
+
+  const orderPayload = { order_ref: ref, order_type: type, client_name: client, country, expected_date: date||null, status, notes };
+
+  let orderId = editId ? parseInt(editId) : null;
+
+  if (editId) {
+    const { error } = await sb.from('export_orders').update(orderPayload).eq('id', editId);
+    if (error) { errEl.textContent='Save failed: '+error.message; errEl.style.display='block'; return; }
+    await sb.from('export_order_lines').delete().eq('order_id', editId);
+  } else {
+    const { data, error } = await sb.from('export_orders').insert(orderPayload).select('id').single();
+    if (error) { errEl.textContent='Save failed: '+error.message; errEl.style.display='block'; return; }
+    orderId = data.id;
+  }
+
+  const lineRows = lines.map(l => ({ order_id: orderId, ...l }));
+  const { error: lineErr } = await sb.from('export_order_lines').insert(lineRows);
+  if (lineErr) { errEl.textContent='Line save failed: '+lineErr.message; errEl.style.display='block'; return; }
+
+  closeOrderForm();
+  campLoaded = false;
+  await loadCampaignsTab();
+  toast(editId ? 'Order updated' : 'Order saved');
+}
+
+// ── CYCLE ORDER STATUS ────────────────────────────────────────────────────
+async function cycleOrderStatus(id) {
+  const o = campOrders.find(o => o.id == id);
+  if (!o) return;
+  const NEXT = { PENDING:'CONFIRMED', CONFIRMED:'PACKING', PACKING:'SHIPPED', SHIPPED:'DELIVERED' };
+  const next = NEXT[o.status];
+  if (!next) return;
+  const { error } = await sb.from('export_orders').update({ status: next }).eq('id', id);
+  if (error) { toast('Update failed: '+error.message); return; }
+  campLoaded = false;
+  await loadCampaignsTab();
+  toast(`Order → ${next}`);
+}
+
+// ── DELETE EXPORT ORDER ───────────────────────────────────────────────────
+async function deleteExportOrder(id) {
+  if (!confirm('Delete this export order and all its lines?')) return;
+  await sb.from('export_order_lines').delete().eq('order_id', id);
+  const { error } = await sb.from('export_orders').delete().eq('id', id);
+  if (error) { toast('Delete failed: '+error.message); return; }
+  campLoaded = false;
+  await loadCampaignsTab();
+  toast('Order deleted');
+}
+
+// ── EXPORT CAMP REPORT ────────────────────────────────────────────────────
+function exportCampReport() {
+  const view = document.getElementById('camp-view-sel').value;
+  const date = new Date().toISOString().slice(0,10);
+  let csv = `Emirates Pride — Campaigns & Orders Report\nDate: ${date}\n\n`;
+
+  if (view !== 'exports') {
+    csv += `MARKETING CAMPAIGNS\nCampaign,Type,Status,Start,End,SKUs,Total Units Required\n`;
+    campCampaigns.forEach(c => {
+      const reqs = campRequirements.filter(r=>r.campaign_id===c.id);
+      const units = reqs.reduce((s,r)=>s+(r.qty_required||0),0);
+      csv += `"${c.name}",${c.type},${c.status},${c.start_date||''},${c.end_date||''},${new Set(reqs.map(r=>r.sku_code)).size},${units}\n`;
+    });
+    csv += '\nCAMPAIGN REQUIREMENTS\nCampaign,SKU,Product,Store,Qty Required,WH Stock,Gap\n';
+    campCampaigns.forEach(c => {
+      campRequirements.filter(r=>r.campaign_id===c.id).forEach(r => {
+        const wh = campWhStock[r.sku_code]||0;
+        const gap = wh-(r.qty_required||0);
+        const storeName = r.store_code==='ALL'?'All Stores':(getStore(r.store_code).name||r.store_code);
+        csv += `"${c.name}",${r.sku_code},"${getItemName(r.sku_code)}","${storeName}",${r.qty_required||0},${wh},${gap}\n`;
+      });
+    });
+  }
+
+  if (view !== 'campaigns') {
+    csv += `\nEXPORT & PRIVATE ORDERS\nRef,Type,Client,Country,Expected Date,Status,SKUs,Total Units\n`;
+    campOrders.forEach(o => {
+      const lines = campOrderLines.filter(l=>l.order_id===o.id);
+      const units = lines.reduce((s,l)=>s+(l.qty||0),0);
+      csv += `${o.order_ref},${o.order_type},"${o.client_name||''}","${o.country||''}",${o.expected_date||''},${o.status},${new Set(lines.map(l=>l.sku_code)).size},${units}\n`;
+    });
+    csv += '\nORDER LINES\nRef,SKU,Product,Qty,WH Stock,Gap\n';
+    campOrders.forEach(o => {
+      campOrderLines.filter(l=>l.order_id===o.id).forEach(l => {
+        const wh = campWhStock[l.sku_code]||0;
+        const gap = wh-(l.qty||0);
+        csv += `${o.order_ref},${l.sku_code},"${getItemName(l.sku_code)}",${l.qty||0},${wh},${gap}\n`;
+      });
+    });
+  }
+
+  if (view === 'demand') {
+    csv += '\nCOMBINED DEMAND PICTURE\nSKU,Product,Campaign Demand,Export Demand,Total Demand,WH Stock,Gap,Status\n';
+    const demand = _buildCombinedDemand();
+    Object.entries(demand).sort((a,b)=>(campWhStock[a[0]]||0)-(a[1].camp+a[1].export)-((campWhStock[b[0]]||0)-(b[1].camp+b[1].export)))
+      .forEach(([sku,d]) => {
+        const total = d.camp + d.export;
+        const wh = campWhStock[sku]||0;
+        const gap = wh - total;
+        const status = gap < 0 ? 'SHORTFALL' : gap < total*0.2 ? 'WATCH' : 'OK';
+        csv += `${sku},"${getItemName(sku)}",${d.camp},${d.export},${total},${wh},${gap},${status}\n`;
+      });
+  }
+
+  dlFile(`Campaigns_Orders_${date}.csv`, csv, 'text/csv');
+  toast('Report exported');
+}
+
+// ── NAV DOT CHECK on load ─────────────────────────────────────────────────
+function checkNavDotOnLoad() {
+  // lightweight: just hide by default — it will update when campaigns tab is loaded
+  document.getElementById('camp-nav-dot').style.display = 'none';
 }
 
 </script>
