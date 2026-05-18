@@ -469,6 +469,31 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sc-bal.ok{color:#1A6A40;}.sc-bal.low{color:#9A7B4F;}.sc-bal.zero{color:#555;}
 .sc-empty{color:#444;font-size:12px;text-align:center;padding:16px 0;}
 
+/* ─── CONSUMABLES SECTION ─── */
+#consumableSection{margin-top:0;border-top:4px solid #1A1A2A;}
+.cons-hdr{background:#111;padding:8px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #2A2A3A;flex-shrink:0;position:sticky;top:0;z-index:12;}
+.cons-alert-badge{background:#C0392B;color:#fff;font-family:var(--f-mono);font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;letter-spacing:0.5px;}
+.cons-cat-row{background:#1A1A2A;padding:4px 14px;font-family:var(--f-mono);font-size:9px;font-weight:800;color:#7A7AAA;letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid #23233A;}
+.cons-row{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #1E1E2E;cursor:pointer;transition:background 0.12s;gap:12px;}
+.cons-row:active{background:#1E1E3A;}
+.cons-row.low{background:#2A1A1A;}
+.cons-row.empty{background:#3A1010;}
+.cons-icon{font-size:18px;flex-shrink:0;width:26px;text-align:center;}
+.cons-info{flex:1;min-width:0;}
+.cons-name{font-size:12px;font-weight:600;color:#E0E0E0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cons-name-ar{font-family:var(--f-ar);font-size:11px;color:#666;direction:rtl;text-align:right;}
+.cons-unit{font-size:10px;color:#555;margin-top:1px;}
+.cons-qty-wrap{text-align:right;flex-shrink:0;min-width:64px;}
+.cons-qty{font-family:var(--f-mono);font-size:22px;font-weight:900;line-height:1;}
+.cons-qty.ok{color:#6FCF97;}
+.cons-qty.low{color:#F2994A;}
+.cons-qty.empty{color:#EB5757;}
+.cons-status{font-size:9px;font-weight:700;letter-spacing:0.5px;margin-top:2px;}
+.cons-status.ok{color:#27AE60;}
+.cons-status.low{color:#F2994A;}
+.cons-status.empty{color:#EB5757;}
+.cons-tap{font-family:var(--f-mono);font-size:8px;color:#444;margin-top:2px;text-align:right;}
+
 /* ─── NUMPAD OVERLAY ─── */
 #numpad{
   position:fixed;inset:0;background:rgba(0,0,0,0.75);
@@ -1781,6 +1806,17 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         </table>
       </div>
       <!-- ══ END TESTER SECTION ══ -->
+
+      <!-- ══ CONSUMABLES SECTION ══ -->
+      <div id="consumableSection" style="display:none;">
+        <div class="cons-hdr">
+          <span style="font-family:var(--f-mono);font-size:10px;font-weight:800;color:#FFFFFF;letter-spacing:2px;text-transform:uppercase;">🛍️ CONSUMABLES &amp; PACKING</span>
+          <span id="consAlertBadge" class="cons-alert-badge" style="display:none;">0 LOW</span>
+          <span style="font-family:var(--f-mono);font-size:9px;color:#AAA;font-weight:500;margin-left:auto;">Tap any row to update stock count</span>
+        </div>
+        <div id="consGrid"></div>
+      </div>
+      <!-- ══ END CONSUMABLES SECTION ══ -->
 
     </div>
   </div>
@@ -5254,6 +5290,20 @@ function finTapCC(i){
 
 // ── UNIFIED confirmNP (stock + finance) ─────────────
 function confirmNP(){
+  // Consumable numpad
+  if(npCtx && npCtx.type === 'consumable'){
+    const val = parseInt(npBuf) || 0;
+    consSet(me.code, npCtx.code, val);
+    closeNP();
+    renderConsSection();
+    syncConsToSupabase(npCtx.code, val);
+    const item = CONSUMABLES.find(x => x.code === npCtx.code);
+    const status = consStatus(val, item?.threshold || 0);
+    if(status === 'empty') toast('⛔ ' + (item?.en||npCtx.code) + ' — EMPTY! Request replenishment.');
+    else if(status === 'low') toast('⚠ ' + (item?.en||npCtx.code) + ' is LOW — order soon.');
+    else toast('✓ ' + (item?.en||npCtx.code) + ' updated');
+    return;
+  }
   // Finance numpad
   if(finNPCtx !== null && !npCtx){
     const val = parseFloat(finNPBuf) || 0;
@@ -11173,6 +11223,7 @@ async function startSync(store) {
     buildGrid();
     buildFooter();
     buildSpSkuSel();
+    renderConsSection();
 
     setMsg('✓ Ready', 100, ok ? '● Live' : '⚠ Offline mode');
 
@@ -11955,6 +12006,169 @@ function generateFGApprovalPDF(rec){
     <div class="foot"><span>Generated: ${fmtDateTime(new Date())}</span><span>Emirates Pride Perfumes — Internal Document</span></div>
   </div></body></html>`;
   openPrintWindow(html);
+}
+// ══════════════════════════════════════════════════════════════════
+// CONSUMABLES & PACKING MATERIALS
+// ══════════════════════════════════════════════════════════════════
+
+const CONSUMABLES = [
+  // Shopping Bags
+  {cat:'Bags',       code:'bag-xs',    en:'Shopping Bag — X-Small', ar:'كيس تسوق صغير جداً', icon:'🛍️', unit:'pcs',   threshold:30},
+  {cat:'Bags',       code:'bag-sm',    en:'Shopping Bag — Small',   ar:'كيس تسوق صغير',      icon:'🛍️', unit:'pcs',   threshold:25},
+  {cat:'Bags',       code:'bag-md',    en:'Shopping Bag — Medium',  ar:'كيس تسوق وسط',       icon:'🛍️', unit:'pcs',   threshold:20},
+  {cat:'Bags',       code:'bag-lg',    en:'Shopping Bag — Large',   ar:'كيس تسوق كبير',      icon:'🛍️', unit:'pcs',   threshold:15},
+  {cat:'Bags',       code:'bag-gift',  en:'Gift Bag',                ar:'كيس هدية',            icon:'🎁', unit:'pcs',   threshold:10},
+  // Packing Material
+  {cat:'Packing',    code:'tissue',    en:'Tissue / Wrapping Paper', ar:'ورق تغليف',           icon:'📄', unit:'sheets',threshold:50},
+  {cat:'Packing',    code:'bubblewrap',en:'Bubble Wrap Roll',        ar:'ورق فقاعي',           icon:'📦', unit:'rolls', threshold:2},
+  {cat:'Packing',    code:'tape',      en:'Packing Tape',            ar:'شريط لاصق',           icon:'🖊️', unit:'rolls', threshold:3},
+  {cat:'Packing',    code:'gbox-sm',   en:'Gift Box — Small',        ar:'علبة هدية صغيرة',    icon:'🎀', unit:'pcs',   threshold:10},
+  {cat:'Packing',    code:'gbox-md',   en:'Gift Box — Medium',       ar:'علبة هدية وسط',      icon:'🎀', unit:'pcs',   threshold:8},
+  {cat:'Packing',    code:'gbox-lg',   en:'Gift Box — Large',        ar:'علبة هدية كبيرة',    icon:'🎀', unit:'pcs',   threshold:5},
+  // Promotional
+  {cat:'Promotional',code:'brochure',  en:'Product Brochure / Catalogue', ar:'كتالوج المنتجات', icon:'📋', unit:'pcs',  threshold:20},
+  {cat:'Promotional',code:'sample',    en:'Sample Sachets',          ar:'عينات',               icon:'💊', unit:'pcs',   threshold:15},
+  {cat:'Promotional',code:'promo-card',en:'Promotional Card / Flyer', ar:'بطاقة ترويجية',     icon:'🗂️', unit:'pcs',   threshold:20},
+  // Operations
+  {cat:'Operations', code:'pos-roll',  en:'POS Receipt Roll',        ar:'رول إيصال POS',      icon:'🧾', unit:'rolls', threshold:2},
+  {cat:'Operations', code:'pen',       en:'Pen / Stationery',        ar:'قلم / قرطاسية',      icon:'✏️', unit:'pcs',   threshold:5},
+];
+
+const CONS_CAT_ORDER = ['Bags','Packing','Promotional','Operations'];
+
+// ── Storage helpers ────────────────────────────────────────────────
+function consKey(storeCode, itemCode){ return `cons_${storeCode}_${itemCode}`; }
+function consGet(storeCode, itemCode){ return parseInt(localStorage.getItem(consKey(storeCode,itemCode)) || '-1'); }
+function consSet(storeCode, itemCode, qty){
+  localStorage.setItem(consKey(storeCode,itemCode), qty);
+  localStorage.setItem(`cons_updated_${storeCode}`, new Date().toISOString());
+}
+function consLastUpdated(storeCode){
+  const ts = localStorage.getItem(`cons_updated_${storeCode}`);
+  if(!ts) return 'Never updated';
+  const d = new Date(ts);
+  return 'Updated ' + d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) +
+    ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ── Status helpers ─────────────────────────────────────────────────
+function consStatus(qty, threshold){
+  if(qty < 0) return 'not-set';
+  if(qty === 0) return 'empty';
+  if(qty <= threshold) return 'low';
+  return 'ok';
+}
+
+// ── Render consumables grid ────────────────────────────────────────
+function renderConsSection(){
+  if(!me) return;
+  const section = document.getElementById('consumableSection');
+  if(!section) return;
+  section.style.display = 'block';
+
+  let alertCount = 0;
+  const byCategory = {};
+  CONS_CAT_ORDER.forEach(cat => { byCategory[cat] = []; });
+  CONSUMABLES.forEach(item => {
+    const qty    = consGet(me.code, item.code);
+    const status = consStatus(qty, item.threshold);
+    if(status === 'low' || status === 'empty') alertCount++;
+    (byCategory[item.cat] = byCategory[item.cat] || []).push({...item, qty, status});
+  });
+
+  // Update alert badge
+  const badge = document.getElementById('consAlertBadge');
+  if(alertCount > 0){
+    badge.style.display = 'inline-block';
+    badge.textContent   = alertCount + (alertCount===1?' LOW':' LOW');
+  } else {
+    badge.style.display = 'none';
+  }
+
+  let html = '';
+  CONS_CAT_ORDER.forEach(cat => {
+    const items = byCategory[cat] || [];
+    if(!items.length) return;
+    html += `<div class="cons-cat-row">${cat}</div>`;
+    items.forEach(item => {
+      const rowCls   = item.status==='empty' ? 'empty' : item.status==='low' ? 'low' : '';
+      const qtyCls   = item.status==='empty' ? 'empty' : item.status==='low' ? 'low' : 'ok';
+      const stsCls   = qtyCls;
+      const stsLabel = item.status==='empty' ? '⛔ EMPTY — REQUEST NOW'
+                     : item.status==='low'   ? '⚠ LOW — ORDER SOON'
+                     : item.status==='not-set' ? '— tap to set count'
+                     : '✓ OK';
+      const qtyDisplay = item.qty < 0 ? '—' : item.qty;
+      html += `<div class="cons-row ${rowCls}" onclick="openConsNP('${item.code}')">
+        <div class="cons-icon">${item.icon}</div>
+        <div class="cons-info">
+          <div class="cons-name">${item.en}</div>
+          <div class="cons-name-ar">${item.ar}</div>
+          <div class="cons-unit">${item.unit} · alert below ${item.threshold}</div>
+        </div>
+        <div class="cons-qty-wrap">
+          <div class="cons-qty ${qtyCls}">${qtyDisplay}</div>
+          <div class="cons-status ${stsCls}">${stsLabel}</div>
+          <div class="cons-tap">TAP TO UPDATE</div>
+        </div>
+      </div>`;
+    });
+  });
+
+  html += `<div style="padding:8px 14px;font-family:var(--f-mono);font-size:9px;color:#444;text-align:right;">${consLastUpdated(me.code)}</div>`;
+  document.getElementById('consGrid').innerHTML = html;
+  checkConsAlerts();
+}
+
+// ── Alert badge on section header (also updates footer if needed) ──
+function checkConsAlerts(){
+  if(!me) return;
+  let alertCount = 0;
+  CONSUMABLES.forEach(item => {
+    const qty = consGet(me.code, item.code);
+    if(qty >= 0 && qty <= item.threshold) alertCount++;
+  });
+  const badge = document.getElementById('consAlertBadge');
+  if(badge){
+    badge.style.display  = alertCount > 0 ? 'inline-block' : 'none';
+    badge.textContent    = alertCount + ' LOW';
+  }
+}
+
+// ── Open numpad for consumable ─────────────────────────────────────
+function openConsNP(code){
+  if(!me) return;
+  const item = CONSUMABLES.find(x => x.code === code);
+  if(!item) return;
+  const cur = consGet(me.code, code);
+  npCtx  = { type:'consumable', code };
+  npBuf  = cur >= 0 ? String(cur) : '';
+  document.getElementById('npProduct').textContent = item.en;
+  const fEl = document.getElementById('npField');
+  fEl.textContent  = '🛍️ Current Stock Count — ' + item.unit;
+  fEl.className    = 'np-field';
+  fEl.style.background = '#1A2A3A';
+  fEl.style.color      = '#7EC8E3';
+  document.getElementById('npVal').textContent = npBuf || '0';
+  document.getElementById('npNote').textContent =
+    `Threshold: alert when ≤ ${item.threshold} ${item.unit}. Enter actual count now.`;
+  // Hide store selector (not needed for consumables)
+  const storeRow = document.getElementById('npStoreRow');
+  if(storeRow) storeRow.style.display = 'none';
+  document.getElementById('numpad').classList.add('show');
+}
+
+// ── Sync one consumable update to Supabase (fire-and-forget) ──────
+async function syncConsToSupabase(code, qty){
+  if(!sb || !me) return;
+  try {
+    await sb.from('consumable_stock').upsert({
+      store_code: me.code,
+      item_code:  code,
+      qty_current: qty,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'store_code,item_code' });
+  } catch(e){ /* silent — localStorage is the source of truth for stock register */ }
 }
 
 </script>
