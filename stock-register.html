@@ -2551,6 +2551,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <div class="dp-tab" data-tab="dpReorder" onclick="switchDPTab(this)">🟢 Reorder</div>
     <div class="dp-tab" data-tab="dpStores" onclick="switchDPTab(this)">🏪 Stores</div>
     <div class="dp-tab" data-tab="dpInventory" onclick="switchDPTab(this)">📦 Inventory</div>
+    <div class="dp-tab" data-tab="dpMinMax" onclick="switchDPTab(this)">🎯 Min/Max Review</div>
   </div>
   <!-- DP body -->
   <div id="dpBody" style="flex:1;overflow-y:auto;padding:16px;"></div>
@@ -6656,6 +6657,7 @@ function switchDPTab(el){
   else if(tab==='dpReorder') renderDPReorder();
   else if(tab==='dpStores') renderDPStores();
   else if(tab==='dpInventory') renderDPInventory();
+  else if(tab==='dpMinMax') renderDPMinMax();
 }
 
 function _dpStoreInfo(code){
