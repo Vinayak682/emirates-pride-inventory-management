@@ -6190,10 +6190,10 @@ function fcBuildPlan() {
       signal = 'plan';
     }
 
-    const pinfo = (typeof SKU_MASTER !== 'undefined' && SKU_MASTER[sku]) ? SKU_MASTER[sku] : { en: sku, ar: '' };
+    const skuName = (SKU_NAMES && SKU_NAMES[sku]) ? SKU_NAMES[sku] : sku;
 
     _fcPlan.push({
-      sku, name: pinfo.en || sku, ar: pinfo.ar || '',
+      sku, name: skuName, ar: '',
       histMonths, fwdMonths, last3, prior3,
       last3vals, prior3vals, avgLast3, avgPrior3, wtdBase, trend,
       baseline, campDemand, totalCamp, orderDemand,
