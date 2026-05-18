@@ -1368,9 +1368,23 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
             </div>
           </div>
           <!-- Notes / email paste -->
-          <div style="margin-bottom:20px;">
+          <div style="margin-bottom:16px;">
             <div class="login-label" style="margin-bottom:6px;">Marketing Email / Notes <span style="font-size:10px;color:var(--ink-light);font-weight:400;">(paste the email from marketing team here for reference)</span></div>
             <textarea id="cf-notes" style="width:100%;height:100px;background:var(--surface);border:1px solid var(--border);color:var(--ink);padding:10px;font-size:12px;resize:vertical;border-radius:4px;" placeholder="Paste the marketing email or campaign brief here…"></textarea>
+          </div>
+          <!-- Attachment -->
+          <div style="margin-bottom:20px;">
+            <div class="login-label" style="margin-bottom:6px;">Attachment <span style="font-size:10px;color:var(--ink-light);font-weight:400;">(PDF, Excel, image, Word — optional, max 50MB)</span></div>
+            <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px dashed var(--gold-dark);border-radius:4px;cursor:pointer;background:var(--cream);">
+              <svg width="16" height="16" fill="none" stroke="var(--gold-dark)" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              <span id="cf-attach-label" style="font-size:12px;color:var(--ink-light);">Click to choose file or drag & drop</span>
+              <input type="file" id="cf-attachment" accept=".pdf,.xlsx,.xls,.csv,.jpg,.jpeg,.png,.doc,.docx,.pptx,.zip" style="display:none;" onchange="document.getElementById('cf-attach-label').textContent=this.files[0]?this.files[0].name:'Click to choose file or drag & drop'">
+            </label>
+            <div id="cf-attach-existing" style="display:none;margin-top:6px;font-size:11px;color:var(--ink-light);display:flex;align-items:center;gap:8px;">
+              <span>Current: </span><a id="cf-attach-link" href="#" target="_blank" style="color:var(--gold-dark);font-weight:600;"></a>
+              <button onclick="document.getElementById('cf-attach-existing').style.display='none';document.getElementById('cf-attach-clear').value='1';" style="background:none;border:none;color:#C0392B;cursor:pointer;font-size:11px;">✕ Remove</button>
+              <input type="hidden" id="cf-attach-clear" value="0">
+            </div>
           </div>
           <!-- SKU requirements -->
           <div style="margin-bottom:16px;">
@@ -1439,9 +1453,23 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
               </select>
             </div>
           </div>
-          <div style="margin-bottom:20px;">
+          <div style="margin-bottom:16px;">
             <div class="login-label" style="margin-bottom:6px;">Email / Notes <span style="font-size:10px;color:var(--ink-light);font-weight:400;">(paste the order email here)</span></div>
             <textarea id="of-notes" style="width:100%;height:90px;background:var(--surface);border:1px solid var(--border);color:var(--ink);padding:10px;font-size:12px;resize:vertical;border-radius:4px;" placeholder="Paste the order email or brief here…"></textarea>
+          </div>
+          <!-- Attachment -->
+          <div style="margin-bottom:20px;">
+            <div class="login-label" style="margin-bottom:6px;">Attachment <span style="font-size:10px;color:var(--ink-light);font-weight:400;">(PDF, Excel, image, Word — optional, max 50MB)</span></div>
+            <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px dashed var(--gold-dark);border-radius:4px;cursor:pointer;background:var(--cream);">
+              <svg width="16" height="16" fill="none" stroke="var(--gold-dark)" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              <span id="of-attach-label" style="font-size:12px;color:var(--ink-light);">Click to choose file or drag & drop</span>
+              <input type="file" id="of-attachment" accept=".pdf,.xlsx,.xls,.csv,.jpg,.jpeg,.png,.doc,.docx,.pptx,.zip" style="display:none;" onchange="document.getElementById('of-attach-label').textContent=this.files[0]?this.files[0].name:'Click to choose file or drag & drop'">
+            </label>
+            <div id="of-attach-existing" style="display:none;margin-top:6px;font-size:11px;color:var(--ink-light);display:flex;align-items:center;gap:8px;">
+              <span>Current: </span><a id="of-attach-link" href="#" target="_blank" style="color:var(--gold-dark);font-weight:600;"></a>
+              <button onclick="document.getElementById('of-attach-existing').style.display='none';document.getElementById('of-attach-clear').value='1';" style="background:none;border:none;color:#C0392B;cursor:pointer;font-size:11px;">✕ Remove</button>
+              <input type="hidden" id="of-attach-clear" value="0">
+            </div>
           </div>
           <!-- Order lines -->
           <div style="margin-bottom:16px;">
@@ -4908,6 +4936,12 @@ function renderCampaignsView() {
             </table>
           </div>
         </details>` : ''}
+        ${c.attachment_url ? `<div style="margin-bottom:10px;">
+          <a href="${c.attachment_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--gold-dark);font-weight:600;text-decoration:none;padding:5px 10px;border:1px solid var(--gold-dark);border-radius:4px;">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            ${c.attachment_name || 'View Attachment'}
+          </a>
+        </div>` : ''}
         <div style="display:flex;gap:8px;">
           <button onclick="openCampForm('${c.id}')" style="flex:1;background:none;border:1px solid var(--gold-dark);color:var(--gold-dark);padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;">Edit</button>
           <button onclick="updateCampaignStatus('${c.id}','${c.status==='ACTIVE'?'COMPLETED':c.status==='UPCOMING'?'ACTIVE':c.status}')" style="flex:1;background:var(--gold-dark);color:#000;border:none;padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:700;">
@@ -5014,6 +5048,12 @@ function renderExportOrdersView() {
             </table>
           </div>
         </details>` : ''}
+        ${o.attachment_url ? `<div style="margin-bottom:10px;">
+          <a href="${o.attachment_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--gold-dark);font-weight:600;text-decoration:none;padding:5px 10px;border:1px solid var(--gold-dark);border-radius:4px;">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            ${o.attachment_name || 'View Attachment'}
+          </a>
+        </div>` : ''}
         <div style="display:flex;gap:8px;">
           <button onclick="openOrderForm('${o.id}')" style="flex:1;background:none;border:1px solid var(--gold-dark);color:var(--gold-dark);padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;">Edit</button>
           <button onclick="cycleOrderStatus('${o.id}')" style="flex:1;background:var(--gold-dark);color:#000;border:none;padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:700;">
@@ -5139,6 +5179,19 @@ function openCampForm(editId) {
     } else {
       addCampSkuRow();
     }
+    // show existing attachment
+    const existDiv  = document.getElementById('cf-attach-existing');
+    const existLink = document.getElementById('cf-attach-link');
+    if (camp.attachment_url) {
+      existDiv.style.display = 'flex';
+      existLink.href = camp.attachment_url;
+      existLink.textContent = camp.attachment_name || 'View attachment';
+    } else {
+      existDiv.style.display = 'none';
+    }
+    document.getElementById('cf-attach-clear').value = '0';
+    document.getElementById('cf-attachment').value = '';
+    document.getElementById('cf-attach-label').textContent = 'Click to choose file or drag & drop';
   } else {
     title.textContent = 'New Marketing Campaign';
     document.getElementById('cf-name').value    = '';
@@ -5151,6 +5204,10 @@ function openCampForm(editId) {
     document.getElementById('cf-store-scope').value = 'ALL';
     document.getElementById('cf-store-specific').style.display = 'none';
     document.getElementById('cf-sku-rows').innerHTML = '';
+    document.getElementById('cf-attach-existing').style.display = 'none';
+    document.getElementById('cf-attach-clear').value = '0';
+    document.getElementById('cf-attachment').value = '';
+    document.getElementById('cf-attach-label').textContent = 'Click to choose file or drag & drop';
     addCampSkuRow();
   }
   document.getElementById('cf-error').style.display = 'none';
@@ -5238,6 +5295,24 @@ async function saveCampaign() {
   const { error: reqErr } = await sb.from('campaign_requirements').insert(reqRows);
   if (reqErr) { errEl.textContent='Requirements save failed: '+reqErr.message; errEl.style.display='block'; return; }
 
+  // handle attachment
+  const attachFile  = document.getElementById('cf-attachment').files[0];
+  const attachClear = document.getElementById('cf-attach-clear').value === '1';
+  if (attachFile) {
+    toast('Uploading attachment…');
+    const ext  = attachFile.name.split('.').pop();
+    const path = `campaigns/${campId}/${Date.now()}.${ext}`;
+    const { error: upErr } = await sb.storage.from('ep-attachments').upload(path, attachFile, { upsert: true });
+    if (upErr) {
+      toast('⚠ Attachment upload failed — campaign saved without file');
+    } else {
+      const { data: { publicUrl } } = sb.storage.from('ep-attachments').getPublicUrl(path);
+      await sb.from('campaigns').update({ attachment_url: publicUrl, attachment_name: attachFile.name }).eq('id', campId);
+    }
+  } else if (attachClear) {
+    await sb.from('campaigns').update({ attachment_url: null, attachment_name: null }).eq('id', campId);
+  }
+
   closeCampForm();
   campLoaded = false;
   await loadCampaignsTab();
@@ -5291,6 +5366,19 @@ function openOrderForm(editId) {
     } else {
       addOrderLineRow();
     }
+    // show existing attachment
+    const existDiv  = document.getElementById('of-attach-existing');
+    const existLink = document.getElementById('of-attach-link');
+    if (o.attachment_url) {
+      existDiv.style.display = 'flex';
+      existLink.href = o.attachment_url;
+      existLink.textContent = o.attachment_name || 'View attachment';
+    } else {
+      existDiv.style.display = 'none';
+    }
+    document.getElementById('of-attach-clear').value = '0';
+    document.getElementById('of-attachment').value = '';
+    document.getElementById('of-attach-label').textContent = 'Click to choose file or drag & drop';
   } else {
     title.textContent = 'New Export / Private Client Order';
     document.getElementById('of-ref').value     = '';
@@ -5302,6 +5390,10 @@ function openOrderForm(editId) {
     document.getElementById('of-notes').value   = '';
     document.getElementById('of-edit-id').value = '';
     document.getElementById('of-line-rows').innerHTML = '';
+    document.getElementById('of-attach-existing').style.display = 'none';
+    document.getElementById('of-attach-clear').value = '0';
+    document.getElementById('of-attachment').value = '';
+    document.getElementById('of-attach-label').textContent = 'Click to choose file or drag & drop';
     addOrderLineRow();
   }
   document.getElementById('of-error').style.display = 'none';
@@ -5375,6 +5467,24 @@ async function saveExportOrder() {
   const lineRows = lines.map(l => ({ order_id: orderId, ...l }));
   const { error: lineErr } = await sb.from('export_order_lines').insert(lineRows);
   if (lineErr) { errEl.textContent='Line save failed: '+lineErr.message; errEl.style.display='block'; return; }
+
+  // handle attachment
+  const attachFile  = document.getElementById('of-attachment').files[0];
+  const attachClear = document.getElementById('of-attach-clear').value === '1';
+  if (attachFile) {
+    toast('Uploading attachment…');
+    const ext  = attachFile.name.split('.').pop();
+    const path = `orders/${orderId}/${Date.now()}.${ext}`;
+    const { error: upErr } = await sb.storage.from('ep-attachments').upload(path, attachFile, { upsert: true });
+    if (upErr) {
+      toast('⚠ Attachment upload failed — order saved without file');
+    } else {
+      const { data: { publicUrl } } = sb.storage.from('ep-attachments').getPublicUrl(path);
+      await sb.from('export_orders').update({ attachment_url: publicUrl, attachment_name: attachFile.name }).eq('id', orderId);
+    }
+  } else if (attachClear) {
+    await sb.from('export_orders').update({ attachment_url: null, attachment_name: null }).eq('id', orderId);
+  }
 
   closeOrderForm();
   campLoaded = false;
