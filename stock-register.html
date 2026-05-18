@@ -2521,11 +2521,88 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <div style="display:flex;gap:8px;">
       <button onclick="openFGApproval()" style="background:linear-gradient(135deg,#FF6B35,#F7931E);border:1px solid #FFB84D;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(255,107,53,0.3);">📦 FG Tester Requests</button>
       <button onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:1px solid #A78BFA;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.3);">📈 Demand Planning</button>
+      <button onclick="openAMMinMaxPanel()" style="background:linear-gradient(135deg,#065F46,#059669);border:1px solid #34D399;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.3);">📊 Stock Guide / Min-Max</button>
       <button onclick="renderMgrDashboard()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
       <button onclick="closeMgrDashboard()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
     </div>
   </div>
   <div id="mgrDashBody" style="flex:1;overflow-y:auto;background:#FAFAF8;"></div>
+</div>
+
+<!-- ══════════ AREA MANAGER STOCK GUIDE / MIN-MAX PANEL ══════════ -->
+<style>
+#amPanel{position:fixed;inset:0;background:#F5F5F0;z-index:820;display:none;flex-direction:column;}
+.am-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.am-tbl th{padding:8px 10px;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:2;background:#1A1A1A;color:#fff;font-family:var(--f-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;}
+.am-tbl td{padding:6px 10px;border-bottom:1px solid #E8E4DC;vertical-align:middle;}
+.am-tbl tbody tr:hover td{background:rgba(201,164,78,0.05)!important;}
+.am-cat-hdr td{background:#2A2A2A!important;color:#C9A44E!important;font-family:var(--f-mono);font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:6px 10px!important;}
+.am-input{width:60px;padding:5px 8px;border:1.5px solid #DDD;border-radius:5px;font-family:var(--f-mono);font-size:12px;font-weight:700;text-align:center;background:#fff;}
+.am-input:focus{outline:none;border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,0.15);}
+.am-input.dirty{border-color:#F59E0B;background:#FFFBEB;}
+.am-status-ok{background:#EBF5EB!important;}
+.am-status-warn{background:#FFF4E6!important;}
+.am-status-risk{background:#FDECEA!important;}
+.am-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:0.5px;}
+@media print{
+  #amPanel *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #amPrintHide{display:none!important;}
+  .am-input{border:none;font-weight:700;}
+  #amTableWrap{overflow:visible!important;height:auto!important;}
+}
+</style>
+
+<div id="amPanel">
+  <!-- Header -->
+  <div id="amPrintHide" style="background:#1A1A1A;border-bottom:4px solid #059669;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
+    <div>
+      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">📊 STOCK GUIDE — MIN/MAX SETTINGS</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:#AAA;margin-top:2px;letter-spacing:0.5px;">Area Manager fills target stock levels per SKU — auto-calculates from demand planning</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-family:var(--f-mono);font-size:10px;color:#AAA;">STORE:</span>
+        <select id="amStoreSelect" onchange="loadAMMinMaxTable(this.value)"
+                style="background:#2A2A2A;color:#EEE;border:1px solid #555;border-radius:6px;padding:6px 10px;font-family:var(--f-mono);font-size:11px;cursor:pointer;">
+          <option value="">— Select Store —</option>
+        </select>
+      </div>
+      <button onclick="saveAMMinMaxBulk()" id="amSaveBtn"
+              style="background:linear-gradient(135deg,#065F46,#059669);border:1px solid #34D399;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;opacity:0.5;pointer-events:none;">
+        💾 Save to Stock Guide
+      </button>
+      <button onclick="exportAMMinMaxExcel()"
+              style="background:#1A5276;border:1px solid #2E86C1;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">
+        📊 Export Excel
+      </button>
+      <button onclick="printAMMinMaxPDF()"
+              style="background:#6B21A8;border:1px solid #A78BFA;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">
+        🖨 Print / PDF
+      </button>
+      <button onclick="closeAMMinMaxPanel()"
+              style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">
+        ✕ Close
+      </button>
+    </div>
+  </div>
+
+  <!-- Legend + Summary bar -->
+  <div id="amSummaryBar" style="background:#fff;border-bottom:2px solid #E8E4DC;padding:8px 16px;display:flex;align-items:center;gap:16px;flex-shrink:0;flex-wrap:wrap;font-family:var(--f-mono);font-size:11px;">
+    <span style="color:#666;">Select a store above to load all SKUs</span>
+  </div>
+
+  <!-- Table -->
+  <div id="amTableWrap" style="flex:1;overflow:auto;padding:0;">
+    <div style="padding:60px;text-align:center;color:#999;font-family:var(--f-mono);font-size:12px;">
+      Select a store to load the Stock Guide
+    </div>
+  </div>
+
+  <!-- Print header (hidden in screen) -->
+  <div id="amPrintHeader" style="display:none;padding:16px 20px;border-bottom:2px solid #1A1A1A;">
+    <div style="font-family:var(--f-mono);font-size:16px;font-weight:800;">EMIRATES PRIDE PERFUMES — STOCK GUIDE (MIN/MAX LEVELS)</div>
+    <div style="font-family:var(--f-mono);font-size:11px;color:#555;margin-top:4px;" id="amPrintMeta"></div>
+  </div>
 </div>
 
 <!-- ══════════ DEMAND PLANNING PANEL ══════════ -->
@@ -2597,7 +2674,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 </div>
 
 <!-- WH: Outward Modal -->
-<div id="whOutwardModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:960;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
+<div id="whOutwardModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:961;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
   <div style="background:#fff;border-radius:12px;width:100%;max-width:680px;box-shadow:0 20px 60px rgba(0,0,0,0.4);margin:auto;">
     <div style="background:#1A5276;border-radius:12px 12px 0 0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
       <div>
@@ -11410,7 +11487,7 @@ function _tbCarryForward(storeCode){
       var topen  = dbGet(storeCode,curDay,p.code,'open')||0;
       var trec   = dbGet(storeCode,curDay,p.code,'wh')||0;
       var tuse   = bottles.filter(function(b){return b.status==='full'||b.status==='half';}).length;
-      var treturn= bottles.filter(function(b){return b.status==='empty';}).length;
+      var treturn= dbGet(storeCode,curDay,p.code,'wrh')||0; // use same RTW field as live grid
       var closing= Math.max(0, topen+trec-tuse-treturn);
       // Set next day opening
       dbSet(storeCode,nextDayIdx,p.code,'open',closing);
@@ -12172,6 +12249,374 @@ async function syncConsToSupabase(code, qty){
       updated_at:    new Date().toISOString()
     }, { onConflict: 'store_code,item_code' });
   } catch(e){ /* silent — localStorage is the source of truth for stock register */ }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// AREA MANAGER STOCK GUIDE — MIN/MAX BULK FORM
+// ══════════════════════════════════════════════════════════════════
+
+let _amCurrentStore = null;   // store code currently loaded in AM panel
+let _amDirty        = false;  // any unsaved changes?
+
+function openAMMinMaxPanel() {
+  const panel = document.getElementById('amPanel');
+  if (!panel) return;
+
+  // Populate store dropdown (all stores except MGR and WH)
+  const sel = document.getElementById('amStoreSelect');
+  sel.innerHTML = '<option value="">— Select Store —</option>';
+  STORES.filter(s => s.code !== 'MGR' && s.code !== 'WH').forEach(s => {
+    const o = document.createElement('option');
+    o.value   = s.code;
+    o.textContent = s.code + '  —  ' + s.name;
+    sel.appendChild(o);
+  });
+
+  // If already on a store session, pre-select it
+  if (me && me.code && me.code !== 'MGR' && me.code !== 'WH') {
+    sel.value = me.code;
+  }
+
+  panel.style.display = 'flex';
+
+  // Auto-load if a store is pre-selected
+  if (sel.value) loadAMMinMaxTable(sel.value);
+}
+
+function closeAMMinMaxPanel() {
+  if (_amDirty) {
+    if (!confirm('You have unsaved changes. Close without saving?')) return;
+  }
+  document.getElementById('amPanel').style.display = 'none';
+  _amCurrentStore = null;
+  _amDirty = false;
+}
+
+async function loadAMMinMaxTable(storeCode) {
+  if (!storeCode) return;
+  if (_amDirty && _amCurrentStore && _amCurrentStore !== storeCode) {
+    if (!confirm('You have unsaved changes for ' + _amCurrentStore + '. Switch store without saving?')) {
+      document.getElementById('amStoreSelect').value = _amCurrentStore;
+      return;
+    }
+  }
+  _amCurrentStore = storeCode;
+  _amDirty = false;
+
+  const wrap = document.getElementById('amTableWrap');
+  const bar  = document.getElementById('amSummaryBar');
+  wrap.innerHTML = '<div style="padding:60px;text-align:center;color:#888;font-family:var(--f-mono);font-size:12px;">⇅ Loading benchmarks…</div>';
+  bar.innerHTML  = '<span style="color:#888;font-family:var(--f-mono);font-size:11px;">Loading…</span>';
+
+  // Ensure benchmarks are loaded
+  if (!_dpBenchmarks || !_dpBenchmarks.length) {
+    try {
+      const resp = await fetch(_SB_URL + '/rest/v1/benchmarks_cache?select=*&limit=5000', { headers: _SBH });
+      if (resp.ok) _dpBenchmarks = await resp.json();
+    } catch(e) { _dpBenchmarks = []; }
+  }
+
+  const store   = STORES.find(s => s.code === storeCode);
+  const storeName = store ? store.name : storeCode;
+
+  // Gather existing overrides for this store
+  const overrides = (db._minMaxOverrides || []).filter(o => o.store === storeCode);
+  const overrideMap = {};
+  overrides.forEach(o => { overrideMap[o.sku] = o; });
+
+  let countOverride = 0, countCalc = 0, countNoData = 0;
+
+  // Build rows grouped by CATS (exclude tester-only products)
+  let html = '<table class="am-tbl"><thead><tr>';
+  html += '<th style="width:90px;">SKU</th>';
+  html += '<th>Product Name</th>';
+  html += '<th style="width:60px;text-align:center;color:#6FCF97;">Calc Min</th>';
+  html += '<th style="width:60px;text-align:center;color:#6FCF97;">Calc Max</th>';
+  html += '<th style="width:70px;text-align:center;color:#F59E0B;">AM Min</th>';
+  html += '<th style="width:70px;text-align:center;color:#F59E0B;">AM Max</th>';
+  html += '<th style="width:100px;text-align:center;">Status</th>';
+  html += '<th style="width:90px;font-size:8px;color:#999;">Source</th>';
+  html += '</tr></thead><tbody>';
+
+  CATS.forEach(cat => {
+    // Only include non-tester products
+    const skus = cat.products.filter(p => !p.isTester);
+    if (!skus.length) return;
+
+    html += `<tr class="am-cat-hdr"><td colspan="8">${cat.cat}</td></tr>`;
+
+    skus.forEach(p => {
+      const bench  = _dpGetBenchmarkEnhanced(storeCode, p.code);
+      const ov     = overrideMap[p.code];
+
+      const calcMin = bench ? bench.min : 0;
+      const calcMax = bench ? bench.max : 0;
+      const srcLabel = bench ? bench.source : 'none';
+
+      // AM values — override takes priority, else show calc as suggestion
+      const amMin = ov ? ov.min : (calcMin || '');
+      const amMax = ov ? ov.max : (calcMax || '');
+
+      if (ov) countOverride++;
+      else if (calcMin > 0) countCalc++;
+      else countNoData++;
+
+      // Status class based on whether AM values differ from calc
+      let rowClass = '';
+      let statusBadge = '';
+      if (ov) {
+        const minDiff = calcMin > 0 ? Math.abs(ov.min - calcMin) / calcMin : 0;
+        const maxDiff = calcMax > 0 ? Math.abs(ov.max - calcMax) / calcMax : 0;
+        if (minDiff > 0.5 || maxDiff > 0.5) {
+          rowClass = 'am-status-warn';
+          statusBadge = '<span class="am-badge" style="background:#FEF3C7;color:#92400E;">⚠ OVERRIDE</span>';
+        } else {
+          rowClass = 'am-status-ok';
+          statusBadge = '<span class="am-badge" style="background:#D1FAE5;color:#065F46;">✓ SET</span>';
+        }
+      } else if (calcMin > 0) {
+        rowClass = '';
+        statusBadge = '<span class="am-badge" style="background:#EDE9FE;color:#4C1D95;">AUTO</span>';
+      } else {
+        rowClass = 'am-status-risk';
+        statusBadge = '<span class="am-badge" style="background:#FEE2E2;color:#991B1B;">NO DATA</span>';
+      }
+
+      const srcText = srcLabel === 'benchmark' ? 'Benchmark' :
+                      srcLabel === 'override'   ? 'AM Override' :
+                      srcLabel === 'auto_calc'  ? 'Auto (Sales)' :
+                      srcLabel === 'new_sku'    ? 'New SKU' :
+                      srcLabel === 'dead_stock' ? 'Dead Stock' : '—';
+
+      html += `<tr class="${rowClass}" data-sku="${p.code}">
+        <td style="font-family:var(--f-mono);font-size:10px;color:#555;">${p.code}</td>
+        <td>
+          <div style="font-size:12px;font-weight:600;color:#1A1A1A;">${p.en}</div>
+          ${p.ar ? `<div style="font-size:10px;color:#888;direction:rtl;">${p.ar}</div>` : ''}
+        </td>
+        <td style="text-align:center;font-family:var(--f-mono);font-weight:700;color:#059669;">${calcMin || '—'}</td>
+        <td style="text-align:center;font-family:var(--f-mono);font-weight:700;color:#059669;">${calcMax || '—'}</td>
+        <td style="text-align:center;">
+          <input type="number" class="am-input" id="amMin_${p.code}"
+                 value="${amMin}" min="0" placeholder="0"
+                 onchange="amMarkDirty(this,'${p.code}')">
+        </td>
+        <td style="text-align:center;">
+          <input type="number" class="am-input" id="amMax_${p.code}"
+                 value="${amMax}" min="0" placeholder="0"
+                 onchange="amMarkDirty(this,'${p.code}')">
+        </td>
+        <td style="text-align:center;">${statusBadge}</td>
+        <td style="font-family:var(--f-mono);font-size:9px;color:#999;">${srcText}</td>
+      </tr>`;
+    });
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+
+  // Enable save button
+  document.getElementById('amSaveBtn').style.opacity   = '1';
+  document.getElementById('amSaveBtn').style.pointerEvents = 'auto';
+
+  // Summary bar
+  bar.innerHTML = `
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-family:var(--f-mono);font-size:11px;">
+      <span style="font-weight:700;color:#1A1A1A;">${storeName} (${storeCode})</span>
+      <span style="color:#666;">|</span>
+      <span><span style="background:#D1FAE5;color:#065F46;padding:2px 7px;border-radius:4px;font-weight:700;">${countOverride} AM Set</span></span>
+      <span><span style="background:#EDE9FE;color:#4C1D95;padding:2px 7px;border-radius:4px;font-weight:700;">${countCalc} Auto-Calc</span></span>
+      <span><span style="background:#FEE2E2;color:#991B1B;padding:2px 7px;border-radius:4px;font-weight:700;">${countNoData} No Data</span></span>
+      <span style="color:#666;font-size:10px;">| Fill AM Min/Max columns → click Save</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-left:auto;font-size:10px;align-items:center;flex-wrap:wrap;">
+      <span style="background:#EBF5EB;color:#065F46;padding:2px 7px;border-radius:4px;">■ Calc = system demand plan</span>
+      <span style="background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:4px;">■ AM = area manager target</span>
+    </div>`;
+}
+
+function amMarkDirty(el, skuCode) {
+  el.classList.add('dirty');
+  _amDirty = true;
+  // Validate min ≤ max on the fly
+  const minEl = document.getElementById('amMin_' + skuCode);
+  const maxEl = document.getElementById('amMax_' + skuCode);
+  if (minEl && maxEl) {
+    const mn = +minEl.value, mx = +maxEl.value;
+    if (mx > 0 && mn > mx) {
+      minEl.style.borderColor = '#EF4444';
+      maxEl.style.borderColor = '#EF4444';
+    } else {
+      minEl.style.borderColor = '';
+      maxEl.style.borderColor = '';
+    }
+  }
+}
+
+async function saveAMMinMaxBulk() {
+  if (!_amCurrentStore) { toast('⚠ Select a store first'); return; }
+
+  const store = STORES.find(s => s.code === _amCurrentStore);
+  const setBy = (me && me.name) ? me.name : 'Manager';
+
+  // Collect all filled rows
+  const rows   = [];
+  const errors = [];
+
+  PRODUCTS.filter(p => !p.isTester).forEach(p => {
+    const minEl = document.getElementById('amMin_' + p.code);
+    const maxEl = document.getElementById('amMax_' + p.code);
+    if (!minEl || !maxEl) return;
+
+    const mn = minEl.value.trim() === '' ? null : +minEl.value;
+    const mx = maxEl.value.trim() === '' ? null : +maxEl.value;
+
+    if (mn === null && mx === null) return; // blank row — skip
+
+    if (mn === null || mx === null) {
+      errors.push(`${p.en} (${p.code}): Both MIN and MAX must be filled`);
+      return;
+    }
+
+    if (mn > mx) {
+      errors.push(`${p.en} (${p.code}): MIN (${mn}) cannot exceed MAX (${mx})`);
+      return;
+    }
+
+    if (mn < 0 || mx < 0) {
+      errors.push(`${p.en} (${p.code}): Values cannot be negative`);
+      return;
+    }
+
+    rows.push({ sku: p.code, min: mn, max: mx });
+  });
+
+  if (errors.length) {
+    toast('⚠ Fix errors before saving:\n' + errors.slice(0,3).join('\n'));
+    return;
+  }
+
+  if (!rows.length) { toast('⚠ No values entered yet'); return; }
+
+  // Save to localStorage
+  if (!db._minMaxOverrides) db._minMaxOverrides = [];
+  rows.forEach(r => {
+    const override = {
+      store:  _amCurrentStore,
+      sku:    r.sku,
+      min:    r.min,
+      max:    r.max,
+      reason: 'area_manager_bulk',
+      set_by: setBy,
+      set_at: new Date().toISOString()
+    };
+    const idx = db._minMaxOverrides.findIndex(o => o.store === _amCurrentStore && o.sku === r.sku);
+    if (idx >= 0) db._minMaxOverrides[idx] = override;
+    else db._minMaxOverrides.push(override);
+  });
+  saveDB();
+
+  // Bulk upsert to Supabase
+  toast('⇅ Saving ' + rows.length + ' SKUs to Stock Guide…');
+  try {
+    const payload = rows.map(r => ({
+      store_code: _amCurrentStore,
+      sku_code:   r.sku,
+      min_qty:    r.min,
+      max_qty:    r.max,
+      reason:     'area_manager_bulk',
+      set_by:     setBy
+    }));
+    const resp = await fetch(_SB_URL + '/rest/v1/min_max_overrides', {
+      method:  'POST',
+      headers: { ..._SBH, 'Prefer': 'resolution=merge-duplicates' },
+      body:    JSON.stringify(payload)
+    });
+    if (resp.ok) {
+      toast('✓ ' + rows.length + ' SKUs saved to Stock Guide!');
+      _amDirty = false;
+      // Remove dirty markers
+      document.querySelectorAll('.am-input.dirty').forEach(el => el.classList.remove('dirty'));
+      // Reload table to refresh status badges
+      loadAMMinMaxTable(_amCurrentStore);
+    } else {
+      const txt = await resp.text();
+      toast('⚠ Save failed: ' + txt.slice(0, 80));
+    }
+  } catch(e) {
+    toast('⚠ Network error: ' + e.message);
+  }
+}
+
+function exportAMMinMaxExcel() {
+  if (!_amCurrentStore) { toast('⚠ Select and load a store first'); return; }
+
+  // Ensure XLSX is loaded
+  if (!window.XLSX) {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = () => exportAMMinMaxExcel();
+    document.head.appendChild(s);
+    return;
+  }
+
+  const store    = STORES.find(s => s.code === _amCurrentStore);
+  const storeName = store ? store.name : _amCurrentStore;
+  const dateStr  = new Date().toLocaleDateString('en-GB');
+
+  const wsData = [
+    ['EMIRATES PRIDE PERFUMES — STOCK GUIDE (MIN/MAX LEVELS)'],
+    ['Store: ' + storeName + ' (' + _amCurrentStore + ')', '', 'Date: ' + dateStr, '', 'Prepared by: Area Manager'],
+    [],
+    ['SKU Code', 'Product (English)', 'Product (Arabic)', 'Category', 'System Calc Min', 'System Calc Max', 'AM Target Min', 'AM Target Max', 'Source', 'Status']
+  ];
+
+  CATS.forEach(cat => {
+    cat.products.filter(p => !p.isTester).forEach(p => {
+      const bench  = _dpGetBenchmarkEnhanced(_amCurrentStore, p.code);
+      const calcMin = bench ? bench.min : '';
+      const calcMax = bench ? bench.max : '';
+      const minEl  = document.getElementById('amMin_' + p.code);
+      const maxEl  = document.getElementById('amMax_' + p.code);
+      const amMin  = minEl ? (minEl.value || '') : '';
+      const amMax  = maxEl ? (maxEl.value || '') : '';
+      const srcLabel = bench ? bench.source : 'none';
+      const srcText  = srcLabel === 'benchmark' ? 'Benchmark' :
+                       srcLabel === 'override'   ? 'AM Override' :
+                       srcLabel === 'auto_calc'  ? 'Auto (Sales)' :
+                       srcLabel === 'new_sku'    ? 'New SKU' :
+                       srcLabel === 'dead_stock' ? 'Dead Stock' : 'No Data';
+      const status  = amMin !== '' ? 'AM Set' : (calcMin !== '' ? 'Auto-Calc' : 'No Data');
+      wsData.push([p.code, p.en, p.ar || '', cat.cat, calcMin, calcMax, amMin, amMax, srcText, status]);
+    });
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Column widths
+  ws['!cols'] = [
+    {wch:14},{wch:32},{wch:28},{wch:20},{wch:14},{wch:14},{wch:14},{wch:14},{wch:16},{wch:12}
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Stock Guide');
+  XLSX.writeFile(wb, 'StockGuide_' + _amCurrentStore + '_' + new Date().toISOString().slice(0,10) + '.xlsx');
+  toast('✓ Excel exported');
+}
+
+function printAMMinMaxPDF() {
+  if (!_amCurrentStore) { toast('⚠ Select and load a store first'); return; }
+  const store = STORES.find(s => s.code === _amCurrentStore);
+  const meta  = document.getElementById('amPrintMeta');
+  if (meta) {
+    meta.textContent = 'Store: ' + (store ? store.name : _amCurrentStore) +
+      ' (' + _amCurrentStore + ')  |  Date: ' + new Date().toLocaleDateString('en-GB') +
+      '  |  Prepared by: Area Manager  |  System: Emirates Pride Perfumes';
+  }
+  const header = document.getElementById('amPrintHeader');
+  if (header) header.style.display = 'block';
+  window.print();
+  if (header) header.style.display = 'none';
 }
 
 </script>
