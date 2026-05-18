@@ -12163,10 +12163,11 @@ async function syncConsToSupabase(code, qty){
   if(!sb || !me) return;
   try {
     await sb.from('consumable_stock').upsert({
-      store_code: me.code,
-      item_code:  code,
-      qty_current: qty,
-      updated_at: new Date().toISOString()
+      store_code:    me.code,
+      item_code:     code,
+      qty_on_hand:   qty,
+      snapshot_date: new Date().toISOString().slice(0,10),
+      updated_at:    new Date().toISOString()
     }, { onConflict: 'store_code,item_code' });
   } catch(e){ /* silent — localStorage is the source of truth for stock register */ }
 }
