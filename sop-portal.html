@@ -1497,80 +1497,90 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
 
   </div><!-- /tab-campaigns -->
 
-  <!-- ══════════════════ TAB: FORECAST ══════════════════ -->
+  <!-- ══════════════════ TAB: INTEGRATED DEMAND PLAN ══════════════════ -->
+  <style>
+  .fc-layer-tab{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;background:none;border-bottom:3px solid transparent;font-family:var(--f-body);font-size:12px;font-weight:600;color:var(--ink-light);cursor:pointer;white-space:nowrap;transition:all 0.15s;}
+  .fc-layer-tab.active{color:#1A1A1A;border-bottom-color:var(--gold-dark);}
+  .fc-layer-tab:hover:not(.active){color:#1A1A1A;border-bottom-color:#DDD;}
+  .fc-pill{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:0.5px;}
+  .fc-pill-critical{background:#FEE2E2;color:#991B1B;}
+  .fc-pill-urgent  {background:#FFF4E6;color:#92400E;}
+  .fc-pill-plan    {background:#EDE9FE;color:#4C1D95;}
+  .fc-pill-ok      {background:#D1FAE5;color:#065F46;}
+  .fc-pill-excess  {background:#E0F2FE;color:#0C4A6E;}
+  .fc-pill-dead    {background:#F1F5F9;color:#475569;}
+  .fc-pill-growing {background:#DCFCE7;color:#14532D;}
+  .fc-pill-declining{background:#FEF2F2;color:#7F1D1D;}
+  .fc-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+  .fc-tbl th{padding:9px 10px;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:2;background:#1A1A1A;color:#fff;font-family:monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;border-right:1px solid #2A2A2A;}
+  .fc-tbl td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  .fc-tbl tbody tr:hover td{background:rgba(201,164,78,0.05)!important;}
+  .fc-section-hdr td{background:#F5F0E8!important;font-family:monospace;font-size:10px;font-weight:800;letter-spacing:1.5px;color:#876A00;padding:5px 10px!important;}
+  .fc-num{font-family:monospace;font-weight:700;text-align:right;}
+  .fc-season-badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;}
+  </style>
+
   <div id="tab-forecast" class="tab-panel">
 
-    <!-- Filter Bar -->
-    <div class="filter-bar" style="gap:8px;flex-wrap:wrap;">
-      <select class="sel" id="fc-region" onchange="applyForecastFilters()">
+    <!-- Top filter bar -->
+    <div class="filter-bar" style="gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);">
+      <select class="sel" id="fc-region" onchange="fcApplyFilters()">
         <option value="ALL">All Regions</option>
         <option value="EPP">EPP UAE</option>
         <option value="ASL">ASL UAE</option>
         <option value="OMAN">Oman</option>
       </select>
-      <select class="sel" id="fc-store" onchange="applyForecastFilters()">
-        <option value="ALL">All Stores</option>
+      <select class="sel" id="fc-store" onchange="fcApplyFilters()">
+        <option value="ALL">All Stores Combined</option>
       </select>
-      <select class="sel" id="fc-horizon">
-        <option value="3">3-Month Horizon</option>
-        <option value="6">6-Month Horizon</option>
+      <select class="sel" id="fc-horizon" onchange="fcRender()">
+        <option value="3">3-Month Plan</option>
+        <option value="6">6-Month Plan</option>
       </select>
-      <select class="sel" id="fc-view" onchange="renderForecastView()">
-        <option value="sku">📦 By SKU (All Stores Combined)</option>
-        <option value="store">🏪 By Store</option>
-        <option value="risk">🔴 Risk SKUs Only</option>
-      </select>
-      <input type="text" class="tbl-search" id="fc-search" placeholder="Search SKU or product…"
-             oninput="renderForecastView()" style="max-width:200px;">
-      <button class="filter-btn-ghost" onclick="fcLoaded=false;loadForecastTab();" style="margin-left:auto;">↺ Refresh</button>
-      <button class="filter-btn-ghost" onclick="exportForecastExcel()">↓ Export Excel</button>
+      <input type="text" class="tbl-search" id="fc-search" placeholder="Search SKU / product…"
+             oninput="fcRender()" style="max-width:180px;">
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-light);cursor:pointer;">
+        <input type="checkbox" id="fc-seasonal" onchange="fcRender()" checked>
+        UAE Seasonality
+      </label>
+      <button class="filter-btn-ghost" onclick="fcLoaded=false;loadForecastTab();" style="margin-left:auto;">↺ Refresh All</button>
+      <button class="filter-btn-ghost" onclick="fcExportExcel()">↓ Excel</button>
     </div>
 
-    <!-- KPI Strip -->
-    <div style="padding:12px 24px;display:flex;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border);">
-      <div class="kpi-card" style="padding:16px 18px;">
-        <div class="kpi-val" id="fc-kpi-skus" style="font-size:22px;">—</div>
-        <div class="kpi-label">Active SKUs</div>
-      </div>
-      <div class="kpi-card" style="padding:16px 18px;">
-        <div class="kpi-val" id="fc-kpi-m1" style="font-size:22px;color:var(--gold-dark);">—</div>
-        <div class="kpi-label">Forecast Month +1 (Units)</div>
-      </div>
-      <div class="kpi-card" style="padding:16px 18px;">
-        <div class="kpi-val" id="fc-kpi-m2" style="font-size:22px;color:#3B5BDB;">—</div>
-        <div class="kpi-label">Forecast Month +2 (Units)</div>
-      </div>
-      <div class="kpi-card" style="padding:16px 18px;">
-        <div class="kpi-val" id="fc-kpi-m3" style="font-size:22px;color:#0B7A45;">—</div>
-        <div class="kpi-label">Forecast Month +3 (Units)</div>
-      </div>
-      <div class="kpi-card" style="padding:16px 18px;">
-        <div class="kpi-val" id="fc-kpi-risk" style="font-size:22px;color:#C0392B;">—</div>
-        <div class="kpi-label">⚠ High-Risk SKUs</div>
-      </div>
-      <div class="kpi-card" style="padding:16px 18px;">
-        <div class="kpi-val" id="fc-kpi-growing" style="font-size:22px;color:#0B7A45;">—</div>
-        <div class="kpi-label">📈 Growing SKUs (&gt;10%)</div>
-      </div>
+    <!-- Layer navigator -->
+    <div style="background:#FAFAF7;border-bottom:2px solid var(--border);padding:0 16px;display:flex;overflow-x:auto;gap:0;">
+      <button class="fc-layer-tab active" id="fcl-plan"     onclick="fcSetLayer('plan')">🎯 Integrated Demand Plan</button>
+      <button class="fc-layer-tab"        id="fcl-baseline" onclick="fcSetLayer('baseline')">📊 Statistical Baseline</button>
+      <button class="fc-layer-tab"        id="fcl-supply"   onclick="fcSetLayer('supply')">🏭 Supply &amp; FG Stock</button>
+      <button class="fc-layer-tab"        id="fcl-commercial" onclick="fcSetLayer('commercial')">📣 Commercial Demand</button>
+      <button class="fc-layer-tab"        id="fcl-health"   onclick="fcSetLayer('health')">🏪 Store Inventory Health</button>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 8px;font-size:10px;color:var(--ink-light);" id="fc-data-note"></div>
     </div>
 
-    <!-- Basis & method note -->
-    <div style="padding:8px 24px;background:#FAFAF7;border-bottom:1px solid var(--border);font-size:11px;color:var(--ink-light);display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-      <span><strong>Method:</strong> Weighted 6-month rolling avg (recent months weighted ×3, ×2, ×1)</span>
-      <span>|</span>
-      <span><strong>Trend:</strong> Last 3M avg vs Prior 3M avg — damped by 50% for M+2, 30% for M+3</span>
-      <span>|</span>
-      <span><strong>Risk:</strong> Declining trend &gt;15% or zero sales in last 2 months</span>
-      <span id="fc-data-note" style="margin-left:auto;color:var(--ink-light);"></span>
+    <!-- KPI strip -->
+    <div id="fc-kpi-strip" style="padding:12px 20px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:#fff;">
+      <div class="kpi-card" style="padding:13px 16px;min-width:100px;"><div class="kpi-val" id="fc-kpi-skus"     style="font-size:20px;">—</div><div class="kpi-label">Active SKUs</div></div>
+      <div class="kpi-card" style="padding:13px 16px;min-width:100px;"><div class="kpi-val" id="fc-kpi-m1"       style="font-size:20px;color:var(--gold-dark);">—</div><div class="kpi-label">Demand M+1</div></div>
+      <div class="kpi-card" style="padding:13px 16px;min-width:100px;"><div class="kpi-val" id="fc-kpi-m2"       style="font-size:20px;color:#3B5BDB;">—</div><div class="kpi-label">Demand M+2</div></div>
+      <div class="kpi-card" style="padding:13px 16px;min-width:100px;"><div class="kpi-val" id="fc-kpi-m3"       style="font-size:20px;color:#0B7A45;">—</div><div class="kpi-label">Demand M+3</div></div>
+      <div class="kpi-card" style="padding:13px 16px;min-width:100px;"><div class="kpi-val" id="fc-kpi-critical" style="font-size:20px;color:#C0392B;">—</div><div class="kpi-label">🔴 Critical SKUs</div></div>
+      <div class="kpi-card" style="padding:13px 16px;min-width:100px;"><div class="kpi-val" id="fc-kpi-urgent"   style="font-size:20px;color:#E67E22;">—</div><div class="kpi-label">🟠 Urgent SKUs</div></div>
+      <div class="kpi-card" style="padding:13px 16px;min-width:100px;"><div class="kpi-val" id="fc-kpi-campaign" style="font-size:20px;color:#6B21A8;">—</div><div class="kpi-label">📣 Campaign Units</div></div>
+      <div class="kpi-card" style="padding:13px 16px;min-width:100px;"><div class="kpi-val" id="fc-kpi-orders"   style="font-size:20px;color:#0C4A6E;">—</div><div class="kpi-label">📦 Order Units</div></div>
+      <div class="kpi-card" style="padding:13px 16px;min-width:100px;"><div class="kpi-val" id="fc-kpi-fg"       style="font-size:20px;color:#065F46;">—</div><div class="kpi-label">🏭 FG Available</div></div>
+      <div class="kpi-card" style="padding:13px 16px;min-width:110px;"><div class="kpi-val" id="fc-kpi-netreq"   style="font-size:20px;color:#991B1B;">—</div><div class="kpi-label">⚡ Net Requirement</div></div>
     </div>
 
-    <div style="padding:20px 24px;">
+    <!-- Main content -->
+    <div style="padding:16px 20px;" id="fc-wrap">
       <div id="fc-loading" style="text-align:center;padding:60px;color:var(--ink-light);">
         <div class="spinner" style="margin:0 auto 16px;"></div>
-        <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">Loading Forecast Data</div>
+        <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">Loading all demand data…</div>
+        <div style="font-size:11px;color:var(--ink-light);margin-top:8px;" id="fc-load-progress">Sales · Production · FG Stock · Campaigns · Orders</div>
       </div>
       <div id="fc-content" style="display:none;"></div>
     </div>
+
   </div><!-- /tab-forecast -->
 
 </div><!-- /app -->
@@ -5846,349 +5856,779 @@ function checkNavDotOnLoad() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// FORECAST TAB — Demand-Driven 3/6-Month Forward Forecast
+// INTEGRATED DEMAND PLAN — 5-Layer Forecast Engine
+// Layer 1: Statistical Baseline (sales history + UAE seasonality)
+// Layer 2: Supply Picture (FG stock + production pipeline)
+// Layer 3: Commercial Demand (campaigns + export orders)
+// Layer 4: Store Inventory Health
+// Layer 5: Integrated Demand Plan (master output — all layers merged)
 // ══════════════════════════════════════════════════════════════════════════
 
-let fcLoaded     = false;
-let _fcRawSales  = [];   // raw sales_history rows for selected scope
-let _fcComputed  = [];   // computed forecast rows [{sku, name, months:[], m1, m2, m3, trend, risk}]
+let fcLoaded = false;
+let _fcLayer = 'plan';
 
+// Raw data fetched from Supabase (all 8 sources)
+let _fc = { sales:[], fgStock:[], prodPlan:[], prodHist:[], campaigns:[], campReqs:[], orders:[], orderLines:[] };
+
+// Computed plan rows
+let _fcPlan = [];
+
+// UAE Fragrance Seasonal Index — 35 years of UAE market knowledge
+// Dec = National Day + NYE + peak tourist season | Jul = deepest summer low
+const FC_SEASON = {
+  '01': 0.82, // Jan — post-holiday slowdown, residents return after travel
+  '02': 1.08, // Feb — Valentine's Day boost
+  '03': 0.90, // Mar — regular season
+  '04': 1.10, // Apr — spring, Eid al-Fitr often nearby (calendar varies)
+  '05': 1.15, // May — Mother's Day + Eid period, gifting spike
+  '06': 0.72, // Jun — summer starts, mall traffic drops, residents travel
+  '07': 0.65, // Jul — peak summer low, many UAE residents abroad
+  '08': 0.68, // Aug — late summer, slight recovery before season opens
+  '09': 1.05, // Sep — season resumes, cooler weather, back to malls
+  '10': 1.12, // Oct — cooler weather firmly in, activity picks up
+  '11': 1.28, // Nov — pre-National Day buildup, corporate gifting starts
+  '12': 1.45, // Dec — National Day Dec 2 + NYE + peak tourist arrivals = highest month
+};
+
+// ─────────────────────────────────────────────────────────────────
+// DATA LOADING — parallel fetch of all 8 sources
+// ─────────────────────────────────────────────────────────────────
 async function loadForecastTab() {
-  if (fcLoaded) { renderForecastView(); return; }
+  if (fcLoaded) { fcBuildPlan(); fcRender(); return; }
 
+  // --- Load 8 data sources in parallel ---
   const loading = document.getElementById('fc-loading');
   const content = document.getElementById('fc-content');
   loading.style.display = 'block';
   content.style.display = 'none';
+  loading.innerHTML = `<div style="color:var(--ink-light);font-size:13px;padding:60px 20px;text-align:center;">
+    <div class="spinner" style="margin:0 auto 16px;"></div>
+    Loading 8 data sources in parallel&hellip;<br>
+    <small style="opacity:0.6;">Sales history &middot; FG stock &middot; Production &middot; Campaigns &middot; Export orders &middot; Benchmarks</small>
+  </div>`;
 
-  try {
-    // Load last 9 months of sales to power 6-month forecast with lookback
-    const now   = new Date();
-    const cutoff = new Date(now.getFullYear(), now.getMonth() - 9, 1);
-    const cutoffStr = cutoff.toISOString().slice(0, 7); // YYYY-MM
+  const now0 = new Date();
+  const cutoff = new Date(now0.getFullYear(), now0.getMonth() - 12, 1);
+  const cutoffStr = cutoff.toISOString().slice(0, 7);
+  const hdr = { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } };
 
-    const resp = await fetch(
-      `${SB_URL}/rest/v1/sales_history?select=sku_code,store_code,month_year,qty_sold&month_year=gte.${cutoffStr}&limit=50000`,
-      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
-    );
+  const [rSales, rFG, rProd, rProdH, rCamp, rCampReq, rOrders, rOrderLines] = await Promise.allSettled([
+    fetch(`${SB_URL}/rest/v1/sales_history?select=sku_code,store_code,month_year,qty_sold&month_year=gte.${cutoffStr}&limit=100000`, hdr).then(r => r.json()),
+    fetch(`${SB_URL}/rest/v1/wh_stock_on_hand?select=sku_code,store_code,qty_on_hand,updated_at&limit=5000`, hdr).then(r => r.json()),
+    fetch(`${SB_URL}/rest/v1/production_plan?select=sku_code,qty,status,target_date&status=neq.Cancelled&limit=2000`, hdr).then(r => r.json()),
+    fetch(`${SB_URL}/rest/v1/production_history?select=sku_code,qty_produced,completed_date&limit=5000`, hdr).then(r => r.json()),
+    fetch(`${SB_URL}/rest/v1/campaigns?select=id,name,start_date,end_date,status&status=neq.Cancelled&limit=500`, hdr).then(r => r.json()),
+    fetch(`${SB_URL}/rest/v1/campaign_requirements?select=campaign_id,sku_code,qty_required&limit=5000`, hdr).then(r => r.json()),
+    fetch(`${SB_URL}/rest/v1/export_orders?select=id,status,delivery_date&status=in.(Pending,Confirmed)&limit=500`, hdr).then(r => r.json()),
+    fetch(`${SB_URL}/rest/v1/export_order_lines?select=order_id,sku_code,qty&limit=10000`, hdr).then(r => r.json())
+  ]);
 
-    if (!resp.ok) throw new Error(await resp.text());
-    _fcRawSales = await resp.json();
+  const safeArr = r => (r.status === 'fulfilled' && Array.isArray(r.value)) ? r.value : [];
+  _fc.sales      = safeArr(rSales);
+  _fc.fgStock    = safeArr(rFG);
+  _fc.prodPlan   = safeArr(rProd);
+  _fc.prodHist   = safeArr(rProdH);
+  _fc.campaigns  = safeArr(rCamp);
+  _fc.campReqs   = safeArr(rCampReq);
+  _fc.orders     = safeArr(rOrders);
+  _fc.orderLines = safeArr(rOrderLines);
 
-    // Populate store dropdown
-    _fcPopulateStoreDropdown();
-
-    fcLoaded = true;
-    applyForecastFilters();
-
-  } catch (e) {
-    loading.innerHTML = `<div style="color:#C0392B;font-size:13px;">Error loading forecast data: ${e.message}</div>`;
+  if (!_fc.sales.length) {
+    loading.innerHTML = `<div style="color:#C0392B;font-size:13px;padding:40px;text-align:center;">Could not load sales history. Check Supabase connection.</div>`;
+    return;
   }
+
+  const note = document.getElementById('fc-data-note');
+  if (note) note.textContent = `${_fc.sales.length.toLocaleString()} sales rows loaded`;
+
+  fcLoaded = true;
+  _fcPopulateStoreDropdown();
+  fcBuildPlan();
+  fcRender();
 }
 
+// ─────────────────────────────────────────────────────────────────
+// STORE DROPDOWN
+// ─────────────────────────────────────────────────────────────────
 function _fcPopulateStoreDropdown() {
-  const sel   = document.getElementById('fc-store');
+  const sel    = document.getElementById('fc-store');
   const region = document.getElementById('fc-region').value;
-  const prev  = sel.value;
-  sel.innerHTML = '<option value="ALL">All Stores</option>';
+  const prev   = sel.value;
+  sel.innerHTML = '<option value="ALL">All Stores Combined</option>';
 
-  const storesInData = [...new Set(_fcRawSales.map(r => r.store_code))].sort();
-  const filteredStores = STORES.filter(s =>
-    storesInData.includes(s.code) &&
-    (region === 'ALL' || s.region === region || s.type === region)
+  const inData   = new Set(_fc.sales.map(r => r.store_code));
+  const filtered = (typeof STORES !== 'undefined' ? STORES : []).filter(s =>
+    inData.has(s.code) && (region === 'ALL' || s.region === region || s.type === region)
   );
-
-  filteredStores.forEach(s => {
+  filtered.forEach(s => {
     const o = document.createElement('option');
     o.value = s.code;
     o.textContent = `${s.code} — ${s.name}`;
     sel.appendChild(o);
   });
-  if (prev && filteredStores.find(s => s.code === prev)) sel.value = prev;
+  if (prev && filtered.find(s => s.code === prev)) sel.value = prev;
 }
 
-function applyForecastFilters() {
+// ─────────────────────────────────────────────────────────────────
+// FILTERS + LAYER SWITCHER
+// ─────────────────────────────────────────────────────────────────
+function fcApplyFilters() {
   _fcPopulateStoreDropdown();
-  _fcComputeForecast();
-  renderForecastView();
+  fcBuildPlan();
+  fcRender();
 }
 
-function _fcComputeForecast() {
-  const region    = document.getElementById('fc-region').value;
-  const storeCode = document.getElementById('fc-store').value;
+function fcSetLayer(layer) {
+  _fcLayer = layer;
+  document.querySelectorAll('.fc-layer-tab').forEach(t => t.classList.remove('active'));
+  const btn = document.getElementById('fcl-' + layer);
+  if (btn) btn.classList.add('active');
+  fcRender();
+}
 
-  // Filter sales to scope
-  let rows = _fcRawSales;
-  if (storeCode !== 'ALL') {
-    rows = rows.filter(r => r.store_code === storeCode);
-  } else if (region !== 'ALL') {
-    const storeCodes = new Set(
-      STORES.filter(s => s.region === region || s.type === region).map(s => s.code)
-    );
-    rows = rows.filter(r => storeCodes.has(r.store_code));
+function fcRender() {
+  document.getElementById('fc-loading').style.display = 'none';
+  document.getElementById('fc-content').style.display = 'block';
+  switch (_fcLayer) {
+    case 'plan':       fcRenderIntegratedPlan(); break;
+    case 'baseline':   fcRenderBaseline();       break;
+    case 'supply':     fcRenderSupply();         break;
+    case 'commercial': fcRenderCommercial();     break;
+    case 'health':     fcRenderStoreHealth();    break;
+    default:           fcRenderIntegratedPlan();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────
+function _fcGetStoreSet() {
+  const region = document.getElementById('fc-region').value;
+  const store  = document.getElementById('fc-store').value;
+  if (store !== 'ALL') return new Set([store]);
+  if (region === 'ALL') return null;
+  return new Set((typeof STORES !== 'undefined' ? STORES : [])
+    .filter(s => s.region === region || s.type === region).map(s => s.code));
+}
+
+function _fcMonthLabel(yyyymm) {
+  const [y, m] = yyyymm.split('-');
+  return new Date(+y, +m - 1, 1).toLocaleString('en-GB', { month: 'short', year: '2-digit' });
+}
+
+function _fcSignalPill(sig) {
+  const styles = {
+    critical: 'background:#FEE2E2;color:#991B1B;',
+    urgent:   'background:#FFF4E6;color:#92400E;',
+    plan:     'background:#EFF6FF;color:#1E40AF;',
+    ok:       'background:#D1FAE5;color:#065F46;',
+    excess:   'background:#F3E8FF;color:#6B21A8;',
+    dead:     'background:#F4F4F5;color:#71717A;',
+    growing:  'background:#D1FAE5;color:#065F46;',
+    declining:'background:#FFF4E6;color:#92400E;',
+  };
+  const labels = {
+    critical:'🔴 CRITICAL', urgent:'🟠 URGENT', plan:'🔵 PLAN', ok:'✅ OK',
+    excess:'🟣 EXCESS', dead:'⚫ DEAD', growing:'📈 GROWING', declining:'📉 DECLINING'
+  };
+  return `<span style="${styles[sig]||styles.plan}padding:2px 8px;border-radius:4px;font-size:9px;font-weight:800;white-space:nowrap;">${labels[sig]||sig.toUpperCase()}</span>`;
+}
+
+function _fcFiltered(sales) {
+  const storeSet = _fcGetStoreSet();
+  if (!storeSet) return sales;
+  return sales.filter(r => storeSet.has(r.store_code));
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CORE ENGINE — builds _fcPlan[]
+// ─────────────────────────────────────────────────────────────────
+function fcBuildPlan() {
+  const useSeason = (document.getElementById('fc-seasonal') || {}).checked;
+  const horizon   = +(document.getElementById('fc-horizon').value) || 3;
+  const now       = new Date();
+
+  // Build month arrays
+  const histMonths = [];
+  for (let i = 8; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    histMonths.push(d.toISOString().slice(0, 7));
+  }
+  const last3  = histMonths.slice(6, 9);
+  const prior3 = histMonths.slice(3, 6);
+
+  const fwdMonths = [];
+  for (let i = 1; i <= horizon; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    fwdMonths.push(d.toISOString().slice(0, 7));
   }
 
-  // Build SKU → month → qty map
+  // LAYER 1 — Sales baseline
+  const filteredSales = _fcFiltered(_fc.sales);
   const skuMonthMap = {};
-  rows.forEach(r => {
+  filteredSales.forEach(r => {
     if (!skuMonthMap[r.sku_code]) skuMonthMap[r.sku_code] = {};
     skuMonthMap[r.sku_code][r.month_year] = (skuMonthMap[r.sku_code][r.month_year] || 0) + r.qty_sold;
   });
 
-  // Get last 9 month strings in order
-  const now    = new Date();
-  const months = [];
-  for (let i = 8; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(d.toISOString().slice(0, 7));
-  }
+  // LAYER 2 — FG Stock (sum across stores)
+  const fgBySku = {};
+  _fc.fgStock.forEach(r => {
+    fgBySku[r.sku_code] = (fgBySku[r.sku_code] || 0) + (r.qty_on_hand || 0);
+  });
 
-  // months[6,7,8] = last 3 months (M-3, M-2, M-1)
-  // months[3,4,5] = prior 3 months
-  const last3  = months.slice(6, 9);
-  const prior3 = months.slice(3, 6);
+  // LAYER 3 — Production pipeline (next 8 weeks)
+  const prodBySku = {};
+  const eightWOut = new Date(now.getTime() + 56 * 86400000).toISOString().slice(0, 10);
+  _fc.prodPlan.forEach(r => {
+    if (r.target_date && r.target_date > eightWOut) return;
+    prodBySku[r.sku_code] = (prodBySku[r.sku_code] || 0) + (r.qty || 0);
+  });
 
-  _fcComputed = [];
+  // LAYER 4 — Campaign demand per SKU per forward month
+  const campDemandBySku = {};
+  const activeCampIds = new Set(_fc.campaigns.map(c => c.id));
+  _fc.campReqs.forEach(r => {
+    if (!activeCampIds.has(r.campaign_id)) return;
+    const camp = _fc.campaigns.find(c => c.id === r.campaign_id);
+    if (!camp) return;
+    const cStart = camp.start_date ? camp.start_date.slice(0, 7) : null;
+    const cEnd   = camp.end_date   ? camp.end_date.slice(0, 7)   : cStart;
+    if (!cStart) return;
+    if (!campDemandBySku[r.sku_code]) campDemandBySku[r.sku_code] = {};
+    fwdMonths.forEach(m => {
+      if (m >= cStart && m <= cEnd)
+        campDemandBySku[r.sku_code][m] = (campDemandBySku[r.sku_code][m] || 0) + (r.qty_required || 0);
+    });
+  });
+  let totalCampUnits = 0;
+  Object.values(campDemandBySku).forEach(bm => Object.values(bm).forEach(v => totalCampUnits += v));
 
-  Object.entries(skuMonthMap).forEach(([sku, mmap]) => {
-    const hist = months.map(m => mmap[m] || 0);
+  // LAYER 5 — Export order demand (Pending + Confirmed)
+  const orderDemandBySku = {};
+  const confirmedOrdIds = new Set(_fc.orders.map(o => o.id));
+  _fc.orderLines.forEach(r => {
+    if (!confirmedOrdIds.has(r.order_id)) return;
+    orderDemandBySku[r.sku_code] = (orderDemandBySku[r.sku_code] || 0) + (r.qty || 0);
+  });
+  const totalOrderUnits = Object.values(orderDemandBySku).reduce((a, b) => a + b, 0);
 
+  // BUILD PLAN ROWS
+  _fcPlan = [];
+  const allSkus = new Set([...Object.keys(skuMonthMap), ...Object.keys(campDemandBySku), ...Object.keys(orderDemandBySku)]);
+
+  allSkus.forEach(sku => {
+    const mmap       = skuMonthMap[sku] || {};
     const last3vals  = last3.map(m => mmap[m] || 0);
     const prior3vals = prior3.map(m => mmap[m] || 0);
+    const avgLast3   = last3vals.reduce((a, b) => a + b, 0) / 3;
+    const avgPrior3  = prior3vals.reduce((a, b) => a + b, 0) / 3;
 
-    const avgLast3  = last3vals.reduce((a, b) => a + b, 0) / 3;
-    const avgPrior3 = prior3vals.reduce((a, b) => a + b, 0) / 3;
+    const wtdSum  = last3vals[2]*3 + last3vals[1]*2 + last3vals[0]*1 + prior3vals[2] + prior3vals[1] + prior3vals[0];
+    const wtdBase = wtdSum / 9;
+    const trend   = avgPrior3 > 0 ? Math.max(-0.5, Math.min(0.5, (avgLast3 - avgPrior3) / avgPrior3)) : 0;
 
-    // Weighted 6-month avg: recent weights 3,2,1 for last3; 1 each for prior3
-    const wtdSum = last3vals[2]*3 + last3vals[1]*2 + last3vals[0]*1 +
-                   prior3vals[2]*1 + prior3vals[1]*1 + prior3vals[0]*1;
-    const wtdAvg = wtdSum / 9;
+    // Per-month statistical baseline with optional seasonality
+    const baseline = fwdMonths.map((m, i) => {
+      const damp = 1 + trend * Math.pow(0.6, i);
+      let v = Math.round(Math.max(0, wtdBase * damp));
+      if (useSeason) { const mm = m.slice(5, 7); v = Math.round(v * (FC_SEASON[mm] || 1)); }
+      return v;
+    });
 
-    // Trend (damped): % change from prior3 → last3
-    const trend = avgPrior3 > 0 ? (avgLast3 - avgPrior3) / avgPrior3 : 0;
+    const campDemand = fwdMonths.map(m => (campDemandBySku[sku] || {})[m] || 0);
+    const totalCamp  = campDemand.reduce((a, b) => a + b, 0);
+    const orderDemand = orderDemandBySku[sku] || 0;
 
-    // Forecasts with damped trend
-    const m1 = Math.round(Math.max(0, wtdAvg * (1 + trend * 0.5)));
-    const m2 = Math.round(Math.max(0, wtdAvg * (1 + trend * 0.35)));
-    const m3 = Math.round(Math.max(0, wtdAvg * (1 + trend * 0.2)));
+    // Integrated = baseline + campaign uplift per month; M+1 also carries order demand
+    const integrated = baseline.map((b, i) => b + campDemand[i]);
+    if (integrated.length > 0) integrated[0] += orderDemand;
 
-    // Risk classification
-    const zeroLast2 = (mmap[last3[1]] || 0) === 0 && (mmap[last3[2]] || 0) === 0;
-    const sharpDecline = trend < -0.15;
-    const highGrowth   = trend > 0.10;
-    let risk = 'stable';
-    if (zeroLast2)     risk = 'dead';
-    else if (sharpDecline) risk = 'declining';
-    else if (highGrowth)   risk = 'growing';
+    const fg          = fgBySku[sku] || 0;
+    const prod        = prodBySku[sku] || 0;
+    const totalSupply = fg + prod;
+    const demand3     = integrated.slice(0, 3).reduce((a, b) => a + b, 0);
+    const netReq      = Math.max(0, demand3 - totalSupply);
 
-    // Product name lookup
-    const prod = (typeof SKU_MASTER !== 'undefined' && SKU_MASTER[sku]) ? SKU_MASTER[sku] :
-                 { en: sku, ar: '' };
+    // Signal classification
+    let signal = 'ok';
+    if (avgLast3 === 0 && prior3vals.every(v => v === 0) && totalCamp === 0 && orderDemand === 0) {
+      signal = 'dead';
+    } else if (netReq > 0 && totalSupply === 0) {
+      signal = 'critical';
+    } else if (netReq > 0 && netReq > demand3 * 0.4) {
+      signal = 'urgent';
+    } else if (demand3 > 0 && totalSupply > demand3 * 2.5) {
+      signal = 'excess';
+    } else if (trend > 0.10) {
+      signal = 'growing';
+    } else if (trend < -0.15) {
+      signal = 'declining';
+    } else if (netReq > 0) {
+      signal = 'plan';
+    }
 
-    _fcComputed.push({
-      sku, name: prod.en || sku, ar: prod.ar || '',
-      hist, last3vals, prior3vals,
-      avgLast3, avgPrior3, wtdAvg,
-      trend, m1, m2, m3, risk,
-      months
+    const pinfo = (typeof SKU_MASTER !== 'undefined' && SKU_MASTER[sku]) ? SKU_MASTER[sku] : { en: sku, ar: '' };
+
+    _fcPlan.push({
+      sku, name: pinfo.en || sku, ar: pinfo.ar || '',
+      histMonths, fwdMonths, last3, prior3,
+      last3vals, prior3vals, avgLast3, avgPrior3, wtdBase, trend,
+      baseline, campDemand, totalCamp, orderDemand,
+      integrated, fg, prod, totalSupply, demand3, netReq, signal, mmap
     });
   });
 
-  // Sort: risk first, then by m1 descending
-  const riskOrder = { dead: 4, declining: 3, stable: 2, growing: 1 };
-  _fcComputed.sort((a, b) => {
-    const rv = (riskOrder[b.risk] || 0) - (riskOrder[a.risk] || 0);
-    return rv !== 0 ? rv : b.m1 - a.m1;
+  // Sort: critical → urgent → plan → growing → declining → ok → excess → dead
+  const sigOrd = { critical:0, urgent:1, plan:2, growing:3, declining:4, ok:5, excess:6, dead:7 };
+  _fcPlan.sort((a, b) => {
+    const sd = (sigOrd[a.signal]??5) - (sigOrd[b.signal]??5);
+    return sd !== 0 ? sd : b.netReq - a.netReq || b.demand3 - a.demand3;
   });
 
-  // Update KPIs
-  const activeSkus = _fcComputed.filter(r => r.avgLast3 > 0).length;
-  const totalM1    = _fcComputed.reduce((s, r) => s + r.m1, 0);
-  const totalM2    = _fcComputed.reduce((s, r) => s + r.m2, 0);
-  const totalM3    = _fcComputed.reduce((s, r) => s + r.m3, 0);
-  const riskCount  = _fcComputed.filter(r => r.risk === 'dead' || r.risk === 'declining').length;
-  const growCount  = _fcComputed.filter(r => r.risk === 'growing').length;
+  // UPDATE KPI STRIP
+  const active   = _fcPlan.filter(r => r.avgLast3 > 0 || r.integrated[0] > 0).length;
+  const critical = _fcPlan.filter(r => r.signal === 'critical').length;
+  const urgent   = _fcPlan.filter(r => r.signal === 'urgent').length;
+  const totalFG  = Object.values(fgBySku).reduce((a, b) => a + b, 0);
+  const totalNet = _fcPlan.reduce((s, r) => s + r.netReq, 0);
+  const m1t = _fcPlan.reduce((s, r) => s + (r.integrated[0]||0), 0);
+  const m2t = _fcPlan.reduce((s, r) => s + (r.integrated[1]||0), 0);
+  const m3t = _fcPlan.reduce((s, r) => s + (r.integrated[2]||0), 0);
 
-  document.getElementById('fc-kpi-skus').textContent    = activeSkus;
-  document.getElementById('fc-kpi-m1').textContent      = totalM1.toLocaleString();
-  document.getElementById('fc-kpi-m2').textContent      = totalM2.toLocaleString();
-  document.getElementById('fc-kpi-m3').textContent      = totalM3.toLocaleString();
-  document.getElementById('fc-kpi-risk').textContent    = riskCount;
-  document.getElementById('fc-kpi-growing').textContent = growCount;
+  const setK = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setK('fc-kpi-skus',     active);
+  setK('fc-kpi-m1',       m1t.toLocaleString());
+  setK('fc-kpi-m2',       m2t.toLocaleString());
+  setK('fc-kpi-m3',       m3t.toLocaleString());
+  setK('fc-kpi-critical', critical);
+  setK('fc-kpi-urgent',   urgent);
+  setK('fc-kpi-campaign', totalCampUnits.toLocaleString());
+  setK('fc-kpi-orders',   totalOrderUnits.toLocaleString());
+  setK('fc-kpi-fg',       totalFG.toLocaleString());
+  setK('fc-kpi-netreq',   totalNet.toLocaleString());
 
   const note = document.getElementById('fc-data-note');
-  if (note) note.textContent = `${_fcRawSales.length.toLocaleString()} sales rows · ${_fcComputed.length} SKUs`;
+  if (note) note.textContent = `${_fc.sales.length.toLocaleString()} sales rows · ${_fcPlan.length} SKUs`;
 }
 
-function renderForecastView() {
-  const loading = document.getElementById('fc-loading');
+// ─────────────────────────────────────────────────────────────────
+// LAYER 1 — INTEGRATED DEMAND PLAN
+// ─────────────────────────────────────────────────────────────────
+function fcRenderIntegratedPlan() {
   const content = document.getElementById('fc-content');
-  loading.style.display = 'none';
-  content.style.display = 'block';
+  const search  = ((document.getElementById('fc-search')||{}).value||'').toLowerCase();
+  const horizon = +(document.getElementById('fc-horizon').value)||3;
 
-  const view   = document.getElementById('fc-view').value;
-  const search = (document.getElementById('fc-search').value || '').toLowerCase();
-  const horizon = +document.getElementById('fc-horizon').value;
-
-  let data = _fcComputed.filter(r => {
-    if (view === 'risk' && r.risk !== 'dead' && r.risk !== 'declining') return false;
+  let data = _fcPlan.filter(r => {
+    if (r.signal === 'dead' && r.integrated.every(v => v === 0)) return false;
     if (search && !r.sku.toLowerCase().includes(search) && !r.name.toLowerCase().includes(search)) return false;
     return true;
   });
 
   if (!data.length) {
-    content.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-light);font-size:13px;">No data matches your filters.</div>';
+    content.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-light);font-size:13px;">No data matches filters.</div>';
     return;
   }
 
-  // Month labels for next 1-6 months
-  const now = new Date();
-  const fwdLabels = [];
-  for (let i = 1; i <= horizon; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-    fwdLabels.push(d.toLocaleString('en-GB', { month: 'short', year: '2-digit' }));
-  }
+  const fwdLabels  = data[0].fwdMonths.slice(0, horizon).map(_fcMonthLabel);
+  const histLabels = data[0].last3.map(_fcMonthLabel);
+  const fcColors   = ['#C9A84C','#3B5BDB','#0B7A45','#6B21A8','#0C4A6E','#C0392B'];
 
-  // Last 3 month labels (for history columns)
-  const histLabels = data[0]?.months.slice(6, 9).map(m => {
-    const [y, mo] = m.split('-');
-    return new Date(+y, +mo - 1, 1).toLocaleString('en-GB', { month: 'short', year: '2-digit' });
-  }) || ['M-3', 'M-2', 'M-1'];
+  let html = `<div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;">
+  <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:1100px;">
+    <thead><tr style="background:#1A1A1A;color:#fff;">
+      <th style="padding:10px 12px;text-align:left;min-width:90px;font-size:10px;letter-spacing:1px;">SKU</th>
+      <th style="padding:10px 12px;text-align:left;min-width:200px;font-size:10px;letter-spacing:1px;">PRODUCT</th>
+      <th style="text-align:right;padding:10px 8px;min-width:58px;background:#2A2A20;font-size:10px;">${histLabels[0]}<div style="font-size:9px;color:#999;">Actual</div></th>
+      <th style="text-align:right;padding:10px 8px;min-width:58px;background:#2A2A20;font-size:10px;">${histLabels[1]}<div style="font-size:9px;color:#999;">Actual</div></th>
+      <th style="text-align:right;padding:10px 8px;min-width:58px;background:#2A2A20;font-size:10px;">${histLabels[2]}<div style="font-size:9px;color:#999;">Actual</div></th>`;
 
-  const riskStyle = { dead: '#FEE2E2', declining: '#FFF4E6', stable: '', growing: '#EBF5EB' };
-  const riskLabel = {
-    dead:      '<span style="background:#FEE2E2;color:#991B1B;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:800;">DEAD STOCK</span>',
-    declining: '<span style="background:#FFF4E6;color:#92400E;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:800;">⬇ DECLINING</span>',
-    stable:    '<span style="background:#E8E4DC;color:#555;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:800;">STABLE</span>',
-    growing:   '<span style="background:#D1FAE5;color:#065F46;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:800;">📈 GROWING</span>'
-  };
+  fwdLabels.forEach((l, i) => {
+    html += `<th style="text-align:right;padding:10px 8px;min-width:78px;font-size:10px;color:${fcColors[i]||'#333'};">${l}<div style="font-size:9px;color:#999;">Integrated</div></th>`;
+  });
 
-  const fwdCols = horizon >= 3
-    ? [
-        `<th style="text-align:right;color:#C9A84C;min-width:70px;">${fwdLabels[0]}<div style="font-size:9px;color:#999;">M+1 Fcst</div></th>`,
-        `<th style="text-align:right;color:#3B5BDB;min-width:70px;">${fwdLabels[1]}<div style="font-size:9px;color:#999;">M+2 Fcst</div></th>`,
-        `<th style="text-align:right;color:#0B7A45;min-width:70px;">${fwdLabels[2]}<div style="font-size:9px;color:#999;">M+3 Fcst</div></th>`
-      ]
-    : [
-        `<th style="text-align:right;color:#C9A84C;min-width:70px;">${fwdLabels[0]}</th>`,
-        `<th style="text-align:right;color:#3B5BDB;min-width:70px;">${fwdLabels[1] || ''}</th>`,
-        `<th style="text-align:right;color:#0B7A45;min-width:70px;">${fwdLabels[2] || ''}</th>`,
-        `<th style="text-align:right;min-width:70px;">${fwdLabels[3] || ''}</th>`,
-        `<th style="text-align:right;min-width:70px;">${fwdLabels[4] || ''}</th>`,
-        `<th style="text-align:right;min-width:70px;">${fwdLabels[5] || ''}</th>`
-      ];
+  html += `<th style="text-align:right;padding:10px 8px;min-width:70px;background:#1A0A2A;font-size:10px;">📣 Campaign<div style="font-size:9px;color:#999;">Uplift</div></th>
+      <th style="text-align:right;padding:10px 8px;min-width:70px;background:#0A1A0A;font-size:10px;">🏭 FG Avail<div style="font-size:9px;color:#999;">Stock</div></th>
+      <th style="text-align:right;padding:10px 8px;min-width:70px;background:#2A0A0A;font-size:10px;">⚡ Net Req<div style="font-size:9px;color:#999;">3M Gap</div></th>
+      <th style="text-align:center;padding:10px 8px;min-width:110px;font-size:10px;">SIGNAL</th>
+    </tr></thead><tbody>`;
 
-  let html = `
-    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;">
-    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px;">
-      <thead>
-        <tr style="background:#1A1A1A;color:#fff;">
-          <th style="padding:10px 12px;text-align:left;white-space:nowrap;min-width:90px;font-family:monospace;font-size:10px;letter-spacing:1px;">SKU</th>
-          <th style="padding:10px 12px;text-align:left;min-width:180px;font-family:monospace;font-size:10px;letter-spacing:1px;">PRODUCT</th>
-          <th style="text-align:right;padding:10px 8px;min-width:60px;background:#2A2A20;font-size:10px;">${histLabels[0]}<div style="font-size:9px;color:#999;">Actual</div></th>
-          <th style="text-align:right;padding:10px 8px;min-width:60px;background:#2A2A20;font-size:10px;">${histLabels[1]}<div style="font-size:9px;color:#999;">Actual</div></th>
-          <th style="text-align:right;padding:10px 8px;min-width:60px;background:#2A2A20;font-size:10px;">${histLabels[2]}<div style="font-size:9px;color:#999;">Actual</div></th>
-          <th style="text-align:right;padding:10px 8px;min-width:65px;background:#1A2A1A;font-size:10px;">3M Avg<div style="font-size:9px;color:#999;">Baseline</div></th>
-          <th style="text-align:right;padding:10px 8px;min-width:60px;font-size:10px;">Trend</th>
-          ${fwdCols.join('')}
-          <th style="text-align:center;padding:10px 8px;min-width:100px;font-size:10px;">SIGNAL</th>
-        </tr>
-      </thead>
-      <tbody>`;
+  const bgMap = { critical:'#FFF5F5', urgent:'#FFFAF0', dead:'#F9F9F9', excess:'#FAF5FF', plan:'', ok:'', growing:'#F0FFF4', declining:'#FFFAF0' };
 
   data.forEach(r => {
-    const bg      = riskStyle[r.risk] || '';
     const trendPct = (r.trend * 100).toFixed(1);
-    const trendCol = r.trend > 0.05 ? '#0B7A45' : r.trend < -0.05 ? '#C0392B' : '#555';
-    const trendStr = (r.trend >= 0 ? '+' : '') + trendPct + '%';
+    const trendCol = r.trend > 0.05 ? '#0B7A45' : r.trend < -0.05 ? '#C0392B' : '#666';
+    html += `<tr style="border-bottom:1px solid var(--border);background:${bgMap[r.signal]||''};">
+      <td style="padding:8px 12px;font-family:monospace;font-size:10px;color:var(--ink-light);">${r.sku}</td>
+      <td style="padding:8px 12px;">
+        <div style="font-weight:600;color:#1A1A1A;">${r.name}</div>
+        ${r.ar ? `<div style="font-size:10px;color:var(--ink-light);direction:rtl;">${r.ar}</div>` : ''}
+        <div style="font-size:9px;color:${trendCol};font-weight:700;">${r.trend>=0?'+':''}${trendPct}% trend</div>
+      </td>
+      <td style="text-align:right;padding:8px;background:#FAFAF5;color:var(--ink-light);">${r.last3vals[0]||'—'}</td>
+      <td style="text-align:right;padding:8px;background:#FAFAF5;color:var(--ink-light);">${r.last3vals[1]||'—'}</td>
+      <td style="text-align:right;padding:8px;background:#FAFAF5;font-weight:600;">${r.last3vals[2]||'—'}</td>`;
 
-    // 6-month forward values: reuse m1/m2/m3 and simple decay for m4-m6
-    const fwdVals = [
-      r.m1, r.m2, r.m3,
-      Math.round(r.m3 * (1 + r.trend * 0.1)),
-      Math.round(r.m3 * (1 + r.trend * 0.05)),
-      Math.round(r.m3)
-    ];
-
-    const fwdCells = horizon >= 3
-      ? [
-          `<td style="text-align:right;padding:8px;font-weight:700;color:#876A00;">${r.m1 || '—'}</td>`,
-          `<td style="text-align:right;padding:8px;font-weight:700;color:#3B5BDB;">${r.m2 || '—'}</td>`,
-          `<td style="text-align:right;padding:8px;font-weight:700;color:#0B7A45;">${r.m3 || '—'}</td>`
-        ]
-      : fwdVals.slice(0, 6).map((v, i) => `<td style="text-align:right;padding:8px;font-weight:700;">${v || '—'}</td>`);
+    r.integrated.slice(0, horizon).forEach((v, i) => {
+      html += `<td style="text-align:right;padding:8px;font-weight:700;color:${fcColors[i]||'#333'};">${v||'—'}</td>`;
+    });
 
     html += `
-      <tr style="border-bottom:1px solid var(--border);background:${bg};">
-        <td style="padding:8px 12px;font-family:monospace;font-size:10px;color:var(--ink-light);">${r.sku}</td>
-        <td style="padding:8px 12px;">
-          <div style="font-weight:600;color:#1A1A1A;">${r.name}</div>
-          ${r.ar ? `<div style="font-size:10px;color:var(--ink-light);direction:rtl;">${r.ar}</div>` : ''}
-        </td>
-        <td style="text-align:right;padding:8px;background:#F8F7F3;color:var(--ink-light);">${r.last3vals[0] || '—'}</td>
-        <td style="text-align:right;padding:8px;background:#F8F7F3;color:var(--ink-light);">${r.last3vals[1] || '—'}</td>
-        <td style="text-align:right;padding:8px;background:#F8F7F3;font-weight:600;">${r.last3vals[2] || '—'}</td>
-        <td style="text-align:right;padding:8px;background:#EBF5EB;font-weight:700;color:#1A6A40;">${Math.round(r.avgLast3) || '—'}</td>
-        <td style="text-align:right;padding:8px;font-weight:700;color:${trendCol};">${trendStr}</td>
-        ${fwdCells.join('')}
-        <td style="text-align:center;padding:8px;">${riskLabel[r.risk] || ''}</td>
-      </tr>`;
+      <td style="text-align:right;padding:8px;background:#FAF5FF;font-weight:600;color:#6B21A8;">${r.totalCamp||'—'}</td>
+      <td style="text-align:right;padding:8px;background:#F0FFF4;font-weight:600;color:#065F46;">${r.fg||'—'}</td>
+      <td style="text-align:right;padding:8px;background:${r.netReq>0?'#FFF5F5':'#F0FFF4'};font-weight:700;color:${r.netReq>0?'#991B1B':'#065F46'};">${r.netReq||'—'}</td>
+      <td style="text-align:center;padding:8px;">${_fcSignalPill(r.signal)}</td>
+    </tr>`;
   });
 
   html += `</tbody></table></div>
-    <div style="margin-top:12px;font-size:11px;color:var(--ink-light);">
-      Showing ${data.length} of ${_fcComputed.length} SKUs
-      · Actuals from Supabase <code>sales_history</code>
-      · Forecast = weighted rolling avg with damped trend
-    </div>`;
-
+  <div style="margin-top:12px;font-size:11px;color:var(--ink-light);">
+    Showing ${data.length} SKUs &middot; Integrated = Statistical baseline + Campaign uplift + Export order demand &middot; Net Req = 3M integrated demand &minus; FG stock &minus; production pipeline
+  </div>`;
   content.innerHTML = html;
 }
 
-function exportForecastExcel() {
-  if (!_fcComputed.length) { alert('Load forecast data first'); return; }
+// ─────────────────────────────────────────────────────────────────
+// LAYER 2 — STATISTICAL BASELINE
+// ─────────────────────────────────────────────────────────────────
+function fcRenderBaseline() {
+  const content = document.getElementById('fc-content');
+  const search  = ((document.getElementById('fc-search')||{}).value||'').toLowerCase();
+  const horizon = +(document.getElementById('fc-horizon').value)||3;
+  const now     = new Date();
 
-  const now = new Date();
-  const fwdMonths = [];
-  for (let i = 1; i <= 3; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-    fwdMonths.push(d.toISOString().slice(0, 7));
+  const hist9 = [];
+  for (let i = 8; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    hist9.push(d.toISOString().slice(0, 7));
   }
 
-  const data = _fcComputed;
-  const histLabels = data[0]?.months.slice(6, 9) || ['M-3', 'M-2', 'M-1'];
-
-  const wsData = [
-    ['EMIRATES PRIDE PERFUMES — DEMAND FORECAST'],
-    [`Generated: ${now.toLocaleDateString('en-GB')} | Region: ${document.getElementById('fc-region').value} | Store: ${document.getElementById('fc-store').value}`],
-    [],
-    ['SKU', 'Product (EN)', 'Product (AR)',
-     histLabels[0]+' Actual', histLabels[1]+' Actual', histLabels[2]+' Actual',
-     '3M Avg', 'Trend %',
-     fwdMonths[0]+' Forecast', fwdMonths[1]+' Forecast', fwdMonths[2]+' Forecast',
-     'Signal', 'Weighted Avg Basis']
-  ];
-
-  data.forEach(r => {
-    wsData.push([
-      r.sku, r.name, r.ar || '',
-      r.last3vals[0], r.last3vals[1], r.last3vals[2],
-      Math.round(r.avgLast3),
-      (r.trend * 100).toFixed(1) + '%',
-      r.m1, r.m2, r.m3,
-      r.risk.toUpperCase(),
-      Math.round(r.wtdAvg)
-    ]);
+  let data = _fcPlan.filter(r => {
+    if (r.avgLast3 === 0 && r.avgPrior3 === 0) return false;
+    if (search && !r.sku.toLowerCase().includes(search) && !r.name.toLowerCase().includes(search)) return false;
+    return true;
   });
 
-  const wb = window.XLSX.utils.book_new();
-  const ws = window.XLSX.utils.aoa_to_sheet(wsData);
-  ws['!cols'] = [
-    {wch:14},{wch:32},{wch:26},{wch:12},{wch:12},{wch:12},
-    {wch:10},{wch:10},{wch:14},{wch:14},{wch:14},{wch:12},{wch:16}
+  if (!data.length) {
+    content.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-light);">No baseline data.</div>';
+    return;
+  }
+
+  const hLabels  = hist9.map(_fcMonthLabel);
+  const fLabels  = data[0].fwdMonths.slice(0, horizon).map(_fcMonthLabel);
+  const fcColors = ['#C9A84C','#3B5BDB','#0B7A45','#6B21A8','#0C4A6E','#C0392B'];
+
+  let html = `<div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;">
+  <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:1100px;">
+    <thead><tr style="background:#1A1A1A;color:#fff;">
+      <th style="padding:10px 12px;text-align:left;font-size:10px;">SKU</th>
+      <th style="padding:10px 12px;text-align:left;font-size:10px;">PRODUCT</th>`;
+
+  hist9.forEach((m, i) => {
+    const isLast3 = i >= 6;
+    html += `<th style="text-align:right;padding:8px 5px;min-width:50px;font-size:9px;background:${isLast3?'#2A2A20':'#111'};color:${isLast3?'#DDD':'#777'};">${hLabels[i]}</th>`;
+  });
+
+  html += `<th style="text-align:right;padding:8px;min-width:58px;background:#1A2A1A;font-size:10px;">3M Avg</th>
+    <th style="text-align:right;padding:8px;min-width:54px;font-size:10px;">Trend</th>`;
+
+  fLabels.forEach((l, i) => {
+    html += `<th style="text-align:right;padding:8px;min-width:58px;font-size:10px;color:${fcColors[i]||'#333'};">${l}<div style="font-size:9px;color:#888;">Fcst</div></th>`;
+  });
+  html += `<th style="text-align:center;padding:8px;font-size:10px;">Signal</th></tr></thead><tbody>`;
+
+  data.forEach(r => {
+    const trendPct = (r.trend * 100).toFixed(1);
+    const trendCol = r.trend > 0.05 ? '#0B7A45' : r.trend < -0.05 ? '#C0392B' : '#666';
+    html += `<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:7px 12px;font-family:monospace;font-size:10px;color:var(--ink-light);">${r.sku}</td>
+      <td style="padding:7px 12px;font-weight:600;">${r.name}</td>`;
+
+    hist9.forEach((m, i) => {
+      const v = r.mmap[m] || 0;
+      const isLast3 = i >= 6;
+      html += `<td style="text-align:right;padding:7px 5px;${isLast3?'background:#FAFAF5;font-weight:600;':'color:#AAA;'}">${v||'—'}</td>`;
+    });
+
+    html += `<td style="text-align:right;padding:7px;background:#EBF5EB;font-weight:700;color:#1A6A40;">${Math.round(r.avgLast3)||'—'}</td>
+      <td style="text-align:right;padding:7px;font-weight:700;color:${trendCol};">${r.trend>=0?'+':''}${trendPct}%</td>`;
+
+    r.baseline.slice(0, horizon).forEach((v, i) => {
+      html += `<td style="text-align:right;padding:7px;font-weight:700;color:${fcColors[i]||'#333'};">${v||'—'}</td>`;
+    });
+
+    html += `<td style="text-align:center;padding:7px;">${_fcSignalPill(r.signal)}</td></tr>`;
+  });
+
+  html += `</tbody></table></div>
+  <div style="margin-top:12px;font-size:11px;color:var(--ink-light);">
+    ${data.length} SKUs &middot; Statistical baseline only &middot; Weighted rolling avg with damped trend &middot; See Integrated Plan for full demand picture
+  </div>`;
+  content.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// LAYER 3 — SUPPLY & FG STOCK
+// ─────────────────────────────────────────────────────────────────
+function fcRenderSupply() {
+  const content = document.getElementById('fc-content');
+  const search  = ((document.getElementById('fc-search')||{}).value||'').toLowerCase();
+
+  let data = _fcPlan.filter(r => {
+    if (r.fg === 0 && r.prod === 0 && r.demand3 === 0) return false;
+    if (search && !r.sku.toLowerCase().includes(search) && !r.name.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  if (!data.length) {
+    content.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-light);">No supply data loaded (wh_stock_on_hand / production_plan tables may be empty).</div>';
+    return;
+  }
+
+  let html = `<div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;">
+  <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px;">
+    <thead><tr style="background:#1A1A1A;color:#fff;">
+      <th style="padding:10px 12px;text-align:left;font-size:10px;">SKU</th>
+      <th style="padding:10px 12px;text-align:left;font-size:10px;">PRODUCT</th>
+      <th style="text-align:right;padding:10px 8px;min-width:90px;background:#0A2A0A;font-size:10px;">🏭 FG Available<div style="font-size:9px;color:#999;">Warehouse</div></th>
+      <th style="text-align:right;padding:10px 8px;min-width:90px;background:#0A0A2A;font-size:10px;">⚙️ Production<div style="font-size:9px;color:#999;">Next 8 weeks</div></th>
+      <th style="text-align:right;padding:10px 8px;min-width:90px;background:#0A1A1A;font-size:10px;">Total Supply</th>
+      <th style="text-align:right;padding:10px 8px;min-width:90px;font-size:10px;">3M Demand</th>
+      <th style="text-align:right;padding:10px 8px;min-width:90px;background:#2A0A0A;font-size:10px;">⚡ Net Req</th>
+      <th style="text-align:right;padding:10px 8px;min-width:75px;font-size:10px;">Cover (wks)</th>
+      <th style="text-align:center;padding:10px 8px;min-width:100px;font-size:10px;">SIGNAL</th>
+    </tr></thead><tbody>`;
+
+  data.forEach(r => {
+    const coverWks = r.demand3 > 0 ? Math.round((r.totalSupply / r.demand3) * 13) : null;
+    const coverStr = coverWks === null ? '&infin;' : coverWks + 'w';
+    const coverCol = coverWks !== null && coverWks < 4 ? '#C0392B' : coverWks !== null && coverWks < 8 ? '#E67E22' : '#0B7A45';
+    html += `<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:8px 12px;font-family:monospace;font-size:10px;color:var(--ink-light);">${r.sku}</td>
+      <td style="padding:8px 12px;font-weight:600;">${r.name}</td>
+      <td style="text-align:right;padding:8px;background:#F0FFF4;font-weight:700;color:#065F46;">${r.fg.toLocaleString()||'—'}</td>
+      <td style="text-align:right;padding:8px;background:#EFF6FF;font-weight:700;color:#1E40AF;">${r.prod.toLocaleString()||'—'}</td>
+      <td style="text-align:right;padding:8px;background:#F0F9FF;font-weight:700;">${r.totalSupply.toLocaleString()}</td>
+      <td style="text-align:right;padding:8px;font-weight:600;">${r.demand3.toLocaleString()}</td>
+      <td style="text-align:right;padding:8px;background:${r.netReq>0?'#FFF5F5':'#F0FFF4'};font-weight:700;color:${r.netReq>0?'#991B1B':'#065F46'};">${r.netReq>0?r.netReq.toLocaleString():'Sufficient'}</td>
+      <td style="text-align:right;padding:8px;font-weight:700;color:${coverCol};">${coverStr}</td>
+      <td style="text-align:center;padding:8px;">${_fcSignalPill(r.signal)}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>
+  <div style="margin-top:12px;font-size:11px;color:var(--ink-light);">
+    ${data.length} SKUs &middot; FG = current warehouse stock &middot; Production = confirmed pipeline due within 8 weeks &middot; Cover = supply &divide; monthly demand &times; 4 weeks
+  </div>`;
+  content.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// LAYER 4 — COMMERCIAL DEMAND
+// ─────────────────────────────────────────────────────────────────
+function fcRenderCommercial() {
+  const content = document.getElementById('fc-content');
+  const search  = ((document.getElementById('fc-search')||{}).value||'').toLowerCase();
+
+  let data = _fcPlan.filter(r => {
+    if (r.totalCamp === 0 && r.orderDemand === 0) return false;
+    if (search && !r.sku.toLowerCase().includes(search) && !r.name.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  if (!data.length) {
+    content.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-light);font-size:13px;">No active campaigns or confirmed export orders in current scope.</div>';
+    return;
+  }
+
+  const fLabels = data[0].fwdMonths.map(_fcMonthLabel);
+
+  let html = `<div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;">
+  <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px;">
+    <thead><tr style="background:#1A1A1A;color:#fff;">
+      <th style="padding:10px 12px;text-align:left;font-size:10px;">SKU</th>
+      <th style="padding:10px 12px;text-align:left;font-size:10px;">PRODUCT</th>
+      <th style="text-align:right;padding:10px 8px;min-width:70px;background:#1A0A2A;font-size:10px;">📣 Total Camp.</th>`;
+
+  data[0].fwdMonths.forEach((m, i) => {
+    html += `<th style="text-align:right;padding:10px 8px;min-width:60px;font-size:10px;color:#9B59B6;">${fLabels[i]}<div style="font-size:9px;color:#888;">Camp.</div></th>`;
+  });
+
+  html += `<th style="text-align:right;padding:10px 8px;min-width:80px;background:#0A1A2A;font-size:10px;">📦 Exp. Orders</th>
+      <th style="text-align:right;padding:10px 8px;min-width:80px;font-size:10px;">Total Comm.</th>
+      <th style="text-align:right;padding:10px 8px;min-width:70px;background:#0A2A0A;font-size:10px;">🏭 FG Avail.</th>
+      <th style="text-align:center;padding:10px 8px;font-size:10px;">SIGNAL</th>
+    </tr></thead><tbody>`;
+
+  data.forEach(r => {
+    const totalComm = r.totalCamp + r.orderDemand;
+    html += `<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:8px 12px;font-family:monospace;font-size:10px;color:var(--ink-light);">${r.sku}</td>
+      <td style="padding:8px 12px;font-weight:600;">${r.name}</td>
+      <td style="text-align:right;padding:8px;background:#FAF5FF;font-weight:700;color:#6B21A8;">${r.totalCamp||'—'}</td>`;
+
+    r.campDemand.forEach(v => {
+      html += `<td style="text-align:right;padding:8px;color:#9B59B6;font-weight:${v?'600':'400'};">${v||'—'}</td>`;
+    });
+
+    html += `<td style="text-align:right;padding:8px;background:#EFF6FF;font-weight:700;color:#1E40AF;">${r.orderDemand||'—'}</td>
+      <td style="text-align:right;padding:8px;font-weight:700;">${totalComm.toLocaleString()}</td>
+      <td style="text-align:right;padding:8px;background:#F0FFF4;font-weight:600;color:#065F46;">${r.fg||'—'}</td>
+      <td style="text-align:center;padding:8px;">${_fcSignalPill(r.signal)}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>
+  <div style="margin-top:12px;font-size:11px;color:var(--ink-light);">
+    ${data.length} SKUs with commercial demand &middot; Campaign uplift spread across overlapping forecast months &middot; Export orders (Pending + Confirmed) allocated to M+1
+  </div>`;
+  content.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// LAYER 5 — STORE INVENTORY HEALTH
+// ─────────────────────────────────────────────────────────────────
+function fcRenderStoreHealth() {
+  const content = document.getElementById('fc-content');
+  const search  = ((document.getElementById('fc-search')||{}).value||'').toLowerCase();
+  const now     = new Date();
+
+  const last3m = [];
+  for (let i = 3; i >= 1; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    last3m.push(d.toISOString().slice(0, 7));
+  }
+
+  const storeSet = _fcGetStoreSet();
+  const storeStats = {};
+  _fc.sales.forEach(r => {
+    if (storeSet && !storeSet.has(r.store_code)) return;
+    if (!last3m.includes(r.month_year)) return;
+    if (!storeStats[r.store_code]) storeStats[r.store_code] = { byM: {}, total: 0, skus: new Set() };
+    storeStats[r.store_code].byM[r.month_year] = (storeStats[r.store_code].byM[r.month_year] || 0) + r.qty_sold;
+    storeStats[r.store_code].total += r.qty_sold;
+    storeStats[r.store_code].skus.add(r.sku_code);
+  });
+
+  const stores = Object.entries(storeStats).sort((a, b) => b[1].total - a[1].total);
+  if (!stores.length) {
+    content.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-light);">No store data in current filter scope.</div>';
+    return;
+  }
+
+  const l3labels = last3m.map(_fcMonthLabel);
+  const allTotal = stores.reduce((s, [, v]) => s + v.total, 0);
+
+  let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:4px;">`;
+
+  stores.forEach(([code, stat]) => {
+    if (search && !code.toLowerCase().includes(search)) return;
+    const info   = (typeof STORES !== 'undefined' ? STORES : []).find(s => s.code === code) || { name: code };
+    const mvals  = last3m.map(m => stat.byM[m] || 0);
+    const avg    = Math.round(stat.total / 3);
+    const trendN = mvals[1] > 0 ? Math.round((mvals[2] - mvals[1]) / mvals[1] * 100) : 0;
+    const tCol   = trendN > 5 ? '#0B7A45' : trendN < -5 ? '#C0392B' : '#666';
+    const share  = allTotal > 0 ? (stat.total / allTotal * 100).toFixed(1) : 0;
+    const maxV   = Math.max(...mvals, 1);
+    const barColors = ['#C9A84C66','#C9A84CAA','#C9A84C'];
+    const bars = mvals.map((v, i) => {
+      const h = Math.round((v / maxV) * 40);
+      return `<div title="${l3labels[i]}: ${v}" style="display:inline-block;width:22px;height:${h}px;background:${barColors[i]};border-radius:2px 2px 0 0;margin-right:3px;vertical-align:bottom;"></div>`;
+    }).join('');
+
+    html += `<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div><div style="font-weight:700;font-size:13px;">${info.name||code}</div><div style="font-size:10px;color:var(--ink-light);font-family:monospace;">${code}</div></div>
+        <div style="text-align:right;"><div style="font-weight:700;font-size:18px;">${stat.total.toLocaleString()}</div><div style="font-size:9px;color:var(--ink-light);">units / 3M</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-end;height:44px;margin-bottom:6px;">${bars}</div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--ink-light);margin-bottom:10px;">
+        <span>${l3labels[0]}</span><span>${l3labels[1]}</span><span>${l3labels[2]}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border);font-size:11px;">
+        <span><span style="color:var(--ink-light);">Avg:</span> <b>${avg}/mo</b></span>
+        <span style="color:${tCol};font-weight:700;">${trendN>=0?'+':''}${trendN}%</span>
+        <span><span style="color:var(--ink-light);">Share:</span> <b>${share}%</b></span>
+        <span><span style="color:var(--ink-light);">SKUs:</span> <b>${stat.skus.size}</b></span>
+      </div>
+    </div>`;
+  });
+
+  html += `</div>
+  <div style="margin-top:16px;font-size:11px;color:var(--ink-light);">
+    ${stores.length} stores &middot; Last 3 months sales performance &middot; Bar = M-3 &rarr; M-2 &rarr; M-1 &middot; Trend = M-2 to M-1 change
+  </div>`;
+  content.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// EXCEL EXPORT — 2 sheets
+// ─────────────────────────────────────────────────────────────────
+async function fcExportExcel() {
+  if (!_fcPlan.length) { alert('Load forecast data first.'); return; }
+
+  if (typeof window.XLSX === 'undefined') {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  const now     = new Date();
+  const region  = document.getElementById('fc-region').value;
+  const store   = document.getElementById('fc-store').value;
+  const horizon = +(document.getElementById('fc-horizon').value)||3;
+  const fwdM    = (_fcPlan[0]?.fwdMonths||[]).slice(0, horizon);
+  const histM   = _fcPlan[0]?.last3 || [];
+
+  // Sheet 1 — Integrated Demand Plan
+  const h1 = ['SKU','Product','Trend %','Signal',
+    ...histM.map(m => _fcMonthLabel(m)+' Actual'),
+    ...fwdM.map(m => _fcMonthLabel(m)+' Integrated'),
+    'Campaign Uplift','Order Demand','FG Available','Production (8w)','Total Supply','3M Demand','Net Requirement'
   ];
-  window.XLSX.utils.book_append_sheet(wb, ws, 'Forecast');
-  window.XLSX.writeFile(wb, `EmiratesPride_Forecast_${now.toISOString().slice(0,10)}.xlsx`);
+  const ws1 = [
+    ['EMIRATES PRIDE PERFUMES — INTEGRATED DEMAND PLAN'],
+    [`Generated: ${now.toLocaleDateString('en-GB')} | Region: ${region} | Store: ${store}`],
+    [],
+    h1,
+    ..._fcPlan.map(r => [
+      r.sku, r.name, (r.trend*100).toFixed(1)+'%', r.signal.toUpperCase(),
+      ...r.last3vals, ...r.integrated.slice(0,horizon),
+      r.totalCamp, r.orderDemand, r.fg, r.prod, r.totalSupply, r.demand3, r.netReq
+    ])
+  ];
+
+  // Sheet 2 — Baseline History
+  const now2  = new Date();
+  const hist9 = [];
+  for (let i = 8; i >= 0; i--) {
+    const d = new Date(now2.getFullYear(), now2.getMonth()-i, 1);
+    hist9.push(d.toISOString().slice(0,7));
+  }
+  const h2 = ['SKU','Product',...hist9.map(_fcMonthLabel),'3M Avg','Trend %',...fwdM.map(m=>_fcMonthLabel(m)+' Baseline'),'Signal'];
+  const ws2 = [
+    ['EMIRATES PRIDE PERFUMES — STATISTICAL BASELINE'],
+    [`Generated: ${now.toLocaleDateString('en-GB')} | Weighted rolling avg · damped trend · UAE seasonality`],
+    [], h2,
+    ..._fcPlan.filter(r=>r.avgLast3>0).map(r=>[
+      r.sku, r.name, ...hist9.map(m=>r.mmap[m]||0),
+      Math.round(r.avgLast3), (r.trend*100).toFixed(1)+'%',
+      ...r.baseline.slice(0,horizon), r.signal.toUpperCase()
+    ])
+  ];
+
+  const wb  = window.XLSX.utils.book_new();
+  const sh1 = window.XLSX.utils.aoa_to_sheet(ws1);
+  const sh2 = window.XLSX.utils.aoa_to_sheet(ws2);
+  sh1['!cols'] = [{wch:14},{wch:32},{wch:10},{wch:12}];
+  sh2['!cols'] = [{wch:14},{wch:32}];
+  window.XLSX.utils.book_append_sheet(wb, sh1, 'Demand Plan');
+  window.XLSX.utils.book_append_sheet(wb, sh2, 'Baseline History');
+  window.XLSX.writeFile(wb, `EmiratesPride_DemandPlan_${now.toISOString().slice(0,10)}.xlsx`);
 }
 
 </script>
