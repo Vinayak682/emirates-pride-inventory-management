@@ -1684,7 +1684,9 @@ const QUARTERS = {1:[1,2,3],2:[4,5,6],3:[7,8,9],4:[10,11,12]};
 // STATE
 // ══════════════════════════════════════════════
 let sb = null, salesData = [], filteredSales = [];
-let invHistory = JSON.parse(localStorage.getItem('sop_inv_v2') || '[]');
+let invHistory = [];       // populated from Supabase on tab switch
+let invLoaded  = false;    // true once first fetch completes
+let invLoading = false;    // prevents duplicate fetches
 let invUploadBuffer = null;
 let targetsCache = {};        // key: "store_month" → {sku_code: target_qty}
 let targetsEditMode = false;
@@ -2476,16 +2478,141 @@ function exportTesterCsv() {
 }
 
 // ══════════════════════════════════════════════
-// INVENTORY
+// INVENTORY  (Supabase-backed)
 // ══════════════════════════════════════════════
 function setInvDefaultDate(){ document.getElementById('inv-date').value=new Date().toISOString().split('T')[0]; }
 
+// ── Load all uploads from Supabase ─────────────────────────────────
+async function loadInvFromSupabase(){
+  if(invLoading) return;
+  invLoading = true;
+
+  // Show skeleton in history table
+  document.getElementById('inv-history-tbody').innerHTML=
+    `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-light);">
+      <div class="spinner" style="margin:0 auto 10px;"></div>Loading inventory history…
+    </td></tr>`;
+
+  try {
+    const { data: uploads, error: uErr } = await sb
+      .from('sop_inventory_uploads')
+      .select('*')
+      .order('uploaded_at', { ascending: false })
+      .limit(300);
+    if(uErr) throw uErr;
+
+    if(!uploads.length){
+      // One-time migration: check localStorage for legacy data
+      const local = JSON.parse(localStorage.getItem('sop_inv_v2') || '[]');
+      if(local.length){
+        toast('Migrating local inventory to cloud…');
+        await _migrateLocalInvToSupabase(local);
+        return; // _migrate calls loadInvFromSupabase again at the end
+      }
+      invLoaded = true; invLoading = false;
+      refreshInvHistory(); loadCurrentInventory(); return;
+    }
+
+    // Fetch all lines for these uploads
+    const uploadIds = uploads.map(u => u.id);
+    const { data: lines, error: lErr } = await sb
+      .from('sop_inventory_history')
+      .select('upload_id,sku_code,product_name,qty_on_hand')
+      .in('upload_id', uploadIds);
+    if(lErr) throw lErr;
+
+    // Group lines by upload_id
+    const linesByUpload = {};
+    (lines||[]).forEach(l => {
+      (linesByUpload[l.upload_id] = linesByUpload[l.upload_id] || []).push(l);
+    });
+
+    // Reconstruct invHistory in the same shape the rest of the code expects
+    invHistory = uploads.map(u => ({
+      id:    u.id,
+      store: u.store_code,
+      date:  u.snapshot_date,
+      skus:  u.sku_count,
+      total: u.total_units,
+      by:    u.uploaded_by || 'S&OP Portal',
+      data:  (linesByUpload[u.id] || []).map(l => ({
+        sku_code:   l.sku_code,
+        name:       l.product_name,
+        qty_upload: l.qty_on_hand
+      }))
+    }));
+
+    invLoaded = true;
+  } catch(e) {
+    toast('Inventory load failed: ' + e.message);
+    // Fall back to localStorage so the tab isn't empty
+    invHistory = JSON.parse(localStorage.getItem('sop_inv_v2') || '[]');
+    invLoaded = true;
+  }
+
+  invLoading = false;
+  _populateInvViewStore();
+  refreshInvHistory();
+  loadCurrentInventory();
+}
+
+// ── One-time migration: localStorage → Supabase ───────────────────
+async function _migrateLocalInvToSupabase(localData){
+  let migrated = 0;
+  for(const entry of [...localData].reverse()){ // oldest first
+    try {
+      const { data: row, error } = await sb
+        .from('sop_inventory_uploads')
+        .insert({
+          store_code:    entry.store,
+          snapshot_date: entry.date,
+          sku_count:     entry.skus || (entry.data||[]).length,
+          total_units:   entry.total || 0,
+          uploaded_by:   entry.by || 'Migration'
+        })
+        .select('id').single();
+      if(error || !row) continue;
+      const lines = (entry.data||[]).map(r => ({
+        upload_id:    row.id,
+        store_code:   entry.store,
+        snapshot_date:entry.date,
+        sku_code:     r.sku_code,
+        product_name: r.name,
+        qty_on_hand:  r.qty_upload
+      }));
+      for(let i=0; i<lines.length; i+=500){
+        await sb.from('sop_inventory_history').insert(lines.slice(i,i+500));
+      }
+      migrated++;
+    } catch(e){ /* skip bad entries */ }
+  }
+  localStorage.removeItem('sop_inv_v2'); // clean up after migration
+  invLoaded = false; invLoading = false;
+  await loadInvFromSupabase();
+  toast(`✓ Migrated ${migrated} inventory snapshots to cloud`);
+}
+
+// ── Populate the "view by store" selector ─────────────────────────
+function _populateInvViewStore(){
+  const sel = document.getElementById('inv-view-store');
+  if(!sel) return;
+  const existing = new Set([...sel.options].map(o=>o.value));
+  const storesInHistory = [...new Set(invHistory.map(h=>h.store))];
+  storesInHistory.forEach(code => {
+    if(existing.has(code)) return;
+    const o = document.createElement('option');
+    o.value = code; o.textContent = getStore(code).name || code;
+    sel.appendChild(o);
+  });
+}
+
+// ── File parse ────────────────────────────────────────────────────
 function handleInvFile(input){
   const file=input.files[0]; if(!file) return;
   const store=document.getElementById('inv-store-sel').value;
   const date=document.getElementById('inv-date').value;
-  if(!store){ toast('Select a store first','warn'); input.value=''; return; }
-  if(!date){ toast('Select a snapshot date','warn'); input.value=''; return; }
+  if(!store){ toast('Select a store first'); input.value=''; return; }
+  if(!date){ toast('Select a snapshot date'); input.value=''; return; }
   const reader=new FileReader();
   reader.onload=e=>{
     const wb=XLSX.read(e.target.result,{type:'binary'});
@@ -2529,31 +2656,86 @@ function showInvPreview(parsed,store,date){
   }).join('');
 }
 
-function confirmInvUpload(){
+// ── Confirm upload → save to Supabase ────────────────────────────
+async function confirmInvUpload(){
   if(!invUploadBuffer) return;
   const {store,date,data}=invUploadBuffer;
-  invHistory.unshift({store,date,data,skus:data.length,total:data.reduce((s,r)=>s+r.qty_upload,0),by:'S&OP Portal'});
-  localStorage.setItem('sop_inv_v2',JSON.stringify(invHistory.slice(0,100)));
-  document.getElementById('inv-preview').style.display='none';
-  invUploadBuffer=null; document.getElementById('inv-file').value='';
-  refreshInvHistory(); loadCurrentInventory();
-  toast(`Inventory uploaded — ${data.length} SKUs for ${getStore(store).name}`);
-}
-function cancelInvUpload(){ document.getElementById('inv-preview').style.display='none'; document.getElementById('inv-file').value=''; invUploadBuffer=null; }
 
+  // Disable button to prevent double-submit
+  const btn=document.querySelector('#inv-preview .filter-btn');
+  if(btn){ btn.textContent='Saving…'; btn.disabled=true; }
+
+  try {
+    // Insert header row
+    const { data: row, error: hErr } = await sb
+      .from('sop_inventory_uploads')
+      .insert({
+        store_code:    store,
+        snapshot_date: date,
+        sku_count:     data.length,
+        total_units:   data.reduce((s,r)=>s+r.qty_upload,0),
+        uploaded_by:   'S&OP Portal'
+      })
+      .select('id').single();
+    if(hErr) throw hErr;
+
+    // Insert lines in batches of 500
+    const lines=data.map(r=>({
+      upload_id:    row.id,
+      store_code:   store,
+      snapshot_date:date,
+      sku_code:     r.sku_code,
+      product_name: r.name,
+      qty_on_hand:  r.qty_upload
+    }));
+    for(let i=0;i<lines.length;i+=500){
+      const { error:lErr }=await sb.from('sop_inventory_history').insert(lines.slice(i,i+500));
+      if(lErr) throw lErr;
+    }
+
+    // Update in-memory cache (prepend newest)
+    invHistory.unshift({id:row.id,store,date,data,skus:data.length,
+      total:data.reduce((s,r)=>s+r.qty_upload,0),by:'S&OP Portal'});
+
+    document.getElementById('inv-preview').style.display='none';
+    invUploadBuffer=null; document.getElementById('inv-file').value='';
+    _populateInvViewStore();
+    refreshInvHistory(); loadCurrentInventory();
+    toast(`✓ Inventory saved — ${data.length} SKUs for ${getStore(store).name}`);
+  } catch(e){
+    toast('Upload failed: '+e.message);
+    if(btn){ btn.textContent='✓ Confirm Upload'; btn.disabled=false; }
+  }
+}
+
+function cancelInvUpload(){
+  document.getElementById('inv-preview').style.display='none';
+  document.getElementById('inv-file').value='';
+  invUploadBuffer=null;
+}
+
+// ── Render history table ──────────────────────────────────────────
 function refreshInvHistory(){
-  if(!invHistory.length) return;
-  document.getElementById('inv-history-tbody').innerHTML=invHistory.map((h,i)=>`<tr>
+  const tbody=document.getElementById('inv-history-tbody');
+  if(!invHistory.length){
+    tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--ink-light);">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;margin-bottom:6px;">No uploads yet</div>
+      Upload your first inventory snapshot above
+    </td></tr>`;
+    return;
+  }
+  tbody.innerHTML=invHistory.map((h,i)=>`<tr>
     <td>${h.date}</td>
     <td style="font-weight:600;">${getStore(h.store).name}</td>
     <td>${regionPill(getStore(h.store).region)}</td>
-    <td class="num">${h.skus.toLocaleString()}</td>
-    <td class="num">${h.total.toLocaleString()}</td>
-    <td style="color:var(--ink-light);">${h.by}</td>
+    <td class="num">${(h.skus||0).toLocaleString()}</td>
+    <td class="num">${(h.total||0).toLocaleString()}</td>
+    <td style="color:var(--ink-light);">${h.by||'—'}</td>
     <td><button class="filter-btn-ghost" onclick="dlInvSnap(${i})" style="font-size:10px;padding:5px 12px;">↓ CSV</button></td>
   </tr>`).join('');
 }
 
+// ── Current inventory view ────────────────────────────────────────
 function loadCurrentInventory(){
   const sel=document.getElementById('inv-view-store').value;
   const latest={};
@@ -2561,7 +2743,7 @@ function loadCurrentInventory(){
   let rows=[];
   Object.entries(latest).forEach(([s,snap])=>{
     if(sel!=='ALL'&&s!==sel) return;
-    snap.data.forEach(r=>rows.push({...r,store:s,date:snap.date,sname:getStore(s).name}));
+    (snap.data||[]).forEach(r=>rows.push({...r,store:s,date:snap.date,sname:getStore(s).name}));
   });
   rows.sort((a,b)=>b.qty_upload-a.qty_upload);
   document.getElementById('inv-current-tbody').innerHTML=rows.map(r=>`<tr>
@@ -2610,6 +2792,7 @@ function switchTab(id){
   document.getElementById('tab-'+id).classList.add('active');
   document.querySelector(`[data-tab="${id}"]`).classList.add('active');
   if(id==='sales'       && !salesLoaded) loadSalesData();
+  if(id==='inventory'   && !invLoaded)   loadInvFromSupabase();
   if(id==='testers')     loadTesterData();
   if(id==='production')  loadProductionTab();
   if(id==='warehouse')   loadWarehouseTab();
