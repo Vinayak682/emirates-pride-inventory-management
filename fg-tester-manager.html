@@ -3,141 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>FG Tester Requests — Manager Portal</title>
+<title>FG Tester Requests</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --gold:#C9A84C;--gold-dark:#7A6525;--gold-bar:#6B5B35;--gold-pale:#F5F2EC;
-  --border:#E5E0D8;--ink:#1A1A1A;--ink-mid:#4A4540;--ink-light:#8A8278;
+  --gold:#C9A84C;--gold-dark:#7A6525;--gold-bar:#6B5B35;
+  --gold-pale:#F5F2EC;--border:#E5E0D8;
+  --ink:#1A1A1A;--ink-mid:#4A4540;--ink-light:#8A8278;
   --page:#FFFFFF;--sheet:#FAFAF8;
   --f-serif:'Cormorant Garamond',serif;
   --f-body:'Montserrat',sans-serif;
   --f-mono:'IBM Plex Mono',monospace;
 }
-body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-height:100vh;}
+body{font-family:var(--f-body);background:var(--sheet);color:var(--ink);min-height:100vh;}
 
-/* ── LOGIN ─────────────────────────────────────────────── */
+/* ── LOGIN OVERLAY ─────────────────────────────────────── */
 #loginOverlay{
-  position:fixed;inset:0;background:var(--gold-pale);
+  position:fixed;inset:0;background:rgba(245,242,236,0.97);
   display:flex;align-items:center;justify-content:center;
   z-index:999;padding:20px;
 }
 .login-card{
   background:#fff;border:2px solid var(--border);border-radius:14px;
-  max-width:400px;width:100%;padding:32px 28px;
+  max-width:380px;width:100%;padding:30px 26px;
   box-shadow:0 4px 24px rgba(107,91,53,0.10);
 }
-.login-brand{text-align:center;margin-bottom:28px;}
-.login-brand h1{
-  font-family:var(--f-serif);font-size:22px;font-weight:600;
-  color:var(--gold-dark);letter-spacing:3px;text-transform:uppercase;
-}
-.login-brand p{font-size:10px;color:var(--ink-light);letter-spacing:1.5px;margin-top:5px;text-transform:uppercase;}
-.login-brand .ar{font-size:13px;color:var(--gold);margin-top:4px;direction:rtl;}
-.login-lbl{display:block;font-size:10px;font-weight:700;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.login-brand{text-align:center;margin-bottom:26px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+.login-brand .ep{font-family:var(--f-serif);font-size:21px;font-weight:600;color:var(--gold-dark);letter-spacing:3px;text-transform:uppercase;}
+.login-brand .sub{font-size:9.5px;color:var(--ink-light);letter-spacing:1.5px;margin-top:5px;text-transform:uppercase;font-family:var(--f-body);}
+.login-title{font-family:var(--f-serif);font-size:16px;font-weight:600;color:var(--ink);margin-bottom:16px;}
+.login-lbl{display:block;font-size:10px;font-weight:700;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;}
 .login-inp{
-  width:100%;padding:13px 15px;border:2px solid var(--border);border-radius:9px;
-  font-family:var(--f-body);font-size:15px;color:var(--ink);background:#FAFAF8;
+  width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:8px;
+  font-family:var(--f-body);font-size:15px;color:var(--ink);background:var(--sheet);
   outline:none;transition:border-color 0.15s;
 }
 .login-inp:focus{border-color:var(--gold);}
 .login-btn{
-  width:100%;padding:14px;margin-top:20px;border:none;border-radius:9px;
+  width:100%;padding:13px;margin-top:18px;border:none;border-radius:8px;
   background:var(--gold-bar);color:#fff;font-family:var(--f-body);
-  font-size:14px;font-weight:700;letter-spacing:0.5px;cursor:pointer;
-  transition:background 0.15s;
+  font-size:13px;font-weight:700;letter-spacing:0.5px;cursor:pointer;transition:background 0.15s;
 }
 .login-btn:hover{background:var(--gold-dark);}
-.login-btn:active{transform:scale(0.98);}
-.login-err{display:none;background:#FEE2E2;color:#991B1B;border-radius:7px;padding:9px 13px;font-size:12px;font-weight:600;margin-top:12px;text-align:center;}
+.login-err{
+  display:none;background:#FEE2E2;color:#991B1B;border-radius:6px;
+  padding:8px 12px;font-size:12px;font-weight:600;margin-top:10px;text-align:center;
+}
 
-/* ── APP SHELL ─────────────────────────────────────────── */
+/* ── APP ───────────────────────────────────────────────── */
 #app{display:none;flex-direction:column;min-height:100vh;}
 
-.topbar{
-  background:var(--gold-bar);border-bottom:3px solid var(--gold);
-  padding:13px 20px;display:flex;align-items:center;justify-content:space-between;
-  flex-shrink:0;box-shadow:0 2px 8px rgba(107,91,53,0.15);
+/* Header — exactly matches the panel header in stock-register */
+.panel-hdr{
+  background:#FFFFFF;border-bottom:3px solid var(--gold);
+  padding:13px 16px;display:flex;align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(201,168,76,0.08);
   position:sticky;top:0;z-index:10;
 }
-.topbar-left h1{font-family:var(--f-serif);font-size:18px;font-weight:600;color:#fff;letter-spacing:1px;}
-.topbar-left p{font-family:var(--f-mono);font-size:9.5px;color:rgba(255,255,255,0.65);margin-top:2px;letter-spacing:0.5px;}
-.topbar-right{display:flex;gap:8px;align-items:center;}
-.tbtn{
-  background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
-  border-radius:6px;color:#fff;font-family:var(--f-body);font-size:11px;
-  font-weight:600;padding:7px 13px;cursor:pointer;text-decoration:none;
-  display:inline-flex;align-items:center;gap:4px;transition:background 0.15s;
-  letter-spacing:0.3px;
+.panel-hdr-left .title{
+  font-family:var(--f-serif);font-size:17px;font-weight:600;color:var(--gold-dark);
 }
-.tbtn:hover{background:rgba(255,255,255,0.22);}
-.tbtn.gold{background:var(--gold);border-color:var(--gold);color:#fff;}
-.tbtn.gold:hover{background:var(--gold-dark);border-color:var(--gold-dark);}
-.tbtn-logout{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:#FCA5A5;}
-.tbtn-logout:hover{background:rgba(239,68,68,0.25);}
+.panel-hdr-left .sub{
+  font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:2px;
+}
+.panel-hdr-right{display:flex;gap:8px;align-items:center;}
+.hdr-btn{
+  background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;
+  color:var(--ink-mid);font-family:var(--f-body);font-size:11px;
+  padding:7px 14px;cursor:pointer;font-weight:600;transition:background 0.12s;
+  text-decoration:none;display:inline-flex;align-items:center;gap:4px;
+}
+.hdr-btn:hover{background:var(--border);}
+.hdr-btn.gold{
+  background:linear-gradient(135deg,var(--gold-dark),var(--gold));
+  border-color:var(--gold);color:#fff;font-weight:700;
+}
+.hdr-btn.gold:hover{opacity:0.9;}
+.hdr-btn.dark{background:var(--gold-dark);border-color:var(--gold-dark);color:#fff;font-weight:700;}
+.hdr-btn.dark:hover{background:var(--gold-bar);}
 
-/* ── STATS STRIP ───────────────────────────────────────── */
-.stats{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
-  padding:18px 20px 6px;max-width:860px;margin:0 auto;width:100%;
-}
-.stat-card{border-radius:10px;padding:14px 16px;text-align:center;border:2px solid;}
-.stat-card .num{font-family:var(--f-serif);font-size:34px;font-weight:600;line-height:1;}
-.stat-card .lbl{font-family:var(--f-body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:6px;}
-.stat-pending{background:#FEF3C7;border-color:#F59E0B;}.stat-pending .num{color:#92400E;}.stat-pending .lbl{color:#92400E;}
-.stat-approved{background:#D1FAE5;border-color:#10B981;}.stat-approved .num{color:#065F46;}.stat-approved .lbl{color:#065F46;}
-.stat-rejected{background:#FEE2E2;border-color:#EF4444;}.stat-rejected .num{color:#991B1B;}.stat-rejected .lbl{color:#991B1B;}
+/* Body */
+.panel-body{flex:1;padding:16px;max-width:900px;width:100%;margin:0 auto;}
 
-/* ── FILTER BAR ────────────────────────────────────────── */
-.filter-bar{
-  display:flex;gap:8px;padding:12px 20px 4px;max-width:860px;margin:0 auto;width:100%;
-  flex-wrap:wrap;align-items:center;
-}
-.filter-chip{
-  padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);
-  background:var(--sheet);color:var(--ink-mid);font-family:var(--f-body);
-  font-size:11px;font-weight:600;cursor:pointer;transition:all 0.12s;
-}
-.filter-chip:hover{border-color:var(--gold);color:var(--gold-dark);}
-.filter-chip.active{background:var(--gold-bar);border-color:var(--gold-bar);color:#fff;}
-.filter-lbl{font-size:10px;color:var(--ink-light);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-right:4px;}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;}
+.stat{border-radius:8px;padding:12px;text-align:center;border:2px solid;}
+.stat .n{font-size:28px;font-weight:800;line-height:1;}
+.stat .l{font-size:11px;font-weight:600;margin-top:4px;}
+.s-pending{background:#FEF3C7;border-color:#F59E0B;}.s-pending .n,.s-pending .l{color:#92400E;}
+.s-approved{background:#D1FAE5;border-color:#10B981;}.s-approved .n,.s-approved .l{color:#065F46;}
+.s-rejected{background:#FEE2E2;border-color:#EF4444;}.s-rejected .n,.s-rejected .l{color:#991B1B;}
 
-/* ── REQUEST LIST ──────────────────────────────────────── */
-.list-wrap{
-  flex:1;padding:12px 20px 40px;max-width:860px;margin:0 auto;width:100%;
-}
-.empty{text-align:center;padding:60px 20px;color:var(--ink-light);font-size:14px;}
-.empty-icon{font-size:40px;margin-bottom:10px;}
-
+/* Cards */
 .req-card{
-  background:#fff;border:2px solid var(--border);border-radius:12px;
-  padding:16px;margin-bottom:12px;transition:border-color 0.12s;
+  background:#fff;border:2px solid #E8E4DC;border-radius:10px;
+  padding:14px;margin-bottom:12px;
 }
-.req-card:hover{border-color:var(--gold);}
-.req-card.pending{border-left:4px solid #F59E0B;}
-.req-card.approved{border-left:4px solid #10B981;}
-.req-card.rejected{border-left:4px solid #EF4444;}
-
 .req-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
-.req-ref{font-family:var(--f-mono);font-size:12px;font-weight:600;color:var(--ink);}
-.req-time{font-size:11px;color:var(--ink-light);margin-top:2px;}
-.status-pill{
-  padding:4px 10px;border-radius:6px;font-size:9px;font-weight:800;
-  text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0;
-}
-.pill-pending{background:#FEF3C7;color:#92400E;}
-.pill-approved{background:#D1FAE5;color:#065F46;}
-.pill-rejected{background:#FEE2E2;color:#991B1B;}
-
-.req-row{font-size:12.5px;color:var(--ink);margin-bottom:5px;line-height:1.5;}
-.req-row b{color:var(--gold-dark);}
-.req-meta{font-size:10.5px;color:var(--ink-light);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
-
+.req-ref{font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--ink);}
+.req-time{font-size:11px;color:#888;margin-top:2px;}
+.pill{padding:4px 10px;border-radius:6px;font-size:9px;font-weight:800;flex-shrink:0;}
+.pill-pending{background:#FEF3C7;color:#F59E0B;}
+.pill-approved{background:#D1FAE5;color:#10B981;}
+.pill-rejected{background:#FEE2E2;color:#EF4444;}
+.req-row{font-size:12px;margin-bottom:8px;}
+.req-row b{color:var(--ink);}
 .req-actions{display:flex;gap:8px;margin-top:12px;}
 .act-btn{
-  flex:1;padding:10px;border:none;border-radius:7px;font-family:var(--f-body);
-  font-size:12px;font-weight:700;cursor:pointer;transition:all 0.12s;letter-spacing:0.3px;
+  flex:1;padding:10px;border:none;border-radius:6px;
+  font-family:var(--f-body);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.12s;
 }
 .btn-approve{background:#10B981;color:#fff;}
 .btn-approve:hover{background:#059669;}
@@ -145,32 +121,27 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 .btn-reject:hover{background:#DC2626;}
 .btn-pdf{background:var(--gold-pale);border:1.5px solid var(--border);color:var(--gold-dark);}
 .btn-pdf:hover{background:var(--border);}
+.approved-by{font-size:10px;color:#888;margin-top:8px;padding-top:8px;border-top:1px solid #E8E4DC;}
+.rejection-reason{font-size:10px;color:#991B1B;margin-top:4px;}
 
-/* ── LOADING ───────────────────────────────────────────── */
-.loading{text-align:center;padding:50px 20px;color:var(--ink-light);}
-.spinner{
-  width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--gold);
-  border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 14px;
-}
-@keyframes spin{to{transform:rotate(360deg);}}
+.loading{text-align:center;padding:50px 20px;color:#888;font-size:14px;}
+.empty{text-align:center;padding:60px 20px;color:#888;}
 
-/* ── TOAST ─────────────────────────────────────────────── */
+/* Toast */
 #toast{
   position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
   background:var(--gold-bar);color:#fff;border-radius:8px;
   padding:11px 20px;font-size:13px;font-weight:600;
-  transition:transform 0.3s;z-index:9999;white-space:nowrap;
+  transition:transform 0.3s;z-index:9999;pointer-events:none;
   box-shadow:0 4px 16px rgba(107,91,53,0.25);
 }
 #toast.show{transform:translateX(-50%) translateY(0);}
 
-@media(max-width:600px){
-  .stats{grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 12px 4px;}
-  .stat-card .num{font-size:26px;}
-  .filter-bar,.list-wrap{padding-left:12px;padding-right:12px;}
-  .topbar{padding:11px 14px;}
-  .topbar-left h1{font-size:15px;}
-  .tbtn span{display:none;}
+@media(max-width:540px){
+  .stats{grid-template-columns:repeat(3,1fr);}
+  .stat .n{font-size:22px;}
+  .panel-hdr{flex-wrap:wrap;gap:8px;}
+  .panel-hdr-right{flex-wrap:wrap;}
 }
 </style>
 </head>
@@ -180,47 +151,39 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 <div id="loginOverlay">
   <div class="login-card">
     <div class="login-brand">
-      <h1>Emirates Pride</h1>
-      <div class="ar">فخـر الإمارات</div>
-      <p>FG Tester Requests · Manager Portal</p>
+      <div class="ep">Emirates Pride</div>
+      <div class="sub">Perfumes · Operations Platform</div>
     </div>
-    <label class="login-lbl">Access Password</label>
-    <input class="login-inp" type="password" id="loginPwd" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="login-btn" onclick="doLogin()">Enter Portal</button>
+    <div class="login-title">📦 FG Tester Requests</div>
+    <label class="login-lbl">Manager Password</label>
+    <input class="login-inp" type="password" id="loginPwd" placeholder="Enter password" autofocus>
+    <button class="login-btn" onclick="doLogin()">Access Portal</button>
     <div class="login-err" id="loginErr">Incorrect password. Please try again.</div>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app">
-  <div class="topbar">
-    <div class="topbar-left">
-      <h1>📦 FG Tester Requests</h1>
-      <p>PENDING APPROVALS · APPROVED · REJECTED</p>
+  <!-- Header — matches stock-register panel exactly -->
+  <div class="panel-hdr">
+    <div class="panel-hdr-left">
+      <div class="title">📦 FG Tester Requests</div>
+      <div class="sub">Pending Approvals · Approved · Rejected</div>
     </div>
-    <div class="topbar-right">
-      <button class="tbtn" onclick="loadRequests()">⇅ <span>Refresh</span></button>
-      <a class="tbtn gold" href="https://vinayak682.github.io/emirates-pride-inventory-management/fg-report.html" target="_blank">📊 <span>Full Report</span></a>
-      <button class="tbtn tbtn-logout" onclick="doLogout()">✕ <span>Logout</span></button>
+    <div class="panel-hdr-right">
+      <button class="hdr-btn" onclick="loadRequests()">⇅ Refresh</button>
+      <a class="hdr-btn gold" href="https://vinayak682.github.io/emirates-pride-inventory-management/fg-report.html" target="_blank">📊 Full Report</a>
+      <button class="hdr-btn dark" onclick="doLogout()">✕ Close</button>
     </div>
   </div>
 
-  <div class="stats">
-    <div class="stat-card stat-pending"><div class="num" id="cntPending">—</div><div class="lbl">Pending</div></div>
-    <div class="stat-card stat-approved"><div class="num" id="cntApproved">—</div><div class="lbl">Approved</div></div>
-    <div class="stat-card stat-rejected"><div class="num" id="cntRejected">—</div><div class="lbl">Rejected</div></div>
-  </div>
-
-  <div class="filter-bar">
-    <span class="filter-lbl">Show:</span>
-    <button class="filter-chip active" data-filter="all" onclick="setFilter('all',this)">All</button>
-    <button class="filter-chip" data-filter="pending" onclick="setFilter('pending',this)">Pending</button>
-    <button class="filter-chip" data-filter="approved" onclick="setFilter('approved',this)">Approved</button>
-    <button class="filter-chip" data-filter="rejected" onclick="setFilter('rejected',this)">Rejected</button>
-  </div>
-
-  <div class="list-wrap" id="listWrap">
-    <div class="loading"><div class="spinner"></div>Loading requests...</div>
+  <div class="panel-body">
+    <div class="stats">
+      <div class="stat s-pending"><div class="n" id="cntPending">—</div><div class="l">PENDING</div></div>
+      <div class="stat s-approved"><div class="n" id="cntApproved">—</div><div class="l">APPROVED</div></div>
+      <div class="stat s-rejected"><div class="n" id="cntRejected">—</div><div class="l">REJECTED</div></div>
+    </div>
+    <div id="listWrap"><div class="loading">Loading requests...</div></div>
   </div>
 </div>
 
@@ -230,25 +193,21 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 <script>
 const SB_URL='https://ncszurcrkngjcjqsowln.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
-const ACCESS_PWD='Vinayak@1998';
+const PWD='Vinayak@1998';
+let sb=null,allData=[];
 
-let sb=null;
-let allData=[];
-let activeFilter='all';
+document.getElementById('loginPwd').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-// ── AUTH ──────────────────────────────────────────────────
 function doLogin(){
-  const pwd=document.getElementById('loginPwd').value;
-  const err=document.getElementById('loginErr');
-  if(pwd===ACCESS_PWD){
-    err.style.display='none';
+  const v=document.getElementById('loginPwd').value;
+  if(v===PWD){
     document.getElementById('loginOverlay').style.display='none';
     document.getElementById('app').style.display='flex';
     document.getElementById('app').style.flexDirection='column';
     sb=window.supabase.createClient(SB_URL,SB_KEY);
     loadRequests();
   }else{
-    err.style.display='block';
+    document.getElementById('loginErr').style.display='block';
     document.getElementById('loginPwd').value='';
     document.getElementById('loginPwd').focus();
   }
@@ -258,151 +217,99 @@ function doLogout(){
   document.getElementById('loginOverlay').style.display='flex';
   document.getElementById('app').style.display='none';
   document.getElementById('loginPwd').value='';
+  document.getElementById('loginErr').style.display='none';
   allData=[];
 }
 
-// ── LOAD ──────────────────────────────────────────────────
 async function loadRequests(){
-  const wrap=document.getElementById('listWrap');
-  wrap.innerHTML='<div class="loading"><div class="spinner"></div>Loading requests...</div>';
+  document.getElementById('listWrap').innerHTML='<div class="loading">Loading...</div>';
   try{
     const{data,error}=await sb.from('fg_tester_requests').select('*').order('submitted_at',{ascending:false});
     if(error) throw error;
     allData=data||[];
-    updateStats();
-    renderList();
+    render();
   }catch(e){
-    wrap.innerHTML='<div class="loading" style="color:#EF4444;">Error loading: '+e.message+'</div>';
+    document.getElementById('listWrap').innerHTML='<div class="loading" style="color:#EF4444;">Error: '+e.message+'</div>';
   }
 }
 
-function updateStats(){
-  const p=allData.filter(r=>r.status==='pending').length;
-  const a=allData.filter(r=>r.status==='approved').length;
-  const rj=allData.filter(r=>r.status==='rejected').length;
-  document.getElementById('cntPending').textContent=p;
-  document.getElementById('cntApproved').textContent=a;
-  document.getElementById('cntRejected').textContent=rj;
-}
+function render(){
+  const pending=allData.filter(r=>r.status==='pending');
+  const approved=allData.filter(r=>r.status==='approved');
+  const rejected=allData.filter(r=>r.status==='rejected');
+  document.getElementById('cntPending').textContent=pending.length;
+  document.getElementById('cntApproved').textContent=approved.length;
+  document.getElementById('cntRejected').textContent=rejected.length;
 
-function setFilter(f,el){
-  activeFilter=f;
-  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  renderList();
-}
-
-function renderList(){
-  const wrap=document.getElementById('listWrap');
-  const filtered=activeFilter==='all'?allData:allData.filter(r=>r.status===activeFilter);
-  if(!filtered.length){
-    wrap.innerHTML='<div class="empty"><div class="empty-icon">📭</div>No '+
-      (activeFilter==='all'?'':''+activeFilter+' ')+'requests found.</div>';
+  if(!allData.length){
+    document.getElementById('listWrap').innerHTML='<div class="empty">No requests yet</div>';
     return;
   }
   let html='';
-  filtered.forEach(r=>{
-    const store=r.store_name?r.store_name.split('|')[0].trim():'—';
+  allData.forEach(r=>{
+    const store=(r.store_name||'').split('|')[0].trim();
     const totalQty=(r.items||[]).reduce((s,i)=>s+(i.qty||0),0);
-    const dtSubmit=fmtDT(r.submitted_at);
     const pillCls=r.status==='pending'?'pill-pending':r.status==='approved'?'pill-approved':'pill-rejected';
-    const pillTxt=r.status.toUpperCase();
-    html+=`<div class="req-card ${r.status}">
-      <div class="req-top">
-        <div>
-          <div class="req-ref">${r.request_ref}</div>
-          <div class="req-time">${dtSubmit}</div>
-        </div>
-        <div class="status-pill ${pillCls}">${pillTxt}</div>
-      </div>
-      <div class="req-row"><b>Store:</b> ${store}</div>
-      <div class="req-row"><b>Employee:</b> ${r.employee_name} (${r.employee_id})</div>
-      <div class="req-row"><b>Items:</b> ${(r.items||[]).length} products, ${totalQty} units total</div>
-      ${r.remarks?`<div class="req-row"><b>Remarks:</b> ${r.remarks}</div>`:''}`;
-
+    html+='<div class="req-card">';
+    html+='<div class="req-top">';
+    html+='<div><div class="req-ref">'+r.request_ref+'</div><div class="req-time">'+fmtDT(r.submitted_at)+'</div></div>';
+    html+='<div class="pill '+pillCls+'">'+r.status.toUpperCase()+'</div>';
+    html+='</div>';
+    html+='<div class="req-row"><b>Store:</b> '+store+'</div>';
+    html+='<div class="req-row"><b>Employee:</b> '+r.employee_name+' ('+r.employee_id+')</div>';
+    html+='<div class="req-row"><b>Items:</b> '+r.items.length+' products, '+totalQty+' units total</div>';
     if(r.status==='pending'){
-      html+=`<div class="req-actions">
-        <button class="act-btn btn-approve" onclick="approveReq('${r.request_ref}')">✓ Approve</button>
-        <button class="act-btn btn-reject" onclick="rejectReq('${r.request_ref}')">✕ Reject</button>
-      </div>`;
+      html+='<div class="req-actions">';
+      html+='<button class="act-btn btn-approve" onclick="approveReq(\''+r.request_ref+'\')">✓ Approve</button>';
+      html+='<button class="act-btn btn-reject" onclick="rejectReq(\''+r.request_ref+'\')">✕ Reject</button>';
+      html+='</div>';
     }else{
-      const actionLbl=r.status==='approved'?'Approved':'Rejected';
-      html+=`<div class="req-meta">${actionLbl} by: <b>${r.approved_by||'—'}</b> · ${r.approved_at?fmtDT(r.approved_at):''}`;
-      if(r.rejection_reason) html+=`<br><span style="color:#991B1B;">Reason: ${r.rejection_reason}</span>`;
-      html+=`</div>`;
-      html+=`<div class="req-actions">
-        <button class="act-btn btn-pdf" onclick="downloadPDF('${r.request_ref}')">⬇ Download PDF</button>
-      </div>`;
+      if(r.approved_by){
+        html+='<div class="approved-by">'+r.status.charAt(0).toUpperCase()+r.status.slice(1)+' by: '+r.approved_by+'<br>'+fmtDT(r.approved_at)+'</div>';
+        if(r.rejection_reason) html+='<div class="rejection-reason"><b>Reason:</b> '+r.rejection_reason+'</div>';
+      }
+      html+='<div class="req-actions"><button class="act-btn btn-pdf" onclick="dlPDF(\''+r.request_ref+'\')">⬇ Download PDF</button></div>';
     }
     html+='</div>';
   });
-  wrap.innerHTML=html;
+  document.getElementById('listWrap').innerHTML=html;
 }
 
-// ── APPROVE ───────────────────────────────────────────────
 async function approveReq(ref){
   const approver=prompt('Your name (for audit trail):','');
-  if(!approver||!approver.trim()){alert('Name is required for the audit trail.');return;}
+  if(!approver||!approver.trim()){alert('Name is required.');return;}
   try{
-    const approvedAt=new Date().toISOString();
-    const{error}=await sb.from('fg_tester_requests')
-      .update({status:'approved',approved_by:approver.trim(),approved_at:approvedAt})
-      .eq('request_ref',ref);
+    const now=new Date().toISOString();
+    const{error}=await sb.from('fg_tester_requests').update({status:'approved',approved_by:approver.trim(),approved_at:now}).eq('request_ref',ref);
     if(error) throw error;
-    // refresh local record
     const{data}=await sb.from('fg_tester_requests').select('*').eq('request_ref',ref).single();
-    if(data){
-      const idx=allData.findIndex(r=>r.request_ref===ref);
-      if(idx>=0) allData[idx]=data;
-      generateApprovalPDF(data);
-    }
-    updateStats();
-    renderList();
-    toast('✅ Approved — PDF downloading');
+    if(data){const i=allData.findIndex(r=>r.request_ref===ref);if(i>=0)allData[i]=data;generatePDF(data);}
+    render();toast('✅ Approved — PDF downloading');
   }catch(e){alert('Error: '+e.message);}
 }
 
-// ── REJECT ────────────────────────────────────────────────
 async function rejectReq(ref){
   const approver=prompt('Your name (for audit trail):','');
-  if(!approver||!approver.trim()){alert('Name is required for the audit trail.');return;}
+  if(!approver||!approver.trim()){alert('Name is required.');return;}
   const reason=prompt('Rejection reason:','');
   if(!reason||!reason.trim()){alert('Rejection reason is required.');return;}
   try{
-    const rejectedAt=new Date().toISOString();
-    const{error}=await sb.from('fg_tester_requests')
-      .update({status:'rejected',approved_by:approver.trim(),approved_at:rejectedAt,rejection_reason:reason.trim()})
-      .eq('request_ref',ref);
+    const now=new Date().toISOString();
+    const{error}=await sb.from('fg_tester_requests').update({status:'rejected',approved_by:approver.trim(),approved_at:now,rejection_reason:reason.trim()}).eq('request_ref',ref);
     if(error) throw error;
     const{data}=await sb.from('fg_tester_requests').select('*').eq('request_ref',ref).single();
-    if(data){
-      const idx=allData.findIndex(r=>r.request_ref===ref);
-      if(idx>=0) allData[idx]=data;
-      generateApprovalPDF(data);
-    }
-    updateStats();
-    renderList();
-    toast('❌ Rejected — PDF downloading');
+    if(data){const i=allData.findIndex(r=>r.request_ref===ref);if(i>=0)allData[i]=data;generatePDF(data);}
+    render();toast('❌ Rejected — PDF downloading');
   }catch(e){alert('Error: '+e.message);}
 }
 
-// ── RE-DOWNLOAD PDF for already-processed requests ────────
-function downloadPDF(ref){
-  const rec=allData.find(r=>r.request_ref===ref);
-  if(rec) generateApprovalPDF(rec);
-}
+function dlPDF(ref){const rec=allData.find(r=>r.request_ref===ref);if(rec)generatePDF(rec);}
 
-// ── PDF GENERATION ────────────────────────────────────────
-function generateApprovalPDF(rec){
+function generatePDF(rec){
   const isApproved=rec.status==='approved';
   const sc=isApproved?'#10B981':'#EF4444';
   const sbg=isApproved?'#D1FAE5':'#FEE2E2';
-  const itemRows=(rec.items||[]).map((it,i)=>
-    `<tr style="border-bottom:1px solid #F0EDE6;">
-      <td style="padding:8px 12px;color:#888;">${i+1}</td>
-      <td style="padding:8px 12px;">${it.product||'—'}</td>
-      <td style="padding:8px 12px;text-align:center;font-weight:700;">${it.qty}</td>
-    </tr>`).join('');
+  const itemRows=(rec.items||[]).map((it,i)=>`<tr style="border-bottom:1px solid #F0EDE6;"><td style="padding:8px 12px;color:#888;">${i+1}</td><td style="padding:8px 12px;">${it.product||'—'}</td><td style="padding:8px 12px;text-align:center;font-weight:700;">${it.qty}</td></tr>`).join('');
   const totalQty=(rec.items||[]).reduce((s,i)=>s+(i.qty||0),0);
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>FG ${rec.status.toUpperCase()} ${rec.request_ref}</title>
@@ -418,24 +325,19 @@ function generateApprovalPDF(rec){
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .fi label{display:block;font-size:9px;color:#999;text-transform:uppercase;margin-bottom:2px;}
   .fi span{font-size:13px;font-weight:600;}
-  table{width:100%;border-collapse:collapse;}
-  th{background:#F5EDD8;color:#7A6525;padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;border-bottom:2px solid #C9A84C;}
+  table{width:100%;border-collapse:collapse;}th{background:#F5EDD8;color:#7A6525;padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;border-bottom:2px solid #C9A84C;}
   td{font-size:12px;}tfoot td{background:#F0EDE6;font-weight:700;}
   .foot{margin-top:20px;padding-top:14px;border-top:2px solid #E8E4DC;display:flex;justify-content:space-between;font-size:10px;color:#888;}
   @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>
-  <div class="hdr">
-    <div class="hdr-l"><h1>EMIRATES PRIDE</h1><p>FG to Tester Request — ${isApproved?'Approval':'Rejection'} Copy</p></div>
-    <div class="hdr-r"><div class="ref">${rec.request_ref}</div><div class="badge">${isApproved?'✓ APPROVED':'✕ REJECTED'}</div></div>
-  </div>
+  <div class="hdr"><div class="hdr-l"><h1>EMIRATES PRIDE</h1><p>FG to Tester Request — ${isApproved?'Approval':'Rejection'} Copy</p></div>
+  <div class="hdr-r"><div class="ref">${rec.request_ref}</div><div class="badge">${isApproved?'✓ APPROVED':'✕ REJECTED'}</div></div></div>
   <div class="body">
-    <div class="action-box">
-      <div class="action-title">${isApproved?'✓ Approved':'✕ Rejected'} by Manager</div>
-      <div class="grid">
-        <div class="fi"><label>${isApproved?'Approved':'Rejected'} By</label><span>${rec.approved_by||'—'}</span></div>
-        <div class="fi"><label>${isApproved?'Approval':'Rejection'} Date</label><span>${rec.approved_at?fmtDate(rec.approved_at):'—'}</span></div>
-        ${!isApproved&&rec.rejection_reason?`<div class="fi" style="grid-column:1/-1;"><label>Reason for Rejection</label><span style="color:#991B1B;">${rec.rejection_reason}</span></div>`:''}
-      </div>
-    </div>
+    <div class="action-box"><div class="action-title">${isApproved?'✓ Approved':'✕ Rejected'} by Manager</div>
+    <div class="grid">
+      <div class="fi"><label>${isApproved?'Approved':'Rejected'} By</label><span>${rec.approved_by||'—'}</span></div>
+      <div class="fi"><label>${isApproved?'Approval':'Rejection'} Date</label><span>${rec.approved_at?fmtDate(rec.approved_at):'—'}</span></div>
+      ${!isApproved&&rec.rejection_reason?`<div class="fi" style="grid-column:1/-1;"><label>Reason for Rejection</label><span style="color:#991B1B;">${rec.rejection_reason}</span></div>`:''}
+    </div></div>
     <div class="sec"><div class="sec-title">Request Details</div><div class="grid">
       <div class="fi"><label>Date Submitted</label><span>${fmtDate(rec.submitted_at)}</span></div>
       <div class="fi"><label>Store</label><span>${(rec.store_name||'').split('|')[0].trim()}</span></div>
@@ -448,36 +350,18 @@ function generateApprovalPDF(rec){
       <tfoot><tr><td colspan="2" style="padding:8px 12px;text-align:right;">Total Units:</td><td style="padding:8px 12px;text-align:center;">${totalQty}</td></tr></tfoot>
       </table></div>
     ${rec.remarks?`<div class="sec"><div class="sec-title">Remarks / ملاحظات</div><p style="font-size:13px;color:#555;margin-top:4px;">${rec.remarks}</p></div>`:''}
-    <div class="foot">
-      <span>Generated: ${fmtDT(new Date())}</span>
-      <span>Emirates Pride Perfumes — Internal Document</span>
-    </div>
+    <div class="foot"><span>Generated: ${fmtDT(new Date())}</span><span>Emirates Pride Perfumes — Internal Document</span></div>
   </div></body></html>`;
-  openPrint(html);
-}
-
-function openPrint(html){
   const w=window.open('','_blank','width=800,height=900');
-  if(!w){alert('Allow popups to download the PDF.');return;}
-  w.document.write(html);
-  w.document.close();
-  w.focus();
-  setTimeout(()=>{w.print();},600);
+  if(!w){alert('Please allow popups to download the PDF.');return;}
+  w.document.write(html);w.document.close();w.focus();
+  setTimeout(()=>w.print(),600);
 }
 
-// ── HELPERS ───────────────────────────────────────────────
 function fmtDate(d){return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});}
 function fmtDT(d){return new Date(d).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}
-
-let _toastT=null;
-function toast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg;el.classList.add('show');
-  clearTimeout(_toastT);_toastT=setTimeout(()=>el.classList.remove('show'),3000);
-}
-
-// Keyboard shortcut: Enter on password field
-document.getElementById('loginPwd').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+let _tt=null;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3000);}
 </script>
 </body>
 </html>
