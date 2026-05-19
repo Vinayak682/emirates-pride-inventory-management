@@ -3030,16 +3030,23 @@ const STORES=[
   {code:'AL004', name:'Jimi Mall Shop',               city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2205'},
   {code:'AL006', name:'Makhani Zakhar Mall Shop',     city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2206'},
   {code:'MAK001',name:'Makhani Zakhar Mall ASL',      city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2207'},
-  {code:'FJ001A',name:'Fujairah City Centre ASL',     city:'Fujairah',  region:'Fujairah',   mgr:'Mohamed Hessin', pin:'5502'},
-  {code:'DX001', name:'Dubai Mall Shop',              city:'Dubai',     region:'Dubai',      mgr:'Mohammed Elmatloub', pin:'3301'},
-  {code:'DX004', name:'Mall of the Emirates Kiosk',   city:'Dubai',     region:'Dubai',      mgr:'Mohammed Elmatloub', pin:'3302'},
-  {code:'DX005', name:'Mirdif City Centre Kiosk',     city:'Dubai',     region:'Dubai',      mgr:'Mohammed Elmatloub', pin:'3303'},
-  {code:'DX006', name:'Dubai Hills Mall Shop',        city:'Dubai',     region:'Dubai',      mgr:'Mohammed Elmatloub', pin:'3304'},
+  {code:'DX001', name:'Dubai Mall Shop',              city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh', pin:'3301'},
+  {code:'DX004', name:'Mall of the Emirates Kiosk',   city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh', pin:'3302'},
+  {code:'DX005', name:'Mirdif City Centre Kiosk',     city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh', pin:'3303'},
+  {code:'DX006', name:'Dubai Hills Mall Shop',        city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh', pin:'3304'},
   {code:'RK001', name:'Manar Mall Shop',              city:'Ras Al Khaimah', region:'RAK',   mgr:'Mohammed Elmatloub', pin:'4401'},
   {code:'RK002', name:'Manar Mall Kiosk',             city:'Ras Al Khaimah', region:'RAK',   mgr:'Mohammed Elmatloub', pin:'4402'},
   {code:'FJ001', name:'Fujairah City Centre Kiosk',   city:'Fujairah',  region:'Fujairah',   mgr:'Mohammed Elmatloub', pin:'5501'},
+  {code:'FJ001A',name:'Fujairah City Centre ASL',     city:'Fujairah',  region:'Fujairah',   mgr:'Mohammed Elmatloub', pin:'5502'},
   {code:'SH001', name:'Zahia City Centre Kiosk',      city:'Sharjah',   region:'Sharjah',    mgr:'Mohammed Elmatloub', pin:'6601'},
   {code:'AJ001', name:'Ajman City Centre Kiosk',      city:'Ajman',     region:'Ajman',      mgr:'Mohammed Elmatloub', pin:'7701'},
+  // ── Area Manager logins ───────────────────────────────────────
+  {code:'AM_HESSIN', name:'Area Manager — Mohamed Hessin',         city:'Head Office', region:'AM', mgr:'', pin:'1000',
+   amStores:['A0001','A0002','BAS001','A0003','A0004','A0005','A0009','A0007','A0008','YMK001','AL001','AL002','AL003','BAW001','AL004','AL006','MAK001']},
+  {code:'AM_IMAD',   name:'Area Manager — Mohammed Imad',          city:'Head Office', region:'AM', mgr:'', pin:'3000',
+   amStores:['DX001','DX004','DX005','DX006']},
+  {code:'AM_ELMAT',  name:'Area Manager — Mohammed Elmatloub',     city:'Head Office', region:'AM', mgr:'', pin:'4000',
+   amStores:['RK001','RK002','SH001','AJ001','FJ001','FJ001A']},
   {code:'MGR',   name:'Manager (All Access)',          city:'Head Office',region:'HQ',        mgr:'',                   pin:'9999'},
   {code:'WH001', name:'Warehouse',                    city:'JAFZA',      region:'HQ',        mgr:'',                   pin:'8888'},
 ];
@@ -3347,13 +3354,14 @@ function bal(store,day,code){
 function buildStoreSelect(){
   const sel=document.getElementById('storeSelect');
   sel.innerHTML='<option value="">— Select your store —</option>';
-  const mgrs=[...new Set(STORES.filter(s=>s.code!=='MGR').map(s=>s.mgr))];
+  const regularStores=STORES.filter(s=>s.code!=='MGR'&&s.code!=='WH001'&&!s.code.startsWith('AM_'));
+  const mgrs=[...new Set(regularStores.map(s=>s.mgr))];
   mgrs.forEach(mgr=>{
-    const regions=[...new Set(STORES.filter(s=>s.mgr===mgr&&s.code!=='MGR').map(s=>s.region))];
+    const regions=[...new Set(regularStores.filter(s=>s.mgr===mgr).map(s=>s.region))];
     regions.forEach(region=>{
       const og=document.createElement('optgroup');
       og.label='▸ '+region+' ('+mgr.split(' ').pop()+')';
-      STORES.filter(s=>s.mgr===mgr&&s.region===region&&s.code!=='MGR').forEach(s=>{
+      regularStores.filter(s=>s.mgr===mgr&&s.region===region).forEach(s=>{
         const o=document.createElement('option');
         o.value=s.code; o.textContent=s.name+' ['+s.code+']';
         og.appendChild(o);
@@ -3361,6 +3369,13 @@ function buildStoreSelect(){
       sel.appendChild(og);
     });
   });
+  const ogAM=document.createElement('optgroup'); ogAM.label='── Area Managers ──';
+  STORES.filter(s=>s.code.startsWith('AM_')).forEach(s=>{
+    const o=document.createElement('option');
+    o.value=s.code; o.textContent=s.name;
+    ogAM.appendChild(o);
+  });
+  sel.appendChild(ogAM);
   const og2=document.createElement('optgroup'); og2.label='── Head Office ──';
   const o2=document.createElement('option'); o2.value='MGR'; o2.textContent='Manager (All Access)';
   og2.appendChild(o2);
@@ -3409,6 +3424,28 @@ function doLogin(){
   app.style.display='flex';
   document.getElementById('topStore').textContent=store.name;
   buildSpSkuSel();
+
+  // ── AREA MANAGER LOGIN → same as MGR but filtered to AM's stores
+  if(store.code.startsWith('AM_')){
+    isAmSession=true; isMgrSession=true;
+    amManagedStores=store.amStores||[];
+    startSync(store.code);
+    setTimeout(()=>{
+      const tb=document.querySelector('.app-topbar');
+      if(tb&&!document.getElementById('amDashBtn')){
+        const btn=document.createElement('button');
+        btn.id='amDashBtn';
+        btn.textContent='📊 My Stores Dashboard';
+        btn.style.cssText='background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.28);color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:600;letter-spacing:0.5px;';
+        btn.onclick=openMgrDashboard;
+        const logoutBtn=tb.querySelector('.top-btn.logout');
+        if(logoutBtn) tb.insertBefore(btn,logoutBtn);
+      }
+      openMgrDashboard();
+    },1000);
+    return;
+  }
+
   // startSync shows loading overlay, loads server data, then rebuilds grid
   startSync(store.code);
   // If MGR login — show manager dashboard button in top bar
@@ -3480,7 +3517,8 @@ document.addEventListener('webkitfullscreenchange',()=>{
 });
 
 function doLogout(){
-  mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;isMgrSession=false;
+  mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;
+  isMgrSession=false; isAmSession=false; amManagedStores=[];
   me=null;pinBuf='';pc();
   document.getElementById('storeSelect').value='';
   document.getElementById('loginErr').textContent='';
@@ -3489,11 +3527,13 @@ function doLogout(){
   document.getElementById('appShell').style.display='none';
   document.getElementById('dashPanel').style.display='none';
   document.getElementById('whPanel').style.display='none';
-  // Hide MGR-only dashboard buttons
+  // Hide role-specific dashboard buttons
   const mgrDashBtn=document.getElementById('mgrDashBtn');
   if(mgrDashBtn) mgrDashBtn.remove();
   const dpDashBtn=document.getElementById('dpDashBtn');
   if(dpDashBtn) dpDashBtn.remove();
+  const amDashBtn=document.getElementById('amDashBtn');
+  if(amDashBtn) amDashBtn.remove();
 }
 
 // ── DAY TABS ──
@@ -4078,6 +4118,8 @@ let mgrOverrideActive=false;
 let mgrOverrideDay=null;
 let mgrOverrideStore=null;
 let isMgrSession=false; // true when MGR (PIN 9999) is the logged-in session — bypasses ALL locks
+let isAmSession=false;  // true when an Area Manager login is active
+let amManagedStores=[]; // store codes visible to the current AM
 // Transfer movement log: {id, ts, fromStore, toStore, prodCode, qty, note, day}
 // Stored in db.transferLog array
 function getTransferLog(){
@@ -4170,7 +4212,7 @@ function renderProductMode(body){
     return;
   }
 
-  const allStores=STORES.filter(s=>s.code!=='MGR');
+  const allStores=STORES.filter(s=>s.code!=='MGR'&&s.code!=='WH001'&&!s.code.startsWith('AM_'));
   const rows=allStores.map(store=>{
     const b=bal(store.code,curDay,prod.code);
     return {store,b,isMine:!!(me&&store.code===me.code)};
@@ -6707,8 +6749,8 @@ async function _sbLoadAllStoresCells() {
 function closeMgrDashboard(){
   const panel=document.getElementById('mgrDashPanel');
   if(panel) panel.style.display='none';
-  // If MGR session, go back to login screen (MGR has no real stock grid)
-  if(isMgrSession){
+  // MGR and AM have no real stock grid — closing dashboard returns to login
+  if(isMgrSession||isAmSession){
     doLogout();
   }
 }
@@ -7900,7 +7942,7 @@ function renderDPInventory(){
   }
   
   // Build store selector
-  const allStores=STORES.filter(s=>s.code!=='MGR').sort((a,b)=>a.name.localeCompare(b.name));
+  const allStores=STORES.filter(s=>s.code!=='MGR'&&s.code!=='WH001'&&!s.code.startsWith('AM_')).sort((a,b)=>a.name.localeCompare(b.name));
   const selectedStore=window._dpInvStore||allStores[0].code;
   
   // Get benchmarks for selected store
@@ -8709,7 +8751,11 @@ function renderMgrDashboard(){
   const sm=db._mgrSummary||{soldMap:{},lockSet:{},finSet:{},todayStr:'',loadedAt:null};
 
   // ── Build per-store data ──────────────────────────────────────
-  const allStores=STORES.filter(s=>s.code!=='MGR');
+  const allStores=STORES.filter(s=>{
+    if(s.code==='MGR'||s.code==='WH001'||s.code.startsWith('AM_')) return false;
+    if(isAmSession) return amManagedStores.includes(s.code);
+    return true;
+  });
   const todayStr=sm.todayStr||_localDateStr(new Date());
 
   // Generate last 15 date strings
@@ -8974,7 +9020,7 @@ function renderMgrDashboard(){
     <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-mid);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">View / Edit a Specific Store — Full Access, No Lock Restrictions</div>
     <div style="display:flex;gap:8px;">
       <select id="mgrStoreSelect" style="flex:1;background:#FFFFFF;border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-family:var(--f-body);font-size:13px;color:var(--ink);outline:none;">
-        ${STORES.filter(s=>s.code!=='MGR').map(s=>`<option value="${s.code}">${s.name} (${s.city})</option>`).join('')}
+        ${STORES.filter(s=>s.code!=='MGR'&&s.code!=='WH001'&&!s.code.startsWith('AM_')).map(s=>`<option value="${s.code}">${s.name} (${s.city})</option>`).join('')}
       </select>
       <button onclick="mgrSwitchToStore()" style="background:linear-gradient(135deg,var(--gold-dark),var(--gold));border:none;border-radius:7px;color:#FFFFFF;font-family:var(--f-body);font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer;">
         Open →
@@ -9001,7 +9047,7 @@ function mgrExportAllStocksCSV(){
   rows.push(['Date:', todayStr, 'Generated:', new Date().toLocaleString('en-GB')]);
   rows.push([]);
   rows.push(['Store Code','Store Name','City','Region','Manager','Locked Today','Today Sales (units)']);
-  STORES.filter(s=>s.code!=='MGR').forEach(s=>{
+  STORES.filter(s=>s.code!=='MGR'&&s.code!=='WH001'&&!s.code.startsWith('AM_')).forEach(s=>{
     const sold=sm.soldMap[s.code+'_'+todayStr]||0;
     const locked=!!(sm.lockSet[s.code+'_'+todayStr]);
     rows.push([s.code,s.name,s.city,s.region,s.mgr,locked?'YES':'NO',sold]);
@@ -9023,7 +9069,7 @@ function mgrExportLockReportCSV(){
   days.forEach(d=>header.push(d.label));
   header.push('Days Pending');
   rows.push(header);
-  STORES.filter(s=>s.code!=='MGR').forEach(s=>{
+  STORES.filter(s=>s.code!=='MGR'&&s.code!=='WH001'&&!s.code.startsWith('AM_')).forEach(s=>{
     const row=[s.code,s.name,s.city,s.mgr];
     let pending=0;
     days.forEach(d=>{
@@ -9053,7 +9099,7 @@ function mgrExportFinanceReportCSV(){
   days.forEach(d=>header.push(d.label));
   header.push('Days Pending');
   rows.push(header);
-  STORES.filter(s=>s.code!=='MGR').forEach(s=>{
+  STORES.filter(s=>s.code!=='MGR'&&s.code!=='WH001'&&!s.code.startsWith('AM_')).forEach(s=>{
     const row=[s.code,s.name,s.city,s.mgr];
     let pending=0;
     days.forEach(d=>{
@@ -9081,7 +9127,7 @@ function mgrExportSalesSummaryCSV(){
   days.forEach(d=>header.push(d.label+' Sales'));
   header.push('6-Day Total');
   rows.push(header);
-  STORES.filter(s=>s.code!=='MGR').forEach(s=>{
+  STORES.filter(s=>s.code!=='MGR'&&s.code!=='WH001'&&!s.code.startsWith('AM_')).forEach(s=>{
     const row=[s.code,s.name,s.city,s.mgr];
     let total=0;
     days.forEach(d=>{const v=sm.soldMap[s.code+'_'+d.str]||0;row.push(v);total+=v;});
@@ -9092,7 +9138,7 @@ function mgrExportSalesSummaryCSV(){
   const totRow=['','ALL STORES','',''];
   let grand=0;
   days.forEach(d=>{
-    const v=STORES.filter(s=>s.code!=='MGR').reduce((a,s)=>a+(sm.soldMap[s.code+'_'+d.str]||0),0);
+    const v=STORES.filter(s=>s.code!=='MGR'&&s.code!=='WH001'&&!s.code.startsWith('AM_')).reduce((a,s)=>a+(sm.soldMap[s.code+'_'+d.str]||0),0);
     totRow.push(v); grand+=v;
   });
   totRow.push(grand);
