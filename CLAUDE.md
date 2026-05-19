@@ -250,6 +250,44 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 
 ---
 
+### Session — 19 May 2026 (Session 8 — Executive Login Redesign + Training Guide v9)
+**Files changed**: `stock-register.html`, `training-guide.html`
+**Commit**: `f2a37c2` → branch `claude/silly-varahamihira-2c8353` (pending merge to main)
+
+#### What was done:
+
+**1. Login Screen — Full Executive Dark Redesign**
+- Requested because the existing login didn't meet the standard for MDs, CEOs, CFOs, Board of Directors
+- Background: multi-layer radial gradients (deep `#060402` + atmospheric gold glow from top, accent glows at bottom corners) + diagonal texture overlay
+- Gold hairline across top of full screen (CSS `::after`)
+- 28 floating gold particles (JS-injected `.lp` divs, CSS `lp-rise` keyframe animation)
+- Login card: glass morphism (`rgba(10,7,3,0.84)` + `backdrop-filter:blur(24px)`) with multi-layer `box-shadow` glow + inner gold shimmer hairline (`::before`)
+- `EMIRATES PRIDE` wordmark: 26px, 7px letter-spacing, animated gold gradient shimmer (`go-shimmer` keyframe)
+- `فخـر الإمارات` Arabic line: `rgba(201,168,76,0.50)` muted gold
+- New tagline: `INTEGRATED OPERATIONS PLATFORM` in 7.5px ultra-light gold uppercase
+- PIN dots: 50×50px, gold glow border + inner box-shadow when filled
+- PIN keys: glass background, hover gold tint, press scale + glow animation
+- ENTER button: animated 200% gold gradient shimmer + lift-on-hover shadow
+- S&OP and Training Guide links: redesigned as glass dark cards with icon, subtitle line, hover state
+- All link styles updated from light/mixed to consistent dark executive aesthetic
+
+**2. Training Guide — Upgraded from v7 to v9 Animated**
+- Source file: `C:\Users\AMALKANDATHIL\Downloads\EP_Stock_Register_Training_Guide_v8_Animated.html`
+- Copied to `training-guide.html` in repo (replacing the simpler light v2 guide)
+- Hero stats updated: 28→35+ stores, 111→253 SKUs, v7→v9, "UAE & Oman" label
+- Nav: added 3 new sections (Sales Associate, Area Manager, Security)
+- **New: Sales Associate Quick Reference** — 5 non-negotiables, common mistakes grid (4 cards), what correct data achieves (3 outcomes)
+- **New: Area Manager Dashboard** — AM login flow (4 steps), what the AM dashboard shows (5 items), AM access boundary callout
+- **New: Security & Audit System** — 6 feature cards (PIN security, audit log, anomaly detection, email alerts, session tracking, tamper-proof records) + implications grid for staff
+- Footer badges: `35+ STORES · UAE & OMAN`, `253 ACTIVE SKUs`, `MAY 2026 · v9`, `SECURITY ENABLED`
+
+#### Design decision:
+- Login is now the only screen in the app that retains the full dark theme
+- Rest of app (app shell, panels, grid) remains on the light brand palette per existing CLAUDE.md standing instruction
+- Dark login is intentional: executive first-impression, brand cinematic entry point
+
+---
+
 ### Session — 19 May 2026 (Session 7 — PIN Security Migration: Hardcoded PINs → Supabase)
 **Files changed**: `stock-register.html`, `pin_table_setup.sql` (new), `.gitignore` (new)
 **Commit**: `785306d` → pushed to `main` → GitHub Pages live
