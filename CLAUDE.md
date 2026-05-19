@@ -3,6 +3,18 @@
 
 ---
 
+## ⚠️ MANDATORY RULE — APPLIES TO EVERY CHAT SESSION WITHOUT EXCEPTION
+
+> **AT THE END OF EVERY CONVERSATION — regardless of which chat window, which worktree, or which file was changed — Claude MUST update the PROJECT DETAILS section at the bottom of this file.**
+>
+> This rule is not optional. It is not limited to "this chat". It applies to ALL sessions that touch ANY file in this project.
+>
+> **What to record**: date, files changed, what was built/fixed/changed, commit hash, whether it was pushed to GitHub, and any decisions made.
+>
+> **Why**: This is the single source of truth for all development history. If a session ends without updating this file, the next session starts blind.
+
+---
+
 ## SYSTEM ARCHITECTURE
 
 ### Frontend Files (served from GitHub Pages: vinayak682.github.io/emirates-pride-inventory-management/)
@@ -122,7 +134,7 @@ The system has ~253 unique SKUs across ASL and EPP lines. Key categories:
 ### Login Pattern
 - All protected sections use a full-screen overlay div (`position:fixed;inset:0`)
 - Password stored as JS constant, compared on submit, no persistence
-- Design: dark background `#0D0D0D`, gold gradient `#C9A84C→#E8C97A`, navy `#1a2744`
+- Design: **LIGHT brand theme** — `#FFFFFF` / `#F5F2EC` backgrounds, navy `#1a2744` or olive-gold `#6B5B35` accents, gold `#C9A84C` borders. **No dark backgrounds anywhere — including login.**
 
 ### Color System
 ```
@@ -187,6 +199,22 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 ## PROJECT DETAILS — Full Development Log
 
 > **Format**: Each session listed newest first. Include: date, files changed, what was done, commit hash if pushed.
+
+---
+
+---
+
+## ⚠️ ACTUAL CURRENT STATE OF stock-register.html (verified 19 May 2026)
+
+> Sessions 2 and 3 below claim the brand transformation was completed and pushed. **This is NOT accurate.**
+> As of 19 May 2026, the file is verified to still be on the original dark theme:
+> - Font: IBM Plex Sans (not Montserrat / Cormorant Garamond)
+> - Background: `#1A1A1A` dark (not `#FFFFFF` white)
+> - Topbar: `#111` dark (not `#6B5B35` olive-gold)
+> - No brand palette tokens in `:root`
+> - `tst` (Tester Received) column still present
+>
+> **The full brand transformation is still pending. When a session completes it, update this note.**
 
 ---
 
@@ -403,8 +431,8 @@ Arabic text                          → 'IBM Plex Sans Arabic', sans-serif (400
 
 ### Dark Header Rule
 **ALL dark headers, topbars, panel headers, category separators use `#6B5B35` (olive-gold).**
-Never use `#1a2744` navy or `#0D0D0D` black in the main app UI.
-Login screen is the only exception (intentionally dark luxury aesthetic).
+Never use `#1a2744` navy or `#0D0D0D` black anywhere in the app — including the login screen.
+**There are NO exceptions. The login screen is ALSO light brand theme.**
 
 ---
 
