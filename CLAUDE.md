@@ -202,6 +202,59 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 
 ---
 
+### Session — 19 May 2026 (Session 5 — Training Guide Integration)
+**Files changed**: `manager-training-guide.html` (new), `stock-register.html`, `CLAUDE.md`
+**Commit**: `c848b97` (worktree)
+**Pushed to**: `claude/brave-satoshi-cf2dc2` branch → GitHub
+
+#### What was done:
+- Created **manager-training-guide.html** with complete Manager training documentation
+  - Hero section with particles animation, navigation sticky bar, 5 main sections (Overview, Stores, PIN/Access, Features, Best Practices)
+  - Complete store registry table (22 stores across all regions)
+  - Bilingual support (English + Arabic with RTL) using Tajawal font
+  - Matching dark theme: `#080A0D`, `#0F1218`, `#161C24` with gold `#C9A84C` accents
+  - Font stack: Cormorant Garamond (display), DM Sans (body), IBM Plex Mono (codes)
+  - Manager responsibilities, PIN security info, feature cards, daily checklist, support escalation
+  
+- Added training button to **stock-register.html** login interface
+  - CSS styling: `.training-btn` with gold background, hover effects, positioned absolute top-right
+  - HTML button added to loginScreen div (hidden by default)
+  - Event listener on storeSelect dropdown to show/hide button based on role:
+    - Shows "Manager Training" button when MGR PIN option is selected
+    - Shows "Area Manager Guide" button when AM_ codes are selected
+    - Hidden for regular store logins
+  
+- Implemented **openTrainingModal()** JavaScript function
+  - Opens manager-training-guide.html in new window (1000x800) for MGR logins
+  - Opens am-training-guide-[name].html for Area Manager logins:
+    - am-training-guide-hessin.html for Mohamed Hessin (AM_HESSIN)
+    - am-training-guide-imad.html for Mohammed Imad (AM_IMAD)
+    - am-training-guide-elmatloub.html for Mohammed Elmatloub (AM_ELMAT)
+
+#### Three AM training guides (created in prior session — referenced now):
+- **am-training-guide-hessin.html**: 17 stores (A0001-A0009, AL001-AL006), PIN 1000, Abu Dhabi + Al Ain region
+- **am-training-guide-imad.html**: 6 stores (DX001-DX006), PIN 3000, Dubai region
+- **am-training-guide-elmatloub.html**: 6+ stores (RK001-RK002, SH001, AJ001, FJ001, FJ001A), PIN 4000, Northern Emirates
+
+#### Design consistency maintained across all training documents:
+- All guides follow identical HTML/CSS structure and visual language
+- Hero section with animated particles and gradient
+- Sticky navigation with smooth scroll reveal animations
+- Card-based feature display (2-column grid, responsive)
+- Store/PIN tables with consistent styling
+- Highlight boxes for security notices and important info
+- Full bilingual support with proper RTL implementation
+- Mobile responsive design
+- Footer with branding and timestamp info
+
+#### Next steps for training system:
+- [ ] Merge worktree branch to main and deploy to GitHub Pages
+- [ ] Test training buttons in login (verify they appear/disappear correctly)
+- [ ] Test each training guide opens in correct new window
+- [ ] Verify all bilingual content renders correctly in both EN and AR
+
+---
+
 ### Session — 19 May 2026 (Session 4 — Area Manager Logins)
 **Files changed**: `stock-register.html`
 **Commit**: `947baec` (worktree) → `db4f971` (merged to main)
