@@ -202,6 +202,33 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 
 ---
 
+### Session — 19 May 2026 (Session 5 — Area Manager Login & Demand Planning Access Control)
+**Files changed**: `stock-register.html`
+**Commits**: `440d752` (worktree), `73e3bd0` (merge to main)
+**Pushed to**: `main` branch → GitHub Pages live
+
+#### What was done:
+- **Fixed Demand Planning access control** — ensured MGR-exclusive feature is hidden from AM logins
+- **Added ID to mgrDashPanel Demand Planning button** (`id="mgrDashDPBtn"`) for conditional visibility
+- **Modified `openMgrDashboard()` function** — hides Demand Planning button for AM sessions (line 6721): `if(dpBtn) dpBtn.style.display=isAmSession?'none':'block';`
+- **Modified `openDPPanel()` function** — blocks AM sessions from opening Demand Planning panel (lines 6767-6770) with guard: `if(isAmSession){ alert('...Manager only'); return; }`
+- **Verified dashboard filtering** — `renderMgrDashboard()` correctly filters stores for AM sessions based on `amManagedStores` array
+
+#### Feature Status:
+- ✅ AM logins show "My Stores Dashboard" button (filtered to their assigned stores)
+- ✅ Demand Planning button hidden from AM dashboard
+- ✅ Demand Planning panel inaccessible to AM sessions (blocked at entry point)
+- ✅ All other manager features work for AM logins (lock status, finance status, compliance tracking, store filtering)
+- ✅ MGR logins retain full access including Demand Planning
+
+#### Technical Details:
+- AM login detection: `isAmSession=true` flag set during AM login
+- Store filtering: `if(isAmSession) return amManagedStores.includes(s.code);` in dashboard filter
+- Button visibility: Conditional display check in `openMgrDashboard()` runs on every dashboard open
+- Double guard: Button hidden via CSS + entry guard on function prevents direct access attempts
+
+---
+
 ---
 
 ## ⚠️ ACTUAL CURRENT STATE OF stock-register.html (verified 19 May 2026)
