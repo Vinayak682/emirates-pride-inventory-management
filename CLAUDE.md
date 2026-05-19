@@ -250,6 +250,43 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 
 ---
 
+### Session — 19 May 2026 (Session 7 — PIN Security Migration: Hardcoded PINs → Supabase)
+**Files changed**: `stock-register.html`, `pin_table_setup.sql` (new), `.gitignore` (new)
+**Commit**: `785306d` → pushed to `main` → GitHub Pages live
+**pin_inserts.sql**: LOCAL ONLY — gitignored, never committed, must be run manually in Supabase SQL Editor
+
+#### What was done:
+- **Removed all hardcoded PINs** from `STORES` array (all 35 store entries, 3 AM entries, MGR, WH001)
+- **Removed `MGR_PIN='9999'` constant** — replaced with comment
+- **`doLogin()` made async** — now calls `_SBC.rpc('verify_store_pin', {p_code, p_pin})` instead of local comparison
+- **`submitMgrPin()` made async** — same RPC for manager override PIN
+- **Fallback handling**: if Supabase not loaded, login is blocked with clear error message
+- **Login button UX**: disabled + "Verifying…" text during async RPC call, re-enabled on success/fail
+- **Created `pin_table_setup.sql`** — creates `store_pins` table with RLS blocking anon direct reads, and `verify_store_pin()` SECURITY DEFINER RPC that returns only boolean
+- **Created `.gitignore`** — permanently blocks `pin_inserts.sql`, `*.env`, `secrets.json` from being committed
+- **pin_inserts.sql** — local-only file with all 35 store PINs, user must run in Supabase SQL Editor
+
+#### Security outcome:
+- Source code (public on GitHub) contains ZERO PIN values
+- PINs stored in Supabase `store_pins` table, protected by RLS (zero anon policies — table is invisible to anon role)
+- Only `verify_store_pin()` RPC (SECURITY DEFINER, runs as postgres) can read the table — returns true/false only
+- Even if someone has the Supabase anon key, they cannot read the PINs directly
+
+#### User action required (CRITICAL — app won't work until these are run):
+1. Open Supabase SQL Editor: https://supabase.com/dashboard/project/ncszurcrkngjcjqsowln/sql
+2. Run `pin_table_setup.sql` first (creates table + RPC)
+3. Run `pin_inserts.sql` second (populates all PINs)
+4. Verify with: `SELECT store_code FROM store_pins ORDER BY store_code;`
+
+#### Also completed in this session block (Sessions 6):
+- Created `SECURITY_INSTRUCTIONS.md` (full security reference doc)
+- Built complete security layer: session tracking, audit log, anomaly detection, email alerts (Resend)
+- Supabase Edge Function `security-alert` deployed for email alerts
+- Security dashboard panel added (MGR only, "🔐 Security Log" button)
+- All changes committed and pushed to main
+
+---
+
 ### Session — 19 May 2026 (Session 5 — Area Manager Login & Demand Planning Access Control)
 **Files changed**: `stock-register.html`
 **Commits**: `440d752` (worktree), `73e3bd0` (merge to main)
