@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emirates Pride — Stock Register Training Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --gold:#C9A84C;--gold-dark:#7A6525;--gold-bar:#6B5B35;--gold-pale:#F5F2EC;
+  --border:#E5E0D8;--ink:#1A1A1A;--ink-mid:#4A4540;--ink-light:#8A8278;
+  --f-body:'Montserrat',sans-serif;--f-serif:'Cormorant Garamond',serif;--f-mono:'IBM Plex Mono',monospace;
+}
+body{font-family:var(--f-body);color:var(--ink);background:#FAFAF8;font-size:14px;line-height:1.6;}
+a{color:var(--gold-dark);text-decoration:none;}a:hover{text-decoration:underline;}
+
+/* ── HEADER ── */
+.guide-header{background:var(--gold-bar);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.guide-brand{font-family:var(--f-serif);font-size:26px;font-weight:500;color:#FFFFFF;letter-spacing:0.3px;}
+.guide-sub{font-family:var(--f-body);font-size:11px;color:rgba(255,255,255,0.70);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;}
+.guide-badge{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:6px 16px;font-family:var(--f-mono);font-size:11px;color:#FFFFFF;letter-spacing:0.5px;}
+.gold-bar{height:3px;background:linear-gradient(90deg,var(--gold) 0%,#E8D49A 60%,transparent 100%);}
+
+/* ── LAYOUT ── */
+.guide-body{max-width:900px;margin:0 auto;padding:32px 24px 80px;}
+.guide-back{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--gold-dark);text-transform:uppercase;letter-spacing:1px;margin-bottom:28px;}
+
+/* ── TOC ── */
+.toc{background:#FFFFFF;border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:36px;}
+.toc-title{font-family:var(--f-body);font-size:10px;font-weight:700;color:var(--ink-light);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;}
+.toc-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);font-size:12px;font-weight:500;color:var(--ink-mid);transition:all 0.12s;}
+.toc-item:hover{background:var(--gold-pale);border-color:var(--gold);color:var(--gold-dark);}
+.toc-num{font-family:var(--f-mono);font-size:10px;font-weight:700;color:var(--gold-dark);min-width:18px;}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:48px;}
+.section-hdr{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--gold);}
+.section-num{font-family:var(--f-mono);font-size:11px;font-weight:700;color:#FFFFFF;background:var(--gold-bar);padding:4px 10px;border-radius:20px;letter-spacing:0.5px;}
+.section-title{font-family:var(--f-serif);font-size:22px;font-weight:600;color:var(--gold-dark);}
+.section-title-ar{font-size:14px;color:var(--ink-light);margin-left:4px;}
+
+/* ── STEPS ── */
+.step{display:flex;gap:16px;margin-bottom:16px;align-items:flex-start;}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--gold);color:#FFFFFF;font-family:var(--f-mono);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step-body{flex:1;}
+.step-title{font-weight:700;font-size:14px;color:var(--ink);margin-bottom:3px;}
+.step-title-ar{font-size:12px;color:var(--ink-light);}
+.step-desc{font-size:13px;color:var(--ink-mid);line-height:1.6;}
+
+/* ── CALLOUTS ── */
+.callout{border-radius:10px;padding:14px 18px;margin:16px 0;display:flex;gap:12px;align-items:flex-start;}
+.callout.warning{background:#FFF3E0;border-left:4px solid #E67E22;}
+.callout.important{background:#FDECEA;border-left:4px solid #C0392B;}
+.callout.tip{background:#E8F5EE;border-left:4px solid #1A6A40;}
+.callout.info{background:#EAF1F8;border-left:4px solid #1A4A7A;}
+.callout-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.callout-text{font-size:13px;line-height:1.6;color:var(--ink-mid);}
+.callout-text strong{color:var(--ink);}
+
+/* ── COLUMN TABLE ── */
+.col-table{width:100%;border-collapse:collapse;margin:16px 0;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.col-table thead th{background:var(--gold-bar);color:#FFFFFF;font-family:var(--f-body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:10px 14px;text-align:left;}
+.col-table tbody tr:nth-child(even){background:var(--gold-pale);}
+.col-table tbody tr:nth-child(odd){background:#FFFFFF;}
+.col-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top;}
+.col-table td:first-child{font-family:var(--f-mono);font-weight:700;color:var(--gold-dark);white-space:nowrap;}
+.col-table td.lbl-ar{font-size:12px;color:var(--ink-light);}
+.col-formula{font-family:var(--f-mono);font-size:12px;background:var(--gold-pale);padding:8px 14px;border-radius:6px;margin:8px 0;color:var(--gold-dark);font-weight:600;border:1px solid var(--border);}
+
+/* ── PIN TABLE ── */
+.pin-table{width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-top:12px;}
+.pin-table th{background:var(--gold-pale);font-family:var(--f-body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:9px 14px;color:var(--ink-mid);}
+.pin-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;}
+.pin-table td:nth-child(2){font-family:var(--f-mono);font-size:16px;font-weight:700;color:var(--gold-dark);letter-spacing:2px;}
+.pin-table tr:last-child td{border-bottom:none;}
+
+/* ── RULES BOX ── */
+.rules{background:#FFFFFF;border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin:16px 0;}
+.rules-title{font-size:10px;font-weight:700;color:var(--ink-light);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:12px;}
+.rules ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.rules li{display:flex;gap:10px;font-size:13px;color:var(--ink-mid);line-height:1.5;}
+.rules li::before{content:'→';color:var(--gold);font-family:var(--f-mono);font-weight:700;flex-shrink:0;margin-top:1px;}
+
+/* ── ACCESS TABLE ── */
+.access-table{width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-top:12px;}
+.access-table th{background:var(--gold-pale);padding:9px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink-mid);text-align:left;}
+.access-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;}
+.access-table tr:last-child td{border-bottom:none;}
+.tick{color:#1A6A40;font-weight:700;} .cross{color:#C0392B;} .part{color:#7A6525;}
+
+/* ── PRINT STYLES ── */
+@media print{
+  body{background:#fff;font-size:12px;}
+  .guide-back,.no-print{display:none;}
+  .section{page-break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="guide-header">
+  <div>
+    <div class="guide-brand">Emirates Pride — Stock Register</div>
+    <div class="guide-sub">Sales Associate Training Guide · دليل تدريب مندوبي المبيعات</div>
+  </div>
+  <div class="guide-badge">v2.0 · May 2026</div>
+</div>
+<div class="gold-bar"></div>
+
+<div class="guide-body">
+
+  <a class="guide-back" href="stock-register.html">← Back to Stock Register</a>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <div class="toc-title">Contents — المحتويات</div>
+    <div class="toc-grid">
+      <a href="#s1" class="toc-item"><span class="toc-num">01</span>What is the Stock Register?</a>
+      <a href="#s2" class="toc-item"><span class="toc-num">02</span>How to Log In</a>
+      <a href="#s3" class="toc-item"><span class="toc-num">03</span>Understanding the Grid</a>
+      <a href="#s4" class="toc-item"><span class="toc-num">04</span>Daily Data Entry Rules</a>
+      <a href="#s5" class="toc-item"><span class="toc-num">05</span>Recording Sales (Sold)</a>
+      <a href="#s6" class="toc-item"><span class="toc-num">06</span>Transfers Between Stores</a>
+      <a href="#s7" class="toc-item"><span class="toc-num">07</span>Testers Section</a>
+      <a href="#s8" class="toc-item"><span class="toc-num">08</span>Finance Tab</a>
+      <a href="#s9" class="toc-item"><span class="toc-num">09</span>Locking a Day</a>
+      <a href="#s10" class="toc-item"><span class="toc-num">10</span>Do's & Don'ts</a>
+    </div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="s1">
+    <div class="section-hdr">
+      <span class="section-num">01</span>
+      <div>
+        <div class="section-title">What is the Stock Register? <span class="section-title-ar">ما هو سجل المخزون؟</span></div>
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:var(--ink-mid);margin-bottom:16px;line-height:1.7;">The Emirates Pride Stock Register is the official daily inventory tracking system used by <strong>every store</strong> in the UAE, Oman, and KSA. It records every product movement — what came in, what was sold, what was transferred — and calculates the live closing balance for each SKU every day.</p>
+
+    <div class="callout info">
+      <span class="callout-icon">📱</span>
+      <div class="callout-text">The register is a <strong>web app</strong> — it runs in the browser on any phone, tablet, or PC. No app download needed. Bookmark the link: <strong>vinayak682.github.io/emirates-pride-inventory-management/stock-register.html</strong></div>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🔄</span>
+      <div class="callout-text"><strong>All data is saved automatically to the cloud</strong> (Supabase server). If your phone restarts or you close the browser, your entries are safe. The manager can see all stores' data in real time.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="s2">
+    <div class="section-hdr">
+      <span class="section-num">02</span>
+      <div><div class="section-title">How to Log In <span class="section-title-ar">كيفية تسجيل الدخول</span></div></div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Open the link <span class="step-title-ar">· افتح الرابط</span></div>
+        <div class="step-desc">Go to the stock register link. You will see the Emirates Pride login screen.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Select your store <span class="step-title-ar">· اختر متجرك</span></div>
+        <div class="step-desc">Tap the dropdown and choose your store from the list. Find your city and store name.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Enter your 4-digit PIN <span class="step-title-ar">· أدخل الرقم السري</span></div>
+        <div class="step-desc">Each store has its own unique 4-digit PIN. Enter it using the number pad. The PIN is given to you by your area manager.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">Tap LOGIN <span class="step-title-ar">· اضغط تسجيل الدخول</span></div>
+        <div class="step-desc">The register opens showing today's date tab. Your store name appears in the top bar.</div>
+      </div>
+    </div>
+
+    <div class="rules">
+      <div class="rules-title">Access Levels — مستويات الوصول</div>
+      <table class="access-table">
+        <thead><tr><th>Role</th><th>Who</th><th>Can Edit Own Data</th><th>Can See All Stores</th><th>Can Lock Days</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Store Associate</strong></td><td>Sales staff</td><td class="tick">✓ Yes</td><td class="cross">✗ No</td><td class="cross">✗ No</td></tr>
+          <tr><td><strong>Manager (MGR)</strong></td><td>Area Managers / HQ</td><td class="tick">✓ Yes</td><td class="tick">✓ Yes</td><td class="tick">✓ Yes</td></tr>
+          <tr><td><strong>Warehouse (WH)</strong></td><td>JAFZA Warehouse team</td><td class="part">WH panel only</td><td class="part">WH dispatches</td><td class="cross">✗ No</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warning">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-text"><strong>Never share your PIN with anyone.</strong> Each login is recorded. If you think your PIN is compromised, tell your area manager immediately.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="s3">
+    <div class="section-hdr">
+      <span class="section-num">03</span>
+      <div><div class="section-title">Understanding the Grid <span class="section-title-ar">فهم الجدول</span></div></div>
+    </div>
+
+    <p style="font-size:13px;color:var(--ink-mid);margin-bottom:16px;">The grid shows <strong>every product</strong> in your store on the left, and <strong>8 columns</strong> of daily stock data on the right. Each column records a different type of stock movement.</p>
+
+    <table class="col-table">
+      <thead>
+        <tr>
+          <th>Column</th>
+          <th>Arabic</th>
+          <th>Label</th>
+          <th>What to enter</th>
+          <th>Editable?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>A · OPENING</td>
+          <td class="lbl-ar">مخزون الافتتاح</td>
+          <td>Opening Stock</td>
+          <td>Stock at start of day (auto-fills from yesterday's closing)</td>
+          <td>MGR / Override only</td>
+        </tr>
+        <tr>
+          <td>GUIDE</td>
+          <td class="lbl-ar">دليل المخزون</td>
+          <td>Stock Guide</td>
+          <td>Min | Max benchmark — shows if you're under/over stocked</td>
+          <td>View only (set by demand planner)</td>
+        </tr>
+        <tr>
+          <td>B · WH</td>
+          <td class="lbl-ar">نقل من المستودع</td>
+          <td>From Warehouse</td>
+          <td>Units received from JAFZA warehouse today</td>
+          <td>✓ Yes</td>
+        </tr>
+        <tr>
+          <td>C · STORE-IN</td>
+          <td class="lbl-ar">نقل من المتجر</td>
+          <td>From Another Store</td>
+          <td>Units received from a sister store transfer</td>
+          <td>✓ Yes (via Transfer drawer)</td>
+        </tr>
+        <tr>
+          <td>D · SOLD</td>
+          <td class="lbl-ar">المبيعات</td>
+          <td>Units Sold</td>
+          <td>Total units sold to customers today</td>
+          <td>✓ Yes</td>
+        </tr>
+        <tr>
+          <td>E · TRANSFER OUT</td>
+          <td class="lbl-ar">نقل إلى متجر</td>
+          <td>Sent to Store</td>
+          <td>Units sent to another sister store today</td>
+          <td>✓ Yes (via Transfer drawer)</td>
+        </tr>
+        <tr>
+          <td>F · RETURN TO WH</td>
+          <td class="lbl-ar">إرجاع إلى المستودع</td>
+          <td>Return to Warehouse</td>
+          <td>Units returned to JAFZA warehouse (write-off / damage)</td>
+          <td>✓ Yes</td>
+        </tr>
+        <tr>
+          <td>BALANCE</td>
+          <td class="lbl-ar">الرصيد</td>
+          <td>Closing Balance</td>
+          <td><strong>Auto-calculated — do not enter manually</strong></td>
+          <td>🔒 Auto only</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="col-formula">BALANCE = A + B + C − D − E − F<br>
+    <span style="font-size:11px;color:var(--ink-light);">الرصيد = الافتتاح + المستودع + نقل وارد − المبيعات − نقل صادر − إرجاع</span></div>
+
+    <div class="callout tip">
+      <span class="callout-icon">🟢</span>
+      <div class="callout-text"><strong>Balance turns red</strong> if it goes negative (more sold/transferred than you had in stock). This is a warning — check your entries for errors.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="s4">
+    <div class="section-hdr">
+      <span class="section-num">04</span>
+      <div><div class="section-title">Daily Data Entry Rules <span class="section-title-ar">قواعد إدخال البيانات اليومية</span></div></div>
+    </div>
+
+    <div class="callout important">
+      <span class="callout-icon">🔴</span>
+      <div class="callout-text"><strong>Accuracy is everything.</strong> Wrong entries affect demand planning, replenishment orders, and your store's performance KPIs. Enter carefully — double-check before saving.</div>
+    </div>
+
+    <div class="rules">
+      <div class="rules-title">Golden Rules — القواعد الذهبية</div>
+      <ul>
+        <li>Enter data <strong>every day before closing</strong> — never leave it to accumulate</li>
+        <li><strong>Opening stock auto-fills</strong> from yesterday's closing balance — do NOT change it unless corrected by area manager</li>
+        <li>Tap a cell to open the number pad. Enter the value and tap <strong>SAVE</strong></li>
+        <li><strong>Sold = units sold to paying customers only</strong> — testers and display units are NOT sold</li>
+        <li>If you made a mistake, tap the cell again and enter the correct value. The balance recalculates automatically</li>
+        <li><strong>Do not leave a cell blank</strong> if there was actual movement — enter 0 explicitly if nothing happened</li>
+        <li>Once the area manager locks the day (<strong>🔒</strong>), you cannot edit entries without manager override</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Select today's tab <span class="step-title-ar">· اختر تبويب اليوم</span></div>
+        <div class="step-desc">The day tabs at the top show the last 5 days and the next 9 days. Today is always highlighted. Make sure you are on <strong>TODAY</strong> before entering data.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Tap the cell you want to edit <span class="step-title-ar">· اضغط على الخلية التي تريد تعديلها</span></div>
+        <div class="step-desc">A number pad appears. The current value is shown. Clear it and enter your new value.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Tap SAVE or ADD <span class="step-title-ar">· اضغط حفظ أو إضافة</span></div>
+        <div class="step-desc">The value saves instantly. The Balance column updates automatically. A green toast "✓ Added" confirms the save.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="s5">
+    <div class="section-hdr">
+      <span class="section-num">05</span>
+      <div><div class="section-title">Recording Sales — SOLD Column <span class="section-title-ar">تسجيل المبيعات — عمود المبيعات</span></div></div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Tap the red SOLD cell for the product <span class="step-title-ar">· اضغط خلية المبيعات الحمراء للمنتج</span></div>
+        <div class="step-desc">Find the product row (scroll down or look by category). Tap the red/pink SALES cell.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Enter the total units sold today <span class="step-title-ar">· أدخل إجمالي الوحدات المباعة اليوم</span></div>
+        <div class="step-desc">This is the total for the full day — not per transaction. If you sold 3 bottles of C00002 today, enter 3.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Tap SAVE <span class="step-title-ar">· اضغط حفظ</span></div>
+        <div class="step-desc">The Balance updates immediately. If it turns red (negative), check that the Opening + WH + Store-In is enough to cover the sales.</div>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-text"><strong>Do NOT include testers as sold.</strong> If a bottle was converted to a tester, record it in the <strong>Testers section</strong> below the main grid — not in the Sold column.</div>
+    </div>
+    <div class="callout warning">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-text"><strong>System alert:</strong> If you try to enter more sold units than your available stock (Opening + WH + Store-In), the system shows a ⚠ EXCEEDS STOCK warning. This does not block you — but please double-check your entry before saving.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section" id="s6">
+    <div class="section-hdr">
+      <span class="section-num">06</span>
+      <div><div class="section-title">Transfers Between Stores <span class="section-title-ar">النقل بين المتاجر</span></div></div>
+    </div>
+
+    <p style="font-size:13px;color:var(--ink-mid);margin-bottom:16px;">Transfers are tracked using a special <strong>Transfer Drawer</strong>. There are two types — transfers you <em>receive</em> and transfers you <em>send</em>.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div style="background:#E8F5EE;border:1px solid #A9DFBF;border-radius:10px;padding:16px;">
+        <div style="font-weight:700;color:#1A6A40;font-size:13px;margin-bottom:8px;">📥 RECEIVED (Store-In — Column C)</div>
+        <div style="font-size:12px;color:#2A5A2A;line-height:1.6;">Stock coming <strong>INTO your store</strong> from another store.<br>Tap the green <strong>STORE-IN</strong> cell → select the sending store → enter quantity.</div>
+      </div>
+      <div style="background:#F5EBF8;border:1px solid #D7B8EC;border-radius:10px;padding:16px;">
+        <div style="font-weight:700;color:#6A1A8B;font-size:13px;margin-bottom:8px;">📤 SENT (Transfer Out — Column E)</div>
+        <div style="font-size:12px;color:#5A1A7A;line-height:1.6;">Stock leaving <strong>your store</strong> going to another store.<br>Tap the purple <strong>TRANSFER</strong> cell → select the receiving store → enter quantity.</div>
+      </div>
+    </div>
+
+    <div class="callout important">
+      <span class="callout-icon">🔴</span>
+      <div class="callout-text"><strong>CRITICAL RULE:</strong> When you send stock to Store B, <strong>Store B must also record the Store-In</strong> on their register for the same product, same day. Both stores must record the same transfer — it's not automatic.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Tap the Transfer Out or Store-In cell <span class="step-title-ar">· اضغط خلية النقل الصادر أو الوارد</span></div>
+        <div class="step-desc">The Transfer Drawer opens showing any existing transfers for this product today.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Select the other store <span class="step-title-ar">· اختر المتجر الآخر</span></div>
+        <div class="step-desc">Choose the store you are sending to (or receiving from). The dropdown shows all stores grouped by area manager.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Enter quantity and add a note (optional) <span class="step-title-ar">· أدخل الكمية وأضف ملاحظة اختيارية</span></div>
+        <div class="step-desc">Type the quantity on the numpad. Add a remark if needed (e.g., "Driver: Ahmed"). Tap <strong>+ ADD TRANSFER</strong>.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">The cell shows the total + store name <span class="step-title-ar">· الخلية تعرض الإجمالي واسم المتجر</span></div>
+        <div class="step-desc">After saving, the Transfer cell shows the quantity and the name of the other store as a chip below it. Tap the cell again to see the full breakdown.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section" id="s7">
+    <div class="section-hdr">
+      <span class="section-num">07</span>
+      <div><div class="section-title">Testers Section <span class="section-title-ar">قسم العينات</span></div></div>
+    </div>
+
+    <p style="font-size:13px;color:var(--ink-mid);margin-bottom:16px;">The Tester Section appears below the main stock grid (scroll down). It tracks the status of every tester bottle in your store.</p>
+
+    <table class="col-table">
+      <thead><tr><th>Status</th><th>Arabic</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>🟢 ACTIVE</td><td class="lbl-ar">نشط</td><td>Tester is on display, working, accessible to customers</td></tr>
+        <tr><td>🟡 LOW</td><td class="lbl-ar">منخفض</td><td>Tester is running low — needs refill or replacement soon</td></tr>
+        <tr><td>🔴 EMPTY</td><td class="lbl-ar">فارغ</td><td>Tester bottle is empty — needs replacement immediately</td></tr>
+        <tr><td>🔵 SEALED</td><td class="lbl-ar">مختوم</td><td>Tester bottle is sealed/stored — not yet placed on display</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-text">Tap the status pill on any tester to change its condition. The system tracks how many days each tester has been active. Empty testers should be flagged for replacement as soon as possible.</div>
+    </div>
+    <div class="callout info">
+      <span class="callout-icon">📋</span>
+      <div class="callout-text">Tester-to-Full conversion requests (FG requests) are submitted separately via the <strong>FG Request Form</strong>. Ask your area manager if you need to convert a full bottle into a tester.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section" id="s8">
+    <div class="section-hdr">
+      <span class="section-num">08</span>
+      <div><div class="section-title">Finance Tab <span class="section-title-ar">تبويب المالية</span></div></div>
+    </div>
+
+    <p style="font-size:13px;color:var(--ink-mid);margin-bottom:16px;">The Finance Tab records daily cash, card, and BNPL sales figures. This is separate from the stock register and is used for daily cash reconciliation.</p>
+
+    <table class="col-table">
+      <thead><tr><th>Field</th><th>Arabic</th><th>What to enter</th></tr></thead>
+      <tbody>
+        <tr><td>Cash Sales</td><td class="lbl-ar">المبيعات النقدية</td><td>Total cash received from customers today (AED)</td></tr>
+        <tr><td>Opening Cash</td><td class="lbl-ar">رصيد الصندوق الافتتاحي</td><td>Cash float at start of day (from yesterday's closing)</td></tr>
+        <tr><td>Credit Card</td><td class="lbl-ar">بطاقة الائتمان</td><td>Total card payment amount — add one row per card terminal</td></tr>
+        <tr><td>Tabby</td><td class="lbl-ar">تابي</td><td>Total Tabby BNPL transactions amount</td></tr>
+        <tr><td>Tamara</td><td class="lbl-ar">تمارا</td><td>Total Tamara BNPL transactions amount</td></tr>
+        <tr><td>Credit Sales</td><td class="lbl-ar">مبيعات آجلة</td><td>Any sales given on credit (management approval required)</td></tr>
+        <tr><td>Director Amount</td><td class="lbl-ar">مبلغ المدير</td><td>Cash taken by director/owner from the till</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warning">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-text">The Finance tab generates a <strong>Daily Sales Report PDF</strong> that is submitted to head office. Fill it accurately — it is cross-checked against the stock register's sold quantities.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 9 -->
+  <div class="section" id="s9">
+    <div class="section-hdr">
+      <span class="section-num">09</span>
+      <div><div class="section-title">Locking a Day <span class="section-title-ar">إغلاق اليوم</span></div></div>
+    </div>
+
+    <p style="font-size:13px;color:var(--ink-mid);margin-bottom:16px;">At the end of each day, the <strong>area manager locks the day</strong> to prevent further editing. Once locked, the closing balance automatically carries over as the next day's Opening Stock.</p>
+
+    <div class="rules">
+      <div class="rules-title">What Locking Does</div>
+      <ul>
+        <li>Freezes all data for that day — no one except MGR can edit it</li>
+        <li>Auto-carries the closing balance to tomorrow's Opening Stock column</li>
+        <li>Shows a 🔒 icon on the day tab</li>
+        <li>Generates the day summary for the manager dashboard</li>
+      </ul>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">🔐</span>
+      <div class="callout-text"><strong>Manager Override:</strong> If a correction is needed after locking, the area manager can tap "Manager Override" on the locked day banner and enter their PIN to unlock editing temporarily. This is logged and audited.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 10 -->
+  <div class="section" id="s10">
+    <div class="section-hdr">
+      <span class="section-num">10</span>
+      <div><div class="section-title">Do's &amp; Don'ts <span class="section-title-ar">يجب وما لا يجب</span></div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#1A6A40;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">✓ DO — يجب</div>
+        <div class="rules">
+          <ul>
+            <li>Enter sales data <strong>before store closes every day</strong></li>
+            <li>Double-check the date tab — make sure you're on <strong>TODAY</strong></li>
+            <li>Record <strong>every product movement</strong> — WH receipts, transfers, write-offs</li>
+            <li>Communicate with the receiving store when doing transfers</li>
+            <li>Report any system errors to your area manager immediately</li>
+            <li>Keep your PIN private and secure</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#C0392B;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">✗ DO NOT — لا يجب</div>
+        <div class="rules">
+          <ul>
+            <li>Do <strong>NOT</strong> change Opening Stock without manager approval</li>
+            <li>Do <strong>NOT</strong> record tester conversions as "sold"</li>
+            <li>Do <strong>NOT</strong> leave multiple days blank and catch up later</li>
+            <li>Do <strong>NOT</strong> share your store PIN with other stores</li>
+            <li>Do <strong>NOT</strong> enter future dates — only enter data for today</li>
+            <li>Do <strong>NOT</strong> close the app mid-entry — always save first</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout important" style="margin-top:20px;">
+      <span class="callout-icon">🔴</span>
+      <div class="callout-text"><strong>The stock register is the official record.</strong> Discrepancies between the register and physical stock will be investigated. Accuracy protects you, your store, and your performance review.</div>
+    </div>
+
+    <div style="margin-top:36px;padding:20px 24px;background:var(--gold-bar);border-radius:12px;text-align:center;">
+      <div style="font-family:var(--f-serif);font-size:20px;color:#FFFFFF;margin-bottom:6px;">Emirates Pride Perfumes</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.70);letter-spacing:1.5px;text-transform:uppercase;">For support, contact your Area Manager or Demand Planning team</div>
+      <div style="margin-top:12px;font-family:var(--f-mono);font-size:11px;color:rgba(255,255,255,0.55);">training-guide.html · v2.0 · May 2026</div>
+    </div>
+  </div>
+
+</div><!-- end guide-body -->
+</body>
+</html>

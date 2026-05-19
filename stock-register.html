@@ -1782,6 +1782,15 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <span style="font-size:16px;">›</span>
     </a>
   </div>
+
+  <!-- Training Guide -->
+  <div style="margin-top:10px;width:340px;max-width:94vw;">
+    <a href="training-guide.html" target="_blank"
+      style="display:flex;align-items:center;justify-content:space-between;background:#FFFFFF;border:1px solid rgba(201,168,76,0.40);border-radius:12px;color:#6B5B35;font-size:12px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:13px 20px;cursor:pointer;text-decoration:none;font-family:inherit;">
+      <span>📖 Staff Training Guide</span>
+      <span style="font-size:16px;">›</span>
+    </a>
+  </div>
 </div>
 
 <!-- ══════════ APP ══════════ -->
@@ -2549,6 +2558,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:2px;letter-spacing:0.5px;">Manager Dashboard — All Stores</div>
     </div>
     <div style="display:flex;gap:8px;">
+      <button id="mgrDashTrainingBtn" onclick="openTrainingGuide()" style="background:linear-gradient(135deg,#6B5B35,#9A7B4F);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(107,91,53,0.25);">📖 Training Guide</button>
       <button onclick="openFGApproval()" style="background:linear-gradient(135deg,#FF6B35,#F7931E);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(255,107,53,0.25);">📦 FG Tester Requests</button>
       <button id="mgrDashDPBtn" onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.25);">📈 Demand Planning</button>
       <button onclick="openAMMinMaxPanel()" style="background:linear-gradient(135deg,#065F46,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.25);">📊 Stock Guide / Min-Max</button>
@@ -6792,6 +6802,16 @@ function finExpensePhoto(i,input){
 // MANAGER DASHBOARD — All Stores Analytics
 // ══════════════════════════════════════════════════════════════
 let mgrDashStore = null; // currently selected store in MGR view
+
+function openTrainingGuide(){
+  const guides={
+    'AM_HESSIN':'am-training-guide-hessin.html',
+    'AM_IMAD':'am-training-guide-imad.html',
+    'AM_ELMAT':'am-training-guide-elmatloub.html'
+  };
+  const url = guides[me.code] || 'training-guide.html';
+  window.open(url,'_blank');
+}
 
 async function openMgrDashboard(){
   const panel=document.getElementById('mgrDashPanel');
