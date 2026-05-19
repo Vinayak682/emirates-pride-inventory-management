@@ -2550,7 +2550,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     </div>
     <div style="display:flex;gap:8px;">
       <button onclick="openFGApproval()" style="background:linear-gradient(135deg,#FF6B35,#F7931E);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(255,107,53,0.25);">📦 FG Tester Requests</button>
-      <button onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.25);">📈 Demand Planning</button>
+      <button id="mgrDashDPBtn" onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.25);">📈 Demand Planning</button>
       <button onclick="openAMMinMaxPanel()" style="background:linear-gradient(135deg,#065F46,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.25);">📊 Stock Guide / Min-Max</button>
       <button onclick="renderMgrDashboard()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;color:var(--ink-mid);font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
       <button onclick="closeMgrDashboard()" style="background:var(--gold-dark);border:none;border-radius:6px;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
@@ -6716,6 +6716,9 @@ async function openMgrDashboard(){
   const panel=document.getElementById('mgrDashPanel');
   if(!panel) return;
   panel.style.display='flex';
+  // Hide Demand Planning button for AM sessions (MGR-only feature)
+  const dpBtn=document.getElementById('mgrDashDPBtn');
+  if(dpBtn) dpBtn.style.display=isAmSession?'none':'block';
   // Show loading state in body
   const body=document.getElementById('mgrDashBody');
   if(body) body.innerHTML='<div style="padding:40px;text-align:center;font-family:var(--f-mono);color:#555;font-size:12px;">⇅ Loading all stores data from Supabase…</div>';
@@ -6761,6 +6764,10 @@ function closeMgrDashboard(){
 let _dpBenchmarks=null;
 
 async function openDPPanel(){
+  if(isAmSession){
+    alert('Demand Planning is available to Managers only.');
+    return;
+  }
   document.getElementById('dpPanel').style.display='flex';
   document.getElementById('dpBody').innerHTML='<div style="padding:60px;text-align:center;font-family:var(--f-mono);color:#888;">⇅ Loading benchmarks from Supabase…</div>';
   await loadDPData();
