@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_in_Chrome__form_input",
+      "mcp__Claude_in_Chrome__read_page",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__read_console_messages",
+      "Bash(grep -n \"pin-table\" \"C:\\\\Users\\\\AMALKANDATHIL\\\\Downloads\\\\EP_Stock_Register_Training_Guide_v8_Animated.html\" | head -5)"
+    ]
+  }
+}

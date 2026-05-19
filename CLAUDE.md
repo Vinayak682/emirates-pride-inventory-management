@@ -202,6 +202,30 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 
 ---
 
+### Session — 19 May 2026 (Session 4 — Area Manager Logins)
+**Files changed**: `stock-register.html`
+**Commit**: `947baec` (worktree) → `db4f971` (merged to main)
+**Pushed to**: `main` branch → GitHub Pages live
+
+#### What was done:
+- Read `Area Manager details.xlsx` — found **3 area managers** (user said "3 or 4"):
+  1. **Mohamed Hessin** — Abu Dhabi + Al Ain (EPP + ASL): 17 stores — PIN `1000`
+  2. **Mohammed Imad Muwfaq Saleh** — Dubai (EPP): 4 stores — PIN `3000`
+  3. **Mohammed Elmatloub** — RAK, Sharjah, Ajman, Fujairah EPP+ASL — PIN `4000`
+- Added 3 AM entries to `STORES` array (codes `AM_HESSIN`, `AM_IMAD`, `AM_ELMAT`) each with `amStores` array
+- AM login flow: identical to MGR — opens filtered dashboard showing only their stores, logout on close
+- Fixed wrong `mgr` assignments vs Excel: DX001–DX006 corrected to Imad; FJ001A corrected to Elmatloub; removed duplicate FJ001A
+- Added `isAmSession` + `amManagedStores` globals
+- `buildStoreSelect()` — AM options in a separate "Area Managers" optgroup
+- `renderMgrDashboard()` — filters `allStores` to `amManagedStores` when `isAmSession`
+- All `STORES.filter()` calls patched to exclude `AM_*` and `WH001` codes
+
+#### Next steps for AM feature:
+- Add Oman stores to STORES and assign to Mohammed Elmatloub
+- User to confirm if a 4th area manager exists (only 3 found in Excel)
+
+---
+
 ---
 
 ## ⚠️ ACTUAL CURRENT STATE OF stock-register.html (verified 19 May 2026)

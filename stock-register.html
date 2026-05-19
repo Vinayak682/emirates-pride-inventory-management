@@ -124,6 +124,20 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   text-align:center;font-size:12px;color:#E87070;
   margin-top:10px;min-height:18px;font-family:var(--f-mono);
 }
+.training-btn{
+  position:absolute;top:20px;right:20px;
+  background:var(--gold);color:#0D0D0D;
+  border:none;padding:10px 16px;border-radius:6px;
+  font-size:12px;font-weight:700;font-family:var(--f-body);
+  letter-spacing:0.5px;text-transform:uppercase;
+  cursor:pointer;transition:all 0.2s ease;
+  display:flex;align-items:center;gap:6px;
+  z-index:10000;
+}
+.training-btn:hover{
+  background:var(--gold-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(201,168,76,0.3);
+}
+.training-btn:active{opacity:0.9;}
 
 /* ─── APP CHROME ─── */
 #appShell{display:none;flex-direction:column;height:100vh;height:100dvh;background:var(--page);overflow:hidden;}
@@ -1739,6 +1753,9 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
 <!-- ══════════ LOGIN ══════════ -->
 <div id="loginScreen">
+  <button class="training-btn" id="trainingBtn" onclick="openTrainingModal()" style="display:none;">
+    📖 Training Guide
+  </button>
   <div class="login-box">
     <div class="login-logo">
       <div class="brand-wordmark-login">
@@ -3382,6 +3399,24 @@ function buildStoreSelect(){
   const oWH=document.createElement('option'); oWH.value='WH001'; oWH.textContent='Warehouse';
   og2.appendChild(oWH);
   sel.appendChild(og2);
+
+  // Add event listener to show/hide training button
+  sel.addEventListener('change', function(){
+    const code = this.value;
+    const btn = document.getElementById('trainingBtn');
+    if(code === 'MGR'){
+      btn.style.display = 'flex';
+      btn.textContent = '📖 Manager Training';
+      btn.onclick = () => openTrainingModal('manager');
+    } else if(code.startsWith('AM_')){
+      btn.style.display = 'flex';
+      const amName = STORES.find(s=>s.code===code)?.name || 'Area Manager';
+      btn.textContent = '📖 ' + amName + ' Guide';
+      btn.onclick = () => openTrainingModal('areamanager', code);
+    } else {
+      btn.style.display = 'none';
+    }
+  });
 }
 
 function pk(k){
@@ -3396,6 +3431,27 @@ function updPin(){
     const d=document.getElementById('pd'+i);
     d.textContent=i<pinBuf.length?'●':'·';
     d.classList.toggle('filled',i<pinBuf.length);
+  }
+}
+
+function openTrainingModal(type, amCode){
+  let url='';
+  if(type==='manager'){
+    url='manager-training-guide.html';
+  } else if(type==='areamanager'){
+    const am=STORES.find(s=>s.code===amCode);
+    if(!am){return;}
+    const amLower=am.code.replace('AM_','').toLowerCase();
+    if(amLower==='hessin'){
+      url='am-training-guide-hessin.html';
+    } else if(amLower==='imad'){
+      url='am-training-guide-imad.html';
+    } else if(amLower==='elmatloub'){
+      url='am-training-guide-elmatloub.html';
+    }
+  }
+  if(url){
+    window.open(url,'training','width=1000,height=800,scrollbars=yes');
   }
 }
 
