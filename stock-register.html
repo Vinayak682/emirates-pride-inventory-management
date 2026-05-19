@@ -2552,11 +2552,48 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <button onclick="openFGApproval()" style="background:linear-gradient(135deg,#FF6B35,#F7931E);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(255,107,53,0.25);">📦 FG Tester Requests</button>
       <button id="mgrDashDPBtn" onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.25);">📈 Demand Planning</button>
       <button onclick="openAMMinMaxPanel()" style="background:linear-gradient(135deg,#065F46,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.25);">📊 Stock Guide / Min-Max</button>
+      <button onclick="openSecurityDashboard()" style="background:linear-gradient(135deg,#922B21,#C0392B);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(192,57,43,0.25);">🔐 Security Log</button>
       <button onclick="renderMgrDashboard()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;color:var(--ink-mid);font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
       <button onclick="closeMgrDashboard()" style="background:var(--gold-dark);border:none;border-radius:6px;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
     </div>
   </div>
   <div id="mgrDashBody" style="flex:1;overflow-y:auto;background:#FAFAF8;"></div>
+</div>
+
+<!-- ══════════ SECURITY AUDIT DASHBOARD ══════════ -->
+<div id="secDashPanel" style="position:fixed;inset:0;background:#F8F6F4;z-index:850;display:none;flex-direction:column;">
+
+  <!-- Header -->
+  <div style="background:#FFFFFF;border-bottom:3px solid #C0392B;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(192,57,43,0.10);">
+    <div>
+      <div style="font-family:var(--f-serif);font-size:17px;font-weight:600;color:#C0392B;letter-spacing:0.5px;">🔐 Security Audit Log</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:2px;letter-spacing:0.5px;">Every login, change, and anomaly across all stores</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <select id="secStoreFilter" onchange="renderSecurityLog()" style="font-family:var(--f-mono);font-size:11px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:#FFFFFF;color:var(--ink);cursor:pointer;">
+        <option value="">All Stores</option>
+      </select>
+      <select id="secDateFilter" onchange="renderSecurityLog()" style="font-family:var(--f-mono);font-size:11px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:#FFFFFF;color:var(--ink);cursor:pointer;">
+        <option value="today">Today</option>
+        <option value="7days">Last 7 Days</option>
+        <option value="30days">Last 30 Days</option>
+        <option value="all">All Time</option>
+      </select>
+      <label style="display:flex;align-items:center;gap:6px;font-family:var(--f-body);font-size:11px;color:#C0392B;cursor:pointer;background:#FFF0EE;border:1px solid #F5C6C2;border-radius:6px;padding:6px 12px;font-weight:600;">
+        <input type="checkbox" id="secFlaggedOnly" onchange="renderSecurityLog()" style="accent-color:#C0392B;width:14px;height:14px;">
+        🚨 Flagged Only
+      </label>
+      <button onclick="renderSecurityLog()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;color:var(--ink-mid);font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
+      <button onclick="closeSecurityDashboard()" style="background:#C0392B;border:none;border-radius:6px;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div id="secStatsBar" style="background:#FFFFFF;border-bottom:1px solid var(--border);flex-shrink:0;"></div>
+
+  <!-- Log body -->
+  <div id="secLogBody" style="flex:1;overflow-y:auto;background:#F8F6F4;padding-bottom:32px;"></div>
+
 </div>
 
 <!-- ══════════ AREA MANAGER STOCK GUIDE / MIN-MAX PANEL ══════════ -->
@@ -3405,12 +3442,20 @@ function doLogin(){
   if(!code){err.textContent='Please select your store.';return;}
   const store=STORES.find(s=>s.code===code);
   if(!store){err.textContent='Store not found.';return;}
-  if(pinBuf!==store.pin){err.textContent='Wrong PIN — try again.';pc();return;}
+  if(pinBuf!==store.pin){
+    err.textContent='Wrong PIN — try again.';
+    _secTrackFailedLogin(code);
+    pc();return;
+  }
+  _failedLoginCount[code]=0; // reset on success
   err.textContent='';
   try{ localStorage.setItem('ep_last_store_v7',code); }catch(e){}
   me=store;
   curDay=DAY_PAST;
-  
+  // Determine login type for session record
+  const _loginType = code==='MGR'?'mgr': code==='WH001'?'wh': code.startsWith('AM_')?'am':'store';
+  _secCreateSession(code, _loginType);
+
   // ── WAREHOUSE LOGIN → show warehouse panel instead of stock grid
   if(store.code==='WH001'){
     document.getElementById('loginScreen').style.display='none';
@@ -3517,6 +3562,7 @@ document.addEventListener('webkitfullscreenchange',()=>{
 });
 
 function doLogout(){
+  _secCloseSession();
   mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;
   isMgrSession=false; isAmSession=false; amManagedStores=[];
   me=null;pinBuf='';pc();
@@ -10901,12 +10947,19 @@ async function _sbGet(table, query) {
 function _qWrite(store, dayIdx, prod, field, value) {
   const date = _idx2date(dayIdx);
   const by   = me ? me.name : store;
+  // Capture old value before deduplication (for audit trail)
+  const existingQ = _syncQ.find(w => w.s===store && w.d===date && w.p===prod && w.f===field);
+  const oldVal = existingQ ? existingQ.v : (db[store]?.[dayIdx]?.[prod]?.[field] ?? 0);
   // Deduplicate: replace any existing queued write for same cell
   _syncQ = _syncQ.filter(w => !(w.s===store && w.d===date && w.p===prod && w.f===field));
   _syncQ.push({ s:store, d:date, p:prod, f:field, v:value, b:by });
   _sb_badge('saving', '⇅ ' + _syncQ.length + ' pending…');
   clearTimeout(_syncTmr);
   _syncTmr = setTimeout(_sbFlush, 600);
+  // Audit log — non-blocking, does not affect write path
+  _secQAudit('WRITE', store, 'stock_cells',
+    store+'/'+date+'/'+prod+'/'+field,
+    oldVal, value, { field, by });
 }
 async function _sbFlush() {
   if (!_syncQ.length) return;
@@ -11146,6 +11199,356 @@ window.saveFinanceData = function() {
     }
   }).catch(e => console.error('[Sync] finance:', e.message));
 };
+
+// ══════════════════════════════════════════════════════════════
+// SECURITY MODULE — Session tracking, anomaly detection, audit log
+// ══════════════════════════════════════════════════════════════
+
+let _sessionId       = null;   // UUID assigned on login, null on logout
+let _auditQ          = [];     // pending audit log entries
+let _auditFlushTmr   = null;
+let _recentWriteTs   = [];     // timestamps of recent writes (for rate detection)
+let _failedLoginCount= {};     // { store_code: count }
+let _lastAlertTs     = 0;      // ms timestamp of last WhatsApp alert sent
+
+const _SEC = {
+  MAX_WRITES_PER_MIN : 25,    // flag if > N cell edits in 60s
+  LARGE_QTY          : 100,   // flag single quantity change above this
+  OFF_HOUR_START     : 22,    // UAE 24h — 10 PM
+  OFF_HOUR_END       : 6,     // UAE 24h — 6 AM
+  FAILED_LOGIN_MAX   : 3,     // flag after N consecutive wrong PINs
+  ALERT_COOLDOWN_MS  : 5 * 60 * 1000  // 5 min between WhatsApp alerts
+};
+
+// ── Create session row on login ──────────────────────────────
+async function _secCreateSession(storeCode, loginType) {
+  if (!window._SBC) { setTimeout(() => _secCreateSession(storeCode, loginType), 800); return; }
+  try {
+    const { data } = await _SBC.from('store_sessions').insert([{
+      store_code : storeCode,
+      login_type : loginType,
+      user_agent : navigator.userAgent.slice(0, 250)
+    }]).select('session_id').single();
+    if (data && data.session_id) {
+      _sessionId = data.session_id;
+      // Log the LOGIN event
+      _secQAudit('LOGIN', storeCode, null, null, null, null,
+        { login_type: loginType, user_agent: navigator.userAgent.slice(0, 150) });
+      // Heartbeat every 5 min to keep session alive
+      setInterval(() => {
+        if (_sessionId && _SBC) {
+          _SBC.from('store_sessions')
+            .update({ last_active: new Date().toISOString() })
+            .eq('session_id', _sessionId)
+            .catch(() => {});
+        }
+      }, 5 * 60 * 1000);
+    }
+  } catch(e) { console.warn('[Sec] create session:', e.message); }
+}
+
+// ── Close session row on logout ──────────────────────────────
+async function _secCloseSession() {
+  if (!_SBC) return;
+  const sid = _sessionId;
+  _sessionId = null;
+  _recentWriteTs = [];
+  if (sid) {
+    _secQAudit('LOGOUT', me ? me.code : 'UNKNOWN', null, null, null, null, {});
+    // Flush immediately before page state resets
+    setTimeout(async () => {
+      if (_auditQ.length) await _secFlushAudit();
+      _SBC.from('store_sessions')
+        .update({ is_active: false, last_active: new Date().toISOString() })
+        .eq('session_id', sid)
+        .catch(() => {});
+    }, 100);
+  }
+}
+
+// ── Queue an audit entry + check anomalies ───────────────────
+function _secQAudit(op, storeCode, tableN, recKey, oldVal, newVal, meta) {
+  const now = new Date();
+  // Get UAE local hour for off-hours detection
+  const uaeDt  = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Dubai' }));
+  const uaeHr  = uaeDt.getHours();
+  const uaeMin = String(uaeDt.getMinutes()).padStart(2, '0');
+
+  let flagged = false, flagReason = null;
+
+  // 1. Off-hours (10 PM – 6 AM UAE)
+  if (uaeHr >= _SEC.OFF_HOUR_START || uaeHr < _SEC.OFF_HOUR_END) {
+    flagged    = true;
+    flagReason = `Off-hours activity at ${uaeHr}:${uaeMin} UAE time`;
+  }
+
+  // 2. Large quantity change
+  if (!flagged && newVal !== null && newVal !== undefined && newVal > _SEC.LARGE_QTY) {
+    flagged    = true;
+    flagReason = `Unusually large quantity entered: ${newVal} units`;
+  }
+
+  // 3. Rapid-fire writes (>25 in 60s)
+  if (!flagged && op === 'WRITE') {
+    const cutoff = Date.now() - 60000;
+    _recentWriteTs = _recentWriteTs.filter(t => t > cutoff);
+    _recentWriteTs.push(Date.now());
+    if (_recentWriteTs.length > _SEC.MAX_WRITES_PER_MIN) {
+      flagged    = true;
+      flagReason = `Rapid changes: ${_recentWriteTs.length} edits in under 1 minute`;
+    }
+  }
+
+  _auditQ.push({
+    session_id  : _sessionId,
+    store_code  : storeCode,
+    operation   : op,
+    table_name  : tableN  || null,
+    record_key  : recKey  || null,
+    old_value   : (oldVal !== undefined && oldVal !== null) ? Number(oldVal) : null,
+    new_value   : (newVal !== undefined && newVal !== null) ? Number(newVal) : null,
+    metadata    : meta    || null,
+    is_flagged  : flagged,
+    flag_reason : flagReason
+  });
+
+  clearTimeout(_auditFlushTmr);
+  _auditFlushTmr = setTimeout(_secFlushAudit, 1500);
+}
+
+// ── Flush audit queue to Supabase ────────────────────────────
+async function _secFlushAudit() {
+  if (!_SBC || !_auditQ.length) return;
+  const batch = _auditQ.splice(0, 100);
+  try {
+    await _SBC.from('audit_log').insert(batch);
+    // Send WhatsApp for any flagged entry (with cooldown)
+    const flagged = batch.filter(e => e.is_flagged);
+    if (flagged.length > 0 && Date.now() - _lastAlertTs > _SEC.ALERT_COOLDOWN_MS) {
+      _lastAlertTs = Date.now();
+      _secSendWhatsApp(flagged[0]).catch(e => console.warn('[Sec] alert:', e.message));
+    }
+  } catch(e) {
+    // Put back if Supabase is offline — will retry next time
+    _auditQ = batch.concat(_auditQ);
+  }
+}
+
+// ── Send WhatsApp alert via Edge Function ────────────────────
+async function _secSendWhatsApp(entry) {
+  await fetch(_SB_URL + '/functions/v1/security-alert', {
+    method  : 'POST',
+    headers : { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _SB_KEY },
+    body    : JSON.stringify({
+      store      : entry.store_code,
+      operation  : entry.operation,
+      flag_reason: entry.flag_reason,
+      record_key : entry.record_key,
+      session_id : entry.session_id,
+      timestamp  : new Date().toISOString()
+    })
+  });
+}
+
+// ── Track failed login attempts ──────────────────────────────
+function _secTrackFailedLogin(storeCode) {
+  _failedLoginCount[storeCode] = (_failedLoginCount[storeCode] || 0) + 1;
+  const count = _failedLoginCount[storeCode];
+  if (count >= _SEC.FAILED_LOGIN_MAX && _SBC) {
+    _SBC.from('audit_log').insert([{
+      store_code  : storeCode,
+      operation   : 'FAILED_LOGIN',
+      is_flagged  : true,
+      flag_reason : `${count} consecutive failed PIN attempts for ${storeCode}`,
+      metadata    : { attempts: count, user_agent: navigator.userAgent.slice(0, 200) }
+    }]).catch(() => {});
+    // Trigger WhatsApp immediately for brute-force attempts
+    if (Date.now() - _lastAlertTs > _SEC.ALERT_COOLDOWN_MS) {
+      _lastAlertTs = Date.now();
+      _secSendWhatsApp({
+        store_code  : storeCode,
+        operation   : 'FAILED_LOGIN',
+        flag_reason : `${count} consecutive failed PIN attempts for ${storeCode}`,
+        session_id  : null
+      }).catch(() => {});
+    }
+  }
+}
+
+// ── Security Dashboard ────────────────────────────────────────
+
+async function openSecurityDashboard() {
+  if (!isMgrSession) return;
+  const panel = document.getElementById('secDashPanel');
+  if (!panel) return;
+
+  // Populate store filter dropdown on first open
+  const sel = document.getElementById('secStoreFilter');
+  if (sel && sel.options.length <= 1) {
+    STORES
+      .filter(s => s.code !== 'MGR' && s.code !== 'WH001' && !s.code.startsWith('AM_'))
+      .forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.code; opt.textContent = s.name + ' (' + s.code + ')';
+        sel.appendChild(opt);
+      });
+  }
+
+  panel.style.display = 'flex';
+  await renderSecurityLog();
+}
+
+function closeSecurityDashboard() {
+  const panel = document.getElementById('secDashPanel');
+  if (panel) panel.style.display = 'none';
+}
+
+async function renderSecurityLog() {
+  const body     = document.getElementById('secLogBody');
+  const statsBar = document.getElementById('secStatsBar');
+  if (!body || !statsBar || !_SBC) return;
+
+  body.innerHTML = '<div style="padding:48px;text-align:center;color:var(--ink-light);font-family:var(--f-mono);font-size:12px;letter-spacing:0.5px;">Loading security log…</div>';
+
+  try {
+    const storeFilter  = document.getElementById('secStoreFilter')?.value  || '';
+    const flaggedOnly  = document.getElementById('secFlaggedOnly')?.checked || false;
+    const dateRange    = document.getElementById('secDateFilter')?.value   || 'today';
+
+    // Build date filter
+    let fromISO = null;
+    const now = new Date();
+    if (dateRange === 'today') {
+      const d = new Date(now); d.setHours(0,0,0,0); fromISO = d.toISOString();
+    } else if (dateRange === '7days') {
+      const d = new Date(now); d.setDate(d.getDate()-7); fromISO = d.toISOString();
+    } else if (dateRange === '30days') {
+      const d = new Date(now); d.setDate(d.getDate()-30); fromISO = d.toISOString();
+    }
+
+    let q = _SBC.from('audit_log').select('*').order('changed_at',{ascending:false}).limit(300);
+    if (fromISO)      q = q.gte('changed_at', fromISO);
+    if (storeFilter)  q = q.eq('store_code', storeFilter);
+    if (flaggedOnly)  q = q.eq('is_flagged', true);
+
+    const [{ data: logs, error }, { data: sessions }] = await Promise.all([
+      q,
+      _SBC.from('store_sessions').select('*').eq('is_active',true).order('login_at',{ascending:false}).limit(50)
+    ]);
+
+    if (error) { body.innerHTML = `<div style="padding:40px;text-align:center;color:#C0392B;font-family:var(--f-mono);">Error: ${error.message}</div>`; return; }
+
+    const flagCount = (logs||[]).filter(l=>l.is_flagged).length;
+    const sessCount = (sessions||[]).length;
+    const logCount  = (logs||[]).length;
+
+    // ── Stats bar ─────────────────────────────────────────────
+    statsBar.innerHTML = `
+      <div style="display:flex;border-bottom:1px solid var(--border);">
+        <div style="flex:1;padding:14px 20px;border-right:1px solid var(--border);text-align:center;">
+          <div style="font-family:var(--f-serif);font-size:24px;font-weight:600;color:var(--gold-dark);">${sessCount}</div>
+          <div style="font-family:var(--f-body);font-size:10px;color:var(--ink-light);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Active Sessions</div>
+        </div>
+        <div style="flex:1;padding:14px 20px;border-right:1px solid var(--border);text-align:center;">
+          <div style="font-family:var(--f-serif);font-size:24px;font-weight:600;color:var(--ink);">${logCount}</div>
+          <div style="font-family:var(--f-body);font-size:10px;color:var(--ink-light);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Events Shown</div>
+        </div>
+        <div style="flex:1;padding:14px 20px;text-align:center;">
+          <div style="font-family:var(--f-serif);font-size:24px;font-weight:600;color:${flagCount>0?'#C0392B':'#1A6A40'};">${flagCount}</div>
+          <div style="font-family:var(--f-body);font-size:10px;color:var(--ink-light);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">${flagCount>0?'🚨 Flags':'✓ No Flags'}</div>
+        </div>
+      </div>`;
+
+    if (!logCount && !sessCount) {
+      body.innerHTML = '<div style="padding:60px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:13px;">No activity found for the selected filters.</div>';
+      return;
+    }
+
+    // ── Active sessions ───────────────────────────────────────
+    let sessHtml = '';
+    if (sessions && sessions.length > 0) {
+      const chips = sessions.map(s => {
+        const isIOS = (s.user_agent||'').includes('iPad')||(s.user_agent||'').includes('iPhone');
+        const loginT = new Date(s.login_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Dubai'});
+        const lastT  = new Date(s.last_active).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Dubai'});
+        const typeLabel = {store:'Store',mgr:'Manager',am:'Area Mgr',wh:'Warehouse'}[s.login_type]||s.login_type;
+        return `<div style="background:#FFFFFF;border:1px solid var(--border);border-radius:8px;padding:8px 14px;display:inline-flex;align-items:center;gap:8px;">
+          <span style="font-size:14px;">${isIOS?'📱':'💻'}</span>
+          <div>
+            <div style="font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--gold-dark);">${s.store_code}</div>
+            <div style="font-family:var(--f-body);font-size:10px;color:var(--ink-light);">${typeLabel} · in ${loginT} · active ${lastT}</div>
+          </div>
+        </div>`;
+      }).join('');
+      sessHtml = `
+        <div style="padding:16px 20px 6px;">
+          <div style="font-family:var(--f-body);font-size:10px;font-weight:700;color:var(--ink-mid);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;">Who is logged in right now</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">${chips}</div>
+        </div>`;
+    }
+
+    // ── Log rows ──────────────────────────────────────────────
+    const rows = (logs||[]).map(l => {
+      const dt = new Date(l.changed_at);
+      const tStr = dt.toLocaleString('en-GB',{timeZone:'Asia/Dubai',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      const bg   = l.is_flagged ? 'rgba(192,57,43,0.05)' : '';
+      const bL   = l.is_flagged ? 'border-left:3px solid #C0392B;' : 'border-left:3px solid transparent;';
+      const ua   = (l.metadata?.user_agent||l.metadata?.source||'');
+      const dev  = ua.includes('iPad')||ua.includes('iPhone') ? '📱 iPad' :
+                   ua.includes('Android') ? '📱 Android' :
+                   ua.includes('server_trigger') ? '⚙️ Server' :
+                   ua ? '💻 Desktop' : '—';
+      const opColor = {LOGIN:'#1A6A40',LOGOUT:'#7A6525',FAILED_LOGIN:'#C0392B',WRITE:'var(--ink-mid)',LOCK:'#1A5276',APPROVE:'#6B21A8'}[l.operation]||'var(--ink-mid)';
+      let changeHtml = '—';
+      if (l.old_value !== null && l.new_value !== null) {
+        const dir = l.new_value > l.old_value ? 'color:#C0392B;' : l.new_value < l.old_value ? 'color:#1A6A40;' : 'color:var(--ink-mid);';
+        changeHtml = `<span style="color:var(--ink-light);">${l.old_value}</span><span style="color:var(--ink-light);margin:0 4px;">→</span><span style="font-weight:700;${dir}">${l.new_value}</span>`;
+      } else if (l.operation === 'LOGIN') {
+        changeHtml = `<span style="color:#1A6A40;font-size:10px;">✓ Logged in</span>`;
+      } else if (l.operation === 'LOGOUT') {
+        changeHtml = `<span style="color:#7A6525;font-size:10px;">→ Logged out</span>`;
+      } else if (l.operation === 'FAILED_LOGIN') {
+        changeHtml = `<span style="color:#C0392B;font-size:10px;font-weight:700;">✗ Wrong PIN</span>`;
+      }
+      const flagHtml = l.is_flagged && l.flag_reason
+        ? `<div style="font-family:var(--f-body);font-size:10px;color:#C0392B;font-weight:600;margin-top:2px;white-space:normal;max-width:200px;">⚠ ${l.flag_reason}</div>`
+        : '<span style="color:#1A6A40;font-size:11px;">✓</span>';
+
+      return `<tr style="background:${bg};${bL}border-bottom:1px solid var(--border);">
+        <td style="padding:8px 12px;font-family:var(--f-mono);font-size:10px;color:var(--ink-mid);white-space:nowrap;">${tStr}</td>
+        <td style="padding:8px 12px;white-space:nowrap;"><span style="font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--gold-dark);">${l.store_code}</span></td>
+        <td style="padding:8px 12px;font-family:var(--f-body);font-size:10px;color:var(--ink-mid);white-space:nowrap;">${dev}</td>
+        <td style="padding:8px 12px;white-space:nowrap;"><span style="font-family:var(--f-body);font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:${opColor};">${l.operation}</span></td>
+        <td style="padding:8px 12px;font-family:var(--f-mono);font-size:10px;color:var(--ink-mid);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${l.record_key||''}">${l.record_key||'—'}</td>
+        <td style="padding:8px 12px;font-family:var(--f-mono);font-size:11px;white-space:nowrap;">${changeHtml}</td>
+        <td style="padding:8px 12px;">${flagHtml}</td>
+      </tr>`;
+    }).join('');
+
+    body.innerHTML = `${sessHtml}
+      <div style="padding:12px 20px 6px;">
+        <div style="font-family:var(--f-body);font-size:10px;font-weight:700;color:var(--ink-mid);letter-spacing:1.2px;text-transform:uppercase;">Activity Log</div>
+      </div>
+      <div style="padding:0 16px 24px;overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;min-width:800px;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border);">
+              <th style="padding:7px 12px;text-align:left;font-family:var(--f-body);font-size:9px;font-weight:700;color:var(--ink-light);letter-spacing:1.2px;text-transform:uppercase;white-space:nowrap;">Time (UAE)</th>
+              <th style="padding:7px 12px;text-align:left;font-family:var(--f-body);font-size:9px;font-weight:700;color:var(--ink-light);letter-spacing:1.2px;text-transform:uppercase;">Store</th>
+              <th style="padding:7px 12px;text-align:left;font-family:var(--f-body);font-size:9px;font-weight:700;color:var(--ink-light);letter-spacing:1.2px;text-transform:uppercase;">Device</th>
+              <th style="padding:7px 12px;text-align:left;font-family:var(--f-body);font-size:9px;font-weight:700;color:var(--ink-light);letter-spacing:1.2px;text-transform:uppercase;">Action</th>
+              <th style="padding:7px 12px;text-align:left;font-family:var(--f-body);font-size:9px;font-weight:700;color:var(--ink-light);letter-spacing:1.2px;text-transform:uppercase;">Record</th>
+              <th style="padding:7px 12px;text-align:left;font-family:var(--f-body);font-size:9px;font-weight:700;color:var(--ink-light);letter-spacing:1.2px;text-transform:uppercase;">Change</th>
+              <th style="padding:7px 12px;text-align:left;font-family:var(--f-body);font-size:9px;font-weight:700;color:var(--ink-light);letter-spacing:1.2px;text-transform:uppercase;">Status</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  } catch(e) {
+    body.innerHTML = `<div style="padding:40px;text-align:center;color:#C0392B;font-family:var(--f-mono);font-size:12px;">Error loading log: ${e.message}</div>`;
+  }
+}
 
 // ── Load Supabase SDK ────────────────────────────────────────────
 (function() {
