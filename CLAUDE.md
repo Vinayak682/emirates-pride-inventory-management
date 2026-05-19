@@ -202,53 +202,51 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 
 ---
 
-### Session — 19 May 2026 (Session 6 — Full Security Layer: Audit Log, Sessions, Anomaly Detection, WhatsApp Alerts)
-**Files changed**: `stock-register.html`, `security_setup.sql` (new), `supabase/functions/security-alert/index.ts` (new)
-**Branch**: `claude/happy-agnesi-4a30dc`
+### Session — 19 May 2026 (Session 6 — Full Security Layer: Audit Log, Sessions, Anomaly Detection, Email Alerts)
+**Files changed**: `stock-register.html`, `security_setup.sql` (new), `supabase/functions/security-alert/index.ts` (new), `SECURITY_INSTRUCTIONS.md` (new)
+**Branch**: `claude/happy-agnesi-4a30dc` → merged to `main`
+**Commits**: `3124a61` (security layer), `1355552` (SQL fix), `0dd7fa2` (merge to main)
+**Pushed to**: `main` → GitHub Pages live
 
 #### What was built:
 
-**1. Supabase Tables (`security_setup.sql` — run once in SQL editor)**
-- `store_sessions` — row per login with store_code, login_type, user_agent, login_at, last_active, expires_at, is_active
-- `audit_log` — every event: LOGIN, LOGOUT, WRITE, FAILED_LOGIN, LOCK, APPROVE; fields: session_id, store_code, operation, record_key (e.g. DX001/2026-05-19/AP001/sold), old_value, new_value, is_flagged, flag_reason
-- `security_config` — tunable thresholds (max_writes_per_min=25, large_qty=100, off_hours 22:00–06:00 UAE, failed_login_threshold=3)
-- Server-side Postgres trigger `trg_audit_stock_cells` on `stock_cells` table — tamper-proof server backup log
+**1. Supabase Tables (`security_setup.sql` — already run ✅)**
+- `store_sessions` — row per login: store_code, login_type, user_agent, login_at, last_active, is_active
+- `audit_log` — every event logged: LOGIN, LOGOUT, WRITE, FAILED_LOGIN; fields: session_id, store_code, operation, record_key (e.g. DX001/2026-05-19/AP001/sold), old_value, new_value, is_flagged, flag_reason
+- `security_config` — tunable thresholds: max_writes_per_min=25, large_qty=100, off_hours 22:00–06:00 UAE, failed_login_threshold=3
+- Server-side Postgres trigger `trg_audit_stock_cells` on `stock_cells` — tamper-proof backup (can't be bypassed from browser)
 
-**2. Edge Function (`supabase/functions/security-alert/index.ts`)**
-- Deployed via: `supabase functions deploy security-alert --project-ref ncszurcrkngjcjqsowln`
-- Supports WATI (recommended for UAE) OR Twilio WhatsApp — configured via Supabase env vars
-- WATI env vars: `WATI_API_ENDPOINT`, `WATI_API_KEY`, `ALERT_PHONE`
-- Twilio env vars: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`, `TWILIO_TO`
+**2. Edge Function — Email Alert via Resend (already deployed ✅)**
+- Function name: `security-alert` (deployed in Supabase Edge Functions)
+- Provider: **Resend** (free — 3,000 emails/month)
+- Secrets set in Supabase: `RESEND_API_KEY`, `ALERT_EMAIL`
+- Sends branded HTML email: Emirates Pride header, alert reason, store, record key, UAE timestamp
+- **NOTE**: Resend API key was shared in chat — regenerate it at resend.com → API Keys
 
-**3. Security Module JS (added to `stock-register.html`)**
-- `_secCreateSession()` — creates session row on login, heartbeat every 5 min
-- `_secCloseSession()` — marks session inactive on logout
-- `_secQAudit()` — queues audit entry with anomaly checks:
-  - Off-hours: flags any activity between 22:00–06:00 UAE time
-  - Large quantity: flags any single cell value > 100
-  - Rapid writes: flags > 25 edits in 60 seconds
-- `_secFlushAudit()` — batches audit entries to Supabase, triggers WhatsApp if flagged
-- `_secTrackFailedLogin()` — logs failed PIN attempts, alerts after 3 consecutive failures
-- Alert cooldown: 5 minutes between WhatsApp messages (no spam)
+**3. Security Module JS (in `stock-register.html`)**
+- `_secCreateSession()` — creates session on login, heartbeat every 5 min
+- `_secCloseSession()` — closes session on logout
+- `_secQAudit()` — anomaly checks on every event:
+  - Off-hours: 22:00–06:00 UAE time
+  - Large quantity: single cell value > 100
+  - Rapid writes: > 25 edits in 60 seconds
+  - Failed logins: 3+ consecutive wrong PINs
+- Alert cooldown: 5 minutes between emails (no spam)
 
-**4. Security Dashboard (MGR-only)**
-- New full-screen panel `secDashPanel` (z-index 850)
-- `🔐 Security Log` button added to All Stores Dashboard header
-- Filters: All Stores / specific store, Today / 7 days / 30 days / All Time, Flagged Only toggle
-- Stats bar: Active Sessions count | Events shown | 🚨 Flag count
-- Active sessions cards: shows who is logged in right now with device (iPad/desktop), login time, last active
-- Log table: Time (UAE) | Store | Device | Action | Record key | Old→New change | Flag reason
-- Red row highlight + left border for flagged entries
+**4. Security Log Dashboard (MGR-only)**
+- `🔐 Security Log` button in All Stores Dashboard header
+- Stats: Active Sessions | Events Shown | Flag Count
+- Active sessions panel: who is logged in right now, device (iPad/desktop), login time
+- Log table: Time (UAE) | Store | Device | Action | Record | Old→New | Flag reason
+- Filters: by store, date range (Today/7d/30d/All), Flagged Only toggle
+- Red row highlight for all flagged entries
 
-**5. Login/Logout/Write hooks**
-- `doLogin()`: calls `_secCreateSession()` on success; calls `_secTrackFailedLogin()` on wrong PIN; resets fail counter on success
-- `doLogout()`: calls `_secCloseSession()` — logs LOGOUT event before clearing session
-- `_qWrite()`: captures old value before dedup, calls `_secQAudit('WRITE', ...)` with old→new; completely non-blocking
+**5. GitHub Security (completed ✅)**
+- Repo made **private** (Supabase key no longer publicly visible)
+- 2FA enabled on GitHub account (email + SMS)
+- All-activity email notifications enabled on repo
 
-#### Setup Required (one-time):
-1. Run `security_setup.sql` in Supabase SQL editor
-2. Deploy Edge Function: `supabase functions deploy security-alert`
-3. Set WhatsApp env vars in Supabase → Edge Functions → Secrets
+**6. Security instructions documented in `SECURITY_INSTRUCTIONS.md`**
 
 ---
 
