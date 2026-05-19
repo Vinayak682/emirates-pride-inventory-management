@@ -30,7 +30,7 @@
 | Role | How to login |
 |---|---|
 | **Staff** | Select your outlet → Enter your store PIN → ENTER STORE |
-| **Manager** | Select Manager → Enter PIN `9999` |
+| **Manager** | Select Manager → Enter Manager PIN |
 
 ### Staff Modules
 | Module | What it does |
@@ -61,35 +61,7 @@ A spreadsheet-style weekly stock grid — designed to exactly replicate the phys
 ### Login
 Each store has a unique PIN. Select your store from the dropdown, enter your PIN, tap **ENTER**.
 
-| City | Store | PIN |
-|---|---|---|
-| Abu Dhabi | Bawabat al Sharq Shop 1 | 1101 |
-| Abu Dhabi | Bawabat al Sharq Shop 2 | 1102 |
-| Abu Dhabi | Bawabat Kiosk EPP | 1103 |
-| Abu Dhabi | Bawabat Kiosk ASL | 1104 |
-| Abu Dhabi | Dalma Mall | 1105 |
-| Abu Dhabi | Deerfield Mall | 1106 |
-| Abu Dhabi | Yas Mall Podium | 1107 |
-| Abu Dhabi | Yas Mall Kiosk 2 | 1108 |
-| Abu Dhabi | Yas Mall Kiosk 3 | 1109 |
-| Abu Dhabi | Yas Mall ASL | 1110 |
-| Al Ain | Al Ain Mall | 2201 |
-| Al Ain | Bawadi Mall Kiosk 1 | 2202 |
-| Al Ain | Bawadi Mall Kiosk 2 | 2203 |
-| Al Ain | Bawadi Mall ASL | 2204 |
-| Al Ain | Jimi Mall | 2205 |
-| Al Ain | Makhani Zakhar Mall | 2206 |
-| Dubai | Dubai Mall | 3301 |
-| Dubai | Mall of Emirates | 3302 |
-| Dubai | Mirdif City Centre | 3303 |
-| Dubai | Dubai Hills Mall | 3304 |
-| Ras Al Khaimah | Manar Mall Shop | 4401 |
-| Ras Al Khaimah | Manar Mall Kiosk | 4402 |
-| Fujairah | Fujairah CC EPP | 5501 |
-| Fujairah | Fujairah CC ASL | 5502 |
-| Sharjah | Zahia City Centre | 6601 |
-| Ajman | Ajman City Centre | 7701 |
-| Head Office | Manager (All Access) | 9999 |
+PINs are distributed privately to each store by management. Contact your Area Manager or Head Office if you need your store PIN.
 
 ### Stock Grid — 5 Columns Per Day
 | Column | Letter | What to Enter |
@@ -113,7 +85,7 @@ Each store has a unique PIN. Select your store from the dropdown, enter your PIN
 ## Security Controls
 
 - Each store has a unique PIN — cannot log into another store's data
-- Manager PIN `9999` has read access to all stores
+- Manager PIN has read access to all stores (distributed privately)
 - Day lock prevents edits after submission
 - All actions are per-store and per-day
 
