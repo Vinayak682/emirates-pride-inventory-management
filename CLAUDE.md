@@ -202,6 +202,45 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 
 ---
 
+### Session — 19 May 2026 (Session 9 — Standalone FG Tester Manager Portal)
+**Files changed**: `fg-tester-manager.html` (new)
+**Commit**: `ac4aeff` → branch `claude/tender-spence-8b07d2` (pushed to GitHub, PR pending merge to main)
+
+#### What was built:
+
+**New file: `fg-tester-manager.html`**
+- Standalone password-gated portal for reviewing and actioning FG Tester Requests
+- Password: `Vinayak@1998` (same as S&OP portal)
+- No login to `stock-register.html` required
+
+#### Features:
+1. **Login gate** — full-screen overlay, Emirates Pride branded card (light theme matching brand standards)
+2. **Stats strip** — 3 cards showing live counts: Pending (amber), Approved (green), Rejected (red)
+3. **Filter chips** — All / Pending / Approved / Rejected — filters the list client-side (no extra DB calls)
+4. **Request cards** — colour-coded left border by status; shows ref, timestamp, store, employee, items count + total qty, remarks
+5. **Approve button** — prompts for approver name → updates Supabase `fg_tester_requests` → downloads PDF
+6. **Reject button** — prompts for approver name + reason → updates Supabase → downloads PDF
+7. **Re-download PDF** — on already-processed cards, a "⬇ Download PDF" button re-generates the approval/rejection document
+8. **Refresh button** — re-fetches all records from Supabase
+9. **Full Report link** — opens `fg-report.html` in new tab
+10. **Logout** — clears session, returns to login overlay
+11. **Toast notifications** — bottom-centre, gold-bar branded, 3s auto-dismiss
+
+#### Design:
+- Full Emirates Pride brand palette: `--gold-bar:#6B5B35` topbar, `--gold-pale` backgrounds, Cormorant Garamond + Montserrat + IBM Plex Mono font stack
+- Mobile-responsive: stat cards and typography scale down, button text hidden on small screens with icon-only buttons
+
+#### Flow (unchanged):
+1. Store fills `fg-request-form.html` → submits to Supabase → downloads pending PDF → sends WhatsApp to management
+2. Manager opens `fg-tester-manager.html` (new standalone link) → logs in → sees all requests → approves/rejects → downloads decision PDF
+3. Individual link approvals via `fg-approve.html?ref=XXX` (WhatsApp link) still work as before
+4. FG panel inside `stock-register.html` (MGR tab) still works as before — both access points remain live
+
+#### Live URL (after merging to main):
+`https://vinayak682.github.io/emirates-pride-inventory-management/fg-tester-manager.html`
+
+---
+
 ### Session — 19 May 2026 (Session 6 — Full Security Layer: Audit Log, Sessions, Anomaly Detection, Email Alerts)
 **Files changed**: `stock-register.html`, `security_setup.sql` (new), `supabase/functions/security-alert/index.ts` (new), `SECURITY_INSTRUCTIONS.md` (new)
 **Branch**: `claude/happy-agnesi-4a30dc` → merged to `main`
