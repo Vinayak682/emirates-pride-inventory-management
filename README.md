@@ -1,5 +1,9 @@
 # Emirates Pride — Inventory Management System
 
+<p align="center">
+  <img src="logo.png" alt="Emirates Pride Logo" width="180"/>
+</p>
+
 ## 🚀 OPEN THE APPS
 
 ### 📱 Operations 2.0 (Full System)
