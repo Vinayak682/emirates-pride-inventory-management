@@ -3049,43 +3049,45 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 // ══════════════════════════════════════════
 // DATA
 // ══════════════════════════════════════════
+// PINs removed from code — stored securely in Supabase store_pins table
+// Verified server-side via verify_store_pin() RPC — never exposed in source
 const STORES=[
-  {code:'A0001', name:'Bawabat al Sharq Mall Shop',  city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1101'},
-  {code:'A0002', name:'Bawabat al Sharq Mall Kiosk', city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1102'},
-  {code:'BAS001',name:'Bawabat al Sharq Kiosk ASL',  city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1103'},
-  {code:'A0003', name:'Dalma Mall Shop',              city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1104'},
-  {code:'A0004', name:'Dalma Mall Kiosk',             city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1105'},
-  {code:'A0005', name:'Deerfield Mall Kiosk',         city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1106'},
-  {code:'A0009', name:'Yas Mall Podium',              city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1107'},
-  {code:'A0007', name:'Yas Mall Kiosk 2',             city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1108'},
-  {code:'A0008', name:'Yas Mall Kiosk 3',             city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1109'},
-  {code:'YMK001',name:'Yas Mall ASL',                 city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin', pin:'1110'},
-  {code:'AL001', name:'Al Ain Mall Kiosk',            city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2201'},
-  {code:'AL002', name:'Bawadi Mall Kiosk 1',          city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2202'},
-  {code:'AL003', name:'Bawadi Mall Kiosk 2',          city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2203'},
-  {code:'BAW001',name:'Bawadi Mall ASL',              city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2204'},
-  {code:'AL004', name:'Jimi Mall Shop',               city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2205'},
-  {code:'AL006', name:'Makhani Zakhar Mall Shop',     city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2206'},
-  {code:'MAK001',name:'Makhani Zakhar Mall ASL',      city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin', pin:'2207'},
-  {code:'DX001', name:'Dubai Mall Shop',              city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh', pin:'3301'},
-  {code:'DX004', name:'Mall of the Emirates Kiosk',   city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh', pin:'3302'},
-  {code:'DX005', name:'Mirdif City Centre Kiosk',     city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh', pin:'3303'},
-  {code:'DX006', name:'Dubai Hills Mall Shop',        city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh', pin:'3304'},
-  {code:'RK001', name:'Manar Mall Shop',              city:'Ras Al Khaimah', region:'RAK',   mgr:'Mohammed Elmatloub', pin:'4401'},
-  {code:'RK002', name:'Manar Mall Kiosk',             city:'Ras Al Khaimah', region:'RAK',   mgr:'Mohammed Elmatloub', pin:'4402'},
-  {code:'FJ001', name:'Fujairah City Centre Kiosk',   city:'Fujairah',  region:'Fujairah',   mgr:'Mohammed Elmatloub', pin:'5501'},
-  {code:'FJ001A',name:'Fujairah City Centre ASL',     city:'Fujairah',  region:'Fujairah',   mgr:'Mohammed Elmatloub', pin:'5502'},
-  {code:'SH001', name:'Zahia City Centre Kiosk',      city:'Sharjah',   region:'Sharjah',    mgr:'Mohammed Elmatloub', pin:'6601'},
-  {code:'AJ001', name:'Ajman City Centre Kiosk',      city:'Ajman',     region:'Ajman',      mgr:'Mohammed Elmatloub', pin:'7701'},
+  {code:'A0001', name:'Bawabat al Sharq Mall Shop',  city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin'},
+  {code:'A0002', name:'Bawabat al Sharq Mall Kiosk', city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin'},
+  {code:'BAS001',name:'Bawabat al Sharq Kiosk ASL',  city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin'},
+  {code:'A0003', name:'Dalma Mall Shop',              city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin'},
+  {code:'A0004', name:'Dalma Mall Kiosk',             city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin'},
+  {code:'A0005', name:'Deerfield Mall Kiosk',         city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin'},
+  {code:'A0009', name:'Yas Mall Podium',              city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin'},
+  {code:'A0007', name:'Yas Mall Kiosk 2',             city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin'},
+  {code:'A0008', name:'Yas Mall Kiosk 3',             city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin'},
+  {code:'YMK001',name:'Yas Mall ASL',                 city:'Abu Dhabi', region:'Abu Dhabi',  mgr:'Mohamed Hessin'},
+  {code:'AL001', name:'Al Ain Mall Kiosk',            city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin'},
+  {code:'AL002', name:'Bawadi Mall Kiosk 1',          city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin'},
+  {code:'AL003', name:'Bawadi Mall Kiosk 2',          city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin'},
+  {code:'BAW001',name:'Bawadi Mall ASL',              city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin'},
+  {code:'AL004', name:'Jimi Mall Shop',               city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin'},
+  {code:'AL006', name:'Makhani Zakhar Mall Shop',     city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin'},
+  {code:'MAK001',name:'Makhani Zakhar Mall ASL',      city:'Al Ain',    region:'Al Ain',     mgr:'Mohamed Hessin'},
+  {code:'DX001', name:'Dubai Mall Shop',              city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh'},
+  {code:'DX004', name:'Mall of the Emirates Kiosk',   city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh'},
+  {code:'DX005', name:'Mirdif City Centre Kiosk',     city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh'},
+  {code:'DX006', name:'Dubai Hills Mall Shop',        city:'Dubai',     region:'Dubai',      mgr:'Mohammed Imad Muwfaq Saleh'},
+  {code:'RK001', name:'Manar Mall Shop',              city:'Ras Al Khaimah', region:'RAK',   mgr:'Mohammed Elmatloub'},
+  {code:'RK002', name:'Manar Mall Kiosk',             city:'Ras Al Khaimah', region:'RAK',   mgr:'Mohammed Elmatloub'},
+  {code:'FJ001', name:'Fujairah City Centre Kiosk',   city:'Fujairah',  region:'Fujairah',   mgr:'Mohammed Elmatloub'},
+  {code:'FJ001A',name:'Fujairah City Centre ASL',     city:'Fujairah',  region:'Fujairah',   mgr:'Mohammed Elmatloub'},
+  {code:'SH001', name:'Zahia City Centre Kiosk',      city:'Sharjah',   region:'Sharjah',    mgr:'Mohammed Elmatloub'},
+  {code:'AJ001', name:'Ajman City Centre Kiosk',      city:'Ajman',     region:'Ajman',      mgr:'Mohammed Elmatloub'},
   // ── Area Manager logins ───────────────────────────────────────
-  {code:'AM_HESSIN', name:'Area Manager — Mohamed Hessin',         city:'Head Office', region:'AM', mgr:'', pin:'1000',
+  {code:'AM_HESSIN', name:'Area Manager — Mohamed Hessin',     city:'Head Office', region:'AM', mgr:'',
    amStores:['A0001','A0002','BAS001','A0003','A0004','A0005','A0009','A0007','A0008','YMK001','AL001','AL002','AL003','BAW001','AL004','AL006','MAK001']},
-  {code:'AM_IMAD',   name:'Area Manager — Mohammed Imad',          city:'Head Office', region:'AM', mgr:'', pin:'3000',
+  {code:'AM_IMAD',   name:'Area Manager — Mohammed Imad',      city:'Head Office', region:'AM', mgr:'',
    amStores:['DX001','DX004','DX005','DX006']},
-  {code:'AM_ELMAT',  name:'Area Manager — Mohammed Elmatloub',     city:'Head Office', region:'AM', mgr:'', pin:'4000',
+  {code:'AM_ELMAT',  name:'Area Manager — Mohammed Elmatloub', city:'Head Office', region:'AM', mgr:'',
    amStores:['RK001','RK002','SH001','AJ001','FJ001','FJ001A']},
-  {code:'MGR',   name:'Manager (All Access)',          city:'Head Office',region:'HQ',        mgr:'',                   pin:'9999'},
-  {code:'WH001', name:'Warehouse',                    city:'JAFZA',      region:'HQ',        mgr:'',                   pin:'8888'},
+  {code:'MGR',   name:'Manager (All Access)', city:'Head Office', region:'HQ', mgr:''},
+  {code:'WH001', name:'Warehouse',            city:'JAFZA',       region:'HQ', mgr:''},
 ];
 
 const CATS=[
@@ -3436,23 +3438,47 @@ function updPin(){
   }
 }
 
-function doLogin(){
+async function doLogin(){
   const code=document.getElementById('storeSelect').value;
   const err=document.getElementById('loginErr');
   if(!code){err.textContent='Please select your store.';return;}
   const store=STORES.find(s=>s.code===code);
   if(!store){err.textContent='Store not found.';return;}
-  if(pinBuf!==store.pin){
-    err.textContent='Wrong PIN — try again.';
-    _secTrackFailedLogin(code);
+  if(!pinBuf){err.textContent='Please enter your PIN.';return;}
+
+  // ── Verify PIN via Supabase RPC (PIN never leaves the database)
+  err.textContent=''; err.style.color='';
+  const loginGoBtn=document.getElementById('loginGoBtn');
+  if(loginGoBtn){loginGoBtn.disabled=true; loginGoBtn.textContent='Verifying…';}
+  try{
+    let verified=false;
+    if(window._SBC){
+      const{data,error}=await _SBC.rpc('verify_store_pin',{p_code:code,p_pin:pinBuf});
+      if(error) throw new Error(error.message);
+      verified=!!data;
+    } else {
+      // Supabase not loaded yet — block login
+      throw new Error('Connection not ready. Please wait a moment and try again.');
+    }
+    if(!verified){
+      err.textContent='Wrong PIN — try again.';
+      _secTrackFailedLogin(code);
+      pc();
+      if(loginGoBtn){loginGoBtn.disabled=false;loginGoBtn.textContent='Login';}
+      return;
+    }
+  } catch(e){
+    err.textContent=e.message||'Could not verify PIN. Check your connection.';
+    if(loginGoBtn){loginGoBtn.disabled=false;loginGoBtn.textContent='Login';}
     pc();return;
   }
-  _failedLoginCount[code]=0; // reset on success
+  if(loginGoBtn){loginGoBtn.disabled=false;loginGoBtn.textContent='Login';}
+
+  _failedLoginCount[code]=0;
   err.textContent='';
   try{ localStorage.setItem('ep_last_store_v7',code); }catch(e){}
   me=store;
   curDay=DAY_PAST;
-  // Determine login type for session record
   const _loginType = code==='MGR'?'mgr': code==='WH001'?'wh': code.startsWith('AM_')?'am':'store';
   _secCreateSession(code, _loginType);
 
@@ -4644,7 +4670,7 @@ let movLogOpen=true;
 
 // ─── MANAGER OVERRIDE ───
 let mgrPinBuf='';
-const MGR_PIN='9999';
+// MGR_PIN removed — PIN verified via Supabase RPC (verify_store_pin)
 function requestMgrOverride(){
   mgrPinBuf='';updateMgrPinDots();
   document.getElementById('mgrPinErr').textContent='';
@@ -4667,11 +4693,20 @@ function updateMgrPinDots(){
     d.classList.toggle('filled',i<mgrPinBuf.length);
   }
 }
-function submitMgrPin(){
-  if(mgrPinBuf!==MGR_PIN){
-    document.getElementById('mgrPinErr').textContent='Incorrect PIN — try again';
+async function submitMgrPin(){
+  const errEl=document.getElementById('mgrPinErr');
+  errEl.textContent='Verifying…';
+  try{
+    const{data,error}=await _SBC.rpc('verify_store_pin',{p_code:'MGR',p_pin:mgrPinBuf});
+    if(error||!data){
+      errEl.textContent='Incorrect PIN — try again';
+      mgrPinBuf='';updateMgrPinDots();return;
+    }
+  }catch(e){
+    errEl.textContent='Connection error — try again';
     mgrPinBuf='';updateMgrPinDots();return;
   }
+  errEl.textContent='';
   mgrOverrideActive=true;mgrOverrideDay=curDay;mgrOverrideStore=me.code;
   clearTimeout(window._mgrTimer);
   window._mgrTimer=setTimeout(()=>{
