@@ -484,15 +484,15 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .cons-hdr{background:var(--navy);padding:8px 14px;display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--gold);flex-shrink:0;position:sticky;top:0;z-index:12;}
 .cons-alert-badge{background:#C0392B;color:#fff;font-family:var(--f-mono);font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;letter-spacing:0.5px;}
 .cons-cat-row{background:var(--gold-pale);padding:4px 14px;font-family:var(--f-body);font-size:9px;font-weight:700;color:var(--gold-dark);letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid var(--gold-border);}
-.cons-row{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #1E1E2E;cursor:pointer;transition:background 0.12s;gap:12px;}
-.cons-row:active{background:#1E1E3A;}
-.cons-row.low{background:#2A1A1A;}
-.cons-row.empty{background:#3A1010;}
+.cons-row{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--gold-border);cursor:pointer;transition:background 0.12s;gap:12px;background:#FFFFFF;}
+.cons-row:active{background:var(--gold-pale);}
+.cons-row.low{background:#FFF8E6;}
+.cons-row.empty{background:#FFF0F0;}
 .cons-icon{font-size:18px;flex-shrink:0;width:26px;text-align:center;}
 .cons-info{flex:1;min-width:0;}
-.cons-name{font-size:12px;font-weight:600;color:#E0E0E0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cons-name-ar{font-family:var(--f-ar);font-size:11px;color:#666;direction:rtl;text-align:right;}
-.cons-unit{font-size:10px;color:#555;margin-top:1px;}
+.cons-name{font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cons-name-ar{font-family:var(--f-ar);font-size:11px;color:var(--ink-light);direction:rtl;text-align:right;}
+.cons-unit{font-size:10px;color:var(--ink-light);margin-top:1px;}
 .cons-qty-wrap{text-align:right;flex-shrink:0;min-width:64px;}
 .cons-qty{font-family:var(--f-mono);font-size:22px;font-weight:900;line-height:1;}
 .cons-qty.ok{color:#6FCF97;}
@@ -506,64 +506,66 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* ─── NUMPAD OVERLAY ─── */
 #numpad{
-  position:fixed;inset:0;background:rgba(0,0,0,0.75);
+  position:fixed;inset:0;background:rgba(26,39,68,0.6);
   display:none;align-items:flex-end;justify-content:center;
   z-index:900;padding-bottom:env(safe-area-inset-bottom,0px);
 }
 #numpad.show{display:flex;}
 .np-sheet{
-  background:#1C1C1E;border-radius:20px 20px 0 0;
+  background:#FFFFFF;border-radius:20px 20px 0 0;
+  border-top:3px solid var(--gold);
   width:100%;max-width:460px;padding:16px 16px 20px;
+  box-shadow:0 -4px 24px rgba(26,39,68,0.15);
 }
 .np-top{
   display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;
 }
 .np-info{}
-.np-product{font-size:15px;font-weight:600;color:#E8E0D0;margin-bottom:2px;}
+.np-product{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:2px;font-family:var(--f-serif);}
 .np-field{font-size:11px;padding:3px 8px;border-radius:4px;
-  font-family:var(--f-mono);font-weight:600;letter-spacing:0.5px;}
-.np-field.open{background:#1A3A6A;color:#6FA8DC;}
-.np-field.inn{background:#1A3A1A;color:#6FCF97;}
-.np-field.wh{background:#1E3A0A;color:#7FC860;}
-.np-field.sold{background:#3A1A1A;color:#E87070;}
-.np-field.trf{background:#2A1A3A;color:#BB88DD;}
-.np-field.wrh{background:#3A2A00;color:#E8A040;}
-.np-field.out{background:#3A1A1A;color:#E87070;}
+  font-family:var(--f-body);font-weight:700;letter-spacing:0.5px;}
+.np-field.open{background:#E8F0F8;color:#1A4A7A;}
+.np-field.inn{background:#E0F2E8;color:#1A6640;}
+.np-field.wh{background:#D4ECC4;color:#2A5C14;}
+.np-field.sold{background:#FDE8E8;color:#8B1A1A;}
+.np-field.trf{background:#F5E8F8;color:#6A1A8B;}
+.np-field.wrh{background:#FEE8CC;color:#7A3A00;}
+.np-field.out{background:#FDE8E8;color:#8B1A1A;}
 .np-x{
-  background:#2A2A2A;border:none;color:#888;border-radius:50%;
+  background:var(--gold-pale);border:1px solid var(--gold-border);color:var(--ink-mid);border-radius:50%;
   width:30px;height:30px;font-size:16px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
 .np-display{
-  background:#252525;border-radius:10px;padding:14px;
+  background:var(--gold-pale);border:1px solid var(--gold-border);border-radius:10px;padding:14px;
   text-align:right;margin-bottom:12px;
 }
-.np-cur-label{font-family:var(--f-mono);font-size:9px;color:#555;
-  text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:4px;}
+.np-cur-label{font-family:var(--f-body);font-size:9px;color:var(--ink-light);
+  text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:4px;font-weight:600;}
 .np-value{
   font-family:var(--f-mono);font-size:44px;font-weight:400;
-  color:#E8E0D0;letter-spacing:-2px;line-height:1;
+  color:var(--ink);letter-spacing:-2px;line-height:1;
 }
-.np-note{font-size:10px;color:#444;font-family:var(--f-mono);margin-top:4px;display:block;}
+.np-note{font-size:10px;color:var(--ink-light);font-family:var(--f-mono);margin-top:4px;display:block;}
 .np-grid{
   display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;
 }
 .nk{
-  background:#2A2A2A;border:none;border-radius:10px;
-  font-family:var(--f-mono);font-size:22px;font-weight:400;
-  color:#E8E0D0;padding:16px 4px;cursor:pointer;text-align:center;
+  background:var(--gold-pale);border:1px solid var(--gold-border);border-radius:10px;
+  font-family:var(--f-mono);font-size:22px;font-weight:500;
+  color:var(--ink);padding:16px 4px;cursor:pointer;text-align:center;
   transition:background 0.1s;user-select:none;
 }
-.nk:active{background:#3A3A2A;}
-.nk.del{font-size:16px;color:#888;background:#222;}
-.nk.del:active{background:#333;}
-.nk.clr{font-size:12px;font-weight:600;color:#E87070;background:#2A1A1A;}
-.nk.clr:active{background:#3A2A2A;}
+.nk:active{background:var(--gold-light);}
+.nk.del{font-size:16px;color:var(--ink-mid);background:#F0EDE6;border-color:var(--border);}
+.nk.del:active{background:var(--gold-pale);}
+.nk.clr{font-size:12px;font-weight:700;color:#8B1A1A;background:#FDE8E8;border-color:#F5CECE;}
+.nk.clr:active{background:#FECECE;}
 .np-confirm{
-  width:100%;background:linear-gradient(135deg,var(--gold2),var(--gold));
-  color:#0D0D0D;font-family:var(--f-body);font-size:16px;font-weight:600;
+  width:100%;background:linear-gradient(135deg,var(--gold-dark),var(--gold));
+  color:#FFFFFF;font-family:var(--f-body);font-size:16px;font-weight:700;
   border:none;padding:15px;border-radius:12px;cursor:pointer;
-  transition:opacity 0.15s;
+  transition:opacity 0.15s;letter-spacing:0.3px;
 }
 .np-confirm:active{opacity:0.85;}
 
@@ -571,8 +573,8 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 #toast{
   position:fixed;bottom:calc(58px + env(safe-area-inset-bottom,0px));left:50%;
   transform:translateX(-50%) translateY(10px);
-  background:#1C1C1E;color:var(--gold2);border:1px solid #333;
-  font-family:var(--f-mono);font-size:12px;
+  background:var(--navy);color:var(--gold);border:1px solid rgba(201,168,76,0.4);
+  font-family:var(--f-body);font-size:12px;font-weight:600;
   padding:8px 18px;border-radius:20px;z-index:1000;
   opacity:0;pointer-events:none;transition:all 0.25s;white-space:nowrap;
 }
@@ -671,63 +673,64 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 /* REQUEST modal */
 #reqModal{
-  position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  position:fixed;inset:0;background:rgba(26,39,68,0.55);
   display:none;align-items:flex-end;justify-content:center;
   z-index:1000;padding-bottom:env(safe-area-inset-bottom,0px);
 }
 #reqModal.show{display:flex;}
 .req-sheet{
-  background:#1C1C1E;border-radius:20px 20px 0 0;
+  background:#FFFFFF;border-radius:20px 20px 0 0;border-top:3px solid var(--gold);
   width:100%;max-width:480px;padding:20px 18px 24px;
+  box-shadow:0 -4px 24px rgba(26,39,68,0.12);
 }
 .req-top{
   display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;
 }
-.req-title{font-size:16px;font-weight:600;color:var(--gold2);}
-.req-x{background:#2A2A2A;border:none;color:#888;border-radius:50%;
+.req-title{font-size:16px;font-weight:700;color:var(--gold-dark);font-family:var(--f-serif);}
+.req-x{background:var(--gold-pale);border:1px solid var(--gold-border);color:var(--ink-mid);border-radius:50%;
   width:30px;height:30px;font-size:16px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;}
 .req-product{
-  background:#252525;border-radius:10px;padding:12px 14px;margin-bottom:14px;
+  background:var(--gold-pale);border:1px solid var(--gold-border);border-radius:10px;padding:12px 14px;margin-bottom:14px;
   display:flex;align-items:center;gap:10px;
 }
-.req-prod-name{font-size:14px;font-weight:600;color:#E8E0D0;}
-.req-prod-code{font-family:var(--f-mono);font-size:10px;color:#555;margin-top:2px;}
-.req-from-label{font-family:var(--f-mono);font-size:9px;color:#555;
-  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;}
+.req-prod-name{font-size:14px;font-weight:600;color:var(--ink);}
+.req-prod-code{font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:2px;}
+.req-from-label{font-family:var(--f-body);font-size:9px;color:var(--ink-light);
+  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-weight:600;}
 .req-from-store{
-  background:#1E3A1E;border:1px solid #2A5A2A;border-radius:8px;
+  background:#EAF5EA;border:1px solid #A8CCA8;border-radius:8px;
   padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
   margin-bottom:14px;
 }
-.req-from-name{font-size:14px;font-weight:600;color:#6FCF97;}
-.req-from-qty{font-family:var(--f-mono);font-size:18px;font-weight:700;color:#6FCF97;}
-.req-qty-label{font-family:var(--f-mono);font-size:9px;color:#555;
-  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;}
+.req-from-name{font-size:14px;font-weight:600;color:#1A6A2A;}
+.req-from-qty{font-family:var(--f-mono);font-size:18px;font-weight:700;color:#1A6A2A;}
+.req-qty-label{font-family:var(--f-body);font-size:9px;color:var(--ink-light);
+  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;font-weight:600;}
 .req-qty-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
 .req-qty-chip{
-  background:#252525;border:1px solid #3A3A3A;border-radius:6px;
-  padding:10px 14px;font-family:var(--f-mono);font-size:15px;color:#CCC;
+  background:#FFFFFF;border:1.5px solid var(--gold-border);border-radius:6px;
+  padding:10px 14px;font-family:var(--f-mono);font-size:15px;color:var(--ink-mid);
   cursor:pointer;transition:all 0.12s;user-select:none;
 }
-.req-qty-chip.selected{background:#1E3A1E;border-color:#3A7A3A;color:#6FCF97;font-weight:700;}
-.req-qty-chip:active{background:#1E2A1E;}
-.req-note-label{font-family:var(--f-mono);font-size:9px;color:#555;
-  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
+.req-qty-chip.selected{background:var(--gold-pale);border-color:var(--gold);color:var(--gold-dark);font-weight:700;}
+.req-qty-chip:active{background:var(--gold-pale);}
+.req-note-label{font-family:var(--f-body);font-size:9px;color:var(--ink-light);
+  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;font-weight:600;}
 .req-note-input{
-  width:100%;background:#252525;border:1px solid #3A3A3A;border-radius:8px;
-  padding:10px 12px;font-family:var(--f-body);font-size:14px;color:#E0E0E0;
+  width:100%;background:var(--gold-pale);border:1.5px solid var(--gold-border);border-radius:8px;
+  padding:10px 12px;font-family:var(--f-body);font-size:14px;color:var(--ink);
   outline:none;margin-bottom:14px;
 }
 .req-note-input:focus{border-color:var(--gold);}
 .req-confirm{
-  width:100%;background:linear-gradient(135deg,#2A6A2A,#1A4A1A);
-  color:#6FCF97;font-family:var(--f-body);font-size:15px;font-weight:600;
+  width:100%;background:linear-gradient(135deg,var(--gold-dark),var(--gold));
+  color:#FFFFFF;font-family:var(--f-body);font-size:15px;font-weight:700;
   border:none;padding:14px;border-radius:10px;cursor:pointer;
   transition:opacity 0.15s;letter-spacing:0.3px;
 }
 .req-confirm:active{opacity:0.85;}
-.req-confirm:disabled{background:#1A1A1A;color:#333;cursor:not-allowed;}
+.req-confirm:disabled{background:var(--gold-pale);color:var(--ink-light);cursor:not-allowed;border:1px solid var(--gold-border);}
 
 
 /* ═══════════════ DASHBOARD ═══════════════ */
@@ -870,23 +873,23 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .mgr-override-banner{background:var(--gold-pale);border-bottom:3px solid var(--gold);padding:9px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .mob-text{font-family:var(--f-body);font-size:11px;color:var(--gold-dark);flex:1;font-weight:700;}
 .mob-close{background:var(--gold-dark);border:none;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;}
-#mgrPinModal{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;z-index:980;padding:24px;}
+#mgrPinModal{position:fixed;inset:0;background:rgba(26,39,68,0.6);display:none;align-items:center;justify-content:center;z-index:980;padding:24px;}
 #mgrPinModal.show{display:flex;}
-.mgr-pin-sheet{background:#1C1C1E;border:1px solid #3A2A5A;border-radius:20px;padding:24px 20px;width:100%;max-width:380px;}
-.mgr-pin-title{font-size:16px;font-weight:700;color:#9A6ADA;margin-bottom:4px;}
-.mgr-pin-sub{font-size:12px;color:#555;margin-bottom:18px;line-height:1.5;}
+.mgr-pin-sheet{background:#FFFFFF;border:2px solid var(--gold);border-radius:20px;padding:24px 20px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(26,39,68,0.18);}
+.mgr-pin-title{font-size:16px;font-weight:700;color:var(--gold-dark);margin-bottom:4px;font-family:var(--f-serif);}
+.mgr-pin-sub{font-size:12px;color:var(--ink-light);margin-bottom:18px;line-height:1.5;font-family:var(--f-body);}
 .mgr-pin-dots{display:flex;gap:8px;justify-content:center;margin-bottom:14px;}
-.mgr-pin-dot{width:44px;height:44px;border:1.5px solid #3A3A3A;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#9A6ADA;background:#252525;transition:all 0.15s;}
-.mgr-pin-dot.filled{border-color:#6A3AAA;background:#1A0A2A;}
+.mgr-pin-dot{width:44px;height:44px;border:1.5px solid var(--gold-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--gold-dark);background:var(--gold-pale);transition:all 0.15s;}
+.mgr-pin-dot.filled{border-color:var(--gold);background:var(--gold-light);}
 .mgr-pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
-.mgr-pkey{background:#252525;border:1px solid #2A2A2A;border-radius:8px;padding:13px 4px;font-family:var(--f-mono);font-size:19px;color:#DDD;cursor:pointer;text-align:center;transition:all 0.12s;user-select:none;}
-.mgr-pkey:active{background:#2A1A3A;border-color:#6A3AAA;}
-.mgr-pkey.clr{font-size:12px;color:#8B1A1A;background:#1E0A0A;}
-.mgr-pkey.del{font-size:14px;color:#555;}
-.mgr-pin-err{text-align:center;font-size:12px;color:#E87070;font-family:var(--f-mono);min-height:18px;margin-bottom:10px;}
-.mgr-pin-confirm{width:100%;background:linear-gradient(135deg,#5A2AAA,#3A1A7A);color:#DDD;font-family:var(--f-body);font-size:15px;font-weight:600;border:none;padding:14px;border-radius:10px;cursor:pointer;}
+.mgr-pkey{background:var(--gold-pale);border:1px solid var(--gold-border);border-radius:8px;padding:13px 4px;font-family:var(--f-mono);font-size:19px;color:var(--ink);cursor:pointer;text-align:center;transition:all 0.12s;user-select:none;}
+.mgr-pkey:active{background:var(--gold-light);border-color:var(--gold);}
+.mgr-pkey.clr{font-size:12px;color:#8B1A1A;background:#FDE8E8;border-color:#F5CECE;}
+.mgr-pkey.del{font-size:14px;color:var(--ink-mid);}
+.mgr-pin-err{text-align:center;font-size:12px;color:#C0392B;font-family:var(--f-mono);min-height:18px;margin-bottom:10px;}
+.mgr-pin-confirm{width:100%;background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:var(--gold);font-family:var(--f-body);font-size:15px;font-weight:700;border:none;padding:14px;border-radius:10px;cursor:pointer;letter-spacing:0.3px;}
 .mgr-pin-confirm:active{opacity:0.85;}
-.mgr-pin-cancel{width:100%;background:transparent;border:1px solid #333;color:#555;font-family:var(--f-body);font-size:14px;padding:10px;border-radius:10px;cursor:pointer;margin-top:8px;}
+.mgr-pin-cancel{width:100%;background:#FFFFFF;border:1.5px solid var(--gold-border);color:var(--ink-mid);font-family:var(--f-body);font-size:14px;padding:10px;border-radius:10px;cursor:pointer;margin-top:8px;}
 
 /* ── 15-DAY TABS ── */
 .dtab{min-width:68px;flex-shrink:0;}
@@ -1227,13 +1230,13 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   border:1.5px solid transparent;transition:all 0.15s;white-space:nowrap;
 }
 .tst-pill:active{transform:scale(0.95);}
-.tst-full {background:#1A3A1A;color:#6FCF97;border-color:#2A6A2A;}
-.tst-half {background:#3A2A00;color:#F2C94C;border-color:#7A5200;}
-.tst-empty{background:#3A1A1A;color:#E87070;border-color:#7A2A2A;}
-.tst-none {background:#1A1A1A;color:#555;border-color:#2A2A2A;}
-.tstr-day-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin:1px;background:#2A2A2A;}
-.tstr-day-dot.logged{background:#6FCF97;}
-.tstr-day-dot.today{background:var(--gold2);outline:2px solid var(--gold);}
+.tst-full {background:#EAF5EA;color:#1A6A2A;border-color:#A8CCA8;}
+.tst-half {background:#FEF3D0;color:#7A5200;border-color:#D4AC0D;}
+.tst-empty{background:#FDE8E8;color:#8B1A1A;border-color:#F5CECE;}
+.tst-none {background:#F0EDE6;color:var(--ink-light);border-color:var(--gold-border);}
+.tstr-day-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin:1px;background:var(--gold-border);}
+.tstr-day-dot.logged{background:#2A8A4A;}
+.tstr-day-dot.today{background:var(--gold);outline:2px solid var(--gold-dark);}
 
 /* ── TRACKER ── */
 .tracker-sku-header{
@@ -1569,14 +1572,13 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 /* CC total bar */
 .fin-cc-total-row{
   display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px;background:#1A1A3A;border-bottom:2px solid #1E1E3A;
+  padding:10px 14px;background:#EAF0FF;border-bottom:2px solid #B8C8E8;
 }
-.fin-cc-total-label{font-family:var(--f-mono);font-size:10px;font-weight:700;color:#6FA8DC;text-transform:uppercase;letter-spacing:0.5px;}
-.fin-cc-total-val{font-family:var(--f-mono);font-size:20px;font-weight:900;color:#6FA8DC;}
+.fin-cc-total-label{font-family:var(--f-body);font-size:10px;font-weight:700;color:#1A3A7A;text-transform:uppercase;letter-spacing:0.5px;}
+.fin-cc-total-val{font-family:var(--f-mono);font-size:20px;font-weight:900;color:#1A3A7A;}
 
 /* Finance save btn unsaved state */
-/* Finance save btn unsaved state */
-.fin-act-btn.save.unsaved{background:#3A1A00;border-color:#C9A44E;color:#C9A44E;animation:finPulse 2s infinite;}
+.fin-act-btn.save.unsaved{background:var(--gold-pale);border-color:var(--gold);color:var(--gold-dark);animation:finPulse 2s infinite;}
 @keyframes finPulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
 
 /* Finance locked overlay */
@@ -1584,10 +1586,11 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
 
 /* CC delete button */
-.fin-cc-del-cell{border:1px solid #1E1E1E;padding:0;width:32px;vertical-align:middle;}
-.fin-cc-del-btn{background:none;border:none;color:#333;cursor:pointer;
+.fin-cc-del-cell{border:1px solid var(--gold-border);padding:0;width:32px;vertical-align:middle;}
+.fin-cc-del-btn{background:none;border:none;color:var(--ink-light);cursor:pointer;
   font-size:13px;padding:4px 6px;display:block;width:100%;}
-.fin-cc-del-btn:hover{color:#E87070;}
+.fin-cc-del-btn:hover{color:#C0392B;}
+.fin-cc-del{background:none;border:none;color:var(--ink-light);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0;}
 
 /* Signatures */
 .fin-sig-row{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid var(--gold);}
@@ -1918,7 +1921,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
       <!-- Status banners -->
       <div id="fin-lock-warn"    class="fin-banner fin-banner-lock"   style="display:none;">🔒 Finance Locked — entries are read-only. Manager Override required to edit.</div>
-      <div id="fin-stock-lock-warn" class="fin-banner fin-banner-lock" style="display:none;background:#1A0A00;border-color:#E87070;color:#E87070;">⚠ Sales day is also locked — stock data is finalised.</div>
+      <div id="fin-stock-lock-warn" class="fin-banner fin-banner-lock" style="display:none;background:#FFF0F0;border-color:#E87070;color:#8B1A1A;">⚠ Sales day is also locked — stock data is finalised.</div>
       <div id="fin-unsaved-warn" class="fin-banner fin-banner-unsaved" style="display:none;">⚠ Unsaved changes — tap Save Report before locking the day</div>
 
       <!-- ══ SECTION 1: SALES SUMMARY ══ -->
@@ -1940,17 +1943,17 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       </div>
 
       <!-- BNPL Section: Tabby + Tamara (multi-transaction like CC) -->
-      <div class="fin-section-hdr" style="margin:0;background:#0E0E1A;padding:6px 14px;">
-        <span style="color:#4A6AAA;font-size:9px;">BNPL PAYMENTS — Tabby & Tamara</span>
-        <span class="fin-section-ar" style="color:#2A3A5A;">الدفع الآجل</span>
-        <button class="fin-add-btn" id="fin-add-bnpl-btn" onclick="addBNPLRow()" style="background:#1A1A2A;border-color:#2A3A5A;color:#6FA8DC;">＋ Add</button>
+      <div class="fin-section-hdr" style="margin:0;padding:6px 14px;">
+        <span style="font-size:9px;">BNPL PAYMENTS — Tabby &amp; Tamara</span>
+        <span class="fin-section-ar">الدفع الآجل</span>
+        <button class="fin-add-btn" id="fin-add-bnpl-btn" onclick="addBNPLRow()">＋ Add</button>
       </div>
       <div id="fin-bnpl-list">
         <div class="fin-cc-empty" id="fin-bnpl-empty-msg">No BNPL transactions — tap ＋ Add</div>
       </div>
-      <div class="fin-cc-total-row" id="fin-bnpl-total-row" style="display:none;background:#0E0E1A;">
-        <span class="fin-cc-total-label" style="color:#6FA8DC;">BNPL TOTAL (Tabby + Tamara)</span>
-        <span class="fin-cc-total-val" style="color:#6FA8DC;" id="famt-bnpl-total">0</span>
+      <div class="fin-cc-total-row" id="fin-bnpl-total-row" style="display:none;background:#EAF0FF;">
+        <span class="fin-cc-total-label" style="color:#1A3A7A;">BNPL TOTAL (Tabby + Tamara)</span>
+        <span class="fin-cc-total-val" style="color:#1A3A7A;" id="famt-bnpl-total">0</span>
       </div>
 
       <!-- Row B: CC Sales (auto) -->
@@ -2098,7 +2101,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       </div>
 
       <!-- H: Expenses — multi-line with description + receipt -->
-      <div style="background:#0D0D14;padding:6px 14px;border-top:1px solid #111;border-bottom:1px solid #111;display:flex;align-items:center;justify-content:space-between;">
+      <div style="background:var(--gold-pale);padding:6px 14px;border-top:1px solid var(--gold-border);border-bottom:1px solid var(--gold-border);display:flex;align-items:center;justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="fin-row-badge fin-badge-h">H</div>
           <div>
@@ -2109,14 +2112,14 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="font-family:var(--f-mono);font-size:16px;font-weight:800;color:#8B1A1A;" id="famt-expenses">—</div>
           <button onclick="addExpenseRow()" id="fin-add-exp-btn"
-            style="background:#1A0A0A;border:1px solid #5A1A1A;border-radius:6px;color:#E87070;
+            style="background:#FDE8E8;border:1px solid #F5CECE;border-radius:6px;color:#8B1A1A;
                    font-family:var(--f-body);font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer;">
             ＋ Add
           </button>
         </div>
       </div>
       <div id="fin-expense-list">
-        <div class="fin-cc-empty" id="fin-expense-empty-msg" style="color:#3A1A1A;">No expenses recorded — tap ＋ Add</div>
+        <div class="fin-cc-empty" id="fin-expense-empty-msg" style="color:var(--ink-light);">No expenses recorded — tap ＋ Add</div>
       </div>
 
       <!-- CLOSING BALANCE -->
@@ -2160,13 +2163,13 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
   <!-- SKU TRACKER panel -->
   <div id="dashTrackerPanel" style="display:none;flex-direction:column;flex:1;min-height:0;">
-    <div style="padding:12px 14px;border-bottom:1px solid #1E1E1E;flex-shrink:0;">
-      <div style="font-family:var(--f-mono);font-size:9px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+    <div style="padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
         SKU Movement Tracker — Past 15 Days
       </div>
       <select id="trackerSkuSelect" onchange="renderTracker()"
-        style="width:100%;background:#1A1A1A;border:1px solid #2A2A2A;border-radius:8px;
-        padding:10px 12px;font-family:var(--f-body);font-size:13px;color:#E0E0E0;
+        style="width:100%;background:var(--gold-pale);border:1px solid var(--border);border-radius:8px;
+        padding:10px 12px;font-family:var(--f-body);font-size:13px;color:var(--ink);
         outline:none;appearance:none;-webkit-appearance:none;
         background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23C9A44E' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
         background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;">
@@ -2192,7 +2195,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         <div class="exp-title">📥 Export Reports</div>
         <div style="font-family:var(--f-mono);font-size:10px;color:#555;margin-top:1px;" id="expStoreName">—</div>
       </div>
-      <button onclick="closeExport()" style="background:#1A1A1A;border:1px solid #333;border-radius:50%;width:30px;height:30px;color:#888;font-size:15px;cursor:pointer;">✕</button>
+      <button onclick="closeExport()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:50%;width:30px;height:30px;color:var(--ink-mid);font-size:15px;cursor:pointer;">✕</button>
     </div>
 
     <!-- ── STEP 1: Report Type ── -->
@@ -2234,31 +2237,31 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     </div>
 
     <!-- Custom date range -->
-    <div style="background:#111;border:1px solid #222;border-radius:10px;padding:10px 12px;margin-bottom:10px;">
-      <div style="font-family:var(--f-mono);font-size:9px;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;">
+    <div style="background:var(--gold-pale);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+      <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;">
         📅 Custom Date Range
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <div>
-          <div style="font-family:var(--f-mono);font-size:9px;color:#666;margin-bottom:3px;">FROM</div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-mid);margin-bottom:3px;">FROM</div>
           <input type="date" id="expDateFrom"
-            style="width:100%;background:#1A1A1A;border:1px solid #C9A44E;border-radius:7px;
-              padding:9px 10px;font-family:var(--f-mono);font-size:13px;color:#E0E0E0;
+            style="width:100%;background:#FFFFFF;border:1.5px solid var(--gold);border-radius:7px;
+              padding:9px 10px;font-family:var(--f-mono);font-size:13px;color:var(--ink);
               outline:none;box-sizing:border-box;cursor:pointer;"
             onchange="expCustomDateChanged()">
         </div>
         <div>
-          <div style="font-family:var(--f-mono);font-size:9px;color:#666;margin-bottom:3px;">TO</div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-mid);margin-bottom:3px;">TO</div>
           <input type="date" id="expDateTo"
-            style="width:100%;background:#1A1A1A;border:1px solid #C9A44E;border-radius:7px;
-              padding:9px 10px;font-family:var(--f-mono);font-size:13px;color:#E0E0E0;
+            style="width:100%;background:#FFFFFF;border:1.5px solid var(--gold);border-radius:7px;
+              padding:9px 10px;font-family:var(--f-mono);font-size:13px;color:var(--ink);
               outline:none;box-sizing:border-box;cursor:pointer;"
             onchange="expCustomDateChanged()">
         </div>
       </div>
       <!-- Selected range summary -->
       <div id="expRangeSummary" style="margin-top:8px;font-family:var(--f-mono);font-size:10px;
-        color:#C9A44E;text-align:center;min-height:16px;"></div>
+        color:var(--gold-dark);text-align:center;min-height:16px;font-weight:600;"></div>
     </div>
 
     <!-- ── STEP 3: Download ── -->
@@ -2389,95 +2392,95 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 </div>
 
 <!-- ══════════ LOCK MODAL ══════════ -->
-<div id="lockModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);display:none;align-items:flex-end;justify-content:center;z-index:950;padding-bottom:env(safe-area-inset-bottom,0px);">
-  <div style="background:#1C1C1E;border-radius:20px 20px 0 0;width:100%;max-width:460px;padding:22px 20px 24px;">
-    <div style="font-size:17px;font-weight:700;color:#E8C97A;margin-bottom:8px;">🔒 Lock <span id="lockModalDay"></span>?</div>
-    <div style="font-size:12px;color:#666;margin-bottom:10px;" id="lockModalSummary"></div>
-    <div style="font-size:12px;color:#4A8A4A;background:#1A2A1A;border:1px solid #2A4A2A;border-radius:8px;padding:10px 12px;margin-bottom:10px;">✅ Closing balance becomes tomorrow's Opening Stock automatically</div>
-    <div style="font-size:11px;color:#8B4A4A;background:#2A1A1A;border:1px solid #4A2A2A;border-radius:8px;padding:8px 12px;margin-bottom:12px;">⚠ Cannot be edited after locking</div>
+<div id="lockModal" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);display:none;align-items:flex-end;justify-content:center;z-index:950;padding-bottom:env(safe-area-inset-bottom,0px);">
+  <div style="background:#FFFFFF;border-radius:20px 20px 0 0;border-top:3px solid var(--gold);width:100%;max-width:460px;padding:22px 20px 24px;box-shadow:0 -4px 24px rgba(26,39,68,0.12);">
+    <div style="font-size:17px;font-weight:700;color:var(--gold-dark);margin-bottom:8px;font-family:'Cormorant Garamond',serif;">🔒 Lock <span id="lockModalDay"></span>?</div>
+    <div style="font-size:12px;color:var(--ink-light);margin-bottom:10px;" id="lockModalSummary"></div>
+    <div style="font-size:12px;color:#1A6A2A;background:#EAF5EA;border:1px solid #A8CCA8;border-radius:8px;padding:10px 12px;margin-bottom:10px;">✅ Closing balance becomes tomorrow's Opening Stock automatically</div>
+    <div style="font-size:11px;color:#8B1A1A;background:#FDE8E8;border:1px solid #F5CECE;border-radius:8px;padding:8px 12px;margin-bottom:12px;">⚠ Cannot be edited after locking</div>
     <div style="margin-bottom:16px;">
-      <div style="font-size:11px;color:#888;font-family:var(--f-mono);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">Your Name (required to lock)</div>
+      <div style="font-size:11px;color:var(--ink-light);font-family:'Montserrat',sans-serif;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Your Name (required to lock)</div>
       <input id="lockByName" type="text" placeholder="Enter your name…"
-        style="width:100%;background:#252525;border:1px solid #C9A44E;border-radius:8px;
-               padding:11px 14px;font-family:var(--f-body);font-size:14px;color:#E0E0E0;
+        style="width:100%;background:var(--gold-pale);border:1.5px solid var(--gold);border-radius:8px;
+               padding:11px 14px;font-family:'Montserrat',sans-serif;font-size:14px;color:var(--ink);
                outline:none;box-sizing:border-box;">
     </div>
     <div style="display:flex;gap:10px;">
-      <button onclick="closeLockModal()" style="flex:1;background:#252525;border:1px solid #3A3A3A;color:#888;font-family:var(--f-body);font-size:16px;padding:15px;border-radius:10px;cursor:pointer;">Cancel</button>
-      <button onclick="confirmLock()" style="flex:2;background:linear-gradient(135deg,#1A5A1A,#0D3A0D);color:#6FCF97;font-family:var(--f-body);font-size:16px;font-weight:700;border:none;padding:15px;border-radius:10px;cursor:pointer;">Lock & Carry Forward ✓</button>
+      <button onclick="closeLockModal()" style="flex:1;background:#FFFFFF;border:1.5px solid var(--gold-border);color:var(--ink-mid);font-family:'Montserrat',sans-serif;font-size:15px;padding:14px;border-radius:10px;cursor:pointer;">Cancel</button>
+      <button onclick="confirmLock()" style="flex:2;background:linear-gradient(135deg,#1A6A2A,#2A8A3A);color:#FFFFFF;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;border:none;padding:14px;border-radius:10px;cursor:pointer;">Lock & Carry Forward ✓</button>
     </div>
   </div>
 </div>
 
 <!-- ══════════ FINANCE LOCK MODAL ══════════ -->
-<div id="finLockModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:flex-end;justify-content:center;z-index:960;padding-bottom:env(safe-area-inset-bottom,0px);">
-  <div style="background:#1C1C1E;border-radius:20px 20px 0 0;width:100%;max-width:460px;padding:22px 20px 28px;">
-    
-    <div style="font-size:17px;font-weight:700;color:#C9A44E;margin-bottom:6px;">🔒 Lock Finance Report?</div>
-    <div style="font-size:12px;color:#888;margin-bottom:12px;" id="finLockModalDay">—</div>
-    <div id="finLockSummary" style="font-size:13px;color:#CCC;background:#111;border:1px solid #2A2A2A;border-radius:8px;padding:12px 14px;margin-bottom:10px;line-height:1.7;"></div>
-    <div style="font-size:12px;color:#6FA8DC;background:#0A0A1A;border:1px solid #1A2A3A;border-radius:8px;padding:9px 12px;margin-bottom:8px;">📤 After locking, export PDF and share via WhatsApp or Email</div>
-    <div style="font-size:11px;color:#C9A44E;background:#1A1200;border:1px solid #3A2A00;border-radius:8px;padding:8px 12px;margin-bottom:18px;">⚠ Finance entries cannot be edited after locking. Manager Override required to unlock.</div>
+<div id="finLockModal" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);display:none;align-items:flex-end;justify-content:center;z-index:960;padding-bottom:env(safe-area-inset-bottom,0px);">
+  <div style="background:#FFFFFF;border-radius:20px 20px 0 0;border-top:3px solid var(--gold);width:100%;max-width:460px;padding:22px 20px 28px;box-shadow:0 -4px 24px rgba(26,39,68,0.12);">
+
+    <div style="font-size:17px;font-weight:700;color:var(--gold-dark);margin-bottom:6px;font-family:'Cormorant Garamond',serif;">🔒 Lock Finance Report?</div>
+    <div style="font-size:12px;color:var(--ink-light);margin-bottom:12px;" id="finLockModalDay">—</div>
+    <div id="finLockSummary" style="font-size:13px;color:var(--ink);background:var(--gold-pale);border:1px solid var(--gold-border);border-radius:8px;padding:12px 14px;margin-bottom:10px;line-height:1.7;"></div>
+    <div style="font-size:12px;color:#1A3A7A;background:#EAF0FF;border:1px solid #A8B8E8;border-radius:8px;padding:9px 12px;margin-bottom:8px;">📤 After locking, export PDF and share via WhatsApp or Email</div>
+    <div style="font-size:11px;color:var(--gold-dark);background:var(--gold-pale);border:1px solid var(--gold-border);border-radius:8px;padding:8px 12px;margin-bottom:18px;">⚠ Finance entries cannot be edited after locking. Manager Override required to unlock.</div>
     <div style="display:flex;gap:10px;">
-      <button onclick="closeFinLockModal()" style="flex:1;background:#252525;border:1px solid #3A3A3A;color:#888;font-family:var(--f-body);font-size:16px;padding:15px;border-radius:10px;cursor:pointer;">Cancel</button>
-      <button onclick="confirmFinLock()" style="flex:2;background:linear-gradient(135deg,#5A3A00,#3A2000);color:#C9A44E;font-family:var(--f-body);font-size:16px;font-weight:700;border:1px solid #C9A44E;padding:15px;border-radius:10px;cursor:pointer;">Lock Finance ✓</button>
+      <button onclick="closeFinLockModal()" style="flex:1;background:#FFFFFF;border:1.5px solid var(--gold-border);color:var(--ink-mid);font-family:'Montserrat',sans-serif;font-size:15px;padding:14px;border-radius:10px;cursor:pointer;">Cancel</button>
+      <button onclick="confirmFinLock()" style="flex:2;background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:#FFFFFF;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;border:none;padding:14px;border-radius:10px;cursor:pointer;">Lock Finance ✓</button>
     </div>
   </div>
 </div>
 
 <!-- ══════════ MULTI-TRANSFER DRAWER ══════════ -->
-<div id="multiTrfDrawer" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);display:none;align-items:flex-end;justify-content:center;z-index:970;padding-bottom:env(safe-area-inset-bottom,0px);">
-  <div style="background:#141414;border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:85vh;display:flex;flex-direction:column;">
-    <div style="padding:16px 18px 10px;border-bottom:1px solid #222;">
-      <div style="font-size:9px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">TRANSFER BREAKDOWN</div>
-      <div style="font-size:16px;font-weight:700;color:#E0E0E0;" id="mtd-prod-name">—</div>
-      <div style="font-size:10px;color:#555;font-family:var(--f-mono);" id="mtd-prod-sub">—</div>
+<div id="multiTrfDrawer" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);display:none;align-items:flex-end;justify-content:center;z-index:970;padding-bottom:env(safe-area-inset-bottom,0px);">
+  <div style="background:#FFFFFF;border-radius:20px 20px 0 0;border-top:3px solid var(--gold);width:100%;max-width:500px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 -4px 32px rgba(201,168,76,0.12);">
+    <div style="padding:16px 18px 10px;border-bottom:1px solid var(--border);">
+      <div style="font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">TRANSFER BREAKDOWN</div>
+      <div style="font-size:16px;font-weight:700;color:var(--ink);font-family:var(--f-serif);" id="mtd-prod-name">—</div>
+      <div style="font-size:10px;color:var(--ink-mid);font-family:var(--f-mono);" id="mtd-prod-sub">—</div>
     </div>
     <!-- Received FROM section -->
     <div style="flex:1;overflow-y:auto;padding:0 0 8px;">
       <div id="mtd-inn-section" style="display:none;">
-        <div style="padding:10px 18px 5px;font-size:9px;font-weight:800;color:#2A9060;text-transform:uppercase;letter-spacing:1px;">← Received From</div>
+        <div style="padding:10px 18px 5px;font-size:9px;font-weight:800;color:#0B7A45;text-transform:uppercase;letter-spacing:1px;">← Received From</div>
         <div id="mtd-inn-list"></div>
       </div>
       <div id="mtd-trf-section" style="display:none;">
-        <div style="padding:10px 18px 5px;font-size:9px;font-weight:800;color:#8A4AAA;text-transform:uppercase;letter-spacing:1px;">→ Sent To</div>
+        <div style="padding:10px 18px 5px;font-size:9px;font-weight:800;color:#7048E8;text-transform:uppercase;letter-spacing:1px;">→ Sent To</div>
         <div id="mtd-trf-list"></div>
       </div>
       <!-- Add new transfer split -->
-      <div id="mtd-add-section" style="padding:12px 18px 6px;border-top:1px solid #1E1E1E;display:none;">
-        <div style="font-size:9px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">ADD SPLIT TRANSFER</div>
+      <div id="mtd-add-section" style="padding:12px 18px 6px;border-top:1px solid var(--border);display:none;">
+        <div style="font-size:9px;color:var(--ink-light);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">ADD SPLIT TRANSFER</div>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
-          <select id="mtd-store-sel" style="flex:1;background:#1E1E1E;border:1px solid #333;color:#CCC;border-radius:7px;padding:8px 10px;font-family:var(--f-body);font-size:12px;outline:none;"></select>
-          <div style="background:#1E1E1E;border:1px solid #333;border-radius:7px;padding:8px 12px;font-family:var(--f-mono);font-size:15px;color:#C9A44E;min-width:60px;text-align:center;cursor:pointer;" id="mtd-qty-btn" onclick="openMtdQtyPad()">0</div>
+          <select id="mtd-store-sel" style="flex:1;background:var(--gold-pale);border:1px solid var(--border);color:var(--ink);border-radius:7px;padding:8px 10px;font-family:var(--f-body);font-size:12px;outline:none;"></select>
+          <div style="background:var(--gold-pale);border:1px solid var(--gold);border-radius:7px;padding:8px 12px;font-family:var(--f-mono);font-size:15px;color:var(--gold-dark);min-width:60px;text-align:center;cursor:pointer;" id="mtd-qty-btn" onclick="openMtdQtyPad()">0</div>
         </div>
-        <input id="mtd-remark" placeholder="Remark / reason (optional)…" style="width:100%;background:#1E1E1E;border:1px solid #333;border-radius:7px;padding:8px 12px;font-family:var(--f-body);font-size:12px;color:#CCC;outline:none;box-sizing:border-box;" type="text">
-        <button onclick="addMtdSplit()" style="margin-top:8px;width:100%;background:#1A2A1A;border:1px solid #2A5A2A;color:#6FCF97;font-family:var(--f-body);font-size:14px;font-weight:700;padding:12px;border-radius:9px;cursor:pointer;">＋ Add This Split</button>
+        <input id="mtd-remark" placeholder="Remark / reason (optional)…" style="width:100%;background:var(--gold-pale);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-family:var(--f-body);font-size:12px;color:var(--ink);outline:none;box-sizing:border-box;" type="text">
+        <button onclick="addMtdSplit()" style="margin-top:8px;width:100%;background:linear-gradient(135deg,#0B7A45,#13A066);border:none;color:#FFFFFF;font-family:var(--f-body);font-size:14px;font-weight:700;padding:12px;border-radius:9px;cursor:pointer;">＋ Add This Split</button>
       </div>
     </div>
-    <div style="padding:12px 18px;border-top:1px solid #222;display:flex;gap:10px;">
-      <button onclick="closeMtdDrawer()" style="flex:1;background:#1A1A1A;border:1px solid #333;color:#888;font-family:var(--f-body);font-size:15px;padding:13px;border-radius:10px;cursor:pointer;">Close</button>
+    <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:10px;">
+      <button onclick="closeMtdDrawer()" style="flex:1;background:var(--gold-pale);border:1px solid var(--border);color:var(--ink-mid);font-family:var(--f-body);font-size:15px;padding:13px;border-radius:10px;cursor:pointer;">Close</button>
     </div>
   </div>
 </div>
 
 <!-- ══════════ ADJUSTMENT MODAL ══════════ -->
-<div id="adjModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);display:none;align-items:flex-end;justify-content:center;z-index:975;padding-bottom:env(safe-area-inset-bottom,0px);">
-  <div style="background:#141414;border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:88vh;display:flex;flex-direction:column;">
-    <div style="padding:16px 18px 10px;border-bottom:1px solid #222;">
-      <div style="font-size:9px;font-weight:700;color:#E87070;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">⚖ STOCK ADJUSTMENT — LOCKED DAY</div>
-      <div style="font-size:15px;font-weight:700;color:#E0E0E0;" id="adj-prod-name">—</div>
-      <div style="font-size:10px;color:#555;font-family:var(--f-mono);" id="adj-prod-sub">—</div>
+<div id="adjModal" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);display:none;align-items:flex-end;justify-content:center;z-index:975;padding-bottom:env(safe-area-inset-bottom,0px);">
+  <div style="background:#FFFFFF;border-radius:20px 20px 0 0;border-top:3px solid var(--gold);width:100%;max-width:500px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 -4px 32px rgba(201,168,76,0.12);">
+    <div style="padding:16px 18px 10px;border-bottom:1px solid var(--border);">
+      <div style="font-size:9px;font-weight:700;color:#C0392B;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">⚖ STOCK ADJUSTMENT — LOCKED DAY</div>
+      <div style="font-size:15px;font-weight:700;color:var(--ink);font-family:var(--f-serif);" id="adj-prod-name">—</div>
+      <div style="font-size:10px;color:var(--ink-mid);font-family:var(--f-mono);" id="adj-prod-sub">—</div>
     </div>
     <div style="flex:1;overflow-y:auto;padding:14px 18px;">
-      <div style="background:#1A0A00;border:1px solid #3A1A00;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-family:var(--f-mono);font-size:11px;color:#C9A44E;">
+      <div style="background:#FFF3E0;border:1px solid #E67E22;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-family:var(--f-mono);font-size:11px;color:#874106;">
         ⚠ This day is locked. Adjustments create a separate audit trail — original data is preserved. Manager Override required.
       </div>
       <!-- Current values -->
-      <div id="adj-current-vals" style="background:#111;border:1px solid #222;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-family:var(--f-mono);font-size:12px;color:#888;"></div>
+      <div id="adj-current-vals" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-family:var(--f-mono);font-size:12px;color:var(--ink-mid);"></div>
       <!-- Field to adjust -->
       <div style="margin-bottom:10px;">
-        <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Field to Adjust</div>
-        <select id="adj-field-sel" style="width:100%;background:#1E1E1E;border:1px solid #333;color:#CCC;border-radius:7px;padding:10px 12px;font-family:var(--f-body);font-size:13px;outline:none;" onchange="adjFieldChanged()">
+        <div style="font-size:10px;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Field to Adjust</div>
+        <select id="adj-field-sel" style="width:100%;background:var(--gold-pale);border:1px solid var(--border);color:var(--ink);border-radius:7px;padding:10px 12px;font-family:var(--f-body);font-size:13px;outline:none;" onchange="adjFieldChanged()">
           <option value="open">Opening Stock</option>
           <option value="wh">WH Transfer In</option>
           <option value="inn">Store Transfer In</option>
@@ -2486,15 +2489,15 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         </select>
       </div>
       <div style="margin-bottom:10px;">
-        <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Corrected Value <span id="adj-orig-val" style="color:#C9A44E;"></span></div>
+        <div style="font-size:10px;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Corrected Value <span id="adj-orig-val" style="color:var(--gold-dark);font-weight:700;"></span></div>
         <div style="display:flex;gap:8px;align-items:center;">
-          <div style="flex:1;background:#1E1E1E;border:1px solid #C9A44E;border-radius:7px;padding:12px 16px;font-family:var(--f-mono);font-size:22px;font-weight:700;color:#C9A44E;text-align:center;cursor:pointer;" id="adj-new-val-display" onclick="openAdjPad()">—</div>
+          <div style="flex:1;background:var(--gold-pale);border:1.5px solid var(--gold);border-radius:7px;padding:12px 16px;font-family:var(--f-mono);font-size:22px;font-weight:700;color:var(--gold-dark);text-align:center;cursor:pointer;" id="adj-new-val-display" onclick="openAdjPad()">—</div>
         </div>
       </div>
       <!-- Reason code -->
       <div style="margin-bottom:10px;">
-        <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Reason for Adjustment</div>
-        <select id="adj-reason" style="width:100%;background:#1E1E1E;border:1px solid #333;color:#CCC;border-radius:7px;padding:10px 12px;font-family:var(--f-body);font-size:13px;outline:none;">
+        <div style="font-size:10px;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Reason for Adjustment</div>
+        <select id="adj-reason" style="width:100%;background:var(--gold-pale);border:1px solid var(--border);color:var(--ink);border-radius:7px;padding:10px 12px;font-family:var(--f-body);font-size:13px;outline:none;">
           <option value="not_received">Item not actually received</option>
           <option value="not_entered">Sale made but not entered</option>
           <option value="double_entry">Double entry error</option>
@@ -2504,11 +2507,11 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
           <option value="other">Other (specify below)</option>
         </select>
       </div>
-      <input id="adj-note" placeholder="Additional notes / authorised by…" style="width:100%;background:#1E1E1E;border:1px solid #333;border-radius:7px;padding:10px 12px;font-family:var(--f-body);font-size:12px;color:#CCC;outline:none;box-sizing:border-box;margin-bottom:4px;" type="text">
+      <input id="adj-note" placeholder="Additional notes / authorised by…" style="width:100%;background:var(--gold-pale);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:var(--f-body);font-size:12px;color:var(--ink);outline:none;box-sizing:border-box;margin-bottom:4px;" type="text">
     </div>
-    <div style="padding:12px 18px;border-top:1px solid #222;display:flex;gap:10px;">
-      <button onclick="closeAdjModal()" style="flex:1;background:#1A1A1A;border:1px solid #333;color:#888;font-family:var(--f-body);font-size:15px;padding:13px;border-radius:10px;cursor:pointer;">Cancel</button>
-      <button onclick="confirmAdj()" style="flex:2;background:#3A1A00;border:1px solid #E87070;color:#E87070;font-family:var(--f-body);font-size:15px;font-weight:700;padding:13px;border-radius:10px;cursor:pointer;">Apply Adjustment ⚖</button>
+    <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:10px;">
+      <button onclick="closeAdjModal()" style="flex:1;background:var(--gold-pale);border:1px solid var(--border);color:var(--ink-mid);font-family:var(--f-body);font-size:15px;padding:13px;border-radius:10px;cursor:pointer;">Cancel</button>
+      <button onclick="confirmAdj()" style="flex:2;background:linear-gradient(135deg,#C0392B,#E74C3C);border:none;color:#FFFFFF;font-family:var(--f-body);font-size:15px;font-weight:700;padding:13px;border-radius:10px;cursor:pointer;">Apply Adjustment ⚖</button>
     </div>
   </div>
 </div>
@@ -2521,17 +2524,17 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
 <!-- ══════════ MANAGER DASHBOARD PANEL ══════════ -->
 <div id="mgrDashPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:800;display:none;flex-direction:column;">
-  <div style="background:#1A1A1A;border-bottom:4px solid #9A7B4F;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+  <div style="background:#FFFFFF;border-bottom:3px solid var(--gold);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(201,168,76,0.08);">
     <div>
-      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">EMIRATES PRIDE</div>
-      <div style="font-family:var(--f-mono);font-size:10px;color:#AAA;margin-top:2px;letter-spacing:0.5px;">Manager Dashboard — All Stores</div>
+      <div style="font-family:var(--f-serif);font-size:17px;font-weight:600;color:var(--gold-dark);letter-spacing:1px;">Emirates Pride</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:2px;letter-spacing:0.5px;">Manager Dashboard — All Stores</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button onclick="openFGApproval()" style="background:linear-gradient(135deg,#FF6B35,#F7931E);border:1px solid #FFB84D;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(255,107,53,0.3);">📦 FG Tester Requests</button>
-      <button onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:1px solid #A78BFA;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.3);">📈 Demand Planning</button>
-      <button onclick="openAMMinMaxPanel()" style="background:linear-gradient(135deg,#065F46,#059669);border:1px solid #34D399;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.3);">📊 Stock Guide / Min-Max</button>
-      <button onclick="renderMgrDashboard()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
-      <button onclick="closeMgrDashboard()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
+      <button onclick="openFGApproval()" style="background:linear-gradient(135deg,#FF6B35,#F7931E);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(255,107,53,0.25);">📦 FG Tester Requests</button>
+      <button onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.25);">📈 Demand Planning</button>
+      <button onclick="openAMMinMaxPanel()" style="background:linear-gradient(135deg,#065F46,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.25);">📊 Stock Guide / Min-Max</button>
+      <button onclick="renderMgrDashboard()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;color:var(--ink-mid);font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
+      <button onclick="closeMgrDashboard()" style="background:var(--gold-dark);border:none;border-radius:6px;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
     </div>
   </div>
   <div id="mgrDashBody" style="flex:1;overflow-y:auto;background:#FAFAF8;"></div>
@@ -2541,10 +2544,10 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 <style>
 #amPanel{position:fixed;inset:0;background:#F5F5F0;z-index:820;display:none;flex-direction:column;}
 .am-tbl{width:100%;border-collapse:collapse;font-size:12px;}
-.am-tbl th{padding:8px 10px;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:2;background:#1A1A1A;color:#fff;font-family:var(--f-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;}
+.am-tbl th{padding:8px 10px;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:2;background:#F5EDD8;color:#1C1C1C;border-bottom:2px solid #E2D9C8;font-family:var(--f-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;}
 .am-tbl td{padding:6px 10px;border-bottom:1px solid #E8E4DC;vertical-align:middle;}
 .am-tbl tbody tr:hover td{background:rgba(201,164,78,0.05)!important;}
-.am-cat-hdr td{background:#2A2A2A!important;color:#C9A44E!important;font-family:var(--f-mono);font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:6px 10px!important;}
+.am-cat-hdr td{background:#F5EDD8!important;color:var(--gold-dark)!important;font-family:var(--f-mono);font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:6px 10px!important;border-bottom:1px solid #E2D9C8!important;}
 .am-input{width:60px;padding:5px 8px;border:1.5px solid #DDD;border-radius:5px;font-family:var(--f-mono);font-size:12px;font-weight:700;text-align:center;background:#fff;}
 .am-input:focus{outline:none;border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,0.15);}
 .am-input.dirty{border-color:#F59E0B;background:#FFFBEB;}
@@ -2562,33 +2565,33 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
 <div id="amPanel">
   <!-- Header -->
-  <div id="amPrintHide" style="background:#1A1A1A;border-bottom:4px solid #059669;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
+  <div id="amPrintHide" style="background:#FFFFFF;border-bottom:3px solid var(--gold);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;box-shadow:0 2px 8px rgba(201,168,76,0.08);">
     <div>
-      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">📊 STOCK GUIDE — MIN/MAX SETTINGS</div>
-      <div style="font-family:var(--f-mono);font-size:9px;color:#AAA;margin-top:2px;letter-spacing:0.5px;">Area Manager fills target stock levels per SKU — auto-calculates from demand planning</div>
+      <div style="font-family:var(--f-serif);font-size:17px;font-weight:600;color:var(--gold-dark);">📊 Stock Guide — Min/Max Settings</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);margin-top:2px;letter-spacing:0.5px;">Area Manager fills target stock levels per SKU — auto-calculates from demand planning</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
       <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-family:var(--f-mono);font-size:10px;color:#AAA;">STORE:</span>
+        <span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-mid);">STORE:</span>
         <select id="amStoreSelect" onchange="loadAMMinMaxTable(this.value)"
-                style="background:#2A2A2A;color:#EEE;border:1px solid #555;border-radius:6px;padding:6px 10px;font-family:var(--f-mono);font-size:11px;cursor:pointer;">
+                style="background:var(--gold-pale);color:var(--ink);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--f-mono);font-size:11px;cursor:pointer;">
           <option value="">— Select Store —</option>
         </select>
       </div>
       <button onclick="saveAMMinMaxBulk()" id="amSaveBtn"
-              style="background:linear-gradient(135deg,#065F46,#059669);border:1px solid #34D399;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;opacity:0.5;pointer-events:none;">
+              style="background:linear-gradient(135deg,#065F46,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;opacity:0.5;pointer-events:none;">
         💾 Save to Stock Guide
       </button>
       <button onclick="exportAMMinMaxExcel()"
-              style="background:#1A5276;border:1px solid #2E86C1;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">
+              style="background:#1A5276;border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">
         📊 Export Excel
       </button>
       <button onclick="printAMMinMaxPDF()"
-              style="background:#6B21A8;border:1px solid #A78BFA;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">
+              style="background:#6B21A8;border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">
         🖨 Print / PDF
       </button>
       <button onclick="closeAMMinMaxPanel()"
-              style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">
+              style="background:var(--gold-dark);border:none;border-radius:6px;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">
         ✕ Close
       </button>
     </div>
@@ -2615,18 +2618,18 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
 <!-- ══════════ DEMAND PLANNING PANEL ══════════ -->
 <div id="dpPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:810;display:none;flex-direction:column;">
-  <div style="background:#1A1A1A;border-bottom:4px solid #9A7B4F;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+  <div style="background:#FFFFFF;border-bottom:3px solid var(--gold);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(201,168,76,0.08);">
     <div>
-      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">📈 DEMAND PLANNING</div>
-      <div style="font-family:var(--f-mono);font-size:10px;color:#AAA;margin-top:2px;">Benchmarks · Overstock · Reorder Priority · Store Performance</div>
+      <div style="font-family:var(--f-serif);font-size:17px;font-weight:600;color:var(--gold-dark);">📈 Demand Planning</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:2px;">Benchmarks · Overstock · Reorder Priority · Store Performance</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button onclick="exportDPReport('weekly','excel')" style="background:#1A7B40;border:1px solid #27AE60;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:10px;padding:7px 12px;cursor:pointer;font-weight:700;">📊 Weekly Excel</button>
-      <button onclick="exportDPReport('weekly','pdf')" style="background:#9A7B4F;border:1px solid #C9A44E;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:10px;padding:7px 12px;cursor:pointer;font-weight:700;">📄 Weekly PDF</button>
-      <button onclick="exportDPReport('monthly','excel')" style="background:#1A7B40;border:1px solid #27AE60;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:10px;padding:7px 12px;cursor:pointer;font-weight:700;">📊 Monthly Excel</button>
-      <button onclick="exportDPReport('monthly','pdf')" style="background:#9A7B4F;border:1px solid #C9A44E;border-radius:6px;color:#FFF;font-family:var(--f-mono);font-size:10px;padding:7px 12px;cursor:pointer;font-weight:700;">📄 Monthly PDF</button>
-      <button onclick="loadDPData()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;">⇅ Refresh</button>
-      <button onclick="closeDPPanel()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">✕ Close</button>
+      <button onclick="exportDPReport('weekly','excel')" style="background:linear-gradient(135deg,#1A7B40,#27AE60);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:10px;padding:7px 12px;cursor:pointer;font-weight:700;">📊 Weekly Excel</button>
+      <button onclick="exportDPReport('weekly','pdf')" style="background:linear-gradient(135deg,var(--gold-dark),var(--gold));border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:10px;padding:7px 12px;cursor:pointer;font-weight:700;">📄 Weekly PDF</button>
+      <button onclick="exportDPReport('monthly','excel')" style="background:linear-gradient(135deg,#1A7B40,#27AE60);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:10px;padding:7px 12px;cursor:pointer;font-weight:700;">📊 Monthly Excel</button>
+      <button onclick="exportDPReport('monthly','pdf')" style="background:linear-gradient(135deg,var(--gold-dark),var(--gold));border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:10px;padding:7px 12px;cursor:pointer;font-weight:700;">📄 Monthly PDF</button>
+      <button onclick="loadDPData()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;color:var(--ink-mid);font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;">⇅ Refresh</button>
+      <button onclick="closeDPPanel()" style="background:var(--gold-dark);border:none;border-radius:6px;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">✕ Close</button>
     </div>
   </div>
   <!-- DP tabs -->
@@ -2657,20 +2660,20 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 .wh-act{padding:3px 8px;border:1.5px solid;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;display:block;margin-bottom:3px;text-align:center;}
 </style>
 
-<div id="whPanel" style="position:fixed;inset:0;background:#F0EDE6;z-index:700;display:none;flex-direction:column;overflow:hidden;">
-  <div style="background:#1A1A1A;border-bottom:4px solid #9A7B4F;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;">
+<div id="whPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:700;display:none;flex-direction:column;overflow:hidden;">
+  <div style="background:#FFFFFF;border-bottom:3px solid var(--gold);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;box-shadow:0 2px 8px rgba(201,168,76,0.08);">
     <div>
-      <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">&#128230; WAREHOUSE &mdash; TESTER TRACKER</div>
-      <div style="font-family:var(--f-mono);font-size:9px;color:#AAA;margin-top:1px;">Emirates Pride Perfumes &middot; JAFZA &middot; 1-to-1 Tester Exchange Log</div>
+      <div style="font-family:var(--f-serif);font-size:17px;font-weight:600;color:var(--gold-dark);">&#128230; Warehouse — Tester Tracker</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);margin-top:1px;">Emirates Pride Perfumes &middot; JAFZA &middot; 1-to-1 Tester Exchange Log</div>
     </div>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-      <span style="font-family:var(--f-mono);font-size:9px;color:#888;">FROM</span>
-      <input type="date" id="whFromDate" style="background:#2A2A2A;color:#DDD;border:1px solid #555;border-radius:5px;padding:4px 8px;font-family:var(--f-mono);font-size:11px;">
-      <span style="font-family:var(--f-mono);font-size:9px;color:#888;">TO</span>
-      <input type="date" id="whToDate" style="background:#2A2A2A;color:#DDD;border:1px solid #555;border-radius:5px;padding:4px 8px;font-family:var(--f-mono);font-size:11px;">
-      <button onclick="whRefresh()" style="background:transparent;border:1px solid #555;border-radius:5px;color:#CCC;font-family:var(--f-mono);font-size:10px;padding:5px 10px;cursor:pointer;">&#8645; Refresh</button>
-      <button onclick="whExportExcel()" style="background:#1E5631;border:none;border-radius:5px;color:#fff;font-family:var(--f-mono);font-size:10px;padding:5px 10px;cursor:pointer;">&#128202; Excel</button>
-      <button onclick="doLogout()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:5px;color:#1A1A1A;font-family:var(--f-mono);font-size:10px;padding:5px 10px;cursor:pointer;font-weight:700;">&#9167; Logout</button>
+      <span style="font-family:var(--f-mono);font-size:9px;color:var(--ink-mid);">FROM</span>
+      <input type="date" id="whFromDate" style="background:var(--gold-pale);color:var(--ink);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-family:var(--f-mono);font-size:11px;">
+      <span style="font-family:var(--f-mono);font-size:9px;color:var(--ink-mid);">TO</span>
+      <input type="date" id="whToDate" style="background:var(--gold-pale);color:var(--ink);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-family:var(--f-mono);font-size:11px;">
+      <button onclick="whRefresh()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:5px;color:var(--ink-mid);font-family:var(--f-body);font-size:10px;padding:5px 10px;cursor:pointer;">&#8645; Refresh</button>
+      <button onclick="whExportExcel()" style="background:#1E5631;border:none;border-radius:5px;color:#fff;font-family:var(--f-body);font-size:10px;padding:5px 10px;cursor:pointer;font-weight:700;">&#128202; Excel</button>
+      <button onclick="doLogout()" style="background:var(--gold-dark);border:none;border-radius:5px;color:#FFFFFF;font-family:var(--f-body);font-size:10px;padding:5px 10px;cursor:pointer;font-weight:700;">&#9167; Logout</button>
     </div>
   </div>
   <div style="background:#fff;border-bottom:2px solid #E8E4DC;padding:8px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;">
@@ -2682,14 +2685,14 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 </div>
 
 <!-- WH: Outward Modal -->
-<div id="whOutwardModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:961;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
-  <div style="background:#fff;border-radius:12px;width:100%;max-width:680px;box-shadow:0 20px 60px rgba(0,0,0,0.4);margin:auto;">
-    <div style="background:#1A5276;border-radius:12px 12px 0 0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
+<div id="whOutwardModal" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);z-index:961;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
+  <div style="background:#fff;border-radius:12px;border-top:3px solid var(--gold);width:100%;max-width:680px;box-shadow:0 20px 60px rgba(201,168,76,0.15);margin:auto;">
+    <div style="background:var(--gold-pale);border-radius:12px 12px 0 0;border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
       <div>
-        <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:#fff;">&#128228; Record Outward Dispatch</div>
-        <div style="font-size:10px;color:#AED6F1;margin-top:2px;">Type from ATALO DN printout &mdash; 2 copies will print (Warehouse + Store)</div>
+        <div style="font-family:var(--f-serif);font-size:16px;font-weight:600;color:var(--gold-dark);">&#128228; Record Outward Dispatch</div>
+        <div style="font-size:10px;color:var(--ink-mid);margin-top:2px;">Type from ATALO DN printout &mdash; 2 copies will print (Warehouse + Store)</div>
       </div>
-      <button onclick="whCloseOutwardModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">&#10005;</button>
+      <button onclick="whCloseOutwardModal()" style="background:none;border:none;color:var(--ink-mid);font-size:20px;cursor:pointer;">&#10005;</button>
     </div>
     <div style="padding:16px 18px;">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
@@ -2714,20 +2717,20 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     </div>
     <div style="padding:12px 18px;border-top:1px solid #E8E4DC;display:flex;gap:10px;">
       <button onclick="whCloseOutwardModal()" style="flex:1;padding:10px;border:1px solid #E8E4DC;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">Cancel</button>
-      <button onclick="whSubmitOutward()" style="flex:2;padding:10px;border:none;border-radius:8px;background:#1A5276;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">&#10003; Save &amp; Print 2 DN Copies</button>
+      <button onclick="whSubmitOutward()" style="flex:2;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,#1A5276,#2E86C1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--f-body);">&#10003; Save &amp; Print 2 DN Copies</button>
     </div>
   </div>
 </div>
 
 <!-- WH: Return Modal -->
-<div id="whReturnModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:960;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
-  <div style="background:#fff;border-radius:12px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,0.4);margin:auto;">
-    <div style="background:#145A32;border-radius:12px 12px 0 0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
+<div id="whReturnModal" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);z-index:960;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
+  <div style="background:#fff;border-radius:12px;border-top:3px solid var(--gold);width:100%;max-width:520px;box-shadow:0 20px 60px rgba(201,168,76,0.15);margin:auto;">
+    <div style="background:#E8F8F0;border-radius:12px 12px 0 0;border-bottom:1px solid #C3E6D5;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
       <div>
-        <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:#fff;">&#128229; Record Inward Return</div>
-        <div style="font-size:10px;color:#ABEBC6;margin-top:2px;">Verify the empty bottle brought back by driver</div>
+        <div style="font-family:var(--f-serif);font-size:16px;font-weight:600;color:#0B7A45;">&#128229; Record Inward Return</div>
+        <div style="font-size:10px;color:#4A9060;margin-top:2px;">Verify the empty bottle brought back by driver</div>
       </div>
-      <button onclick="whCloseReturnModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">&#10005;</button>
+      <button onclick="whCloseReturnModal()" style="background:none;border:none;color:var(--ink-mid);font-size:20px;cursor:pointer;">&#10005;</button>
     </div>
     <div style="padding:16px 18px;">
       <div id="whReturnInfo" style="background:#F9F8F6;border:1.5px solid #E8E4DC;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;line-height:1.8;"></div>
@@ -2770,7 +2773,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     </div>
     <div style="padding:12px 18px;border-top:1px solid #E8E4DC;display:flex;gap:10px;">
       <button onclick="whCloseReturnModal()" style="flex:1;padding:10px;border:1px solid #E8E4DC;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;">Cancel</button>
-      <button onclick="whSubmitReturn()" style="flex:2;padding:10px;border:none;border-radius:8px;background:#145A32;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">&#10003; Confirm Return &amp; Log</button>
+      <button onclick="whSubmitReturn()" style="flex:2;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,#145A32,#1A7A45);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--f-body);">&#10003; Confirm Return &amp; Log</button>
     </div>
   </div>
 </div>
@@ -2778,37 +2781,38 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
 
 <!-- ══════════ TRANSFER DRAWER ══════════ -->
-<div id="trfDrawer" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);
+<div id="trfDrawer" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);
   display:none;align-items:flex-end;justify-content:center;z-index:960;
   padding-bottom:env(safe-area-inset-bottom,0px);">
-  <div style="background:#141414;border-radius:20px 20px 0 0;
-    width:100%;max-width:540px;max-height:92vh;display:flex;flex-direction:column;">
+  <div style="background:#FFFFFF;border-radius:20px 20px 0 0;border-top:3px solid var(--gold);
+    width:100%;max-width:540px;max-height:92vh;display:flex;flex-direction:column;
+    box-shadow:0 -4px 32px rgba(201,168,76,0.12);">
 
     <!-- ── Header ── -->
-    <div style="padding:14px 16px 10px;border-bottom:1px solid #222;flex-shrink:0;">
+    <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:9px;font-weight:700;color:#555;text-transform:uppercase;
+          <div style="font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;
             letter-spacing:1px;margin-bottom:3px;" id="trfDrawerType">—</div>
-          <div style="font-size:16px;font-weight:700;color:#E0E0E0;
+          <div style="font-size:16px;font-weight:700;color:var(--ink);font-family:var(--f-serif);
             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="trfDrawerProd">—</div>
-          <div style="font-family:var(--f-mono);font-size:10px;color:#555;margin-top:1px;"
+          <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-mid);margin-top:1px;"
             id="trfDrawerDay">—</div>
         </div>
-        <button onclick="closeTrfDrawer()" style="background:#1A1A1A;border:1px solid #333;
-          border-radius:50%;width:30px;height:30px;color:#888;font-size:15px;cursor:pointer;
+        <button onclick="closeTrfDrawer()" style="background:var(--gold-pale);border:1px solid var(--border);
+          border-radius:50%;width:30px;height:30px;color:var(--ink-mid);font-size:15px;cursor:pointer;
           flex-shrink:0;display:flex;align-items:center;justify-content:center;">✕</button>
       </div>
       <!-- Total strip -->
       <div style="margin-top:10px;display:flex;align-items:center;gap:12px;
-        background:#1A1A0A;border:1px solid #2A2A0A;border-radius:8px;padding:8px 12px;">
+        background:var(--gold-pale);border:1px solid var(--gold-light);border-radius:8px;padding:8px 12px;">
         <div id="trfDrawerTotal"
-          style="font-family:var(--f-mono);font-size:32px;font-weight:900;color:#C9A44E;
+          style="font-family:var(--f-mono);font-size:32px;font-weight:900;color:var(--gold-dark);
           line-height:1;min-width:40px;">—</div>
         <div>
-          <div style="font-family:var(--f-mono);font-size:9px;font-weight:700;color:#7A5C28;
+          <div style="font-family:var(--f-mono);font-size:9px;font-weight:700;color:var(--gold-dark);
             text-transform:uppercase;letter-spacing:0.5px;" id="trfDrawerTotalLabel">TOTAL UNITS</div>
-          <div style="font-family:var(--f-mono);font-size:10px;color:#555;margin-top:1px;"
+          <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:1px;"
             id="trfDrawerStoreCount">0 stores</div>
         </div>
       </div>
@@ -2818,21 +2822,21 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <div id="trfDrawerList" style="flex:1;overflow-y:auto;padding:6px 0;min-height:60px;"></div>
 
     <!-- ── ADD NEW SPLIT — inline form ── -->
-    <div id="trfDrawerAddSection" style="border-top:2px solid #1E2A1E;flex-shrink:0;background:#0D160D;padding:12px 14px;">
+    <div id="trfDrawerAddSection" style="border-top:2px solid var(--border);flex-shrink:0;background:var(--gold-pale);padding:12px 14px;">
 
-      <div style="font-family:var(--f-mono);font-size:9px;font-weight:800;color:#2A6A2A;
+      <div style="font-family:var(--f-mono);font-size:9px;font-weight:800;color:#0B7A45;
         text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">
         ＋ ADD TRANSFER ENTRY
       </div>
 
       <!-- Store selector -->
       <div style="margin-bottom:8px;">
-        <div style="font-family:var(--f-mono);font-size:9px;color:#444;
+        <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-mid);
           text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"
           id="trfDrawerStoreLabel">Select Store</div>
         <select id="trfDrawerStoreSel"
-          style="width:100%;background:#1A1A1A;border:1px solid #2A4A2A;border-radius:8px;
-            padding:10px 12px;font-family:var(--f-body);font-size:13px;color:#CCC;
+          style="width:100%;background:#FFFFFF;border:1px solid var(--border);border-radius:8px;
+            padding:10px 12px;font-family:var(--f-body);font-size:13px;color:var(--ink);
             outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;">
           <option value="">— Select store —</option>
         </select>
@@ -2841,30 +2845,30 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <!-- Remark -->
       <div style="margin-bottom:10px;">
         <input id="trfDrawerRemark" type="text" placeholder="Remark / reason (optional)…"
-          style="width:100%;background:#1A1A1A;border:1px solid #222;border-radius:8px;
-            padding:9px 12px;font-family:var(--f-body);font-size:12px;color:#CCC;
+          style="width:100%;background:#FFFFFF;border:1px solid var(--border);border-radius:8px;
+            padding:9px 12px;font-family:var(--f-body);font-size:12px;color:var(--ink);
             outline:none;box-sizing:border-box;">
       </div>
 
       <!-- Quantity row -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-        <div style="font-family:var(--f-mono);font-size:11px;color:#555;white-space:nowrap;">QTY</div>
+        <div style="font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);white-space:nowrap;">QTY</div>
         <!-- Minus -->
         <button onclick="trfDrawerQtyAdj(-1)"
-          style="background:#1A1A1A;border:1px solid #333;border-radius:8px;
-            color:#888;font-size:20px;font-weight:700;width:42px;height:42px;
+          style="background:#FFFFFF;border:1px solid var(--border);border-radius:8px;
+            color:var(--ink-mid);font-size:20px;font-weight:700;width:42px;height:42px;
             cursor:pointer;flex-shrink:0;">−</button>
         <!-- Display -->
         <div id="trfDrawerQtyDisplay"
           style="flex:1;text-align:center;font-family:var(--f-mono);font-size:28px;
-            font-weight:900;color:#6FCF97;background:#1A2A1A;border:1px solid #2A4A2A;
+            font-weight:900;color:#0B7A45;background:#E8F8F0;border:1.5px solid #C3E6D5;
             border-radius:8px;padding:6px;cursor:pointer;" onclick="trfDrawerQtyFocus()">
           0
         </div>
         <!-- Plus -->
         <button onclick="trfDrawerQtyAdj(1)"
-          style="background:#1A2A1A;border:1px solid #2A5A2A;border-radius:8px;
-            color:#6FCF97;font-size:20px;font-weight:700;width:42px;height:42px;
+          style="background:#E8F8F0;border:1.5px solid #C3E6D5;border-radius:8px;
+            color:#0B7A45;font-size:20px;font-weight:700;width:42px;height:42px;
             cursor:pointer;flex-shrink:0;">＋</button>
       </div>
 
@@ -2873,21 +2877,21 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
           ${[1,2,3,4,5,6,7,8,9,'CLR',0,'⌫'].map(k=>`
             <button onclick="trfDrawerKey('${k}')"
-              style="background:#252525;border:1px solid #333;border-radius:8px;
-                color:${k==='CLR'?'#E87070':'#E0E0E0'};font-family:var(--f-mono);
+              style="background:#FFFFFF;border:1px solid var(--border);border-radius:8px;
+                color:${k==='CLR'?'#C0392B':'var(--ink)'};font-family:var(--f-mono);
                 font-size:${k==='CLR'||k==='⌫'?'13':'18'}px;font-weight:600;
                 padding:12px;cursor:pointer;">${k}</button>`).join('')}
         </div>
         <button onclick="document.getElementById('trfDrawerNumpad').style.display='none'"
-          style="width:100%;margin-top:5px;background:#1A1A1A;border:1px solid #333;
-            border-radius:8px;color:#555;font-family:var(--f-mono);font-size:11px;
+          style="width:100%;margin-top:5px;background:var(--gold-pale);border:1px solid var(--border);
+            border-radius:8px;color:var(--ink-mid);font-family:var(--f-mono);font-size:11px;
             padding:7px;cursor:pointer;">▲ Done</button>
       </div>
 
       <!-- Save split button -->
       <button onclick="trfDrawerSaveSplit()"
-        style="width:100%;background:linear-gradient(135deg,#1A5A1A,#0D3A0D);
-          border:1px solid #2A7A2A;border-radius:10px;color:#6FCF97;
+        style="width:100%;background:linear-gradient(135deg,#0B7A45,#13A066);
+          border:none;border-radius:10px;color:#FFFFFF;
           font-family:var(--f-body);font-size:15px;font-weight:700;
           padding:13px;cursor:pointer;">
         ✓ Save This Transfer
@@ -2909,19 +2913,19 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     </div>
     <div id="npStoreRow" style="display:none;margin-bottom:8px;">
       <div style="font-family:var(--f-mono);font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;" id="npStoreLabel">From Store</div>
-      <select id="npStoreSelect" style="width:100%;background:#252525;border:1px solid #3A3A3A;border-radius:8px;padding:9px 12px;font-family:var(--f-body);font-size:13px;color:#E0E0E0;outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;">
+      <select id="npStoreSelect" style="width:100%;background:var(--gold-pale);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--f-body);font-size:13px;color:var(--ink);outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;">
         <option value="">— Select store —</option>
       </select>
       <!-- Existing splits for this SKU -->
       <div id="npSplitList" style="margin-top:7px;display:none;max-height:120px;overflow-y:auto;"></div>
       <!-- Remark field -->
       <input id="npRemark" placeholder="Remark (optional)…" type="text"
-        style="margin-top:6px;width:100%;background:#1E1E1E;border:1px solid #333;border-radius:7px;
-               padding:7px 10px;font-family:var(--f-body);font-size:12px;color:#CCC;outline:none;
+        style="margin-top:6px;width:100%;background:var(--gold-pale);border:1px solid var(--border);border-radius:7px;
+               padding:7px 10px;font-family:var(--f-body);font-size:12px;color:var(--ink);outline:none;
                box-sizing:border-box;display:none;">
       <!-- Add split button (shown for inn/trf after first save) -->
       <button id="npAddSplitBtn" onclick="npAddSplit()" style="display:none;margin-top:6px;width:100%;
-        background:#1A2A1A;border:1px solid #2A5A2A;border-radius:7px;color:#6FCF97;
+        background:linear-gradient(135deg,#0B7A45,#13A066);border:none;border-radius:7px;color:#FFFFFF;
         font-family:var(--f-body);font-size:13px;font-weight:700;padding:9px;cursor:pointer;">
         ＋ Add Another Store
       </button>
@@ -2944,14 +2948,14 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 <div id="toast"></div>
 
 <!-- ══════════ FG TESTER REQUEST PANEL (Store Staff) ══════════ -->
-<div id="fgRequestPanel" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:900;display:none;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#FAFAF8;border-radius:12px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
-    <div style="background:#1A1A1A;border-bottom:3px solid #C9A44E;padding:14px 18px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+<div id="fgRequestPanel" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);z-index:900;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#FAFAF8;border-radius:12px;border-top:3px solid var(--gold);max-width:500px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(201,168,76,0.15);">
+    <div style="background:var(--gold-pale);border-bottom:2px solid var(--border);padding:14px 18px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
       <div>
-        <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:#FFFFFF;letter-spacing:1px;">REQUEST TESTER FROM FG STOCK</div>
-        <div style="font-family:var(--f-ar);font-size:11px;color:#C9A44E;margin-top:2px;">طلب تستر من مخزون المتجر</div>
+        <div style="font-family:var(--f-serif);font-size:16px;font-weight:600;color:var(--gold-dark);">Request Tester from FG Stock</div>
+        <div style="font-family:var(--f-ar);font-size:11px;color:var(--ink-mid);margin-top:2px;">طلب تستر من مخزون المتجر</div>
       </div>
-      <button onclick="closeFGRequest()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-size:18px;padding:4px 10px;cursor:pointer;">✕</button>
+      <button onclick="closeFGRequest()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--ink-mid);font-size:18px;padding:4px 10px;cursor:pointer;">✕</button>
     </div>
     <div style="padding:16px 18px;">
       <div style="background:#FFF9ED;border:1px solid #E8D5A8;border-radius:8px;padding:10px 12px;font-size:11px;color:#7A6530;margin-bottom:14px;line-height:1.5;">
@@ -2964,22 +2968,22 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div style="font-size:13px;font-weight:700;">FG Items Required <span style="font-size:11px;color:#888;font-weight:400;direction:rtl;">/ المنتجات</span></div><button onclick="fgAddItem()" style="background:#C9A44E;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">+ Add</button></div>
       <div id="fgItems"></div>
       <div style="margin:14px 0;"><label style="display:block;font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:4px;">Remarks (Optional) <span style="float:right;direction:rtl;">ملاحظات</span></label><textarea id="fgRemarks" placeholder="Optional notes" style="width:100%;padding:10px;border:2px solid #E0DDD6;border-radius:8px;font-size:13px;min-height:50px;resize:vertical;"></textarea></div>
-      <button onclick="submitFGRequest()" style="width:100%;padding:14px;background:#1A1A1A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">Submit Request / إرسال الطلب</button>
+      <button onclick="submitFGRequest()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.5px;font-family:var(--f-body);">Submit Request / إرسال الطلب</button>
     </div>
   </div>
 </div>
 
 <!-- ══════════ FG APPROVAL PANEL (Manager) ══════════ -->
 <div id="fgApprovalPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:820;display:none;flex-direction:column;">
-  <div style="background:#1A1A1A;border-bottom:4px solid #FF9632;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+  <div style="background:#FFFFFF;border-bottom:3px solid var(--gold);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(201,168,76,0.08);">
     <div>
-      <div style="font-family:var(--f-mono);font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:2px;">📦 FG TESTER REQUESTS</div>
-      <div style="font-family:var(--f-mono);font-size:10px;color:#AAA;margin-top:2px;">Pending Approvals · Approved · Rejected</div>
+      <div style="font-family:var(--f-serif);font-size:17px;font-weight:600;color:var(--gold-dark);">📦 FG Tester Requests</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:2px;">Pending Approvals · Approved · Rejected</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button onclick="loadFGRequests()" style="background:transparent;border:1px solid #555;border-radius:6px;color:#CCC;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;">⇅ Refresh</button>
-      <a href="https://vinayak682.github.io/emirates-pride-inventory-management/fg-report.html" target="_blank" style="background:#C9A44E;border:none;border-radius:6px;color:#fff;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:4px;">📊 Full Report</a>
-      <button onclick="closeFGApproval()" style="background:#FFFFFF;border:1px solid #E8E4DC;border-radius:6px;color:#1A1A1A;font-family:var(--f-mono);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">✕ Close</button>
+      <button onclick="loadFGRequests()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;color:var(--ink-mid);font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;">⇅ Refresh</button>
+      <a href="https://vinayak682.github.io/emirates-pride-inventory-management/fg-report.html" target="_blank" style="background:linear-gradient(135deg,var(--gold-dark),var(--gold));border:none;border-radius:6px;color:#fff;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:4px;">📊 Full Report</a>
+      <button onclick="closeFGApproval()" style="background:var(--gold-dark);border:none;border-radius:6px;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;">✕ Close</button>
     </div>
   </div>
   <div id="fgApprovalBody" style="flex:1;overflow-y:auto;padding:16px;"></div>
@@ -5898,19 +5902,19 @@ function renderFinMonth(){
   body.innerHTML = `
     <div style="background:#F9F9F9;min-height:100%;">
       <!-- Export buttons row -->
-      <div style="padding:10px 14px;background:#111;border-bottom:1px solid #222;display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="exportFinanceRangePDF(30)" style="flex:1;min-width:140px;background:#1A1A2A;border:1px solid #2A3A5A;color:#6FA8DC;font-family:var(--f-body);font-size:13px;font-weight:700;padding:10px;border-radius:8px;cursor:pointer;">📋 Last 30 Days PDF</button>
-        <button onclick="exportFinanceMonthPDF()" style="flex:1;min-width:140px;background:#1A2A1A;border:1px solid #2A5A2A;color:#6FCF97;font-family:var(--f-body);font-size:13px;font-weight:700;padding:10px;border-radius:8px;cursor:pointer;">📋 ${monthName} PDF</button>
+      <div style="padding:10px 14px;background:#FFFFFF;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="exportFinanceRangePDF(30)" style="flex:1;min-width:140px;background:#EEF3FF;border:1px solid #C7D8F5;color:#1E3A8A;font-family:var(--f-body);font-size:13px;font-weight:700;padding:10px;border-radius:8px;cursor:pointer;">📋 Last 30 Days PDF</button>
+        <button onclick="exportFinanceMonthPDF()" style="flex:1;min-width:140px;background:#E8F8F0;border:1px solid #C3E6D5;color:#0B7A45;font-family:var(--f-body);font-size:13px;font-weight:700;padding:10px;border-radius:8px;cursor:pointer;">📋 ${monthName} PDF</button>
       </div>
 
       <!-- Last 30 Days -->
-      <div style="padding:8px 14px 4px;font-family:var(--f-mono);font-size:9px;font-weight:800;color:#C9A44E;text-transform:uppercase;letter-spacing:1px;background:#111;">
+      <div style="padding:8px 14px 4px;font-family:var(--f-mono);font-size:9px;font-weight:800;color:var(--gold-dark);text-transform:uppercase;letter-spacing:1px;background:var(--gold-pale);">
         📅 Last 30 Days · ${me.name}
       </div>
       ${buildRowsHtml(rows30)}
 
       <!-- Calendar Month -->
-      <div style="padding:8px 14px 4px;font-family:var(--f-mono);font-size:9px;font-weight:800;color:#6FCF97;text-transform:uppercase;letter-spacing:1px;background:#111;margin-top:12px;">
+      <div style="padding:8px 14px 4px;font-family:var(--f-mono);font-size:9px;font-weight:800;color:#0B7A45;text-transform:uppercase;letter-spacing:1px;background:#E8F8F0;margin-top:12px;">
         🗓 ${monthName} · ${me.name}
       </div>
       ${buildRowsHtml(rowsMonth)}
@@ -6488,13 +6492,13 @@ function renderBNPLList(){
   finBNPL.forEach((row,i)=>{
     const div=document.createElement('div');
     div.className='fin-cc-item';
-    div.style.background='#0E0E1A';div.style.borderBottomColor='#1A1A2A';
+    div.style.background='#EEF3FF';div.style.borderBottomColor='#C7D8F5';
     div.innerHTML=`
       <div class="fin-cc-num" style="color:#6FA8DC;">${i+1}</div>
       <div style="flex:0 0 auto;margin-right:6px;">
         <select onchange="finBNPL[${i}].type=this.value;finMarkUnsaved()"
-          style="background:#151520;border:1px solid #2A2A4A;border-radius:5px;
-                 color:#6FA8DC;font-family:var(--f-mono);font-size:11px;
+          style="background:#FFFFFF;border:1px solid #C7D8F5;border-radius:5px;
+                 color:#1E3A8A;font-family:var(--f-mono);font-size:11px;
                  padding:4px 6px;outline:none;cursor:pointer;" ${locked?'disabled':''}>
           <option value="tabby" ${row.type==='tabby'?'selected':''}>Tabby</option>
           <option value="tamara" ${row.type==='tamara'?'selected':''}>Tamara</option>
@@ -6507,7 +6511,7 @@ function renderBNPLList(){
           ${locked?'readonly':''}
           oninput="finBNPL[${i}].code=this.value;finMarkUnsaved()">
       </div>
-      <div class="fin-cc-amt-btn" onclick="${locked?'':'finTapBNPL('+i+')'}" style="${locked?'cursor:default;opacity:0.7;':'background:#151520;border-color:#2A2A4A;'}">
+      <div class="fin-cc-amt-btn" onclick="${locked?'':'finTapBNPL('+i+')'}" style="${locked?'cursor:default;opacity:0.7;':'background:#EEF3FF;border-color:#C7D8F5;'}">
         <div class="fin-cc-amt-label" style="color:#6FA8DC;">AED</div>
         <div class="fin-cc-amt-val" style="color:#4A6AAA;">${(parseFloat(row.amt)||0)===0?'—':(parseFloat(row.amt)||0).toFixed(0)}</div>
       </div>
@@ -6576,20 +6580,20 @@ function renderExpenseList(){
   finExpenses.forEach((row,i)=>{
     const div=document.createElement('div');
     div.className='fin-exp-item';
-    div.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 12px;background:#1A0808;border-bottom:1px solid #2A1010;';
+    div.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 12px;background:#FEF0F0;border-bottom:1px solid #F5C6C2;';
     div.innerHTML=`
       <div style="flex:1;min-width:0;">
         <input placeholder="What is this expense? (e.g. Water bottles, Cleaning)" type="text"
           value="${(row.desc||'').replace(/"/g,'&quot;')}"
           ${locked?'readonly':''}
           oninput="finExpenses[${i}].desc=this.value;finMarkUnsaved()"
-          style="width:100%;background:#250A0A;border:none;border-bottom:1px solid #3A1010;
-                 font-family:var(--f-body);font-size:12px;color:#E0B0B0;padding:4px 0;outline:none;">
+          style="width:100%;background:transparent;border:none;border-bottom:1px solid #F5C6C2;
+                 font-family:var(--f-body);font-size:12px;color:#7F1D1D;padding:4px 0;outline:none;">
       </div>
       <div class="fin-cc-amt-btn" onclick="${locked?'':'finTapExpense('+i+')'}"
-        style="background:#250A0A;border-color:#5A1A1A;${locked?'cursor:default;opacity:0.7;':''}min-width:70px;">
-        <div class="fin-cc-amt-label" style="color:#E87070;">AED</div>
-        <div class="fin-cc-amt-val" style="color:#8B1A1A;">${(parseFloat(row.amt)||0)===0?'—':(parseFloat(row.amt)||0).toFixed(0)}</div>
+        style="background:#FEF0F0;border-color:#F5C6C2;${locked?'cursor:default;opacity:0.7;':''}min-width:70px;">
+        <div class="fin-cc-amt-label" style="color:#C0392B;">AED</div>
+        <div class="fin-cc-amt-val" style="color:#7F1D1D;">${(parseFloat(row.amt)||0)===0?'—':(parseFloat(row.amt)||0).toFixed(0)}</div>
       </div>
       <label style="cursor:pointer;" title="Attach receipt photo">
         <input type="file" accept="image/*" style="display:none"
@@ -7011,65 +7015,65 @@ function openMinMaxEditor(skuCode, reason) {
     const div = document.createElement('div');
     div.id = 'minMaxEditorModal';
     div.innerHTML = `
-      <div style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;
-                  display:none;align-items:center;justify-content:center;" 
+      <div style="position:fixed;inset:0;background:rgba(26,39,68,0.55);z-index:9999;
+                  display:none;align-items:center;justify-content:center;"
            onclick="if(event.target===this) closeMinMaxEditor()">
-        <div style="background:#0A0A0A;border:1px solid #2A2A2A;border-radius:12px;
-                    width:90%;max-width:500px;padding:24px;" 
+        <div style="background:#FFFFFF;border:1px solid var(--border);border-top:3px solid var(--gold);border-radius:12px;
+                    width:90%;max-width:500px;padding:24px;box-shadow:0 8px 32px rgba(201,168,76,0.15);"
              onclick="event.stopPropagation()">
-          
+
           <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:20px;">
             <div>
-              <div style="font-family:var(--f-mono);font-size:16px;font-weight:700;color:#C9A44E;" 
+              <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:var(--gold-dark);"
                    id="mmEditorTitle">Set MIN/MAX</div>
-              <div style="font-family:var(--f-body);font-size:13px;color:#888;margin-top:4px;" 
+              <div style="font-family:var(--f-body);font-size:13px;color:var(--ink-mid);margin-top:4px;"
                    id="mmEditorSubtitle">—</div>
             </div>
-            <button onclick="closeMinMaxEditor()" 
-                    style="background:none;border:none;color:#666;font-size:24px;cursor:pointer;line-height:1;">×</button>
+            <button onclick="closeMinMaxEditor()"
+                    style="background:none;border:none;color:var(--ink-light);font-size:24px;cursor:pointer;line-height:1;">×</button>
           </div>
-          
+
           <div id="mmEditorDiagnostic" style="margin-bottom:20px;"></div>
-          
+
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
             <div>
-              <label style="font-family:var(--f-mono);font-size:11px;color:#888;
+              <label style="font-family:var(--f-mono);font-size:11px;color:var(--ink-light);
                             text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;">
                 MIN Stock (2-week cover)
               </label>
-              <input type="number" id="mmEditorMin" 
-                     style="width:100%;background:#1A1A1A;border:1px solid #2A5A2A;border-radius:6px;
-                            color:#C9A44E;font-family:var(--f-mono);font-size:18px;font-weight:700;
-                            padding:10px;text-align:center;" 
+              <input type="number" id="mmEditorMin"
+                     style="width:100%;background:var(--gold-pale);border:1.5px solid var(--gold);border-radius:6px;
+                            color:var(--gold-dark);font-family:var(--f-mono);font-size:18px;font-weight:700;
+                            padding:10px;text-align:center;"
                      placeholder="0" />
             </div>
             <div>
-              <label style="font-family:var(--f-mono);font-size:11px;color:#888;
+              <label style="font-family:var(--f-mono);font-size:11px;color:var(--ink-light);
                             text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;">
                 MAX Stock (4-week cover)
               </label>
-              <input type="number" id="mmEditorMax" 
-                     style="width:100%;background:#1A1A1A;border:1px solid #2A5A2A;border-radius:6px;
-                            color:#6FCF97;font-family:var(--f-mono);font-size:18px;font-weight:700;
-                            padding:10px;text-align:center;" 
+              <input type="number" id="mmEditorMax"
+                     style="width:100%;background:#E8F8F0;border:1.5px solid #C3E6D5;border-radius:6px;
+                            color:#0B7A45;font-family:var(--f-mono);font-size:18px;font-weight:700;
+                            padding:10px;text-align:center;"
                      placeholder="0" />
             </div>
           </div>
-          
+
           <div style="display:flex;gap:10px;">
-            <button onclick="closeMinMaxEditor()" 
-                    style="flex:1;background:#1A1A1A;border:1px solid #2A2A2A;border-radius:6px;
-                           color:#888;font-family:var(--f-body);font-size:13px;padding:10px;cursor:pointer;">
+            <button onclick="closeMinMaxEditor()"
+                    style="flex:1;background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;
+                           color:var(--ink-mid);font-family:var(--f-body);font-size:13px;padding:10px;cursor:pointer;">
               Cancel
             </button>
-            <button onclick="saveMinMaxOverride()" 
-                    style="flex:1;background:#2A5A2A;border:1px solid #3A7A3A;border-radius:6px;
-                           color:#6FCF97;font-family:var(--f-body);font-size:13px;font-weight:700;
+            <button onclick="saveMinMaxOverride()"
+                    style="flex:1;background:linear-gradient(135deg,#0B7A45,#13A066);border:none;border-radius:6px;
+                           color:#FFFFFF;font-family:var(--f-body);font-size:13px;font-weight:700;
                            padding:10px;cursor:pointer;">
               Save Override
             </button>
           </div>
-          
+
         </div>
       </div>
     `;
@@ -7085,32 +7089,32 @@ function openMinMaxEditor(skuCode, reason) {
   
   if (diag.status === 'auto_calc') {
     diagDiv.innerHTML = `
-      <div style="background:#1A2A1A;border:1px solid #2A5A2A;border-radius:8px;padding:12px;">
-        <div style="font-family:var(--f-mono);font-size:12px;color:#F2C94C;margin-bottom:6px;">
+      <div style="background:#EAF5EA;border:1px solid #C3E6D5;border-radius:8px;padding:12px;">
+        <div style="font-family:var(--f-mono);font-size:12px;color:var(--gold-dark);margin-bottom:6px;">
           📊 Auto-Calculated from Sales History
         </div>
-        <div style="font-family:var(--f-body);font-size:12px;color:#888;line-height:1.6;">
-          Last 90 days: <strong style="color:#fff;">${diag.sales90d || 0} units sold</strong><br>
-          Transfers OUT: <strong style="color:#fff;">${diag.transfers90d || 0} units</strong><br>
-          Weekly average: <strong style="color:#fff;">${diag.weeklyAvg.toFixed(1)} units/week</strong><br>
-          Suggested MIN (2 weeks): <strong style="color:#C9A44E;">${diag.suggestedMin}</strong><br>
-          Suggested MAX (4 weeks): <strong style="color:#6FCF97;">${diag.suggestedMax}</strong>
+        <div style="font-family:var(--f-body);font-size:12px;color:var(--ink-mid);line-height:1.6;">
+          Last 90 days: <strong style="color:var(--ink);">${diag.sales90d || 0} units sold</strong><br>
+          Transfers OUT: <strong style="color:var(--ink);">${diag.transfers90d || 0} units</strong><br>
+          Weekly average: <strong style="color:var(--ink);">${diag.weeklyAvg.toFixed(1)} units/week</strong><br>
+          Suggested MIN (2 weeks): <strong style="color:var(--gold-dark);">${diag.suggestedMin}</strong><br>
+          Suggested MAX (4 weeks): <strong style="color:#0B7A45;">${diag.suggestedMax}</strong>
         </div>
       </div>
     `;
     document.getElementById('mmEditorMin').value = diag.suggestedMin;
     document.getElementById('mmEditorMax').value = diag.suggestedMax;
-    
+
   } else if (diag.status === 'new_sku') {
     diagDiv.innerHTML = `
-      <div style="background:#1A2A1A;border:1px solid #2A5A2A;border-radius:8px;padding:12px;">
-        <div style="font-family:var(--f-mono);font-size:12px;color:#888;margin-bottom:6px;">
-          🆕 New SKU (Launched <30 days ago)
+      <div style="background:var(--gold-pale);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-family:var(--f-mono);font-size:12px;color:var(--ink-mid);margin-bottom:6px;">
+          🆕 New SKU (Launched &lt;30 days ago)
         </div>
-        <div style="font-family:var(--f-body);font-size:12px;color:#888;line-height:1.6;">
+        <div style="font-family:var(--f-body);font-size:12px;color:var(--ink-mid);line-height:1.6;">
           No sales history yet. Using category average for initial MIN/MAX.<br>
-          Category average MIN: <strong style="color:#C9A44E;">${diag.categoryMin || '—'}</strong><br>
-          Category average MAX: <strong style="color:#6FCF97;">${diag.categoryMax || '—'}</strong>
+          Category average MIN: <strong style="color:var(--gold-dark);">${diag.categoryMin || '—'}</strong><br>
+          Category average MAX: <strong style="color:#0B7A45;">${diag.categoryMax || '—'}</strong>
         </div>
       </div>
     `;
@@ -7997,9 +8001,9 @@ function renderDPInventory(){
     
     <!-- Inventory table -->
     <div style="background:#FFFFFF;border:2px solid #E8E4DC;border-radius:12px;overflow:hidden;">
-      <div style="background:#1A1A1A;border-bottom:2px solid #9A7B4F;padding:12px 16px;">
-        <div style="font-family:var(--f-mono);font-size:11px;font-weight:700;color:#C9A44E;text-transform:uppercase;letter-spacing:1px;">SKU Inventory Benchmarks</div>
-        <div style="font-family:var(--f-mono);font-size:9px;color:#888;margin-top:2px;">${sortedInv.length} SKUs tracked</div>
+      <div style="background:var(--gold-pale);border-bottom:2px solid var(--border);padding:12px 16px;">
+        <div style="font-family:var(--f-mono);font-size:11px;font-weight:700;color:var(--gold-dark);text-transform:uppercase;letter-spacing:1px;">SKU Inventory Benchmarks</div>
+        <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);margin-top:2px;">${sortedInv.length} SKUs tracked</div>
       </div>
       
       <div style="overflow-x:auto;">
@@ -8555,9 +8559,9 @@ function whPrintDNSlip(date,dn,store,rows){
   function makeCopy(bannerText,bannerBg,checklistTitle,checklistItems,sigLabels){
     return '<div style="page-break-after:always;">'
       +'<div style="background:'+bannerBg+';color:#fff;text-align:center;padding:7px;font-family:monospace;font-size:11px;font-weight:800;letter-spacing:2px;">'+bannerText+'</div>'
-      +'<div style="background:#1A1A1A;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">'
-        +'<div><div style="color:#C9A44E;font-size:16px;font-weight:800;letter-spacing:2px;">EMIRATES PRIDE</div><div style="color:#888;font-size:10px;margin-top:2px;">Tester Dispatch Note</div></div>'
-        +'<div style="text-align:right;"><div style="color:#fff;font-family:monospace;font-size:16px;font-weight:700;">'+dn+'</div><div style="color:#888;font-size:10px;margin-top:2px;">'+fmtD(date)+'</div></div>'
+      +'<div style="background:#F5EDD8;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #C9A84C;">'
+        +'<div><div style="color:#7A6525;font-size:16px;font-weight:800;letter-spacing:2px;">EMIRATES PRIDE</div><div style="color:#8A8278;font-size:10px;margin-top:2px;">Tester Dispatch Note</div></div>'
+        +'<div style="text-align:right;"><div style="color:#1C1C1C;font-family:monospace;font-size:16px;font-weight:700;">'+dn+'</div><div style="color:#8A8278;font-size:10px;margin-top:2px;">'+fmtD(date)+'</div></div>'
       +'</div>'
       +'<div style="padding:16px 20px;">'
         +'<div style="display:flex;gap:12px;margin-bottom:14px;">'
@@ -8567,7 +8571,7 @@ function whPrintDNSlip(date,dn,store,rows){
           +'<div style="flex:1;background:#F9F8F6;border:1px solid #E8E4DC;border-radius:6px;padding:10px;"><div style="font-size:8px;color:#888;text-transform:uppercase;">SKUs / Total</div><div style="font-size:13px;font-weight:700;">'+rows.length+' / '+totalQty+'</div></div>'
         +'</div>'
         +'<table style="width:100%;border-collapse:collapse;">'
-          +'<thead><tr style="background:#1A1A1A;"><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">#</th><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Item Code</th><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Description</th><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:center;text-transform:uppercase;">Qty</th><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Note</th><th style="color:#fff;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Verified</th></tr></thead>'
+          +'<thead><tr style="background:#F5EDD8;"><th style="color:#1C1C1C;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">#</th><th style="color:#1C1C1C;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Item Code</th><th style="color:#1C1C1C;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Description</th><th style="color:#1C1C1C;padding:7px 10px;font-size:9px;text-align:center;text-transform:uppercase;">Qty</th><th style="color:#1C1C1C;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Note</th><th style="color:#1C1C1C;padding:7px 10px;font-size:9px;text-align:left;text-transform:uppercase;">Verified</th></tr></thead>'
           +'<tbody>'+itemsHtml+'</tbody>'
           +'<tfoot><tr style="background:#F0EDE6;"><td colspan="3" style="padding:7px 10px;font-weight:700;text-align:right;font-size:12px;">Total Units:</td><td style="padding:7px 10px;text-align:center;font-weight:700;font-size:14px;">'+totalQty+'</td><td colspan="2"></td></tr></tfoot>'
         +'</table>'
@@ -8812,7 +8816,7 @@ function renderMgrDashboard(){
 
   <!-- ── WEEK AT A GLANCE — 7-day date strip ──────────────── -->
   <div style="padding:0;background:#FFFFFF;border-bottom:2px solid #E8E4DC;">
-    <div style="font-family:var(--f-mono);font-size:10px;color:#FFFFFF;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;padding:10px 14px;background:#1A1A1A;border-bottom:1px solid #222;">📅 Week at a Glance — Last 7 Days</div><div style="padding:12px 14px;">
+    <div style="font-family:var(--f-mono);font-size:10px;color:var(--gold-dark);font-weight:800;text-transform:uppercase;letter-spacing:1.5px;padding:10px 14px;background:var(--gold-pale);border-bottom:1px solid var(--border);">📅 Week at a Glance — Last 7 Days</div><div style="padding:12px 14px;">
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
       ${past7.slice().reverse().map(dd=>{
         const total=dayTotals[dd.str];
@@ -8840,9 +8844,9 @@ function renderMgrDashboard(){
 
   <!-- ── SECTION 1: STOCK STATUS — last 7 days ────────────── -->
   <div style="padding:0;background:#FAFAF8;">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1A1A1A;border-bottom:1px solid #222;">
-      <div style="font-family:var(--f-mono);font-size:10px;color:#FFFFFF;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;">📦 Stock Status — Last 7 Days</div>
-      <div style="font-family:var(--f-mono);font-size:9px;color:#AAA;font-weight:600;">Tap any chip → switch to that store</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--gold-pale);border-bottom:1px solid var(--border);">
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--gold-dark);font-weight:800;text-transform:uppercase;letter-spacing:1.5px;">📦 Stock Status — Last 7 Days</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-mid);font-weight:600;">Tap any chip → switch to that store</div>
     </div>
     ${past7.slice().reverse().map(dd=>{
       const total=dayTotals[dd.str];
@@ -8852,28 +8856,28 @@ function renderMgrDashboard(){
       return `<div id="stock-day-${dd.str}" style="background:#FFFFFF;border:none;border-bottom:2px solid #E8E4DC;padding:14px 16px;margin-bottom:0;transition:box-shadow 0.3s;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
           <div>
-            <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#1A1A1A;">${dd.label}${isToday?' <span style=\'background:#1A2A3A;color:#6FA8DC;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;letter-spacing:0.5px;margin-left:4px;\'>TODAY</span>':''}</div>
-            <div style="font-family:var(--f-mono);font-size:9px;color:#888880;margin-top:2px;">${dd.str}</div>
+            <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:var(--ink);">${dd.label}${isToday?' <span style=\'background:#E8F0F8;color:#2980B9;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;letter-spacing:0.5px;margin-left:4px;\'>TODAY</span>':''}</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);margin-top:2px;">${dd.str}</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-family:var(--f-mono);font-size:16px;font-weight:900;color:#FFFFFF;background:#9A7B4F;padding:5px 14px;border-radius:6px;display:inline-block;border:none;">${total}u</div>
-            <div style="font-family:var(--f-mono);font-size:9px;color:#888880;margin-top:4px;letter-spacing:0.8px;font-weight:700;">UNITS · ALL STORES</div>
+            <div style="font-family:var(--f-mono);font-size:16px;font-weight:900;color:#FFFFFF;background:var(--gold-dark);padding:5px 14px;border-radius:6px;display:inline-block;border:none;">${total}u</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);margin-top:4px;letter-spacing:0.8px;font-weight:700;">UNITS · ALL STORES</div>
           </div>
         </div>
         <div style="margin-bottom:10px;">
-          <div style="font-family:var(--f-mono);font-size:9px;color:#1A6A40;font-weight:800;margin-bottom:6px;letter-spacing:1px;">🔒 LOCKED (${locked.length}/${allStores.length})</div>
-          ${locked.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${locked.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#1A6A40;color:#FFFFFF;border:none;border-radius:6px;padding:8px 12px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>🔒 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#444;font-style:italic;padding:8px 10px;background:#0D0D0D;border:1px dashed #2A2A2A;border-radius:6px;\'>No stores locked yet</div>`}
+          <div style="font-family:var(--f-mono);font-size:9px;color:#0B7A45;font-weight:800;margin-bottom:6px;letter-spacing:1px;">🔒 LOCKED (${locked.length}/${allStores.length})</div>
+          ${locked.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${locked.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#0B7A45;color:#FFFFFF;border:none;border-radius:6px;padding:8px 12px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>🔒 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:var(--ink-light);font-style:italic;padding:8px 10px;background:var(--gold-pale);border:1px dashed var(--border);border-radius:6px;\'>No stores locked yet</div>`}
         </div>
         <div>
-          <div style="font-family:var(--f-mono);font-size:9px;color:#B03020;font-weight:800;margin-bottom:6px;letter-spacing:1px;">🔓 NOT LOCKED (${open.length}/${allStores.length})</div>
-          ${open.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${open.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#B03020;color:#FFFFFF;border:none;border-radius:6px;padding:8px 12px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>🔓 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#6FCF97;padding:8px 10px;background:#1A2A1A;border:1px solid #2A5A2A;border-radius:6px;font-weight:700;\'>✓ All ${allStores.length} stores locked</div>`}
+          <div style="font-family:var(--f-mono);font-size:9px;color:#C0392B;font-weight:800;margin-bottom:6px;letter-spacing:1px;">🔓 NOT LOCKED (${open.length}/${allStores.length})</div>
+          ${open.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${open.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#FDECEA;color:#C0392B;border:1px solid #F5C6C2;border-radius:6px;padding:8px 12px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>🔓 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#0B7A45;padding:8px 10px;background:#E8F8F0;border:1px solid #C3E6D5;border-radius:6px;font-weight:700;\'>✓ All ${allStores.length} stores locked</div>`}
         </div>
       </div>`;
     }).join('')}
   </div>
 
   <!-- ── SECTION 2: FINANCE STATUS — last 6 days ──────────── -->
-  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
+  <div style="padding:14px;border-bottom:1px solid var(--border);">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
       <div style="font-family:var(--f-mono);font-size:11px;color:#BB88DD;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">💰 Finance Status — Last 7 Days</div>
       <div style="font-family:var(--f-mono);font-size:9px;color:#555;">Tap any chip → switch to that store</div>
@@ -8882,85 +8886,85 @@ function renderMgrDashboard(){
       const locked=storeRows.filter(r=>(sm.finSet[r.s.code+'_'+dd.str]||{}).locked);
       const open=storeRows.filter(r=>!(sm.finSet[r.s.code+'_'+dd.str]||{}).locked);
       const isToday=dd.str===todayStr;
-      return `<div style="background:#1A1A1A;border:1px solid #222;border-radius:8px;padding:12px;margin-bottom:10px;">
+      return `<div style="background:#FFFFFF;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 4px rgba(201,168,76,0.06);">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
           <div>
-            <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:#1A1A1A;">${dd.label}${isToday?' <span style=\'background:#1A2A3A;color:#6FA8DC;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;letter-spacing:0.5px;margin-left:4px;\'>TODAY</span>':''}</div>
-            <div style="font-family:var(--f-mono);font-size:9px;color:#888880;margin-top:2px;">${dd.str}</div>
+            <div style="font-family:var(--f-mono);font-size:13px;font-weight:800;color:var(--ink);">${dd.label}${isToday?' <span style=\'background:#E8F0F8;color:#2980B9;font-size:9px;padding:2px 6px;border-radius:5px;font-weight:700;letter-spacing:0.5px;margin-left:4px;\'>TODAY</span>':''}</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);margin-top:2px;">${dd.str}</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-family:var(--f-mono);font-size:14px;font-weight:900;color:#BB88DD;background:#2A1A35;padding:5px 12px;border-radius:8px;display:inline-block;border:1px solid #3A2A45;">${locked.length}/${allStores.length} ✓</div>
-            <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-top:3px;letter-spacing:0.3px;">FINANCE SUBMITTED</div>
+            <div style="font-family:var(--f-mono);font-size:14px;font-weight:900;color:#7048E8;background:#F3EEFF;padding:5px 12px;border-radius:8px;display:inline-block;border:1px solid #D8C8F8;">${locked.length}/${allStores.length} ✓</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);margin-top:3px;letter-spacing:0.3px;">FINANCE SUBMITTED</div>
           </div>
         </div>
         <div style="margin-bottom:10px;">
-          <div style="font-family:var(--f-mono);font-size:9px;color:#666;font-weight:700;margin-bottom:6px;letter-spacing:0.5px;">✅ FINANCE LOCKED (${locked.length}/${allStores.length})</div>
-          ${locked.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${locked.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#1A1A3A;color:#BB88DD;border:1px solid #2A2A5A;border-radius:7px;padding:8px 11px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>✅ ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#444;font-style:italic;padding:8px 10px;background:#0D0D0D;border:1px dashed #2A2A2A;border-radius:6px;\'>No finance submitted yet</div>`}
+          <div style="font-family:var(--f-mono);font-size:9px;color:#0B7A45;font-weight:700;margin-bottom:6px;letter-spacing:0.5px;">✅ FINANCE LOCKED (${locked.length}/${allStores.length})</div>
+          ${locked.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${locked.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#F3EEFF;color:#7048E8;border:1px solid #D8C8F8;border-radius:7px;padding:8px 11px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>✅ ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:var(--ink-light);font-style:italic;padding:8px 10px;background:var(--gold-pale);border:1px dashed var(--border);border-radius:6px;\'>No finance submitted yet</div>`}
         </div>
         <div>
-          <div style="font-family:var(--f-mono);font-size:9px;color:#666;font-weight:700;margin-bottom:6px;letter-spacing:0.5px;">📭 PENDING (${open.length}/${allStores.length})</div>
-          ${open.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${open.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#B03020;color:#FFFFFF;border:none;border-radius:6px;padding:8px 12px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>📭 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#6FCF97;padding:8px 10px;background:#1A2A1A;border:1px solid #2A5A2A;border-radius:6px;font-weight:700;\'>✓ All ${allStores.length} stores submitted</div>`}
+          <div style="font-family:var(--f-mono);font-size:9px;color:#C0392B;font-weight:700;margin-bottom:6px;letter-spacing:0.5px;">📭 PENDING (${open.length}/${allStores.length})</div>
+          ${open.length?`<div style=\'display:flex;flex-wrap:wrap;gap:5px;\'>${open.map(r=>`<button onclick=\'mgrJumpToStoreDate(&quot;${r.s.code}&quot;,&quot;${dd.str}&quot;)\' style=\'background:#FDECEA;color:#C0392B;border:1px solid #F5C6C2;border-radius:6px;padding:8px 12px;font-family:var(--f-mono);font-size:10.5px;font-weight:700;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;\' title=\'${r.s.code} · ${r.s.city}\'>📭 ${r.s.name}</button>`).join('')}</div>`:`<div style=\'font-family:var(--f-mono);font-size:10px;color:#0B7A45;padding:8px 10px;background:#E8F8F0;border:1px solid #C3E6D5;border-radius:6px;font-weight:700;\'>✓ All ${allStores.length} stores submitted</div>`}
         </div>
       </div>`;
     }).join('')}
   </div>
 
   <!-- ── SECTION 3: STORE RANKINGS — by 6-day units ───────── -->
-  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
+  <div style="padding:14px;border-bottom:1px solid var(--border);">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
       <div style="font-family:var(--f-mono);font-size:11px;color:#C9A44E;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">🏆 Store Rankings — Last 7 Days</div>
       <div style="font-family:var(--f-mono);font-size:9px;color:#555;">By total units sold · Tap to open</div>
     </div>
     ${by7dUnits.slice(0,10).map((r,i)=>{
       const medalClr=i===0?'#E8C97A':i===1?'#C0C0C0':i===2?'#CD7F32':null;
-      return `<div onclick="mgrJumpToStoreDate('${r.s.code}','${todayStr}')" style="background:#1A1A1A;border:1px solid #222;${medalClr?'border-left:3px solid '+medalClr+';':''}border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;">
-        <div style="background:${medalClr?'linear-gradient(135deg,'+medalClr+'77,'+medalClr+'33)':'#222'};color:${medalClr||'#888'};border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:13px;font-weight:900;border:1px solid ${medalClr?medalClr+'55':'#333'};">#${i+1}</div>
+      return `<div onclick="mgrJumpToStoreDate('${r.s.code}','${todayStr}')" style="background:#FFFFFF;border:1px solid var(--border);${medalClr?'border-left:3px solid '+medalClr+';':''}border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;box-shadow:0 1px 4px rgba(201,168,76,0.05);transition:box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 2px 8px rgba(201,168,76,0.12)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(201,168,76,0.05)'">
+        <div style="background:${medalClr?'linear-gradient(135deg,'+medalClr+'40,'+medalClr+'20)':'var(--gold-pale)'};color:${medalClr||'var(--ink-mid)'};border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:13px;font-weight:900;border:1px solid ${medalClr?medalClr+'55':'var(--border)'};">#${i+1}</div>
         <div style="min-width:0;">
-          <div style="font-size:13px;font-weight:800;color:#CCC;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.s.name}</div>
-          <div style="font-family:var(--f-mono);font-size:9px;color:#888880;margin-top:2px;">${r.s.code} · ${r.s.city}${r.s.region?' · '+r.s.region:''}</div>
+          <div style="font-size:13px;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.s.name}</div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);margin-top:2px;">${r.s.code} · ${r.s.city}${r.s.region?' · '+r.s.region:''}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-family:var(--f-mono);font-size:16px;font-weight:900;color:#C9A44E;">${r.total7d}u</div>
-          <div style="font-family:var(--f-mono);font-size:9px;color:#555;letter-spacing:0.3px;">7-DAY</div>
+          <div style="font-family:var(--f-mono);font-size:16px;font-weight:900;color:var(--gold-dark);">${r.total7d}u</div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);letter-spacing:0.3px;">7-DAY</div>
         </div>
       </div>`;
     }).join('')}
   </div>
 
   <!-- ── KEPT: Manager Exports ──────────────────────────────── -->
-  <div style="padding:14px;border-bottom:1px solid #1A1A1A;">
-    <div style="font-family:var(--f-mono);font-size:10px;color:#6FA8DC;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📥 Manager Exports — No Lock Required</div>
+  <div style="padding:14px;border-bottom:1px solid var(--border);">
+    <div style="font-family:var(--f-mono);font-size:10px;color:var(--gold-dark);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📥 Manager Exports — No Lock Required</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-      <button onclick="mgrExportAllStocksCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
-        📊 All Stores Stock CSV<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">Today · All ${allStores.length} stores</div>
+      <button onclick="mgrExportAllStocksCSV()" style="background:#EEF3FF;border:1px solid #C7D8F5;border-radius:8px;color:#1E3A8A;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
+        📊 All Stores Stock CSV<div style="font-size:9px;font-weight:400;color:var(--ink-mid);margin-top:2px;">Today · All ${allStores.length} stores</div>
       </button>
-      <button onclick="mgrExportLockReportCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
-        🔒 Lock Status Report<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 7 days</div>
+      <button onclick="mgrExportLockReportCSV()" style="background:#EEF3FF;border:1px solid #C7D8F5;border-radius:8px;color:#1E3A8A;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
+        🔒 Lock Status Report<div style="font-size:9px;font-weight:400;color:var(--ink-mid);margin-top:2px;">All stores · Last 7 days</div>
       </button>
-      <button onclick="mgrExportFinanceReportCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
-        💰 Finance Status Report<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 7 days</div>
+      <button onclick="mgrExportFinanceReportCSV()" style="background:#EEF3FF;border:1px solid #C7D8F5;border-radius:8px;color:#1E3A8A;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
+        💰 Finance Status Report<div style="font-size:9px;font-weight:400;color:var(--ink-mid);margin-top:2px;">All stores · Last 7 days</div>
       </button>
-      <button onclick="mgrExportSalesSummaryCSV()" style="background:#0A1A2A;border:1px solid #6FA8DC44;border-radius:8px;color:#6FA8DC;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
-        📈 Sales Summary CSV<div style="font-size:9px;font-weight:400;color:#444;margin-top:2px;">All stores · Last 7 days</div>
+      <button onclick="mgrExportSalesSummaryCSV()" style="background:#EEF3FF;border:1px solid #C7D8F5;border-radius:8px;color:#1E3A8A;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 10px;cursor:pointer;text-align:left;">
+        📈 Sales Summary CSV<div style="font-size:9px;font-weight:400;color:var(--ink-mid);margin-top:2px;">All stores · Last 7 days</div>
       </button>
     </div>
   </div>
 
   <!-- ── KEPT: Store Selector ───────────────────────────────── -->
-  <div style="padding:12px 14px;background:#0D0D0D;">
-    <div style="font-family:var(--f-mono);font-size:9px;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">View / Edit a Specific Store — Full Access, No Lock Restrictions</div>
+  <div style="padding:12px 14px;background:var(--gold-pale);border-bottom:1px solid var(--border);">
+    <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-mid);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">View / Edit a Specific Store — Full Access, No Lock Restrictions</div>
     <div style="display:flex;gap:8px;">
-      <select id="mgrStoreSelect" style="flex:1;background:#1A1A1A;border:1px solid #333;border-radius:7px;padding:9px 12px;font-family:var(--f-body);font-size:13px;color:#CCC;outline:none;">
+      <select id="mgrStoreSelect" style="flex:1;background:#FFFFFF;border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-family:var(--f-body);font-size:13px;color:var(--ink);outline:none;">
         ${STORES.filter(s=>s.code!=='MGR').map(s=>`<option value="${s.code}">${s.name} (${s.city})</option>`).join('')}
       </select>
-      <button onclick="mgrSwitchToStore()" style="background:#1A2A1A;border:1px solid #2A5A2A;border-radius:7px;color:#6FCF97;font-family:var(--f-body);font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer;">
+      <button onclick="mgrSwitchToStore()" style="background:linear-gradient(135deg,var(--gold-dark),var(--gold));border:none;border-radius:7px;color:#FFFFFF;font-family:var(--f-body);font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer;">
         Open →
       </button>
     </div>
   </div>
 
   <!-- ── Footer with data freshness ─────────────────────────── -->
-  <div style="padding:8px 14px;background:#0A0A0A;text-align:center;font-family:var(--f-mono);font-size:9px;color:#444;">
+  <div style="padding:8px 14px;background:var(--gold-pale);text-align:center;font-family:var(--f-mono);font-size:9px;color:var(--ink-light);border-top:1px solid var(--border);">
     Data refreshed: ${loadedAgo} · Total 7-day units: ${total7dUnits} across ${allStores.length} stores
   </div>`;
   } catch(e) {
@@ -9211,13 +9215,13 @@ function renderMtdList(){
   if(innEntries.length){
     innSection.style.display='block';
     innList.innerHTML = innEntries.map((t,i)=>`
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid #1A1A1A;background:#0D1A0D;">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border);background:#EAF5EA;">
         <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:#6FCF97;">${t.fromName}</div>
+          <div style="font-size:13px;font-weight:700;color:#0B7A45;">${t.fromName}</div>
           ${t.remark?`<div style="font-size:11px;color:#2A8050;font-style:italic;margin-top:2px;">💬 ${t.remark}</div>`:''}
-          <div style="font-size:10px;color:#2A4A2A;font-family:var(--f-mono);margin-top:2px;">${t.ts}</div>
+          <div style="font-size:10px;color:#4A7A5A;font-family:var(--f-mono);margin-top:2px;">${t.ts}</div>
         </div>
-        <div style="font-family:var(--f-mono);font-size:20px;font-weight:900;color:#6FCF97;">+${t.qty}</div>
+        <div style="font-family:var(--f-mono);font-size:20px;font-weight:900;color:#0B7A45;">+${t.qty}</div>
       </div>`).join('');
   } else { innSection.style.display='none'; }
 
@@ -9228,13 +9232,13 @@ function renderMtdList(){
   if(trfEntries.length){
     trfSection.style.display='block';
     trfList.innerHTML = trfEntries.map((t,i)=>`
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid #1A1A1A;background:#1A0D1A;">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border);background:#F3EEFF;">
         <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:#BB88DD;">${t.toName}</div>
+          <div style="font-size:13px;font-weight:700;color:#7048E8;">${t.toName}</div>
           ${t.remark?`<div style="font-size:11px;color:#7A4A9A;font-style:italic;margin-top:2px;">💬 ${t.remark}</div>`:''}
-          <div style="font-size:10px;color:#3A2A4A;font-family:var(--f-mono);margin-top:2px;">${t.ts}</div>
+          <div style="font-size:10px;color:#6A4A8A;font-family:var(--f-mono);margin-top:2px;">${t.ts}</div>
         </div>
-        <div style="font-family:var(--f-mono);font-size:20px;font-weight:900;color:#BB88DD;">−${t.qty}</div>
+        <div style="font-family:var(--f-mono);font-size:20px;font-weight:900;color:#7048E8;">−${t.qty}</div>
       </div>`).join('');
   } else { trfSection.style.display='none'; }
 
@@ -10289,7 +10293,7 @@ function _expStockDayPDF(date){
     catRows[p.cat].push({...p,o,w,i,s,t,b});
   });
   Object.entries(catRows).forEach(([cat,prods])=>{
-    rows+=`<tr><td colspan="8" style="background:#1A1A1A;color:#C9A44E;font-weight:700;padding:5px 8px;font-size:10px;">${cat}</td></tr>`;
+    rows+=`<tr><td colspan="8" style="background:#F5EDD8;color:#7A6525;font-weight:700;padding:5px 8px;font-size:10px;border-bottom:1px solid #E2D9C8;">${cat}</td></tr>`;
     prods.forEach(p=>{
       const hasData=p.o||p.w||p.i||p.s||p.t;
       if(!hasData) return;
@@ -11629,9 +11633,9 @@ function buildTesterGrid(){
   if(totalsBar){
     totalsBar.innerHTML=''
       +'<div style="display:flex;align-items:center;gap:0;background:#FFFFFF;border-bottom:2px solid #E8E4DC;border-top:1px solid #E8E4DC;font-family:var(--f-mono);">'
-      +'<div style="min-width:200px;width:200px;padding:10px 14px;border-right:2px solid #9A7B4F;background:#1A1A1A;">'
-      +'<div style="font-size:9px;color:#FFFFFF;font-weight:800;letter-spacing:1.5px;">DAILY TOTALS</div>'
-      +'<div style="font-family:var(--f-ar);font-size:10px;color:#CCC;margin-top:2px;">مجموع اليوم</div>'
+      +'<div style="min-width:200px;width:200px;padding:10px 14px;border-right:2px solid var(--gold);background:#F5EDD8;">'
+      +'<div style="font-size:9px;color:var(--gold-dark);font-weight:800;letter-spacing:1.5px;">DAILY TOTALS</div>'
+      +'<div style="font-family:var(--f-ar);font-size:10px;color:var(--ink-mid);margin-top:2px;">مجموع اليوم</div>'
       +'</div>'
       +'<div style="flex:0 0 70px;padding:10px 4px;text-align:center;border-right:1px solid #E8E4DC;">'
       +'<div style="font-size:8px;color:#888880;font-weight:700;letter-spacing:0.8px;margin-bottom:3px;">OPEN</div>'
@@ -11659,8 +11663,8 @@ function buildTesterGrid(){
       +'<div style="font-size:18px;font-weight:700;color:#F2994A;">'+( grandReturn||'&mdash;')+'</div>'
       +'</div>'
       +'<div style="flex:0 0 70px;padding:8px 4px;text-align:center;">'
-      +'<div style="font-size:8px;color:#555;margin-bottom:2px;">Closing</div>'
-      +'<div style="font-size:16px;font-weight:700;color:#CCC;">'+( grandClose||'&mdash;')+'</div>'
+      +'<div style="font-size:8px;color:var(--ink-light);margin-bottom:2px;">Closing</div>'
+      +'<div style="font-size:16px;font-weight:700;color:var(--ink-mid);">'+( grandClose||'&mdash;')+'</div>'
       +'</div>'
       +'</div>';
   }
@@ -11668,9 +11672,9 @@ function buildTesterGrid(){
   // ── Header ──
   head.innerHTML=''
     +'<tr class="hdr-group">'
-    +'<th class="prod-th" rowspan="2" style="background:#1A1A1A;min-width:200px;width:200px;max-width:200px;border-right:2px solid #9A7B4F;">'
-    +'<div style="font-family:var(--f-mono);font-size:9px;font-weight:800;color:#FFFFFF;letter-spacing:1.5px;">TESTER BOTTLES</div>'
-    +'<div style="font-family:var(--f-ar);font-size:10px;color:#AAA;margin-top:2px;">باركود التيستر</div>'
+    +'<th class="prod-th" rowspan="2" style="background:#F5EDD8;min-width:200px;width:200px;max-width:200px;border-right:2px solid var(--gold);">'
+    +'<div style="font-family:var(--f-mono);font-size:9px;font-weight:800;color:var(--gold-dark);letter-spacing:1.5px;">TESTER BOTTLES</div>'
+    +'<div style="font-family:var(--f-ar);font-size:10px;color:var(--ink-mid);margin-top:2px;">باركود التيستر</div>'
     +'</th>'
     +'<th rowspan="2" style="background:#E8F4FB;border-bottom:2px solid #2471A3;min-width:70px;width:70px;">'
     +'<div class="hdr-en" style="color:#2471A3;">OPEN</div>'
@@ -11687,20 +11691,20 @@ function buildTesterGrid(){
     +'<div class="hdr-ar" style="color:#A04040;">قيد الاستخدام</div>'
     +'<div class="hdr-sub-lbl">(C)</div>'
     +'</th>'
-    +'<th rowspan="2" style="background:#1A1A1A;border-bottom:2px solid #9A7B4F;min-width:260px;">'
-    +'<div class="hdr-en" style="color:#FFFFFF;">STATUS — ALL BOTTLES</div>'
-    +'<div class="hdr-ar" style="color:#CCC;">حالة كل التيسترات</div>'
-    +'<div class="hdr-sub-lbl" style="color:#9A8A6A;">(D) — Tap bar to cycle: Full &rarr; Half &rarr; Empty</div>'
+    +'<th rowspan="2" style="background:#F5EDD8;border-bottom:2px solid var(--gold);min-width:260px;">'
+    +'<div class="hdr-en" style="color:var(--gold-dark);">STATUS — ALL BOTTLES</div>'
+    +'<div class="hdr-ar" style="color:var(--ink-mid);">حالة كل التيسترات</div>'
+    +'<div class="hdr-sub-lbl" style="color:var(--ink-light);">(D) — Tap bar to cycle: Full &rarr; Half &rarr; Empty</div>'
     +'</th>'
     +'<th rowspan="2" style="background:#FEF5E7;border-bottom:2px solid #9A7B4F;min-width:70px;width:70px;">'
     +'<div class="hdr-en" style="color:#9A7B4F;">RTW</div>'
     +'<div class="hdr-ar" style="color:#8A6A30;">مرتجع المستودع</div>'
     +'<div class="hdr-sub-lbl">(E)</div>'
     +'</th>'
-    +'<th rowspan="2" style="background:#1A1A1A;border-bottom:2px solid #555;min-width:70px;width:70px;">'
-    +'<div class="hdr-en" style="color:#FFFFFF;">CLOSING</div>'
-    +'<div class="hdr-ar" style="color:#AAA;">رصيد الإغلاق</div>'
-    +'<div class="hdr-sub-lbl" style="color:#888;">(F)</div>'
+    +'<th rowspan="2" style="background:#F5EDD8;border-bottom:2px solid var(--border);min-width:70px;width:70px;">'
+    +'<div class="hdr-en" style="color:var(--gold-dark);">CLOSING</div>'
+    +'<div class="hdr-ar" style="color:var(--ink-mid);">رصيد الإغلاق</div>'
+    +'<div class="hdr-sub-lbl" style="color:var(--ink-light);">(F)</div>'
     +'</th>'
     +'</tr>';
 
@@ -12004,16 +12008,16 @@ function generateFGRequestPDF(rec){
   const totalQty=rec.items.reduce((s,i)=>s+i.qty,0);
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>FG Request ${rec.request_ref}</title>
   <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:#fff;color:#1A1A1A;}
-  .hdr{background:#1A1A1A;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;}
-  .hdr-l h1{color:#C9A44E;font-size:20px;letter-spacing:2px;}.hdr-l p{color:#888;font-size:11px;margin-top:3px;}
-  .hdr-r{text-align:right;}.hdr-r .ref{color:#fff;font-family:monospace;font-size:14px;font-weight:700;}
+  .hdr{background:#F5EDD8;border-bottom:2px solid #C9A84C;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;}
+  .hdr-l h1{color:#7A6525;font-size:20px;letter-spacing:2px;}.hdr-l p{color:#8A8278;font-size:11px;margin-top:3px;}
+  .hdr-r{text-align:right;}.hdr-r .ref{color:#1C1C1C;font-family:monospace;font-size:14px;font-weight:700;}
   .badge{display:inline-block;padding:5px 12px;border-radius:4px;font-size:11px;font-weight:800;margin-top:6px;background:#FEF3C7;color:#92400E;}
   .body{padding:24px;}.sec{background:#F9F8F6;border:1px solid #E8E4DC;border-radius:8px;padding:16px;margin-bottom:16px;}
   .sec-title{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .fi label{display:block;font-size:9px;color:#999;text-transform:uppercase;margin-bottom:2px;}
   .fi span{font-size:13px;font-weight:600;}
-  table{width:100%;border-collapse:collapse;}th{background:#1A1A1A;color:#fff;padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;}
+  table{width:100%;border-collapse:collapse;}th{background:#F5EDD8;color:#7A6525;padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;border-bottom:2px solid #C9A84C;}
   td{font-size:12px;}tfoot td{background:#F0EDE6;font-weight:700;}
   .foot{margin-top:20px;padding-top:14px;border-top:2px solid #E8E4DC;display:flex;justify-content:space-between;font-size:10px;color:#888;}
   @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>
@@ -12047,9 +12051,9 @@ function generateFGApprovalPDF(rec){
   const totalQty=rec.items.reduce((s,i)=>s+i.qty,0);
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>FG ${rec.status.toUpperCase()} ${rec.request_ref}</title>
   <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:#fff;color:#1A1A1A;}
-  .hdr{background:#1A1A1A;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;}
-  .hdr-l h1{color:#C9A44E;font-size:20px;letter-spacing:2px;}.hdr-l p{color:#888;font-size:11px;margin-top:3px;}
-  .hdr-r{text-align:right;}.hdr-r .ref{color:#fff;font-family:monospace;font-size:14px;font-weight:700;}
+  .hdr{background:#F5EDD8;border-bottom:2px solid #C9A84C;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;}
+  .hdr-l h1{color:#7A6525;font-size:20px;letter-spacing:2px;}.hdr-l p{color:#8A8278;font-size:11px;margin-top:3px;}
+  .hdr-r{text-align:right;}.hdr-r .ref{color:#1C1C1C;font-family:monospace;font-size:14px;font-weight:700;}
   .badge{display:inline-block;padding:5px 12px;border-radius:4px;font-size:11px;font-weight:800;margin-top:6px;background:${sb};color:${sc};}
   .body{padding:24px;}.action-box{background:${sb};border:2px solid ${sc};border-radius:8px;padding:16px;margin-bottom:16px;}
   .action-title{font-size:11px;font-weight:800;color:${sc};text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
@@ -12058,7 +12062,7 @@ function generateFGApprovalPDF(rec){
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .fi label{display:block;font-size:9px;color:#999;text-transform:uppercase;margin-bottom:2px;}
   .fi span{font-size:13px;font-weight:600;}
-  table{width:100%;border-collapse:collapse;}th{background:#1A1A1A;color:#fff;padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;}
+  table{width:100%;border-collapse:collapse;}th{background:#F5EDD8;color:#7A6525;padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;border-bottom:2px solid #C9A84C;}
   td{font-size:12px;}tfoot td{background:#F0EDE6;font-weight:700;}
   .foot{margin-top:20px;padding-top:14px;border-top:2px solid #E8E4DC;display:flex;justify-content:space-between;font-size:10px;color:#888;}
   @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>
