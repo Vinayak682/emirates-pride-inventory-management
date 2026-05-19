@@ -131,8 +131,11 @@ ALTER TABLE store_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_log      ENABLE ROW LEVEL SECURITY;
 
 -- Anon key: full access (matches current app behaviour)
-CREATE POLICY IF NOT EXISTS "anon_sessions_all" ON store_sessions FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY IF NOT EXISTS "anon_audit_all"    ON audit_log      FOR ALL TO anon USING (true) WITH CHECK (true);
+-- DROP first so this script is safe to re-run
+DROP POLICY IF EXISTS "anon_sessions_all" ON store_sessions;
+DROP POLICY IF EXISTS "anon_audit_all"    ON audit_log;
+CREATE POLICY "anon_sessions_all" ON store_sessions FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon_audit_all"    ON audit_log      FOR ALL TO anon USING (true) WITH CHECK (true);
 
 -- ─────────────────────────────────────────────────────────────
 -- 6. CLEANUP FUNCTION (run periodically or via cron)
