@@ -2667,6 +2667,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <button id="mgrDashDPBtn" onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.25);">📈 Demand Planning</button>
       <button onclick="openAMMinMaxPanel()" style="background:linear-gradient(135deg,#065F46,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.25);">📊 Stock Guide / Min-Max</button>
       <button onclick="openSecurityDashboard()" style="background:linear-gradient(135deg,#922B21,#C0392B);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(192,57,43,0.25);">🔐 Security Log</button>
+      <button onclick="openAMHub()" style="background:linear-gradient(135deg,#1a6b4a,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.25);">👥 AM Feedback</button>
       <button onclick="renderMgrDashboard()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;color:var(--ink-mid);font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
       <button onclick="closeMgrDashboard()" style="background:var(--gold-dark);border:none;border-radius:6px;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
     </div>
@@ -2708,6 +2709,125 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   <!-- Log body -->
   <div id="secLogBody" style="flex:1;overflow-y:auto;background:#F8F6F4;padding-bottom:32px;"></div>
 
+</div>
+
+<!-- ══════════ AM FEEDBACK HUB PANEL ══════════ -->
+<style>
+#amHubPanel{position:fixed;inset:0;background:#F5F2EC;z-index:825;display:none;flex-direction:column;}
+.amhub-topbar{background:#FFFFFF;border-bottom:3px solid #059669;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(5,150,105,0.10);}
+.amhub-tabs{display:flex;gap:4px;padding:10px 16px;background:#FFFFFF;border-bottom:1px solid var(--border);flex-shrink:0;}
+.amhub-tab{padding:8px 16px;border-radius:6px;font-family:var(--f-body);font-size:11px;font-weight:700;letter-spacing:0.5px;cursor:pointer;border:1.5px solid var(--border);color:var(--ink-mid);background:var(--gold-pale);transition:background 0.12s;}
+.amhub-tab.on{background:#059669;border-color:#059669;color:#FFF;}
+.amhub-body{flex:1;overflow-y:auto;background:#F5F2EC;}
+
+/* TODO tab */
+.todo-section{background:#FFFFFF;border-radius:10px;margin:14px 16px 0;border:1.5px solid var(--border);overflow:hidden;}
+.todo-sec-hdr{background:var(--gold-pale);padding:10px 16px;border-bottom:1px solid var(--border);font-family:var(--f-body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold-dark);display:flex;align-items:center;gap:8px;}
+.todo-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;}
+.todo-item:last-child{border-bottom:none;}
+.todo-item:hover{background:var(--gold-pale);}
+.todo-cb{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.todo-cb.done{background:#10B981;border-color:#10B981;}
+.todo-lbl{font-family:var(--f-body);font-size:13px;color:var(--ink);line-height:1.4;}
+.todo-lbl.done{text-decoration:line-through;color:var(--ink-light);}
+.todo-sub{font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:2px;}
+
+/* Sessions tab */
+.am-seg{display:flex;gap:6px;padding:14px 16px 0;}
+.am-seg-btn{flex:1;padding:9px;border-radius:8px;font-family:var(--f-body);font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--gold-pale);color:var(--ink-mid);text-align:center;}
+.am-seg-btn.on{background:#059669;border-color:#059669;color:#FFF;}
+.session-card{background:#FFFFFF;border-radius:10px;margin:12px 16px 0;border:1.5px solid var(--border);overflow:hidden;}
+.sess-row{padding:13px 16px;border-bottom:1px solid var(--border);}
+.sess-row:last-child{border-bottom:none;}
+.sess-date{font-family:var(--f-mono);font-size:11px;color:var(--gold-dark);font-weight:700;}
+.sess-type{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-left:8px;}
+.sess-type.Call{background:rgba(59,130,246,0.12);color:#2563EB;}
+.sess-type.WhatsApp{background:rgba(16,185,129,0.12);color:#059669;}
+.sess-type.Meeting{background:rgba(245,158,11,0.12);color:#D97706;}
+.sess-type.Visit{background:rgba(139,92,246,0.12);color:#7C3AED;}
+.sess-note{font-family:var(--f-body);font-size:12px;color:var(--ink-mid);margin-top:6px;line-height:1.5;}
+.sess-note strong{color:var(--ink);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;}
+
+/* Requests tab */
+.req-card{background:#FFFFFF;border-radius:10px;margin:12px 16px 0;border:1.5px solid var(--border);overflow:hidden;}
+.req-row{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;}
+.req-row:last-child{border-bottom:none;}
+.req-ref{font-family:var(--f-mono);font-size:10px;color:var(--gold-dark);font-weight:700;}
+.req-info{flex:1;min-width:0;}
+.req-store{font-family:var(--f-body);font-size:13px;font-weight:600;color:var(--ink);}
+.req-meta{font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:2px;}
+.status-pill{display:inline-block;padding:3px 10px;border-radius:12px;font-family:var(--f-body);font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+.sp-pending{background:rgba(245,158,11,0.12);color:#D97706;}
+.sp-approved{background:rgba(59,130,246,0.12);color:#2563EB;}
+.sp-dispatched{background:rgba(16,185,129,0.12);color:#059669;}
+.sp-cancelled{background:rgba(192,57,43,0.10);color:#C0392B;}
+.req-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+.req-btn{padding:6px 12px;border-radius:6px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;border:none;white-space:nowrap;}
+.req-btn-approve{background:rgba(59,130,246,0.12);color:#2563EB;}
+.req-btn-dispatch{background:rgba(16,185,129,0.12);color:#059669;}
+.req-btn-pdf{background:var(--gold-pale);color:var(--gold-dark);border:1px solid var(--border)!important;}
+
+/* Issues tab */
+.iss-card{background:#FFFFFF;border-radius:10px;margin:12px 16px 0;border:1.5px solid var(--border);overflow:hidden;}
+.iss-row{padding:13px 16px;border-bottom:1px solid var(--border);}
+.iss-row:last-child{border-bottom:none;}
+.iss-row.open{border-left:4px solid #F59E0B;}
+.iss-row.in-progress{border-left:4px solid #2563EB;}
+.iss-row.resolved{border-left:4px solid #10B981;opacity:0.75;}
+.iss-title{font-family:var(--f-body);font-size:13px;font-weight:600;color:var(--ink);}
+.iss-meta{font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:3px;}
+.sev-pill{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;margin-left:6px;}
+.sev-Low{background:rgba(16,185,129,0.12);color:#059669;}
+.sev-Medium{background:rgba(245,158,11,0.12);color:#D97706;}
+.sev-High{background:rgba(239,68,68,0.12);color:#DC2626;}
+.sev-Critical{background:rgba(192,57,43,0.15);color:#9B1C1C;animation:pulse-sev 1.5s infinite;}
+@keyframes pulse-sev{0%,100%{opacity:1}50%{opacity:0.6}}
+.cat-pill-iss{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(107,91,53,0.10);color:var(--gold-dark);letter-spacing:0.3px;}
+
+/* Modal */
+#amHubModal{position:fixed;inset:0;z-index:900;background:rgba(26,26,26,0.50);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center;padding:0;}
+.amhub-modal-card{background:#FFF;border-radius:16px 16px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:24px 20px 32px;}
+.amhub-modal-title{font-family:var(--f-serif);font-size:20px;font-weight:600;color:var(--gold-dark);margin-bottom:16px;}
+.amhub-mf{margin-bottom:14px;}
+.amhub-ml{font-family:var(--f-body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink-light);margin-bottom:5px;display:block;}
+.amhub-mi{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--f-body);font-size:13px;color:var(--ink);}
+.amhub-mi:focus{outline:none;border-color:#059669;}
+.amhub-mta{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--f-body);font-size:13px;color:var(--ink);resize:none;height:70px;}
+.amhub-mta:focus{outline:none;border-color:#059669;}
+.amhub-modal-actions{display:flex;gap:10px;margin-top:6px;}
+.amhub-save-btn{flex:2;padding:13px;background:#059669;border:none;border-radius:8px;color:#FFF;font-family:var(--f-body);font-size:13px;font-weight:700;cursor:pointer;}
+.amhub-cancel-btn{flex:1;padding:13px;background:var(--gold-pale);border:1.5px solid var(--border);border-radius:8px;color:var(--ink-mid);font-family:var(--f-body);font-size:13px;font-weight:600;cursor:pointer;}
+.amhub-modal-drag{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+</style>
+
+<div id="amHubPanel">
+  <!-- Header -->
+  <div class="amhub-topbar">
+    <div>
+      <div style="font-family:var(--f-serif);font-size:17px;font-weight:600;color:#059669;letter-spacing:0.5px;">👥 Area Manager Hub</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:2px;letter-spacing:0.5px;">Feedback · Requests · Issues · Daily Tasks</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button onclick="openAMHubModal('session')" style="background:linear-gradient(135deg,#059669,#10B981);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">+ Log Session</button>
+      <button onclick="openAMHubModal('issue')" style="background:linear-gradient(135deg,#D97706,#F59E0B);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">⚑ Log Issue</button>
+      <button onclick="loadAMHubData()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;color:var(--ink-mid);font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
+      <button onclick="closeAMHub()" style="background:#059669;border:none;border-radius:6px;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
+    </div>
+  </div>
+  <!-- Tabs -->
+  <div class="amhub-tabs">
+    <div class="amhub-tab on" id="amtab_todo"   onclick="switchAMTab('todo')">☑ Daily TODO</div>
+    <div class="amhub-tab"    id="amtab_sessions" onclick="switchAMTab('sessions')">📞 AM Sessions</div>
+    <div class="amhub-tab"    id="amtab_requests" onclick="switchAMTab('requests')">📦 Weekly Requests</div>
+    <div class="amhub-tab"    id="amtab_issues"   onclick="switchAMTab('issues')">⚑ Issue Log</div>
+  </div>
+  <!-- Body -->
+  <div class="amhub-body" id="amHubBody"></div>
+</div>
+
+<!-- AM Hub Modal (Log Session / Log Issue) -->
+<div id="amHubModal" onclick="if(event.target===this)closeAMHubModal()">
+  <div class="amhub-modal-card" id="amHubModalCard"></div>
 </div>
 
 <!-- ══════════ AREA MANAGER STOCK GUIDE / MIN-MAX PANEL ══════════ -->
@@ -12955,6 +13075,489 @@ async function syncConsToSupabase(code, qty){
       updated_at:    new Date().toISOString()
     }, { onConflict: 'store_code,item_code' });
   } catch(e){ /* silent — localStorage is the source of truth for stock register */ }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// AM FEEDBACK HUB
+// ══════════════════════════════════════════════════════════════════
+const _AM_HUB_AMs=[
+  {code:'AM_HESSIN',name:'Mohamed Hessin',nameAr:'محمد حسين',region:'Abu Dhabi & Al Ain'},
+  {code:'AM_IMAD',  name:'Mohammed Imad',  nameAr:'محمد عماد', region:'Dubai'},
+  {code:'AM_ELMAT', name:'Mohammed Elmatloub',nameAr:'محمد المطلوب',region:'Northern Emirates'}
+];
+let _amHubTab='todo';
+let _amHubAMSeg='AM_HESSIN';
+let _amHubData={sessions:[],requests:[],issues:[]};
+let _amHubTodo={};   // { key: boolean } — persisted in localStorage per day
+let _amHubModalType='session';
+
+const _TODO_ITEMS=[
+  {section:'🌅 Morning — Daily Stock',items:[
+    {key:'wh_stock_update', label:'Check WhatsApp: collect closing stock from all stores', sub:'Previous day stock-in-hand — enter into stock register once received'},
+    {key:'wh_hessin_ack',   label:'Confirm Mohamed Hessin (Abu Dhabi & Al Ain) sent stock update', sub:'17 stores — A0001 to MAK001'},
+    {key:'wh_imad_ack',     label:'Confirm Mohammed Imad (Dubai) sent stock update', sub:'4 stores — DX001, DX004, DX005, DX006'},
+    {key:'wh_elmat_ack',    label:'Confirm Mohammed Elmatloub (Northern) sent stock update', sub:'6 stores — RK001, RK002, SH001, AJ001, FJ001, FJ001A'},
+  ]},
+  {section:'📞 AM Check-ins',items:[
+    {key:'call_hessin', label:'Call / WhatsApp: Mohamed Hessin — stock, sales, testers review', sub:'Abu Dhabi & Al Ain region · Log session after call'},
+    {key:'call_imad',   label:'Call / WhatsApp: Mohammed Imad — stock, sales, testers review', sub:'Dubai region · Log session after call'},
+    {key:'call_elmat',  label:'Call / WhatsApp: Mohammed Elmatloub — stock, sales, testers review', sub:'Northern Emirates region · Log session after call'},
+  ]},
+  {section:'🧪 Testers',items:[
+    {key:'tester_review',  label:'Review tester counts from WhatsApp updates', sub:'Check low / empty testers across all stores'},
+    {key:'tester_writeoff',label:'Record any tester write-offs or conversions in stock register', sub:'FG → Tester conversions via Request Tester form'},
+  ]},
+  {section:'📊 Weekly Tasks',items:[
+    {key:'weekly_req_form',  label:'Send weekly stock request form link to all 3 AMs', sub:'Link: am-stock-request.html — AMs fill on mobile'},
+    {key:'weekly_req_review',label:'Review and approve pending AM weekly requests', sub:'AM Feedback Hub → Weekly Requests tab'},
+    {key:'weekly_report',    label:'Prepare weekly demand planning summary if needed', sub:'Demand Planning panel for benchmarks'},
+  ]}
+];
+
+function openAMHub(){
+  document.getElementById('amHubPanel').style.display='flex';
+  loadTodoState();
+  loadAMHubData();
+  switchAMTab('todo');
+}
+function closeAMHub(){document.getElementById('amHubPanel').style.display='none';}
+
+function switchAMTab(tab){
+  _amHubTab=tab;
+  ['todo','sessions','requests','issues'].forEach(t=>{
+    document.getElementById('amtab_'+t).classList.toggle('on',t===tab);
+  });
+  renderAMHubTab();
+}
+
+async function loadAMHubData(){
+  try{
+    const [sR,rR,iR]=await Promise.all([
+      _SBC.from('am_feedback_sessions').select('*').order('session_date',{ascending:false}).limit(200),
+      _SBC.from('am_weekly_requests').select('*').order('submitted_at',{ascending:false}).limit(100),
+      _SBC.from('am_issues_log').select('*').order('raised_date',{ascending:false}).limit(200)
+    ]);
+    if(sR.data)_amHubData.sessions=sR.data;
+    if(rR.data)_amHubData.requests=rR.data;
+    if(iR.data)_amHubData.issues=iR.data;
+    renderAMHubTab();
+  }catch(e){console.warn('AM Hub load error',e);}
+}
+
+function loadTodoState(){
+  const today=new Date().toISOString().slice(0,10);
+  const saved=localStorage.getItem('amhub_todo_'+today);
+  _amHubTodo=saved?JSON.parse(saved):{};
+}
+function saveTodoState(){
+  const today=new Date().toISOString().slice(0,10);
+  localStorage.setItem('amhub_todo_'+today,JSON.stringify(_amHubTodo));
+}
+
+function renderAMHubTab(){
+  const body=document.getElementById('amHubBody');
+  if(_amHubTab==='todo')      body.innerHTML=renderTodoTab();
+  else if(_amHubTab==='sessions') body.innerHTML=renderSessionsTab();
+  else if(_amHubTab==='requests') body.innerHTML=renderRequestsTab();
+  else if(_amHubTab==='issues')   body.innerHTML=renderIssuesTab();
+}
+
+// ── TODO TAB ──
+function renderTodoTab(){
+  const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const done=Object.values(_amHubTodo).filter(Boolean).length;
+  const total=_TODO_ITEMS.reduce((s,sec)=>s+sec.items.length,0);
+  let html=`<div style="padding:14px 16px 0;">
+    <div style="font-family:var(--f-serif);font-size:20px;font-weight:600;color:var(--gold-dark);">${today}</div>
+    <div style="font-family:var(--f-mono);font-size:11px;color:var(--ink-light);margin-top:3px;">${done} / ${total} tasks completed today</div>
+    <div style="height:6px;background:var(--border);border-radius:3px;margin-top:8px;overflow:hidden;">
+      <div style="height:100%;background:#059669;border-radius:3px;width:${Math.round(done/total*100)}%;transition:width 0.3s;"></div>
+    </div>
+    <div style="text-align:right;font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:3px;">${Math.round(done/total*100)}%</div>
+  </div>`;
+  _TODO_ITEMS.forEach(sec=>{
+    html+=`<div class="todo-section">
+      <div class="todo-sec-hdr">${sec.section}</div>`;
+    sec.items.forEach(item=>{
+      const chk=!!_amHubTodo[item.key];
+      html+=`<div class="todo-item" onclick="toggleTodo('${item.key}')">
+        <div class="todo-cb${chk?' done':''}">
+          ${chk?`<svg width="11" height="9" viewBox="0 0 11 9"><path d="M1 4l3 3 6-6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`:''}
+        </div>
+        <div style="flex:1;">
+          <div class="todo-lbl${chk?' done':''}">${item.label}</div>
+          <div class="todo-sub">${item.sub}</div>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  html+=`<div style="height:24px;"></div>`;
+  return html;
+}
+
+function toggleTodo(key){
+  _amHubTodo[key]=!_amHubTodo[key];
+  saveTodoState();
+  renderAMHubTab();
+}
+
+// ── SESSIONS TAB ──
+function renderSessionsTab(){
+  let html=`<div class="am-seg">
+    ${_AM_HUB_AMs.map(a=>`<div class="am-seg-btn${_amHubAMSeg===a.code?' on':''}" onclick="setAMSeg('${a.code}')">${a.name.split(' ')[0]}</div>`).join('')}
+  </div>`;
+  const am=_AM_HUB_AMs.find(a=>a.code===_amHubAMSeg);
+  html+=`<div style="padding:12px 16px 4px;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div style="font-family:var(--f-serif);font-size:16px;font-weight:600;color:var(--gold-dark);">${am.name} &nbsp;<span style="font-family:var(--f-ar);font-size:13px;color:var(--ink-mid);">${am.nameAr}</span></div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);">${am.region}</div>
+    </div>
+    <button onclick="openAMHubModal('session')" style="padding:7px 14px;background:linear-gradient(135deg,#059669,#10B981);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;font-weight:700;cursor:pointer;">+ Log Session</button>
+  </div>`;
+  const sess=_amHubData.sessions.filter(s=>s.am_code===_amHubAMSeg);
+  if(!sess.length){
+    html+=`<div class="session-card"><div style="padding:24px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:13px;">No sessions logged yet for ${am.name.split(' ')[0]}</div></div>`;
+  } else {
+    html+=`<div class="session-card">`;
+    sess.forEach(s=>{
+      const d=new Date(s.session_date+'T00:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+      const notes=[
+        s.stock_notes  ? `<div class="sess-note"><strong>Stock:</strong> ${s.stock_notes}</div>` :'',
+        s.tester_notes ? `<div class="sess-note"><strong>Testers:</strong> ${s.tester_notes}</div>` :'',
+        s.sales_notes  ? `<div class="sess-note"><strong>Sales:</strong> ${s.sales_notes}</div>` :'',
+        s.general_notes? `<div class="sess-note"><strong>General:</strong> ${s.general_notes}</div>` :'',
+        s.action_items ? `<div class="sess-note" style="color:#059669;"><strong>Action Items:</strong> ${s.action_items}</div>` :'',
+      ].filter(Boolean).join('');
+      html+=`<div class="sess-row">
+        <div><span class="sess-date">${d}</span><span class="sess-type ${s.session_type}">${s.session_type}</span>${s.duration_mins?`<span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-left:8px;">${s.duration_mins}min</span>`:''}</div>
+        ${notes||'<div class="sess-note" style="color:var(--ink-light);">No notes recorded</div>'}
+      </div>`;
+    });
+    html+='</div>';
+  }
+  html+=`<div style="height:24px;"></div>`;
+  return html;
+}
+
+function setAMSeg(code){_amHubAMSeg=code;renderAMHubTab();}
+
+// ── REQUESTS TAB ──
+function renderRequestsTab(){
+  const reqs=_amHubData.requests;
+  let html=`<div style="padding:12px 16px 4px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);">${reqs.length} requests total &nbsp;·&nbsp; <span style="color:#D97706;">${reqs.filter(r=>r.status==='pending').length} pending</span></div>
+    <a href="am-stock-request.html" target="_blank" style="padding:7px 14px;background:var(--gold-bar);border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;font-weight:700;text-decoration:none;">📲 Open Form</a>
+  </div>`;
+  if(!reqs.length){
+    html+=`<div class="req-card"><div style="padding:24px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:13px;">No requests submitted yet. Share the AM form link with Area Managers.</div></div>`;
+  } else {
+    html+=`<div class="req-card">`;
+    reqs.forEach(r=>{
+      const d=new Date(r.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      const wk=r.week_starting?new Date(r.week_starting+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'';
+      const n=Array.isArray(r.items)?r.items.length:0;
+      const totalQty=Array.isArray(r.items)?r.items.reduce((s,i)=>s+(i.qty||0),0):0;
+      let actions='';
+      if(r.status==='pending'){
+        actions=`<button class="req-btn req-btn-approve" onclick="approveAMRequest('${r.request_ref}')">✓ Approve</button>
+                 <button class="req-btn req-btn-pdf" onclick="printAMRequest(${JSON.stringify(r).replace(/"/g,'&quot;')})">⬇ PDF</button>`;
+      } else if(r.status==='approved'){
+        actions=`<button class="req-btn req-btn-dispatch" onclick="dispatchAMRequest('${r.request_ref}')">🚚 Dispatch</button>
+                 <button class="req-btn req-btn-pdf" onclick="printAMRequest(${JSON.stringify(r).replace(/"/g,'&quot;')})">⬇ PDF</button>`;
+      } else {
+        actions=`<button class="req-btn req-btn-pdf" onclick="printAMRequest(${JSON.stringify(r).replace(/"/g,'&quot;')})">⬇ PDF</button>`;
+      }
+      html+=`<div class="req-row">
+        <div class="req-info">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="req-ref">${r.request_ref}</span>
+            <span class="status-pill sp-${r.status}">${r.status}</span>
+          </div>
+          <div class="req-store">${r.store_name||r.store_code} &nbsp;<span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);">(${r.store_code})</span></div>
+          <div class="req-meta">${r.am_name} &nbsp;·&nbsp; Week: ${wk} &nbsp;·&nbsp; ${n} SKUs &nbsp;·&nbsp; ${totalQty} units &nbsp;·&nbsp; ${d}</div>
+          ${r.notes?`<div style="font-family:var(--f-body);font-size:11px;color:var(--ink-mid);margin-top:4px;font-style:italic;">"${r.notes}"</div>`:''}
+        </div>
+        <div class="req-actions">${actions}</div>
+      </div>`;
+    });
+    html+='</div>';
+  }
+  html+=`<div style="height:24px;"></div>`;
+  return html;
+}
+
+async function approveAMRequest(ref){
+  const approver=prompt('Approved by (your name):');
+  if(!approver)return;
+  try{
+    await _SBC.from('am_weekly_requests').update({status:'approved',approved_by:approver,approved_at:new Date().toISOString()}).eq('request_ref',ref);
+    showToastHub('Request approved ✓');
+    await loadAMHubData();
+  }catch(e){showToastHub('Error: '+e.message);}
+}
+
+async function dispatchAMRequest(ref){
+  const who=prompt('Dispatched by (your name):');
+  if(!who)return;
+  const notes=prompt('Dispatch notes (optional):');
+  try{
+    await _SBC.from('am_weekly_requests').update({status:'dispatched',dispatched_by:who,dispatched_at:new Date().toISOString(),dispatch_notes:notes||''}).eq('request_ref',ref);
+    showToastHub('Marked as dispatched 🚚');
+    await loadAMHubData();
+  }catch(e){showToastHub('Error: '+e.message);}
+}
+
+function printAMRequest(r){
+  const items=Array.isArray(r.items)?r.items:[];
+  const wk=r.week_starting?new Date(r.week_starting+'T00:00:00').toLocaleDateString('en-GB'):'—';
+  const rows=items.map(i=>`<tr><td style="font-family:monospace;color:#7A6525;">${i.code}</td><td>${i.en}</td><td style="direction:rtl;text-align:right;font-family:sans-serif;">${i.ar||'—'}</td><td style="text-align:center;font-weight:700;">${i.qty}</td><td style="font-size:10px;color:#8A8278;">${i.cat||''}</td></tr>`).join('');
+  const totalQty=items.reduce((s,i)=>s+(i.qty||0),0);
+  const w=window.open('','_blank','width=800,height:900');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Request ${r.request_ref}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Montserrat:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
+  <style>body{font-family:Montserrat,sans-serif;padding:28px;max-width:800px;margin:auto;}
+  .hdr{text-align:center;border-bottom:3px solid #6B5B35;padding-bottom:14px;margin-bottom:16px;}
+  .brand{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#6B5B35;}
+  .meta{display:flex;flex-wrap:wrap;gap:14px 24px;background:#F5F2EC;padding:10px 14px;border-radius:6px;margin-bottom:14px;border:1px solid #E5E0D8;}
+  .mi{font-size:11px;color:#4A4540;} .mi strong{color:#1A1A1A;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{background:#F5F2EC;padding:8px 10px;text-align:left;border:1px solid #E5E0D8;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#4A4540;}
+  td{padding:8px 10px;border:1px solid #E5E0D8;} tr:nth-child(even) td{background:#FAFAF8;}
+  tfoot td{background:#F5F2EC;font-weight:700;}
+  .sig{display:flex;justify-content:space-between;margin-top:28px;}
+  .sbox{border-top:1.5px solid #D0C8B8;padding-top:6px;font-size:10px;color:#8A8278;min-width:130px;}
+  @media print{body{padding:16px;}}
+  </style></head><body>
+  <div class="hdr"><div class="brand">Emirates Pride Perfumes</div>
+  <div style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:15px;color:#6B5B35;margin-top:2px;">فخر الإمارات للعطور</div>
+  <div style="font-size:13px;font-weight:700;color:#4A4540;margin-top:5px;text-transform:uppercase;letter-spacing:1px;">Weekly Stock Request · طلب البضاعة الأسبوعي</div></div>
+  <div class="meta">
+  <div class="mi"><strong>Ref:</strong> ${r.request_ref}</div>
+  <div class="mi"><strong>AM:</strong> ${r.am_name}</div>
+  <div class="mi"><strong>Store:</strong> ${r.store_name} (${r.store_code})</div>
+  <div class="mi"><strong>Week Starting:</strong> ${wk}</div>
+  <div class="mi"><strong>Status:</strong> ${r.status.toUpperCase()}</div>
+  ${r.approved_by?`<div class="mi"><strong>Approved by:</strong> ${r.approved_by}</div>`:''}
+  ${r.dispatched_by?`<div class="mi"><strong>Dispatched by:</strong> ${r.dispatched_by}</div>`:''}
+  </div>
+  <table><thead><tr><th>SKU Code</th><th>Product (EN)</th><th style="text-align:right;">المنتج (AR)</th><th style="text-align:center;">Qty</th><th>Category</th></tr></thead>
+  <tbody>${rows}</tbody>
+  <tfoot><tr><td colspan="3" style="text-align:right;">Total Qty · إجمالي الكمية</td><td style="text-align:center;font-size:14px;">${totalQty}</td><td></td></tr></tfoot></table>
+  ${r.notes?`<div style="margin-top:12px;padding:10px;background:#F5F2EC;border-radius:6px;font-size:12px;border:1px solid #E5E0D8;"><strong>Notes:</strong> ${r.notes}</div>`:''}
+  <div class="sig">
+    <div class="sbox">AM Signature · توقيع المدير</div>
+    <div class="sbox">Approved By · اعتماد</div>
+    <div class="sbox">Dispatched By · شحن بواسطة</div>
+  </div>
+  <div style="text-align:center;font-size:10px;color:#8A8278;margin-top:18px;border-top:1px solid #E5E0D8;padding-top:10px;">Emirates Pride Perfumes · ${r.request_ref} · Printed: ${new Date().toLocaleString('en-GB')}</div>
+  <script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
+  w.document.close();
+}
+
+// ── ISSUES TAB ──
+function renderIssuesTab(){
+  const issues=_amHubData.issues;
+  const open=issues.filter(i=>i.status==='Open'||i.status==='In Progress');
+  let html=`<div style="padding:12px 16px 4px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);">${issues.length} issues &nbsp;·&nbsp; <span style="color:#D97706;">${open.length} open</span></div>
+    <button onclick="openAMHubModal('issue')" style="padding:7px 14px;background:linear-gradient(135deg,#D97706,#F59E0B);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;font-weight:700;cursor:pointer;">⚑ Log Issue</button>
+  </div>`;
+  if(!issues.length){
+    html+=`<div class="iss-card"><div style="padding:24px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:13px;">No issues logged. Use the Log Issue button to record any store problems.</div></div>`;
+  } else {
+    html+=`<div class="iss-card">`;
+    issues.forEach(iss=>{
+      const d=new Date(iss.raised_date+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      const statusClass=iss.status.toLowerCase().replace(' ','-');
+      html+=`<div class="iss-row ${statusClass}">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+          <span class="cat-pill-iss">${iss.category}</span>
+          <span class="sev-pill sev-${iss.severity}">${iss.severity}</span>
+          <span class="status-pill sp-${iss.status==='Open'?'pending':iss.status==='In Progress'?'approved':'dispatched'}">${iss.status}</span>
+        </div>
+        <div class="iss-title">${iss.title}</div>
+        <div class="iss-meta">${iss.am_name} &nbsp;·&nbsp; ${iss.store_name||iss.store_code||'All Stores'} &nbsp;·&nbsp; Raised: ${d}</div>
+        ${iss.details?`<div style="font-family:var(--f-body);font-size:12px;color:var(--ink-mid);margin-top:5px;">${iss.details}</div>`:''}
+        ${iss.resolution?`<div style="font-family:var(--f-body);font-size:11px;color:#059669;margin-top:5px;">✓ Resolution: ${iss.resolution}</div>`:''}
+        ${(iss.status==='Open'||iss.status==='In Progress')?`<button onclick="resolveIssue(${iss.id})" style="margin-top:8px;padding:5px 12px;background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.30);border-radius:5px;color:#059669;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">✓ Mark Resolved</button>`:''}
+      </div>`;
+    });
+    html+='</div>';
+  }
+  html+=`<div style="height:24px;"></div>`;
+  return html;
+}
+
+async function resolveIssue(id){
+  const res=prompt('Resolution notes:');
+  if(res===null)return;
+  try{
+    await _SBC.from('am_issues_log').update({status:'Resolved',resolved_date:new Date().toISOString().slice(0,10),resolution:res,updated_at:new Date().toISOString()}).eq('id',id);
+    showToastHub('Issue resolved ✓');
+    await loadAMHubData();
+  }catch(e){showToastHub('Error: '+e.message);}
+}
+
+// ── MODAL ──
+function openAMHubModal(type){
+  _amHubModalType=type;
+  const card=document.getElementById('amHubModalCard');
+  if(type==='session'){
+    card.innerHTML=`<div class="amhub-modal-drag"></div>
+      <div class="amhub-modal-title">📞 Log AM Session</div>
+      <div class="amhub-mf">
+        <label class="amhub-ml">Area Manager</label>
+        <select class="amhub-mi" id="mAMCode">
+          ${_AM_HUB_AMs.map(a=>`<option value="${a.code}"${a.code===_amHubAMSeg?' selected':''}>${a.name} — ${a.region}</option>`).join('')}
+        </select>
+      </div>
+      <div class="amhub-mf">
+        <label class="amhub-ml">Date</label>
+        <input type="date" class="amhub-mi" id="mSessDate" value="${new Date().toISOString().slice(0,10)}">
+      </div>
+      <div style="display:flex;gap:10px;" class="amhub-mf">
+        <div style="flex:1;">
+          <label class="amhub-ml">Type</label>
+          <select class="amhub-mi" id="mSessType">
+            <option>Call</option><option>WhatsApp</option><option>Meeting</option><option>Visit</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label class="amhub-ml">Duration (mins)</label>
+          <input type="number" class="amhub-mi" id="mSessDur" placeholder="e.g. 15" min="1">
+        </div>
+      </div>
+      <div class="amhub-mf">
+        <label class="amhub-ml">Stock Discussion</label>
+        <textarea class="amhub-mta" id="mStockNotes" placeholder="Stock levels discussed, requests noted, concerns raised..."></textarea>
+      </div>
+      <div class="amhub-mf">
+        <label class="amhub-ml">Tester Feedback</label>
+        <textarea class="amhub-mta" id="mTesterNotes" placeholder="Tester counts, write-offs, new tester requests..."></textarea>
+      </div>
+      <div class="amhub-mf">
+        <label class="amhub-ml">Sales &amp; General</label>
+        <textarea class="amhub-mta" id="mGeneralNotes" placeholder="Sales performance, suggestions, issues, other feedback..."></textarea>
+      </div>
+      <div class="amhub-mf">
+        <label class="amhub-ml">Action Items / Follow-up</label>
+        <textarea class="amhub-mta" id="mActionItems" placeholder="What needs to be done after this call..."></textarea>
+      </div>
+      <div class="amhub-modal-actions">
+        <button class="amhub-cancel-btn" onclick="closeAMHubModal()">Cancel</button>
+        <button class="amhub-save-btn" onclick="saveAMSession()">Save Session</button>
+      </div>`;
+  } else {
+    card.innerHTML=`<div class="amhub-modal-drag"></div>
+      <div class="amhub-modal-title">⚑ Log Issue</div>
+      <div class="amhub-mf">
+        <label class="amhub-ml">Area Manager</label>
+        <select class="amhub-mi" id="mIssAM">
+          ${_AM_HUB_AMs.map(a=>`<option value="${a.code}|${a.name}"${a.code===_amHubAMSeg?' selected':''}>${a.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="amhub-mf">
+        <label class="amhub-ml">Store (optional)</label>
+        <input type="text" class="amhub-mi" id="mIssStore" placeholder="e.g. DX001 — Dubai Mall (leave blank for all stores)">
+      </div>
+      <div style="display:flex;gap:10px;" class="amhub-mf">
+        <div style="flex:1;">
+          <label class="amhub-ml">Category</label>
+          <select class="amhub-mi" id="mIssCat">
+            <option>Stock</option><option>Sales</option><option>Testers</option><option>Packaging</option><option>Staff</option><option>Other</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label class="amhub-ml">Severity</label>
+          <select class="amhub-mi" id="mIssSev">
+            <option>Low</option><option selected>Medium</option><option>High</option><option>Critical</option>
+          </select>
+        </div>
+      </div>
+      <div class="amhub-mf">
+        <label class="amhub-ml">Issue Title</label>
+        <input type="text" class="amhub-mi" id="mIssTitle" placeholder="Short description of the issue">
+      </div>
+      <div class="amhub-mf">
+        <label class="amhub-ml">Details</label>
+        <textarea class="amhub-mta" style="height:90px;" id="mIssDetails" placeholder="Full details of the issue..."></textarea>
+      </div>
+      <div class="amhub-mf">
+        <label class="amhub-ml">Date Raised</label>
+        <input type="date" class="amhub-mi" id="mIssDate" value="${new Date().toISOString().slice(0,10)}">
+      </div>
+      <div class="amhub-modal-actions">
+        <button class="amhub-cancel-btn" onclick="closeAMHubModal()">Cancel</button>
+        <button class="amhub-save-btn" onclick="saveAMIssue()">Save Issue</button>
+      </div>`;
+  }
+  const modal=document.getElementById('amHubModal');
+  modal.style.display='flex';
+  setTimeout(()=>card.scrollIntoView({behavior:'smooth'}),50);
+}
+
+function closeAMHubModal(){document.getElementById('amHubModal').style.display='none';}
+
+async function saveAMSession(){
+  const amCode=document.getElementById('mAMCode').value;
+  const am=_AM_HUB_AMs.find(a=>a.code===amCode);
+  const date=document.getElementById('mSessDate').value;
+  if(!date){alert('Please select a date.');return;}
+  const payload={
+    am_code:amCode, am_name:am.name,
+    session_date:date,
+    session_type:document.getElementById('mSessType').value,
+    duration_mins:parseInt(document.getElementById('mSessDur').value)||null,
+    stock_notes:document.getElementById('mStockNotes').value||'',
+    tester_notes:document.getElementById('mTesterNotes').value||'',
+    sales_notes:'',
+    general_notes:document.getElementById('mGeneralNotes').value||'',
+    action_items:document.getElementById('mActionItems').value||'',
+    logged_by:'Amal'
+  };
+  try{
+    const {error}=await _SBC.from('am_feedback_sessions').insert([payload]);
+    if(error)throw error;
+    closeAMHubModal();
+    showToastHub('Session logged ✓');
+    _amHubAMSeg=amCode;
+    switchAMTab('sessions');
+    await loadAMHubData();
+  }catch(e){alert('Error saving: '+e.message);}
+}
+
+async function saveAMIssue(){
+  const amVal=document.getElementById('mIssAM').value.split('|');
+  const title=document.getElementById('mIssTitle').value.trim();
+  if(!title){alert('Please enter an issue title.');return;}
+  const storeRaw=document.getElementById('mIssStore').value.trim();
+  const storeCode=storeRaw.split(/[—\- ]/)[0].trim()||'';
+  const payload={
+    am_code:amVal[0], am_name:amVal[1],
+    store_code:storeCode||null,
+    store_name:storeRaw||null,
+    category:document.getElementById('mIssCat').value,
+    title:title,
+    details:document.getElementById('mIssDetails').value||'',
+    severity:document.getElementById('mIssSev').value,
+    status:'Open',
+    raised_date:document.getElementById('mIssDate').value,
+    logged_by:'Amal'
+  };
+  try{
+    const {error}=await _SBC.from('am_issues_log').insert([payload]);
+    if(error)throw error;
+    closeAMHubModal();
+    showToastHub('Issue logged ✓');
+    switchAMTab('issues');
+    await loadAMHubData();
+  }catch(e){alert('Error saving: '+e.message);}
+}
+
+function showToastHub(msg){
+  // Reuse existing showToast if available, otherwise create a brief alert
+  if(typeof showToast==='function')showToast(msg);
 }
 
 // ══════════════════════════════════════════════════════════════════

@@ -202,6 +202,74 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 
 ---
 
+### Session — 20 May 2026 (Session 10 — AM Feedback Hub + Weekly Stock Request Form)
+**Files changed**: `am-stock-request.html` (new), `am_requests_setup.sql` (new), `stock-register.html` (AM Hub button + panel + JS added)
+**Commit**: pending — not yet pushed
+
+#### What was built:
+
+**1. `am-stock-request.html` — Standalone Mobile Weekly Stock Request Form**
+- 4-screen mobile-first flow: Identity → Browse → Review → Confirm
+- Screen 1: AM selects name (Hessin / Imad / Elmatloub) → store filtered to their assigned stores → week picker (defaults to next Monday)
+- Screen 2: Full product catalogue (CATS + Testers + Supplies) with category pill filter + search bar. Tap "+" to add to cart, turns green on add
+- Screen 3: Cart review with qty steppers (−/qty/+), remove button, notes field, submit
+- Screen 4: Confirmation with request ref (AMR-YYYYMMDD-XXXX), PDF download via browser print, "Submit Another" button
+- Includes all 163 products with Arabic + English names, 40 testers, 4 supply items (Shopping Bag S/M/L, Tissue Paper Roll)
+- Submits to Supabase `am_weekly_requests` table
+- PDF prints bilingual table (EN + AR) with signature lines (AM / Approved / Dispatched)
+- Emirates Pride brand design (Cormorant Garamond + Montserrat + IBM Plex Mono, olive-gold bar, cream palette)
+- Live URL after push: `https://vinayak682.github.io/emirates-pride-inventory-management/am-stock-request.html`
+
+**2. `am_requests_setup.sql` — Supabase Table Setup**
+- `am_weekly_requests`: request_ref, am_code, am_name, store_code, week_starting, items (JSONB), notes, status (pending/approved/dispatched/cancelled), approved_by, dispatched_by, timestamps
+- `am_feedback_sessions`: am_code, session_date, session_type (Call/WhatsApp/Meeting/Visit), stock_notes, tester_notes, general_notes, action_items
+- `am_issues_log`: am_code, store_code, category (Stock/Sales/Testers/Packaging/Staff/Other), title, details, severity (Low/Medium/High/Critical), status (Open/In Progress/Resolved/Closed), raised_date, resolved_date, resolution
+- RLS policies: anon insert + read/update for all 3 tables
+- Indexes on am_code, status, date fields
+- **ACTION REQUIRED**: Run this SQL in Supabase SQL Editor before using the hub
+
+**3. `stock-register.html` — AM Feedback Hub (MGR only)**
+- New "👥 AM Feedback" button added to Manager Dashboard header (green gradient, beside Security Log)
+- New full-screen panel `#amHubPanel` (z-index 825) with 4 tabs:
+
+  **Tab 1: ☑ Daily TODO**
+  - Progress bar showing tasks completed today (%)
+  - 3 sections: Morning (stock updates from WhatsApp, confirm all 3 AMs sent updates), AM Check-ins (call/WhatsApp each AM), Testers (review counts, record write-offs), Weekly Tasks (send form links, approve requests)
+  - Interactive checkboxes — state saved in localStorage per day (resets each morning)
+  - Daily reminder: enter previous day closing stock from WhatsApp messages
+
+  **Tab 2: 📞 AM Sessions**
+  - Segmented control: Hessin / Imad / Elmatloub
+  - Timeline of all logged sessions per AM from Supabase
+  - Shows: date, type badge (Call/WhatsApp/Meeting/Visit), duration, Stock/Testers/General/Action notes
+  - "+ Log Session" button → bottom-sheet modal with full fields
+
+  **Tab 3: 📦 Weekly Requests**
+  - Table of all submitted requests from `am_weekly_requests`
+  - Shows: ref, AM name, store, week, SKU count, total qty, status pill
+  - Pending → "✓ Approve" button (asks approver name → updates Supabase)
+  - Approved → "🚚 Dispatch" button (asks who dispatched + notes → updates Supabase)
+  - All → "⬇ PDF" button → opens print window with branded bilingual document
+  - "📲 Open Form" link → am-stock-request.html in new tab
+
+  **Tab 4: ⚑ Issue Log**
+  - Issue cards with colour-coded left border (Open=amber, In Progress=blue, Resolved=green)
+  - Category pill, severity badge (Critical pulses red), status pill per issue
+  - "✓ Mark Resolved" button on open issues → asks resolution notes → updates Supabase
+  - "⚑ Log Issue" button → bottom-sheet modal (AM, store, category, severity, title, details, date)
+
+#### Supabase tables needed (run am_requests_setup.sql):
+- `am_weekly_requests` ← form submissions
+- `am_feedback_sessions` ← AM call/WhatsApp logs
+- `am_issues_log` ← issue tracker
+
+#### AM assignments (confirmed from STORES array):
+- `AM_HESSIN` = Mohamed Hessin → 17 stores (Abu Dhabi + Al Ain)
+- `AM_IMAD` = Mohammed Imad → 4 stores (Dubai)
+- `AM_ELMAT` = Mohammed Elmatloub → 6 stores (RAK, Sharjah, Ajman, Fujairah)
+
+---
+
 ### Session — 19 May 2026 (Session 9 — Standalone FG Tester Manager Portal)
 **Files changed**: `fg-tester-manager.html` (new)
 **Commit**: `ac4aeff` → branch `claude/tender-spence-8b07d2` (pushed to GitHub, PR pending merge to main)

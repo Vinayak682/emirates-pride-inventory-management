@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Weekly Stock Request — Emirates Pride</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{
+  --gold:#C9A84C; --gold-dark:#7A6525; --gold-bar:#6B5B35; --gold-deeper:#5C4A1A;
+  --gold-pale:#F5F2EC; --border:#E5E0D8; --ink:#1A1A1A; --ink-mid:#4A4540;
+  --ink-light:#8A8278; --page:#FFFFFF; --sheet:#FAFAF8;
+  --f-serif:'Cormorant Garamond',serif; --f-body:'Montserrat',sans-serif;
+  --f-mono:'IBM Plex Mono',monospace; --f-ar:'IBM Plex Sans Arabic',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-height:100vh;overflow-x:hidden;}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* ── SCREEN 1: IDENTITY ── */
+.s1-hero{background:var(--gold-bar);padding:32px 20px 24px;}
+.s1-sub{font-family:var(--f-mono);font-size:10px;color:rgba(255,255,255,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.s1-title{font-family:var(--f-serif);font-size:28px;font-weight:600;color:#FFF;letter-spacing:0.5px;}
+.s1-title-ar{font-family:var(--f-ar);font-size:18px;color:rgba(255,255,255,0.80);margin-top:6px;direction:rtl;text-align:right;}
+.s1-cap{font-family:var(--f-body);font-size:10px;color:rgba(255,255,255,0.50);margin-top:12px;letter-spacing:1px;text-transform:uppercase;}
+.form-card{background:#FFF;border:1.5px solid var(--border);border-radius:12px;padding:22px 18px;margin:20px 16px;box-shadow:0 2px 14px rgba(107,91,53,0.07);}
+.form-lbl{font-family:var(--f-body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink-light);margin-bottom:4px;display:block;}
+.form-lbl-ar{font-family:var(--f-ar);font-size:11px;color:var(--ink-mid);margin-bottom:6px;direction:rtl;text-align:right;display:block;}
+.form-sel{width:100%;padding:12px 36px 12px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--f-body);font-size:14px;color:var(--ink);background:#FFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A8278' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center;-webkit-appearance:none;appearance:none;cursor:pointer;}
+.form-sel:focus{outline:none;border-color:var(--gold);}
+.form-inp{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--f-mono);font-size:14px;color:var(--ink);}
+.form-inp:focus{outline:none;border-color:var(--gold);}
+.fg{margin-bottom:16px;}
+.btn-primary{display:block;width:100%;padding:16px;background:var(--gold-bar);border:none;border-radius:10px;color:#FFF;font-family:var(--f-body);font-size:15px;font-weight:700;letter-spacing:0.3px;cursor:pointer;margin-top:4px;}
+.btn-primary:active{opacity:0.85;}
+.err-box{display:none;color:#C0392B;font-size:12px;font-weight:600;padding:10px 14px;background:#FFF0EE;border-radius:7px;border:1px solid #F5C6C2;margin-bottom:12px;font-family:var(--f-body);}
+
+/* ── SCREEN 2: BROWSE ── */
+.browse-bar{background:#FFF;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:40;}
+.browse-am{font-family:var(--f-body);font-size:12px;font-weight:700;color:var(--gold-dark);text-transform:uppercase;letter-spacing:0.5px;}
+.browse-store{font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);margin-top:2px;}
+.browse-wk{font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);text-align:right;}
+.btn-change{background:var(--gold-pale);border:1.5px solid var(--border);border-radius:6px;color:var(--ink-mid);font-family:var(--f-body);font-size:10px;font-weight:600;padding:5px 12px;cursor:pointer;margin-top:4px;display:block;}
+
+.search-wrap{padding:10px 16px;background:#FFF;border-bottom:1px solid var(--border);flex-shrink:0;}
+.search-inp{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--f-body);font-size:14px;color:var(--ink);background:var(--gold-pale) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238A8278' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 12px center;}
+.search-inp:focus{outline:none;border-color:var(--gold);background-color:#FFF;}
+
+.cat-pills{display:flex;gap:6px;padding:10px 16px;overflow-x:auto;flex-shrink:0;background:#FFF;border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.cat-pills::-webkit-scrollbar{display:none;}
+.cpill{white-space:nowrap;padding:7px 14px;border-radius:20px;background:var(--gold-pale);border:1.5px solid var(--border);color:var(--ink-mid);font-family:var(--f-body);font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;}
+.cpill.on{background:var(--gold-bar);border-color:var(--gold-bar);color:#FFF;}
+
+.prod-list{flex:1;overflow-y:auto;padding-bottom:120px;-webkit-overflow-scrolling:touch;}
+.prod-cat-hdr{padding:8px 16px 6px;background:var(--gold-pale);border-bottom:1px solid var(--border);font-family:var(--f-body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold-dark);display:flex;justify-content:space-between;align-items:center;}
+.prod-cat-ar{font-family:var(--f-ar);font-size:11px;color:var(--ink-light);font-weight:400;letter-spacing:0;text-transform:none;}
+.prod-row{display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid var(--border);gap:10px;background:#FFF;transition:background 0.1s;}
+.prod-row.added{background:#F0FFF6;}
+.prod-code{font-family:var(--f-mono);font-size:9px;font-weight:600;color:var(--gold-dark);background:rgba(201,168,76,0.10);padding:3px 7px;border-radius:4px;flex-shrink:0;min-width:72px;text-align:center;}
+.prod-names{flex:1;min-width:0;}
+.prod-en{font-family:var(--f-body);font-size:13px;font-weight:500;color:var(--ink);line-height:1.3;}
+.prod-ar-lbl{font-family:var(--f-ar);font-size:12px;color:var(--ink-mid);direction:rtl;margin-top:2px;line-height:1.4;}
+.tstr-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;background:rgba(124,58,237,0.10);color:#7C3AED;letter-spacing:0.5px;text-transform:uppercase;margin-top:3px;}
+.supp-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;background:rgba(5,150,105,0.10);color:#059669;letter-spacing:0.5px;text-transform:uppercase;margin-top:3px;}
+.btn-add{width:38px;height:38px;border-radius:50%;background:var(--gold-bar);border:none;color:#FFF;font-size:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
+.btn-add.on{background:#10B981;}
+
+.cart-float{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--gold-bar);color:#FFF;border:none;border-radius:30px;padding:15px 30px;font-family:var(--f-body);font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(107,91,53,0.40);z-index:60;display:none;align-items:center;gap:12px;white-space:nowrap;}
+.cart-float.show{display:flex;}
+.cbadge{background:var(--gold);color:var(--gold-dark);border-radius:20px;padding:2px 10px;font-size:13px;font-weight:800;}
+
+/* ── SCREEN 3: REVIEW ── */
+.rev-hdr{background:var(--gold-pale);border-bottom:2px solid var(--border);padding:12px 16px;flex-shrink:0;position:sticky;top:0;z-index:40;}
+.rev-meta{font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);margin-bottom:3px;}
+.rev-meta span{color:var(--gold-dark);font-weight:700;}
+.cart-list{flex:1;overflow-y:auto;padding-bottom:20px;}
+.cart-row{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);gap:8px;background:#FFF;}
+.qctrl{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.qbtn{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);background:#FFF;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-mid);font-family:var(--f-body);}
+.qbtn:active{background:var(--gold-pale);}
+.qval{font-family:var(--f-mono);font-size:16px;font-weight:700;color:var(--ink);min-width:28px;text-align:center;}
+.rm-btn{width:30px;height:30px;border:none;background:transparent;color:#D0605A;font-size:20px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.notes-sec{padding:16px;}
+.notes-lbl{font-family:var(--f-body);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink-light);margin-bottom:8px;display:block;}
+.notes-ta{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--f-body);font-size:13px;color:var(--ink);resize:none;height:80px;}
+.notes-ta:focus{outline:none;border-color:var(--gold);}
+.submit-bar{padding:16px;background:#FFF;border-top:2px solid var(--border);flex-shrink:0;}
+.btn-sec{display:block;width:100%;padding:13px;background:var(--gold-pale);border:1.5px solid var(--border);border-radius:8px;color:var(--ink-mid);font-family:var(--f-body);font-size:13px;font-weight:600;cursor:pointer;text-align:center;margin-top:8px;}
+
+/* ── SCREEN 4: CONFIRM ── */
+.confirm-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;}
+.confirm-icon{font-size:58px;margin-bottom:16px;}
+.confirm-title{font-family:var(--f-serif);font-size:30px;font-weight:600;color:var(--gold-dark);}
+.confirm-title-ar{font-family:var(--f-ar);font-size:19px;color:var(--ink-mid);margin-top:6px;}
+.confirm-sub{font-family:var(--f-body);font-size:13px;color:var(--ink-mid);margin-top:10px;max-width:280px;}
+.confirm-ref{font-family:var(--f-mono);font-size:16px;font-weight:700;color:var(--gold-bar);background:var(--gold-pale);padding:13px 22px;border-radius:9px;margin:18px 0;letter-spacing:1px;border:1.5px solid var(--border);width:100%;max-width:340px;}
+.btn-dl{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:340px;padding:15px;background:var(--gold-bar);border:none;border-radius:10px;color:#FFF;font-family:var(--f-body);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;}
+.btn-again{display:block;width:100%;max-width:340px;padding:14px;background:var(--gold-pale);border:1.5px solid var(--border);border-radius:10px;color:var(--ink-mid);font-family:var(--f-body);font-size:14px;font-weight:600;cursor:pointer;text-align:center;}
+
+/* ── PRINT ── */
+@media print{
+  .screen,.cart-float{display:none!important;}
+  #printDoc{display:block!important;}
+}
+#printDoc{display:none;font-family:'Montserrat',sans-serif;padding:24px;max-width:210mm;}
+.p-hdr{text-align:center;padding-bottom:14px;border-bottom:3px solid #6B5B35;margin-bottom:16px;}
+.p-brand{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#6B5B35;}
+.p-brand-ar{font-family:'IBM Plex Sans Arabic',sans-serif;font-size:16px;color:#6B5B35;margin-top:2px;}
+.p-title{font-size:13px;font-weight:700;color:#4A4540;margin-top:5px;text-transform:uppercase;letter-spacing:1px;}
+.p-meta{display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:14px;padding:10px 12px;background:#F5F2EC;border-radius:6px;border:1px solid #E5E0D8;}
+.p-meta-item{font-size:11px;color:#4A4540;}
+.p-meta-item strong{color:#1A1A1A;}
+.p-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;}
+.p-tbl th{background:#F5F2EC;padding:8px 10px;text-align:left;border:1px solid #E5E0D8;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#4A4540;}
+.p-tbl td{padding:8px 10px;border:1px solid #E5E0D8;vertical-align:middle;}
+.p-tbl tr:nth-child(even) td{background:#FAFAF8;}
+.p-tbl tfoot td{background:#F5F2EC;font-weight:700;}
+.p-notes{padding:10px 14px;background:#F5F2EC;border-radius:6px;border:1px solid #E5E0D8;font-size:12px;margin-bottom:14px;}
+.p-footer{text-align:center;font-size:10px;color:#8A8278;padding-top:10px;border-top:1px solid #E5E0D8;}
+.p-sig{margin-top:28px;display:flex;justify-content:space-between;}
+.p-sig-box{border-top:1.5px solid #D0C8B8;padding-top:6px;font-size:10px;color:#8A8278;min-width:120px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gold-bar);color:#FFF;padding:12px 24px;border-radius:8px;font-family:var(--f-body);font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* Empty state */
+.empty-state{padding:40px 24px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:13px;}
+</style>
+</head>
+<body>
+
+<!-- ══ SCREEN 1: IDENTITY ══ -->
+<div id="s1" class="screen active">
+  <div class="s1-hero">
+    <div class="s1-sub">Emirates Pride · فخر الإمارات</div>
+    <div class="s1-title">Weekly Stock Request</div>
+    <div class="s1-title-ar">طلب البضاعة الأسبوعي</div>
+    <div class="s1-cap">Area Manager Request Form · نموذج طلب مدير المنطقة</div>
+  </div>
+
+  <div style="padding:0 0 32px;">
+    <div class="form-card">
+      <div class="fg">
+        <label class="form-lbl">Area Manager · مدير المنطقة</label>
+        <select id="selAM" class="form-sel" onchange="onAMChange()">
+          <option value="">Select your name · اختر اسمك...</option>
+          <option value="AM_HESSIN">Mohamed Hessin — أبوظبي &amp; العين</option>
+          <option value="AM_IMAD">Mohammed Imad — دبي</option>
+          <option value="AM_ELMAT">Mohammed Elmatloub — الإمارات الشمالية</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="form-lbl">Store · المحل</label>
+        <select id="selStore" class="form-sel" disabled>
+          <option value="">Select AM first · اختر المدير أولاً</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="form-lbl">Week Starting · أسبوع بدءاً من</label>
+        <input type="date" id="weekStart" class="form-inp">
+      </div>
+      <div id="s1Err" class="err-box"></div>
+      <button class="btn-primary" onclick="goBrowse()">Start Request &nbsp;·&nbsp; ابدأ الطلب &nbsp;→</button>
+    </div>
+    <div style="text-align:center;font-family:var(--f-body);font-size:11px;color:var(--ink-light);padding:0 20px;">
+      All requests are tracked in the Manager Dashboard
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 2: BROWSE ══ -->
+<div id="s2" class="screen">
+  <div class="browse-bar">
+    <div>
+      <div class="browse-am" id="barAM"></div>
+      <div class="browse-store" id="barStore"></div>
+    </div>
+    <div style="text-align:right;">
+      <div class="browse-wk" id="barWeek"></div>
+      <button class="btn-change" onclick="goIdentity()">← Change</button>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <input class="search-inp" id="searchInp" type="search" placeholder="Search product · ابحث عن منتج..." oninput="onSearch(this.value)" autocomplete="off">
+  </div>
+  <div class="cat-pills" id="catPills"></div>
+  <div class="prod-list" id="prodList"></div>
+  <button class="cart-float" id="cartFloat" onclick="goReview()">
+    Review Request &nbsp;·&nbsp; مراجعة الطلب
+    <span class="cbadge" id="cartCount">0</span>
+  </button>
+</div>
+
+<!-- ══ SCREEN 3: REVIEW ══ -->
+<div id="s3" class="screen">
+  <div class="rev-hdr">
+    <div class="rev-meta">AM: <span id="revAM"></span></div>
+    <div class="rev-meta">Store: <span id="revStore"></span> &nbsp;·&nbsp; Week: <span id="revWeek"></span></div>
+  </div>
+  <div class="cart-list" id="cartList"></div>
+  <div class="notes-sec">
+    <label class="notes-lbl">Additional Notes · ملاحظات إضافية</label>
+    <textarea class="notes-ta" id="notesTA" placeholder="Any urgent items, special requirements, or comments..."></textarea>
+  </div>
+  <div class="submit-bar">
+    <div id="s3Err" class="err-box"></div>
+    <button class="btn-primary" id="submitBtn" onclick="submitRequest()">Submit Request &nbsp;·&nbsp; إرسال الطلب</button>
+    <button class="btn-sec" onclick="goBrowse()">← Add More Items</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN 4: CONFIRM ══ -->
+<div id="s4" class="screen">
+  <div class="confirm-wrap">
+    <div class="confirm-icon">✅</div>
+    <div class="confirm-title">Request Submitted</div>
+    <div class="confirm-title-ar">تم إرسال الطلب بنجاح</div>
+    <div class="confirm-sub">Your request has been sent to management and will be reviewed shortly.</div>
+    <div class="confirm-ref" id="confirmRef">AMR-...</div>
+    <button class="btn-dl" onclick="triggerPrint()">⬇&nbsp; Download PDF &nbsp;·&nbsp; تحميل الملف</button>
+    <button class="btn-again" onclick="resetForm()">Submit Another Request</button>
+  </div>
+</div>
+
+<!-- ══ PRINT DOCUMENT ══ -->
+<div id="printDoc">
+  <div class="p-hdr">
+    <div class="p-brand">Emirates Pride Perfumes</div>
+    <div class="p-brand-ar">فخر الإمارات للعطور</div>
+    <div class="p-title">Weekly Stock Request &nbsp;·&nbsp; طلب البضاعة الأسبوعي</div>
+  </div>
+  <div id="pMeta" class="p-meta"></div>
+  <div id="pTable"></div>
+  <div id="pNotes" class="p-notes" style="display:none;"></div>
+  <div class="p-sig">
+    <div class="p-sig-box">AM Signature &nbsp;·&nbsp; توقيع المدير</div>
+    <div class="p-sig-box">Approved By &nbsp;·&nbsp; اعتماد</div>
+    <div class="p-sig-box">Dispatched By &nbsp;·&nbsp; شحن بواسطة</div>
+  </div>
+  <div class="p-footer" id="pFooter"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════
+   SUPABASE
+══════════════════════════════════ */
+const _SURL='https://ncszurcrkngjcjqsowln.supabase.co';
+const _SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
+const {createClient}=supabase;
+const _SBC=createClient(_SURL,_SKEY);
+
+/* ══════════════════════════════════
+   DATA
+══════════════════════════════════ */
+const AM_LIST=[
+  {code:'AM_HESSIN',name:'Mohamed Hessin',nameAr:'محمد حسين',region:'Abu Dhabi & Al Ain',
+   stores:['A0001','A0002','BAS001','A0003','A0004','A0005','A0009','A0007','A0008','YMK001','AL001','AL002','AL003','BAW001','AL004','AL006','MAK001']},
+  {code:'AM_IMAD',name:'Mohammed Imad',nameAr:'محمد عماد',region:'Dubai',
+   stores:['DX001','DX004','DX005','DX006']},
+  {code:'AM_ELMAT',name:'Mohammed Elmatloub',nameAr:'محمد المطلوب',region:'Northern Emirates',
+   stores:['RK001','RK002','SH001','AJ001','FJ001','FJ001A']}
+];
+const STORE_NAMES={
+  'A0001':'Bawabat al Sharq Mall Shop','A0002':'Bawabat al Sharq Mall Kiosk','BAS001':'Bawabat al Sharq Kiosk ASL',
+  'A0003':'Dalma Mall Shop','A0004':'Dalma Mall Kiosk','A0005':'Deerfield Mall Kiosk',
+  'A0009':'Yas Mall Podium','A0007':'Yas Mall Kiosk 2','A0008':'Yas Mall Kiosk 3','YMK001':'Yas Mall ASL',
+  'AL001':'Al Ain Mall Kiosk','AL002':'Bawadi Mall Kiosk 1','AL003':'Bawadi Mall Kiosk 2',
+  'BAW001':'Bawadi Mall ASL','AL004':'Jimi Mall Shop','AL006':'Makhani Zakhar Mall Shop','MAK001':'Makhani Zakhar Mall ASL',
+  'DX001':'Dubai Mall Shop','DX004':'Mall of the Emirates Kiosk','DX005':'Mirdif City Centre Kiosk','DX006':'Dubai Hills Mall Shop',
+  'RK001':'Manar Mall Shop','RK002':'Manar Mall Kiosk','SH001':'Zahia City Centre Kiosk',
+  'AJ001':'Ajman City Centre Kiosk','FJ001':'Fujairah City Centre Kiosk','FJ001A':'Fujairah City Centre ASL'
+};
+
+const CATS=[
+  {cat:'Caballo Collection',catAr:'كبالو كولكشن',products:[
+    {code:'C00002',en:'White 100ml Perfume',ar:'وايت 100 مل'},
+    {code:'C00004',en:'Maroon 100ml Perfume',ar:'مارون 100 مل'},
+    {code:'C00012',en:'Navy Perfume 100ml',ar:'عطر نيفي 100 مل'},
+    {code:'C00011',en:'Violet 100ml Perfume',ar:'فيوليت 100 مل'},
+    {code:'C00010',en:'Maroon Intense',ar:'مارون انتنس'},
+    {code:'C00013',en:'White Overdose',ar:'وايت أوفردوز'},
+    {code:'C00006',en:'Caballo Green',ar:'كبالو غرتن'},
+    {code:'SP0005',en:'No.4',ar:'رقم 4'},
+    {code:'C00014',en:'Black Perfume 100ml',ar:'بلاك 100 مل'},
+  ]},
+  {cat:'Bel Collection',catAr:'بيل كولكشن',products:[
+    {code:'B00001',en:'Bergamot bel Amber',ar:'برغموت بالعنبر'},
+    {code:'B00002',en:'Jasmine bel Musk',ar:'جاسمين بالمسك'},
+    {code:'B00003',en:'Amber Bel Oud',ar:'عنبر بالعود'},
+    {code:'B00007',en:'Peaceful Life',ar:'بيسفول لايف'},
+    {code:'B00008',en:'Midnight Glow',ar:'ميدنايت غلو'},
+    {code:'B00021',en:'Midnight Bloom 100ml',ar:'ميدنايت بلوم'},
+    {code:'B00009',en:'Golden Chance',ar:'غولدن تشانس'},
+    {code:'B00004',en:'Meydan',ar:'ميدان'},
+    {code:'B00005',en:'Mystery',ar:'ميستري'},
+    {code:'B00006',en:'Mersal',ar:'مرسال'},
+    {code:'B00010',en:'Sakura',ar:'سكورا'},
+    {code:'B00011',en:'Vetiveria',ar:'فيتيفيريا'},
+    {code:'B00012',en:'Ambergris',ar:'عنبر'},
+    {code:'B00013',en:'Arabica',ar:'أرابيكا'},
+    {code:'B00014',en:'Firewood',ar:'فيروود'},
+    {code:'B00015',en:'Hidden Leather',ar:'هيدن ليذر'},
+    {code:'B00016',en:'Mysterious Rose',ar:'ميستيريوس روز'},
+    {code:'B00017',en:'Thekrayat',ar:'ذكريات'},
+    {code:'B00018',en:'Hidden Tobacco',ar:'هيدن توباكو'},
+    {code:'B00019',en:'Masters Perfume 100ml',ar:'ماسترز برفيوم'},
+    {code:'B00020',en:'Master Signature',ar:'ماستر سيجنتشر'},
+  ]},
+  {cat:'Heritage Collection',catAr:'كولكشن التراث',products:[
+    {code:'HR0001',en:'Qalah — Heritage',ar:'قلعة'},
+    {code:'HR0002',en:'Danah — Heritage',ar:'دانة'},
+    {code:'HR0003',en:'Al Emarat — Heritage',ar:'الإمارات'},
+    {code:'HR0004',en:'Barjeel — Heritage',ar:'البرجيل'},
+    {code:'HR0005',en:'Khaimah — Heritage',ar:'الخيمة'},
+    {code:'HR0006',en:'Safeena — Heritage',ar:'سفينة'},
+    {code:'HR0007',en:'Dallah — Heritage',ar:'دلة'},
+  ]},
+  {cat:'Oud',catAr:'العود',products:[
+    {code:'O00001',en:'Oud Amiri',ar:'عود أميري'},
+    {code:'O00002',en:'Oud Meydan',ar:'عود ميدان'},
+    {code:'O00003',en:'Oud Al Emarat',ar:'عود الإمارات'},
+    {code:'O00006',en:'Oud Al Fakhamah',ar:'عود الفخامة'},
+    {code:'O00008',en:'Oud Hindi Malaki — White Box',ar:'عود هندي ملكي'},
+    {code:'O0007',en:'Oud Hindi Khas — Black Box',ar:'عود هندي خاص'},
+  ]},
+  {cat:'Dakhoon',catAr:'الدخون',products:[
+    {code:'D00001',en:'Dakhoon Al Emarat',ar:'دخون الإمارات'},
+    {code:'D00003',en:'Dakhoon Badia',ar:'دخون بادية'},
+    {code:'D00002',en:'Dakhoon Al Marasim',ar:'دخون المراسيم'},
+    {code:'D00004',en:'Dakhoon Al Dar',ar:'دخون الدار'},
+    {code:'D00005',en:'Dakhoon Al Barzah',ar:'دخون البرزة'},
+    {code:'D00008',en:'Dakhoon Retaj',ar:'دخون رتاج'},
+  ]},
+  {cat:'Sets & Specials',catAr:'الطقم والإصدارات',products:[
+    {code:'SP0037',en:'Future Bakhoor 100ml',ar:'بخور المستقبل'},
+    {code:'SP0038',en:'Future Oud 100ml',ar:'عود المستقبل'},
+    {code:'SP0022',en:'Reflection',ar:'ريفليكشن'},
+    {code:'SP0039',en:'Future Traditional Set 2×100ml',ar:'مجموعة المستقبل'},
+    {code:'SP0024',en:'My Signature Set Box',ar:'صندوق ماي سيجنتشر'},
+    {code:'SP0001',en:'White Oud Set Box',ar:'صندوق الوايت عود'},
+    {code:'SP0006',en:'More of Oud',ar:'مور أوف عود'},
+    {code:'SP0012',en:'White Set Box',ar:'صندوق وايت'},
+    {code:'SP0013',en:'Maroon Set Box',ar:'صندوق مارون'},
+    {code:'SP0023',en:'Master Signature Box',ar:'صندوق ماستر'},
+    {code:'SP0029',en:'Midnight Glow Set Box',ar:'صندوق ميدنايت غلو'},
+  ]},
+  {cat:'Oils & Gifts',catAr:'الزيوت والهدايا',products:[
+    {code:'I00001',en:'Hindi Special',ar:'هندي سبيشل'},
+    {code:'I00002',en:'Seufi Special',ar:'سيوفي سبيشل'},
+    {code:'I00003',en:'White Oil 8ml',ar:'زيت وايت'},
+    {code:'I00004',en:'Maroon Oil 8ml',ar:'زيت مارون'},
+    {code:'I00005',en:'No.4 Oil 8ml',ar:'زيت رقم 4'},
+    {code:'I00006',en:'Musk Oil 8ml',ar:'زيت مسك'},
+    {code:'G00001',en:'Peaceful Life 10ml + Bag',ar:'بيسفول لايف 10مل'},
+    {code:'G00003',en:'White Oud 10ml + Bag',ar:'وايت عود 10مل'},
+    {code:'G00007',en:'Masters 10ml',ar:'ماسترز 10مل'},
+    {code:'G00008',en:'Master Signature 10ml',ar:'ماستر سيجنتشر 10مل'},
+    {code:'SP0008',en:'Discovery Set',ar:'طقم الاستكشاف'},
+  ]},
+  {cat:'Gift Boxes',catAr:'صناديق الهدايا',products:[
+    {code:'BX0002',en:'3 Bel Black Box With 2 Oil',ar:'صندوق 3 بيل أسود'},
+    {code:'BX0011',en:'Dekoon Gift Set',ar:'طقم هدية دخون'},
+    {code:'BX0012',en:'VIP Combo Box',ar:'صندوق VIP'},
+    {code:'BX0015',en:'Luxury Gift Box',ar:'صندوق فاخر'},
+    {code:'BX0014',en:'BOD Gift Box',ar:'صندوق BOD'},
+  ]},
+  {cat:'Accessories',catAr:'الإكسسوارات',products:[
+    {code:'AC0001',en:'Medkhan (Small)',ar:'مدخن صغير'},
+    {code:'AC0002',en:'Charcoal',ar:'فحم'},
+    {code:'AC0003',en:'Lighter',ar:'ولاعة'},
+    {code:'AC0004',en:'Picker',ar:'بيكر'},
+    {code:'CDL0001',en:'MS Candle',ar:'شمعة'},
+  ]},
+];
+
+const TESTERS=[
+  {code:'C00002-T',en:'White 100ml Tester',ar:'وايت 100 مل — تستر',cat:'Testers'},
+  {code:'C00004-T',en:'Maroon 100ml Tester',ar:'مارون 100 مل — تستر',cat:'Testers'},
+  {code:'C00012-T',en:'Navy 100ml Tester',ar:'نيفي 100 مل — تستر',cat:'Testers'},
+  {code:'C00011-T',en:'Violet 100ml Tester',ar:'فيوليت 100 مل — تستر',cat:'Testers'},
+  {code:'C00010-T',en:'Maroon Intense Tester',ar:'مارون انتنس — تستر',cat:'Testers'},
+  {code:'C00013-T',en:'White Overdose Tester',ar:'وايت أوفردوز — تستر',cat:'Testers'},
+  {code:'C00006-T',en:'Caballo Green Tester',ar:'كبالو غرتن — تستر',cat:'Testers'},
+  {code:'SP0005-T',en:'No.4 Tester',ar:'رقم 4 — تستر',cat:'Testers'},
+  {code:'C00014-T',en:'Black 100ml Tester',ar:'بلاك 100 مل — تستر',cat:'Testers'},
+  {code:'B00001-T',en:'Bergamot bel Amber Tester',ar:'برغموت بالعنبر — تستر',cat:'Testers'},
+  {code:'B00002-T',en:'Jasmine bel Musk Tester',ar:'جاسمين بالمسك — تستر',cat:'Testers'},
+  {code:'B00003-T',en:'Amber Bel Oud Tester',ar:'عنبر بالعود — تستر',cat:'Testers'},
+  {code:'B00007-T',en:'Peaceful Life Tester',ar:'بيسفول لايف — تستر',cat:'Testers'},
+  {code:'B00008-T',en:'Midnight Glow Tester',ar:'ميدنايت غلو — تستر',cat:'Testers'},
+  {code:'B00021-T',en:'Midnight Bloom Tester',ar:'ميدنايت بلوم — تستر',cat:'Testers'},
+  {code:'B00009-T',en:'Golden Chance Tester',ar:'غولدن تشانس — تستر',cat:'Testers'},
+  {code:'B00004-T',en:'Meydan Tester',ar:'ميدان — تستر',cat:'Testers'},
+  {code:'B00005-T',en:'Mystery Tester',ar:'ميستري — تستر',cat:'Testers'},
+  {code:'B00006-T',en:'Mersal Tester',ar:'مرسال — تستر',cat:'Testers'},
+  {code:'B00010-T',en:'Sakura Tester',ar:'سكورا — تستر',cat:'Testers'},
+  {code:'B00011-T',en:'Vetiveria Tester',ar:'فيتيفيريا — تستر',cat:'Testers'},
+  {code:'B00012-T',en:'Ambergris Tester',ar:'عنبر — تستر',cat:'Testers'},
+  {code:'B00013-T',en:'Arabica Tester',ar:'أرابيكا — تستر',cat:'Testers'},
+  {code:'B00014-T',en:'Firewood Tester',ar:'فيروود — تستر',cat:'Testers'},
+  {code:'B00015-T',en:'Hidden Leather Tester',ar:'هيدن ليذر — تستر',cat:'Testers'},
+  {code:'B00016-T',en:'Mysterious Rose Tester',ar:'ميستيريوس روز — تستر',cat:'Testers'},
+  {code:'B00017-T',en:'Thekrayat Tester',ar:'ذكريات — تستر',cat:'Testers'},
+  {code:'B00018-T',en:'Hidden Tobacco Tester',ar:'هيدن توباكو — تستر',cat:'Testers'},
+  {code:'B00019-T',en:'Masters Perfume Tester',ar:'ماسترز برفيوم — تستر',cat:'Testers'},
+  {code:'B00020-T',en:'Master Signature Tester',ar:'ماستر سيجنتشر — تستر',cat:'Testers'},
+  {code:'O00001-T',en:'Oud Amiri Tester',ar:'عود أميري — تستر',cat:'Testers'},
+  {code:'O00002-T',en:'Oud Meydan Tester',ar:'عود ميدان — تستر',cat:'Testers'},
+  {code:'O00003-T',en:'Oud Al Emarat Tester',ar:'عود الإمارات — تستر',cat:'Testers'},
+  {code:'O00006-T',en:'Oud Al Fakhamah Tester',ar:'عود الفخامة — تستر',cat:'Testers'},
+  {code:'D00001-T',en:'Dakhoon Al Emarat Tester',ar:'دخون الإمارات — تستر',cat:'Testers'},
+  {code:'D00003-T',en:'Dakhoon Badia Tester',ar:'دخون بادية — تستر',cat:'Testers'},
+  {code:'HR0001-T',en:'Qalah Heritage Tester',ar:'قلعة — تستر',cat:'Testers'},
+  {code:'HR0002-T',en:'Danah Heritage Tester',ar:'دانة — تستر',cat:'Testers'},
+  {code:'SP0037-T',en:'Future Bakhoor Tester',ar:'بخور المستقبل — تستر',cat:'Testers'},
+  {code:'SP0038-T',en:'Future Oud Tester',ar:'عود المستقبل — تستر',cat:'Testers'},
+];
+
+const SUPPLIES=[
+  {code:'BAG-S',en:'Shopping Bag — Small',ar:'حقيبة تسوق صغيرة',cat:'Supplies'},
+  {code:'BAG-M',en:'Shopping Bag — Medium',ar:'حقيبة تسوق متوسطة',cat:'Supplies'},
+  {code:'BAG-L',en:'Shopping Bag — Large',ar:'حقيبة تسوق كبيرة',cat:'Supplies'},
+  {code:'TIS-001',en:'Tissue Paper Roll',ar:'ورق مناديل',cat:'Supplies'},
+];
+
+/* ══════════════════════════════════
+   STATE
+══════════════════════════════════ */
+let _am=null, _store=null, _week=null;
+let _cart={};
+let _catF='All', _q='';
+let _lastRef=null, _lastPayload=null;
+
+/* ══════════════════════════════════
+   INIT
+══════════════════════════════════ */
+(function init(){
+  const d=new Date();
+  const day=d.getDay();
+  const diff=day===1?7:(1-day+7)%7||7;
+  d.setDate(d.getDate()+diff);
+  document.getElementById('weekStart').value=d.toISOString().split('T')[0];
+  buildCatPills();
+})();
+
+/* ══════════════════════════════════
+   SCREEN SWITCHING
+══════════════════════════════════ */
+function showScreen(id){
+  ['s1','s2','s3','s4'].forEach(s=>document.getElementById(s).classList.toggle('active',s===id));
+}
+function goIdentity(){showScreen('s1');}
+
+function goBrowse(){
+  const amCode=document.getElementById('selAM').value;
+  const stCode=document.getElementById('selStore').value;
+  const wk=document.getElementById('weekStart').value;
+  const err=document.getElementById('s1Err');
+  if(!amCode){showErr(err,'Please select your name · يرجى تحديد اسمك');return;}
+  if(!stCode){showErr(err,'Please select a store · يرجى تحديد المحل');return;}
+  if(!wk){showErr(err,'Please select the week · يرجى تحديد الأسبوع');return;}
+  err.style.display='none';
+  _am=AM_LIST.find(a=>a.code===amCode);
+  _store=stCode;
+  _week=wk;
+  document.getElementById('barAM').textContent=_am.name+' · '+_am.nameAr;
+  document.getElementById('barStore').textContent=(STORE_NAMES[stCode]||stCode)+' ('+stCode+')';
+  const wd=new Date(wk+'T00:00:00');
+  document.getElementById('barWeek').textContent='Wk '+wd.getDate()+'/'+(wd.getMonth()+1)+'/'+wd.getFullYear();
+  renderProducts();
+  showScreen('s2');
+}
+
+function goReview(){
+  if(!Object.keys(_cart).length){showToast('Add at least one item · أضف منتجاً على الأقل');return;}
+  const wd=new Date(_week+'T00:00:00');
+  document.getElementById('revAM').textContent=_am.name;
+  document.getElementById('revStore').textContent=(STORE_NAMES[_store]||_store)+' ('+_store+')';
+  document.getElementById('revWeek').textContent=wd.getDate()+'/'+(wd.getMonth()+1)+'/'+wd.getFullYear();
+  renderCartList();
+  showScreen('s3');
+}
+
+function showErr(el,msg){el.textContent=msg;el.style.display='block';}
+
+/* ══════════════════════════════════
+   AM CHANGE
+══════════════════════════════════ */
+function onAMChange(){
+  const code=document.getElementById('selAM').value;
+  const sel=document.getElementById('selStore');
+  if(!code){sel.innerHTML='<option value="">Select AM first</option>';sel.disabled=true;return;}
+  const am=AM_LIST.find(a=>a.code===code);
+  sel.innerHTML='<option value="">Select store · اختر المحل...</option>'+
+    am.stores.map(s=>`<option value="${s}">${STORE_NAMES[s]||s} (${s})</option>`).join('');
+  sel.disabled=false;
+}
+
+/* ══════════════════════════════════
+   BROWSE / PRODUCTS
+══════════════════════════════════ */
+function buildCatPills(){
+  const cats=['All',...CATS.map(c=>c.cat),'Testers','Supplies'];
+  document.getElementById('catPills').innerHTML=cats.map(c=>
+    `<div class="cpill${c==='All'?' on':''}" onclick="setCat('${c}')">${c}</div>`
+  ).join('');
+}
+function setCat(cat){
+  _catF=cat;
+  document.querySelectorAll('.cpill').forEach(p=>p.classList.toggle('on',p.textContent===cat));
+  renderProducts();
+}
+function onSearch(v){_q=v.toLowerCase().trim();renderProducts();}
+
+function matches(p){
+  if(_q&&!p.code.toLowerCase().includes(_q)&&!p.en.toLowerCase().includes(_q)&&!(p.ar||'').includes(_q))return false;
+  if(_catF==='All')return true;
+  if(_catF==='Testers')return p.cat==='Testers';
+  if(_catF==='Supplies')return p.cat==='Supplies';
+  return p.cat===_catF;
+}
+
+function renderProducts(){
+  let html='';
+  if(_catF==='All'||!['Testers','Supplies'].includes(_catF)){
+    CATS.forEach(c=>{
+      if(_catF!=='All'&&_catF!==c.cat)return;
+      const mp=c.products.filter(p=>matches({...p,cat:c.cat}));
+      if(!mp.length)return;
+      html+=`<div class="prod-cat-hdr">${c.cat}<span class="prod-cat-ar">${c.catAr}</span></div>`;
+      mp.forEach(p=>html+=prodRow({...p,cat:c.cat},false));
+    });
+  }
+  if(_catF==='All'||_catF==='Testers'){
+    const mt=TESTERS.filter(p=>matches(p));
+    if(mt.length){
+      html+=`<div class="prod-cat-hdr">Testers<span class="prod-cat-ar">تسترات</span></div>`;
+      mt.forEach(p=>html+=prodRow(p,true));
+    }
+  }
+  if(_catF==='All'||_catF==='Supplies'){
+    const ms=SUPPLIES.filter(p=>matches(p));
+    if(ms.length){
+      html+=`<div class="prod-cat-hdr">Packaging &amp; Supplies<span class="prod-cat-ar">التغليف والمستلزمات</span></div>`;
+      ms.forEach(p=>html+=prodRow(p,false,'supp'));
+    }
+  }
+  if(!html)html='<div class="empty-state">No products found · لا يوجد منتج مطابق</div>';
+  document.getElementById('prodList').innerHTML=html;
+  refreshCartFloat();
+}
+
+function prodRow(p,isTester,type){
+  const added=!!_cart[p.code];
+  const id='r_'+p.code.replace(/[^a-z0-9]/gi,'_');
+  const badge=isTester?'<span class="tstr-badge">Tester · تستر</span>':(type==='supp'?'<span class="supp-badge">Supply · مستلزمات</span>':'');
+  const esc=(s)=>(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  return `<div class="prod-row${added?' added':''}" id="${id}">
+    <div class="prod-code">${p.code}</div>
+    <div class="prod-names">
+      <div class="prod-en">${p.en}</div>
+      ${p.ar?`<div class="prod-ar-lbl">${p.ar}</div>`:''}
+      ${badge}
+    </div>
+    <button class="btn-add${added?' on':''}" onclick="toggleCart('${esc(p.code)}','${esc(p.en)}','${esc(p.ar||'')}','${esc(p.cat||'')}')">
+      ${added?'✓':'+'}
+    </button>
+  </div>`;
+}
+
+/* ══════════════════════════════════
+   CART
+══════════════════════════════════ */
+function toggleCart(code,en,ar,cat){
+  if(_cart[code]){delete _cart[code];}
+  else{_cart[code]={qty:1,en,ar,cat};}
+  const id='r_'+code.replace(/[^a-z0-9]/gi,'_');
+  const row=document.getElementById(id);
+  if(row){
+    row.classList.toggle('added',!!_cart[code]);
+    const btn=row.querySelector('.btn-add');
+    if(btn){btn.classList.toggle('on',!!_cart[code]);btn.textContent=_cart[code]?'✓':'+';}
+  }
+  refreshCartFloat();
+}
+
+function refreshCartFloat(){
+  const n=Object.keys(_cart).length;
+  const el=document.getElementById('cartFloat');
+  el.classList.toggle('show',n>0);
+  document.getElementById('cartCount').textContent=n;
+}
+
+function renderCartList(){
+  const items=Object.entries(_cart);
+  if(!items.length){document.getElementById('cartList').innerHTML='<div class="empty-state">No items</div>';return;}
+  let html=`<div style="padding:10px 16px;background:var(--gold-pale);border-bottom:1px solid var(--border);font-family:var(--f-body);font-size:11px;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.5px;">${items.length} items &nbsp;·&nbsp; ${items.length} منتج</div>`;
+  items.forEach(([code,item])=>{
+    const id2='c_'+code.replace(/[^a-z0-9]/gi,'_');
+    html+=`<div class="cart-row">
+      <div class="prod-code" style="font-size:9px;">${code}</div>
+      <div class="prod-names" style="flex:1;min-width:0;">
+        <div class="prod-en" style="font-size:13px;">${item.en}</div>
+        ${item.ar?`<div class="prod-ar-lbl" style="font-size:11px;">${item.ar}</div>`:''}
+      </div>
+      <div class="qctrl">
+        <button class="qbtn" onclick="adjQty('${code}',-1)">−</button>
+        <span class="qval" id="qv_${id2}">${item.qty}</span>
+        <button class="qbtn" onclick="adjQty('${code}',1)">+</button>
+      </div>
+      <button class="rm-btn" onclick="removeItem('${code}')">×</button>
+    </div>`;
+  });
+  document.getElementById('cartList').innerHTML=html;
+}
+
+function adjQty(code,d){
+  if(!_cart[code])return;
+  _cart[code].qty=Math.max(1,(_cart[code].qty||1)+d);
+  const id2='qv_c_'+code.replace(/[^a-z0-9]/gi,'_');
+  const el=document.getElementById(id2);
+  if(el)el.textContent=_cart[code].qty;
+}
+
+function removeItem(code){
+  delete _cart[code];
+  renderCartList();
+  refreshCartFloat();
+  if(!Object.keys(_cart).length)showScreen('s2');
+}
+
+/* ══════════════════════════════════
+   SUBMIT
+══════════════════════════════════ */
+async function submitRequest(){
+  const items=Object.entries(_cart);
+  if(!items.length)return;
+  const btn=document.getElementById('submitBtn');
+  const err=document.getElementById('s3Err');
+  btn.disabled=true;btn.textContent='Submitting... · جارٍ الإرسال';
+  err.style.display='none';
+  const ts=Date.now();
+  const ref='AMR-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+String(ts).slice(-4);
+  const payload={
+    request_ref:ref,
+    am_code:_am.code, am_name:_am.name,
+    store_code:_store, store_name:STORE_NAMES[_store]||_store,
+    week_starting:_week,
+    items:items.map(([code,item])=>({code,en:item.en,ar:item.ar,qty:item.qty,cat:item.cat})),
+    notes:document.getElementById('notesTA').value||'',
+    status:'pending',
+    submitted_at:new Date().toISOString()
+  };
+  try{
+    const {error}=await _SBC.from('am_weekly_requests').insert([payload]);
+    if(error)throw error;
+    _lastRef=ref;_lastPayload=payload;
+    document.getElementById('confirmRef').textContent=ref;
+    buildPrintDoc(payload);
+    showScreen('s4');
+    showToast('Submitted! · تم الإرسال بنجاح');
+  }catch(e){
+    console.error(e);
+    showErr(err,'Submit failed. Please try again. · فشل الإرسال، حاول مرة أخرى');
+    btn.disabled=false;btn.textContent='Submit Request · إرسال الطلب';
+  }
+}
+
+function resetForm(){
+  _cart={};_am=null;_store=null;_week=null;_catF='All';_q='';
+  document.getElementById('selAM').value='';
+  document.getElementById('selStore').innerHTML='<option value="">Select AM first</option>';
+  document.getElementById('selStore').disabled=true;
+  document.getElementById('notesTA').value='';
+  document.getElementById('s1Err').style.display='none';
+  const d=new Date();const day=d.getDay();const diff=day===1?7:(1-day+7)%7||7;
+  d.setDate(d.getDate()+diff);
+  document.getElementById('weekStart').value=d.toISOString().split('T')[0];
+  document.querySelectorAll('.cpill').forEach(p=>p.classList.toggle('on',p.textContent==='All'));
+  showScreen('s1');
+}
+
+/* ══════════════════════════════════
+   PRINT
+══════════════════════════════════ */
+function buildPrintDoc(p){
+  const wd=new Date(p.week_starting+'T00:00:00');
+  const wdStr=wd.getDate()+'/'+(wd.getMonth()+1)+'/'+wd.getFullYear();
+  const now=new Date().toLocaleString('en-GB');
+  document.getElementById('pMeta').innerHTML=`
+    <div class="p-meta-item"><strong>Ref:</strong> ${p.request_ref}</div>
+    <div class="p-meta-item"><strong>AM / المدير:</strong> ${p.am_name}</div>
+    <div class="p-meta-item"><strong>Store / المحل:</strong> ${p.store_name} (${p.store_code})</div>
+    <div class="p-meta-item"><strong>Week Starting / أسبوع من:</strong> ${wdStr}</div>
+    <div class="p-meta-item"><strong>Submitted / تاريخ الإرسال:</strong> ${now}</div>
+    <div class="p-meta-item"><strong>Status / الحالة:</strong> PENDING APPROVAL</div>`;
+  const totalQty=p.items.reduce((s,i)=>s+i.qty,0);
+  const rows=p.items.map(item=>`<tr>
+    <td style="font-family:'IBM Plex Mono',monospace;color:#7A6525;font-size:11px;">${item.code}</td>
+    <td>${item.en}</td>
+    <td style="font-family:'IBM Plex Sans Arabic',sans-serif;direction:rtl;text-align:right;">${item.ar||'—'}</td>
+    <td style="text-align:center;font-weight:700;font-size:13px;">${item.qty}</td>
+    <td style="text-align:center;font-size:10px;color:#8A8278;">${item.cat}</td>
+  </tr>`).join('');
+  document.getElementById('pTable').innerHTML=`<table class="p-tbl">
+    <thead><tr>
+      <th>SKU Code</th>
+      <th>Product Name (English)</th>
+      <th style="text-align:right;">اسم المنتج (عربي)</th>
+      <th style="text-align:center;">Qty الكمية</th>
+      <th style="text-align:center;">Category</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr>
+      <td colspan="3" style="text-align:right;font-weight:700;">Total Qty · إجمالي الكمية</td>
+      <td style="text-align:center;font-size:15px;font-weight:800;color:#6B5B35;">${totalQty}</td>
+      <td></td>
+    </tr></tfoot>
+  </table>`;
+  const notesEl=document.getElementById('pNotes');
+  if(p.notes){notesEl.innerHTML=`<strong>Notes · ملاحظات:</strong> ${p.notes}`;notesEl.style.display='block';}
+  else{notesEl.style.display='none';}
+  document.getElementById('pFooter').innerHTML=`Emirates Pride Perfumes · فخر الإمارات للعطور &nbsp;|&nbsp; Request: ${p.request_ref} &nbsp;|&nbsp; Printed: ${now}`;
+}
+function triggerPrint(){window.print();}
+
+/* ══════════════════════════════════
+   TOAST
+══════════════════════════════════ */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
