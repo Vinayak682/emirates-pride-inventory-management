@@ -13243,30 +13243,93 @@ function renderSessionsTab(){
 function setAMSeg(code){_amHubAMSeg=code;renderAMHubTab();}
 
 // ── REQUESTS TAB ──
+let _amReqF={period:'all',amCode:'',storeCode:''};
+
+function _getReqDateRange(period){
+  const now=new Date();
+  if(period==='this_week'){
+    const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));mon.setHours(0,0,0,0);
+    const sun=new Date(mon);sun.setDate(mon.getDate()+6);sun.setHours(23,59,59,999);
+    return[mon,sun];
+  }
+  if(period==='last_week'){
+    const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7)-7);mon.setHours(0,0,0,0);
+    const sun=new Date(mon);sun.setDate(mon.getDate()+6);sun.setHours(23,59,59,999);
+    return[mon,sun];
+  }
+  if(period==='this_month'){
+    return[new Date(now.getFullYear(),now.getMonth(),1),new Date(now.getFullYear(),now.getMonth()+1,0,23,59,59,999)];
+  }
+  if(period==='last_month'){
+    return[new Date(now.getFullYear(),now.getMonth()-1,1),new Date(now.getFullYear(),now.getMonth(),0,23,59,59,999)];
+  }
+  return null;
+}
+
+function _filterReqs(reqs){
+  let out=reqs;
+  if(_amReqF.amCode)   out=out.filter(r=>r.am_code===_amReqF.amCode);
+  if(_amReqF.storeCode)out=out.filter(r=>r.store_code===_amReqF.storeCode);
+  const range=_getReqDateRange(_amReqF.period);
+  if(range){
+    const[from,to]=range;
+    out=out.filter(r=>{const d=new Date(r.week_starting||r.submitted_at);return d>=from&&d<=to;});
+  }
+  return out;
+}
+
 function renderRequestsTab(){
-  const reqs=_amHubData.requests;
-  let html=`<div style="padding:12px 16px 4px;display:flex;align-items:center;justify-content:space-between;">
-    <div style="font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);">${reqs.length} requests total &nbsp;·&nbsp; <span style="color:#D97706;">${reqs.filter(r=>r.status==='pending').length} pending</span></div>
-    <a href="am-stock-request.html" target="_blank" style="padding:7px 14px;background:var(--gold-bar);border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;font-weight:700;text-decoration:none;">📲 Open Form</a>
+  const all=_amHubData.requests;
+  const reqs=_filterReqs(all);
+  const totalSKULines=reqs.reduce((s,r)=>s+(Array.isArray(r.items)?r.items.length:0),0);
+  const totalUnits=reqs.reduce((s,r)=>s+(Array.isArray(r.items)?r.items.reduce((q,i)=>q+(i.qty||0),0):0),0);
+  const stores=[...new Set(all.map(r=>r.store_code))].sort();
+  const pOpts=[['all','All Time'],['this_week','This Week'],['last_week','Last Week'],['this_month','This Month'],['last_month','Last Month']];
+
+  let html=`
+  <div style="background:#FFF;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0;">
+    <select onchange="_amReqF.period=this.value;renderAMHubTab()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--f-body);font-size:11px;color:var(--ink);background:#FFF;cursor:pointer;">
+      ${pOpts.map(([v,l])=>`<option value="${v}"${_amReqF.period===v?' selected':''}>${l}</option>`).join('')}
+    </select>
+    <select onchange="_amReqF.amCode=this.value;renderAMHubTab()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--f-body);font-size:11px;color:var(--ink);background:#FFF;cursor:pointer;">
+      <option value="">All AMs</option>
+      ${_AM_HUB_AMs.map(a=>`<option value="${a.code}"${_amReqF.amCode===a.code?' selected':''}>${a.name}</option>`).join('')}
+    </select>
+    <select onchange="_amReqF.storeCode=this.value;renderAMHubTab()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--f-body);font-size:11px;color:var(--ink);background:#FFF;cursor:pointer;">
+      <option value="">All Stores</option>
+      ${stores.map(s=>`<option value="${s}"${_amReqF.storeCode===s?' selected':''}>${s}</option>`).join('')}
+    </select>
+    <div style="flex:1;min-width:8px;"></div>
+    <button onclick="exportAMReqCSV()" style="padding:7px 13px;background:linear-gradient(135deg,#065F46,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.3px;">⬇ Export Excel</button>
+    <button onclick="exportAMReqPDF()" style="padding:7px 13px;background:linear-gradient(135deg,#6B5B35,#9A7B4F);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.3px;">🖨 PDF Report</button>
+    <a href="am-stock-request.html" target="_blank" style="padding:7px 13px;background:var(--gold-bar);border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;font-weight:700;text-decoration:none;display:inline-block;">📲 Open Form</a>
+  </div>
+  <div style="background:var(--gold-pale);border-bottom:1px solid var(--border);padding:9px 16px;display:flex;gap:20px;flex-shrink:0;">
+    <div style="font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);">${reqs.length} <span style="color:var(--ink-light);">requests</span></div>
+    <div style="font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);">${totalSKULines} <span style="color:var(--ink-light);">SKU lines</span></div>
+    <div style="font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);">${totalUnits} <span style="color:var(--ink-light);">total units</span></div>
+    <div style="font-family:var(--f-mono);font-size:11px;color:#D97706;">${reqs.filter(r=>r.status==='pending').length} <span style="color:var(--ink-light);">pending</span></div>
   </div>`;
+
   if(!reqs.length){
-    html+=`<div class="req-card"><div style="padding:24px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:13px;">No requests submitted yet. Share the AM form link with Area Managers.</div></div>`;
+    html+=`<div class="req-card"><div style="padding:28px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:13px;">No requests found for selected filters.</div></div>`;
   } else {
     html+=`<div class="req-card">`;
     reqs.forEach(r=>{
       const d=new Date(r.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
       const wk=r.week_starting?new Date(r.week_starting+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'';
       const n=Array.isArray(r.items)?r.items.length:0;
-      const totalQty=Array.isArray(r.items)?r.items.reduce((s,i)=>s+(i.qty||0),0):0;
+      const tQ=Array.isArray(r.items)?r.items.reduce((s,i)=>s+(i.qty||0),0):0;
+      const rJ=JSON.stringify(r).replace(/"/g,'&quot;');
       let actions='';
       if(r.status==='pending'){
         actions=`<button class="req-btn req-btn-approve" onclick="approveAMRequest('${r.request_ref}')">✓ Approve</button>
-                 <button class="req-btn req-btn-pdf" onclick="printAMRequest(${JSON.stringify(r).replace(/"/g,'&quot;')})">⬇ PDF</button>`;
+                 <button class="req-btn req-btn-pdf" onclick="printAMRequest(${rJ})">⬇ PDF</button>`;
       } else if(r.status==='approved'){
         actions=`<button class="req-btn req-btn-dispatch" onclick="dispatchAMRequest('${r.request_ref}')">🚚 Dispatch</button>
-                 <button class="req-btn req-btn-pdf" onclick="printAMRequest(${JSON.stringify(r).replace(/"/g,'&quot;')})">⬇ PDF</button>`;
+                 <button class="req-btn req-btn-pdf" onclick="printAMRequest(${rJ})">⬇ PDF</button>`;
       } else {
-        actions=`<button class="req-btn req-btn-pdf" onclick="printAMRequest(${JSON.stringify(r).replace(/"/g,'&quot;')})">⬇ PDF</button>`;
+        actions=`<button class="req-btn req-btn-pdf" onclick="printAMRequest(${rJ})">⬇ PDF</button>`;
       }
       html+=`<div class="req-row">
         <div class="req-info">
@@ -13274,8 +13337,8 @@ function renderRequestsTab(){
             <span class="req-ref">${r.request_ref}</span>
             <span class="status-pill sp-${r.status}">${r.status}</span>
           </div>
-          <div class="req-store">${r.store_name||r.store_code} &nbsp;<span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);">(${r.store_code})</span></div>
-          <div class="req-meta">${r.am_name} &nbsp;·&nbsp; Week: ${wk} &nbsp;·&nbsp; ${n} SKUs &nbsp;·&nbsp; ${totalQty} units &nbsp;·&nbsp; ${d}</div>
+          <div class="req-store">${r.store_name||r.store_code}&nbsp;<span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);">(${r.store_code})</span></div>
+          <div class="req-meta">${r.am_name}&nbsp;·&nbsp;Week:${wk}&nbsp;·&nbsp;${n} SKUs&nbsp;·&nbsp;${tQ} units&nbsp;·&nbsp;${d}</div>
           ${r.notes?`<div style="font-family:var(--f-body);font-size:11px;color:var(--ink-mid);margin-top:4px;font-style:italic;">"${r.notes}"</div>`:''}
         </div>
         <div class="req-actions">${actions}</div>
@@ -13285,6 +13348,156 @@ function renderRequestsTab(){
   }
   html+=`<div style="height:24px;"></div>`;
   return html;
+}
+
+function exportAMReqCSV(){
+  const reqs=_filterReqs(_amHubData.requests);
+  if(!reqs.length){showToastHub('No requests to export.');return;}
+  const BOM='﻿';
+  const HDR=['Request Ref','Week Starting','AM Name','Store Code','Store Name','Submitted Date','Status','Approved By','Dispatched By','Dispatch Notes','SKU Code','Product Name (EN)','Product Name (AR)','Qty Requested','Category'];
+  const rows=[];
+  reqs.forEach(r=>{
+    const items=Array.isArray(r.items)?r.items:[];
+    const sub=r.submitted_at?r.submitted_at.slice(0,10):'';
+    if(!items.length){
+      rows.push([r.request_ref,r.week_starting||'',r.am_name,r.store_code,r.store_name||'',sub,r.status,r.approved_by||'',r.dispatched_by||'',r.dispatch_notes||'','','','','','']);
+    } else {
+      items.forEach(it=>{
+        rows.push([r.request_ref,r.week_starting||'',r.am_name,r.store_code,r.store_name||'',sub,r.status,r.approved_by||'',r.dispatched_by||'',r.dispatch_notes||'',it.code,it.en,it.ar||'',it.qty,it.cat||'']);
+      });
+    }
+  });
+  const csv=BOM+[HDR,...rows].map(row=>row.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`EP_AM_Requests_${_amReqF.period}_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  showToastHub(`Exported ${rows.length} rows ✓`);
+}
+
+function exportAMReqPDF(){
+  const reqs=_filterReqs(_amHubData.requests);
+  if(!reqs.length){showToastHub('No requests to export.');return;}
+  const pLabel={all:'All Time',this_week:'This Week',last_week:'Last Week',this_month:'This Month',last_month:'Last Month'}[_amReqF.period]||'All Time';
+  const amLabel=_amReqF.amCode?(_AM_HUB_AMs.find(a=>a.code===_amReqF.amCode)?.name||''):'All AMs';
+  const stLabel=_amReqF.storeCode||'All Stores';
+
+  // Build aggregated summary: store+SKU → total qty
+  const skuMap={};
+  reqs.forEach(r=>{
+    (Array.isArray(r.items)?r.items:[]).forEach(it=>{
+      const k=r.store_code+'||'+it.code;
+      if(!skuMap[k])skuMap[k]={sc:r.store_code,sn:r.store_name||r.store_code,code:it.code,en:it.en,ar:it.ar||'',cat:it.cat||'',qty:0};
+      skuMap[k].qty+=it.qty||0;
+    });
+  });
+  const summary=Object.values(skuMap).sort((a,b)=>a.sc.localeCompare(b.sc)||a.code.localeCompare(b.code));
+  const grandTotal=summary.reduce((s,r)=>s+r.qty,0);
+  const uniqueSKUs=new Set(summary.map(r=>r.code)).size;
+  const uniqueStores=new Set(reqs.map(r=>r.store_code)).size;
+
+  // Flat detail rows
+  const detail=reqs.flatMap(r=>(Array.isArray(r.items)?r.items:[]).map(it=>({
+    ref:r.request_ref,wk:r.week_starting||'',am:r.am_name,sc:r.store_code,sn:r.store_name||r.store_code,
+    status:r.status,code:it.code,en:it.en,ar:it.ar||'',qty:it.qty,cat:it.cat||''
+  })));
+
+  const w=window.open('','_blank','width=1050,height=900');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AM Requests Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Montserrat:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Montserrat,sans-serif;padding:28px;color:#1A1A1A;font-size:12px;}
+  .hdr{text-align:center;border-bottom:3px solid #6B5B35;padding-bottom:14px;margin-bottom:18px;}
+  .brand{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#6B5B35;}
+  .brand-ar{font-family:'IBM Plex Sans Arabic',sans-serif;font-size:15px;color:#6B5B35;margin-top:2px;}
+  .rpt-ttl{font-size:13px;font-weight:700;color:#4A4540;margin-top:5px;text-transform:uppercase;letter-spacing:1px;}
+  .meta{display:flex;flex-wrap:wrap;gap:10px 22px;background:#F5F2EC;padding:10px 14px;border-radius:6px;margin-bottom:14px;border:1px solid #E5E0D8;}
+  .mi{font-size:11px;color:#4A4540;} .mi strong{color:#1A1A1A;}
+  .kpis{display:flex;gap:12px;margin-bottom:16px;}
+  .kpi{flex:1;text-align:center;background:#F5F2EC;border-radius:7px;padding:10px;border:1px solid #E5E0D8;}
+  .kv{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#6B5B35;}
+  .kl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#8A8278;margin-top:2px;}
+  h3{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#6B5B35;margin:18px 0 8px;border-bottom:2px solid #E5E0D8;padding-bottom:5px;}
+  table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:16px;}
+  th{background:#F5F2EC;padding:7px 9px;text-align:left;border:1px solid #E5E0D8;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#4A4540;}
+  td{padding:6px 9px;border:1px solid #E5E0D8;vertical-align:middle;}
+  tr:nth-child(even) td{background:#FAFAF8;}
+  tfoot td{background:#F5F2EC;font-weight:700;}
+  .mono{font-family:'IBM Plex Mono',monospace;color:#7A6525;font-size:10px;}
+  .ar{font-family:'IBM Plex Sans Arabic',sans-serif;direction:rtl;text-align:right;}
+  .sp{display:inline-block;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;text-transform:uppercase;}
+  .sp-pending{background:rgba(245,158,11,0.15);color:#B45309;}
+  .sp-approved{background:rgba(59,130,246,0.15);color:#1D4ED8;}
+  .sp-dispatched{background:rgba(16,185,129,0.15);color:#065F46;}
+  .ftr{text-align:center;font-size:9px;color:#8A8278;padding-top:10px;border-top:1px solid #E5E0D8;margin-top:8px;}
+  @media print{body{padding:14px;}}
+  </style></head><body>
+  <div class="hdr">
+    <div class="brand">Emirates Pride Perfumes</div>
+    <div class="brand-ar">فخر الإمارات للعطور</div>
+    <div class="rpt-ttl">AM Stock Requests Report &nbsp;·&nbsp; تقرير طلبات البضاعة</div>
+  </div>
+  <div class="meta">
+    <div class="mi"><strong>Period:</strong> ${pLabel}</div>
+    <div class="mi"><strong>AM:</strong> ${amLabel}</div>
+    <div class="mi"><strong>Store:</strong> ${stLabel}</div>
+    <div class="mi"><strong>Generated:</strong> ${new Date().toLocaleString('en-GB')}</div>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><div class="kv">${reqs.length}</div><div class="kl">Requests</div></div>
+    <div class="kpi"><div class="kv">${uniqueStores}</div><div class="kl">Stores</div></div>
+    <div class="kpi"><div class="kv">${uniqueSKUs}</div><div class="kl">Unique SKUs</div></div>
+    <div class="kpi"><div class="kv">${grandTotal}</div><div class="kl">Total Units</div></div>
+  </div>
+
+  <h3>Summary by Store &amp; SKU &nbsp;·&nbsp; ملخص حسب المحل والمنتج</h3>
+  <table>
+    <thead><tr>
+      <th>Store Code</th><th>Store Name</th><th>SKU Code</th><th>Product (EN)</th>
+      <th class="ar" style="text-align:right;">المنتج (AR)</th><th>Category</th>
+      <th style="text-align:center;">Total Qty الكمية</th>
+    </tr></thead>
+    <tbody>${summary.map(r=>`<tr>
+      <td class="mono">${r.sc}</td>
+      <td>${r.sn}</td>
+      <td class="mono">${r.code}</td>
+      <td>${r.en}</td>
+      <td class="ar">${r.ar||'—'}</td>
+      <td style="font-size:10px;color:#8A8278;">${r.cat}</td>
+      <td style="text-align:center;font-weight:700;font-size:13px;color:#6B5B35;">${r.qty}</td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr>
+      <td colspan="6" style="text-align:right;font-weight:700;">Grand Total &nbsp;·&nbsp; الإجمالي الكلي</td>
+      <td style="text-align:center;font-size:15px;font-weight:800;color:#6B5B35;">${grandTotal}</td>
+    </tr></tfoot>
+  </table>
+
+  <h3>Full Request Detail &nbsp;·&nbsp; تفاصيل جميع الطلبات</h3>
+  <table>
+    <thead><tr>
+      <th>Ref</th><th>Week</th><th>AM</th><th>Store</th><th>SKU Code</th>
+      <th>Product (EN)</th><th class="ar" style="text-align:right;">المنتج (AR)</th>
+      <th style="text-align:center;">Qty</th><th>Status</th>
+    </tr></thead>
+    <tbody>${detail.map(r=>`<tr>
+      <td class="mono" style="font-size:9px;">${r.ref}</td>
+      <td style="font-size:10px;">${r.wk?new Date(r.wk+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'—'}</td>
+      <td style="font-size:10px;">${r.am}</td>
+      <td class="mono">${r.sc}</td>
+      <td class="mono">${r.code}</td>
+      <td>${r.en}</td>
+      <td class="ar">${r.ar||'—'}</td>
+      <td style="text-align:center;font-weight:700;">${r.qty}</td>
+      <td><span class="sp sp-${r.status}">${r.status}</span></td>
+    </tr>`).join('')}</tbody>
+  </table>
+  <div class="ftr">Emirates Pride Perfumes &nbsp;·&nbsp; AM Requests Report &nbsp;·&nbsp; Period: ${pLabel} &nbsp;·&nbsp; ${new Date().toLocaleString('en-GB')}</div>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
+  w.document.close();
 }
 
 async function approveAMRequest(ref){
