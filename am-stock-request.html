@@ -70,8 +70,16 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 .prod-ar-lbl{font-family:var(--f-ar);font-size:12px;color:var(--ink-mid);direction:rtl;margin-top:2px;line-height:1.4;}
 .tstr-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;background:rgba(124,58,237,0.10);color:#7C3AED;letter-spacing:0.5px;text-transform:uppercase;margin-top:3px;}
 .supp-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;background:rgba(5,150,105,0.10);color:#059669;letter-spacing:0.5px;text-transform:uppercase;margin-top:3px;}
-.btn-add{width:38px;height:38px;border-radius:50%;background:var(--gold-bar);border:none;color:#FFF;font-size:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
-.btn-add.on{background:#10B981;}
+.prod-row-right{flex-shrink:0;min-width:140px;display:flex;align-items:center;justify-content:flex-end;}
+.btn-add{width:40px;height:40px;border-radius:50%;background:var(--gold-bar);border:none;color:#FFF;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
+.btn-add:active{opacity:0.85;}
+.qci{display:flex;align-items:center;gap:5px;}
+.qbs{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);background:#FFF;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-mid);flex-shrink:0;}
+.qbs:active{background:var(--gold-pale);}
+.qbs.minus{border-color:#E8C8C8;color:#C0392B;}
+.qis{width:52px;height:34px;text-align:center;font-family:var(--f-mono);font-size:15px;font-weight:700;color:var(--ink);border:2px solid var(--gold);border-radius:7px;padding:0 2px;-moz-appearance:textfield;background:#FFFDF9;}
+.qis::-webkit-outer-spin-button,.qis::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.qis:focus{outline:none;border-color:var(--gold-bar);background:#FFF;}
 
 .cart-float{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--gold-bar);color:#FFF;border:none;border-radius:30px;padding:15px 30px;font-family:var(--f-body);font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(107,91,53,0.40);z-index:60;display:none;align-items:center;gap:12px;white-space:nowrap;}
 .cart-float.show{display:flex;}
@@ -571,21 +579,45 @@ function renderProducts(){
   refreshCartFloat();
 }
 
+const _esc=s=>(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+
+function _rowRight(code){
+  const bqid='bq_'+code.replace(/[^a-z0-9]/gi,'_');
+  if(_cart[code]){
+    return `<div class="qci">
+      <button class="qbs minus" onclick="adjBQ('${_esc(code)}',-1)">−</button>
+      <input type="number" class="qis" id="${bqid}" value="${_cart[code].qty}" min="1" max="999"
+        onchange="setBQ('${_esc(code)}',+this.value)" oninput="setBQ('${_esc(code)}',+this.value)">
+      <button class="qbs" onclick="adjBQ('${_esc(code)}',1)">+</button>
+    </div>`;
+  }
+  const row=document.getElementById('r_'+code.replace(/[^a-z0-9]/gi,'_'));
+  const en=row?row.dataset.en:''; const ar=row?row.dataset.ar:''; const cat=row?row.dataset.cat:'';
+  return `<button class="btn-add" onclick="toggleCart('${_esc(code)}','${_esc(en)}','${_esc(ar)}','${_esc(cat)}')">+</button>`;
+}
+
 function prodRow(p,isTester,type){
   const added=!!_cart[p.code];
   const id='r_'+p.code.replace(/[^a-z0-9]/gi,'_');
+  const bqid='bq_'+p.code.replace(/[^a-z0-9]/gi,'_');
   const badge=isTester?'<span class="tstr-badge">Tester · تستر</span>':(type==='supp'?'<span class="supp-badge">Supply · مستلزمات</span>':'');
-  const esc=(s)=>(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  return `<div class="prod-row${added?' added':''}" id="${id}">
+  const right=added
+    ?`<div class="qci">
+        <button class="qbs minus" onclick="adjBQ('${_esc(p.code)}',-1)">−</button>
+        <input type="number" class="qis" id="${bqid}" value="${_cart[p.code].qty}" min="1" max="999"
+          onchange="setBQ('${_esc(p.code)}',+this.value)" oninput="setBQ('${_esc(p.code)}',+this.value)">
+        <button class="qbs" onclick="adjBQ('${_esc(p.code)}',1)">+</button>
+      </div>`
+    :`<button class="btn-add" onclick="toggleCart('${_esc(p.code)}','${_esc(p.en)}','${_esc(p.ar||'')}','${_esc(p.cat||'')}')">+</button>`;
+  return `<div class="prod-row${added?' added':''}" id="${id}"
+      data-code="${_esc(p.code)}" data-en="${_esc(p.en)}" data-ar="${_esc(p.ar||'')}" data-cat="${_esc(p.cat||'')}">
     <div class="prod-code">${p.code}</div>
     <div class="prod-names">
       <div class="prod-en">${p.en}</div>
       ${p.ar?`<div class="prod-ar-lbl">${p.ar}</div>`:''}
       ${badge}
     </div>
-    <button class="btn-add${added?' on':''}" onclick="toggleCart('${esc(p.code)}','${esc(p.en)}','${esc(p.ar||'')}','${esc(p.cat||'')}')">
-      ${added?'✓':'+'}
-    </button>
+    <div class="prod-row-right">${right}</div>
   </div>`;
 }
 
@@ -593,16 +625,45 @@ function prodRow(p,isTester,type){
    CART
 ══════════════════════════════════ */
 function toggleCart(code,en,ar,cat){
-  if(_cart[code]){delete _cart[code];}
-  else{_cart[code]={qty:1,en,ar,cat};}
-  const id='r_'+code.replace(/[^a-z0-9]/gi,'_');
-  const row=document.getElementById(id);
-  if(row){
-    row.classList.toggle('added',!!_cart[code]);
-    const btn=row.querySelector('.btn-add');
-    if(btn){btn.classList.toggle('on',!!_cart[code]);btn.textContent=_cart[code]?'✓':'+';}
-  }
+  _cart[code]={qty:1,en,ar,cat};
+  _refreshRow(code);
   refreshCartFloat();
+}
+
+function _refreshRow(code){
+  const id='r_'+code.replace(/[^a-z0-9]/gi,'_');
+  const bqid='bq_'+code.replace(/[^a-z0-9]/gi,'_');
+  const row=document.getElementById(id);
+  if(!row)return;
+  const added=!!_cart[code];
+  row.classList.toggle('added',added);
+  const right=row.querySelector('.prod-row-right');
+  if(!right)return;
+  const en=row.dataset.en||''; const ar=row.dataset.ar||''; const cat=row.dataset.cat||'';
+  if(added){
+    right.innerHTML=`<div class="qci">
+      <button class="qbs minus" onclick="adjBQ('${_esc(code)}',-1)">−</button>
+      <input type="number" class="qis" id="${bqid}" value="${_cart[code].qty}" min="1" max="999"
+        onchange="setBQ('${_esc(code)}',+this.value)" oninput="setBQ('${_esc(code)}',+this.value)">
+      <button class="qbs" onclick="adjBQ('${_esc(code)}',1)">+</button>
+    </div>`;
+  } else {
+    right.innerHTML=`<button class="btn-add" onclick="toggleCart('${_esc(code)}','${_esc(en)}','${_esc(ar)}','${_esc(cat)}')">+</button>`;
+  }
+}
+
+function adjBQ(code,d){
+  if(!_cart[code])return;
+  const n=Math.max(0,(_cart[code].qty||1)+d);
+  if(n===0){delete _cart[code];_refreshRow(code);refreshCartFloat();return;}
+  _cart[code].qty=n;
+  const el=document.getElementById('bq_'+code.replace(/[^a-z0-9]/gi,'_'));
+  if(el&&el!==document.activeElement)el.value=n;
+}
+
+function setBQ(code,val){
+  if(!_cart[code])return;
+  _cart[code].qty=Math.max(1,Math.min(999,parseInt(val)||1));
 }
 
 function refreshCartFloat(){
