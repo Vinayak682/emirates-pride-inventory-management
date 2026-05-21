@@ -2766,6 +2766,68 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 .req-btn-approve{background:rgba(59,130,246,0.12);color:#2563EB;}
 .req-btn-dispatch{background:rgba(16,185,129,0.12);color:#059669;}
 .req-btn-pdf{background:var(--gold-pale);color:var(--gold-dark);border:1px solid var(--border)!important;}
+.req-timeline{margin-top:6px;}
+.req-tl-row{font-family:var(--f-mono);font-size:10px;color:var(--ink-light);padding:2px 0;line-height:1.4;}
+.req-tl-lbl{color:var(--ink-mid);font-weight:700;}
+.req-adj-badge{display:inline-block;padding:2px 8px;border-radius:10px;background:rgba(245,158,11,0.12);color:#D97706;font-size:9px;font-weight:700;font-family:var(--f-body);letter-spacing:0.3px;}
+.req-remarks{font-family:var(--f-body);font-size:11px;color:var(--gold-dark);background:var(--gold-pale);padding:7px 10px;border-radius:5px;margin-top:6px;border-left:3px solid var(--gold);line-height:1.5;}
+.req-am-notes{font-family:var(--f-body);font-size:11px;color:var(--ink-mid);margin-top:4px;font-style:italic;}
+.approve-fq-row{padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.approve-fq-row:nth-child(even){background:#FAFAF8;}
+.approve-fq-col{text-align:center;font-family:var(--f-body);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink-light);margin-bottom:3px;}
+.approve-fq-inp{width:62px;height:36px;text-align:center;font-family:var(--f-mono);font-size:15px;font-weight:700;border:2px solid var(--gold);border-radius:7px;padding:0 2px;-moz-appearance:textfield;background:#FFFDF9;}
+.approve-fq-inp::-webkit-outer-spin-button,.approve-fq-inp::-webkit-inner-spin-button{-webkit-appearance:none;}
+.approve-fq-inp:focus{outline:none;border-color:var(--gold-bar);background:#FFF;}
+
+/* ── REQUEST DETAIL VIEW ── */
+.rdet-hdr{position:sticky;top:0;z-index:10;background:#FFF;border-bottom:2px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.rdet-back{background:var(--gold-pale);border:1.5px solid var(--border);border-radius:7px;color:var(--ink-mid);font-family:var(--f-body);font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer;flex-shrink:0;}
+.rdet-ref{font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--gold-dark);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rdet-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px;padding-bottom:8px;}
+.rdet-store-card{background:#FFF;border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;}
+.rdet-store-name{font-family:var(--f-serif);font-size:19px;font-weight:600;color:var(--gold-dark);margin-bottom:4px;}
+.rdet-store-meta{font-family:var(--f-mono);font-size:10px;color:var(--ink-mid);line-height:1.7;}
+.rdet-section{background:#FFF;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;}
+.rdet-sec-hdr{padding:9px 16px;background:var(--gold-pale);border-bottom:1px solid var(--border);font-family:var(--f-body);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold-dark);display:flex;justify-content:space-between;align-items:center;cursor:default;}
+.rdet-tl-row{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);}
+.rdet-tl-row:last-child{border-bottom:none;}
+.rdet-tl-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0;}
+.rdet-tl-main{font-family:var(--f-body);font-size:11px;font-weight:700;color:var(--ink);}
+.rdet-tl-sub{font-family:var(--f-mono);font-size:10px;color:var(--ink-light);margin-top:2px;}
+.rdet-tbl{width:100%;border-collapse:collapse;}
+.rdet-tbl th{padding:8px 12px;background:var(--gold-pale);border-bottom:1.5px solid var(--border);font-family:var(--f-body);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink-light);text-align:left;}
+.rdet-tbl td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.rdet-tbl tbody tr:last-child td{border-bottom:none;}
+.rdet-tbl tr.adj-row{background:rgba(245,158,11,0.06);}
+.rdet-tbl tr.zero-row{background:rgba(239,68,68,0.05);}
+.rdet-tbl tfoot td{background:var(--gold-pale);font-weight:700;border-top:1.5px solid var(--border);border-bottom:none;}
+.rdet-fq{width:60px;height:34px;text-align:center;font-family:var(--f-mono);font-size:14px;font-weight:700;border:2px solid var(--gold);border-radius:7px;padding:0 2px;-moz-appearance:textfield;background:#FFFDF9;}
+.rdet-fq::-webkit-outer-spin-button,.rdet-fq::-webkit-inner-spin-button{-webkit-appearance:none;}
+.rdet-fq:focus{outline:none;border-color:var(--gold-bar);background:#FFF;}
+.rdet-fq[disabled]{background:var(--gold-pale);border-color:var(--border);color:var(--ink-mid);cursor:not-allowed;}
+.rdet-diff-plus{color:#059669;font-weight:700;font-family:var(--f-mono);font-size:11px;}
+.rdet-diff-minus{color:#D97706;font-weight:800;font-family:var(--f-mono);font-size:11px;}
+.rdet-diff-nil{color:var(--ink-light);font-family:var(--f-mono);font-size:11px;}
+.rdet-ta{width:100%;padding:12px 14px;border:none;border-top:1px solid var(--border);font-family:var(--f-body);font-size:13px;color:var(--ink);resize:none;height:80px;background:#FFF;}
+.rdet-ta:focus{outline:none;background:#FFFDF9;}
+.rdet-ta[disabled]{color:var(--ink-light);background:var(--gold-pale);cursor:not-allowed;}
+.rdet-hist-row{padding:10px 16px;border-bottom:1px solid var(--border);}
+.rdet-hist-row:last-child{border-bottom:none;}
+.rdet-hist-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;}
+.rdet-hist-by{font-weight:700;color:var(--ink);font-family:var(--f-body);font-size:11px;}
+.rdet-hist-dt{color:var(--ink-light);font-family:var(--f-mono);font-size:10px;}
+.rdet-hist-body{font-family:var(--f-body);font-size:11px;color:var(--ink-mid);line-height:1.5;}
+.rdet-hist-note{font-style:italic;margin-top:2px;color:var(--ink-light);}
+.rdet-actions-wrap{position:sticky;bottom:0;z-index:10;background:#FFF;border-top:2px solid var(--border);}
+.rdet-name-row{padding:10px 16px 8px;display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--border);}
+.rdet-name-lbl{font-family:var(--f-body);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink-light);}
+.rdet-name-inp{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--f-body);font-size:13px;color:var(--ink);background:#FFF;}
+.rdet-name-inp:focus{outline:none;border-color:var(--gold);background:#FFFDF9;}
+.rdet-btns{padding:10px 16px;display:flex;gap:8px;}
+.rdet-btn-save{flex:1;padding:11px;background:var(--gold-pale);border:1.5px solid var(--border);border-radius:8px;color:var(--ink-mid);font-family:var(--f-body);font-size:12px;font-weight:700;cursor:pointer;}
+.rdet-btn-approve{flex:2;padding:11px;background:#2563EB;border:none;border-radius:8px;color:#FFF;font-family:var(--f-body);font-size:13px;font-weight:700;cursor:pointer;}
+.rdet-btn-dispatch{flex:2;padding:11px;background:#059669;border:none;border-radius:8px;color:#FFF;font-family:var(--f-body);font-size:13px;font-weight:700;cursor:pointer;}
+.req-btn-view{background:var(--gold-pale);color:var(--gold-dark);border:1.5px solid var(--border)!important;}
 
 /* Issues tab */
 .iss-card{background:#FFFFFF;border-radius:10px;margin:12px 16px 0;border:1.5px solid var(--border);overflow:hidden;}
@@ -13087,6 +13149,10 @@ const _AM_HUB_AMs=[
 ];
 let _amHubTab='todo';
 let _amHubAMSeg='AM_HESSIN';
+let _amApproveItems=[];
+let _amApproveRef='';
+let _viewingReq=null;
+let _viewEditItems=[];
 let _amHubData={sessions:[],requests:[],issues:[]};
 let _amHubTodo={};   // { key: boolean } — persisted in localStorage per day
 let _amHubModalType='session';
@@ -13315,31 +13381,34 @@ function renderRequestsTab(){
     html+=`<div class="req-card"><div style="padding:28px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:13px;">No requests found for selected filters.</div></div>`;
   } else {
     html+=`<div class="req-card">`;
+    const fmtDT=dt=>dt?new Date(dt).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
     reqs.forEach(r=>{
-      const d=new Date(r.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
       const wk=r.week_starting?new Date(r.week_starting+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'';
       const n=Array.isArray(r.items)?r.items.length:0;
       const tQ=Array.isArray(r.items)?r.items.reduce((s,i)=>s+(i.qty||0),0):0;
       const rJ=JSON.stringify(r).replace(/"/g,'&quot;');
-      let actions='';
-      if(r.status==='pending'){
-        actions=`<button class="req-btn req-btn-approve" onclick="approveAMRequest('${r.request_ref}')">✓ Approve</button>
-                 <button class="req-btn req-btn-pdf" onclick="printAMRequest(${rJ})">⬇ PDF</button>`;
-      } else if(r.status==='approved'){
-        actions=`<button class="req-btn req-btn-dispatch" onclick="dispatchAMRequest('${r.request_ref}')">🚚 Dispatch</button>
-                 <button class="req-btn req-btn-pdf" onclick="printAMRequest(${rJ})">⬇ PDF</button>`;
-      } else {
-        actions=`<button class="req-btn req-btn-pdf" onclick="printAMRequest(${rJ})">⬇ PDF</button>`;
-      }
+      // Fulfillment
+      const hasFulfil=Array.isArray(r.fulfilled_items)&&r.fulfilled_items.length>0;
+      const fulfilUnits=hasFulfil?r.fulfilled_items.reduce((s,i)=>s+(i.qty||0),0):tQ;
+      const hasAdj=hasFulfil&&r.fulfilled_items.some((fi,idx)=>fi.qty!==(r.items[idx]?.qty||0));
+      // Timeline rows
+      let tl=`<div class="req-tl-row">📥 <span class="req-tl-lbl">Received:</span> ${fmtDT(r.submitted_at)}</div>`;
+      if(r.approved_at) tl+=`<div class="req-tl-row">✓ <span class="req-tl-lbl">Approved:</span> ${fmtDT(r.approved_at)}${r.approved_by?' &nbsp;·&nbsp; <strong style="color:var(--ink-mid);">'+r.approved_by+'</strong>':''}${hasAdj?' &nbsp;<span class="req-adj-badge">'+tQ+' req → '+fulfilUnits+' approved</span>':''}</div>`;
+      if(r.dispatched_at) tl+=`<div class="req-tl-row">🚚 <span class="req-tl-lbl">Dispatched:</span> ${fmtDT(r.dispatched_at)}${r.dispatched_by?' &nbsp;·&nbsp; <strong style="color:var(--ink-mid);">'+r.dispatched_by+'</strong>':''}${r.dispatch_notes?' &nbsp;— '+r.dispatch_notes:''}</div>`;
+      const actions=`<button class="req-btn req-btn-view" onclick="viewAMRequest('${r.request_ref}')">👁 View</button>
+                     <button class="req-btn req-btn-pdf" onclick="printAMRequest(${rJ})">⬇ PDF</button>`;
       html+=`<div class="req-row">
         <div class="req-info">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px;">
             <span class="req-ref">${r.request_ref}</span>
             <span class="status-pill sp-${r.status}">${r.status}</span>
+            ${hasAdj?'<span class="req-adj-badge">Stock adjusted</span>':''}
           </div>
           <div class="req-store">${r.store_name||r.store_code}&nbsp;<span style="font-family:var(--f-mono);font-size:10px;color:var(--ink-light);">(${r.store_code})</span></div>
-          <div class="req-meta">${r.am_name}&nbsp;·&nbsp;Week:${wk}&nbsp;·&nbsp;${n} SKUs&nbsp;·&nbsp;${tQ} units&nbsp;·&nbsp;${d}</div>
-          ${r.notes?`<div style="font-family:var(--f-body);font-size:11px;color:var(--ink-mid);margin-top:4px;font-style:italic;">"${r.notes}"</div>`:''}
+          <div class="req-meta">${r.am_name}&nbsp;·&nbsp;Wk ${wk}&nbsp;·&nbsp;${n} SKUs&nbsp;·&nbsp;${tQ} req'd${hasAdj?' / '+fulfilUnits+' approved':''}</div>
+          <div class="req-timeline">${tl}</div>
+          ${r.approval_remarks?`<div class="req-remarks">📝 ${r.approval_remarks}</div>`:''}
+          ${r.notes?`<div class="req-am-notes">"${r.notes}"</div>`:''}
         </div>
         <div class="req-actions">${actions}</div>
       </div>`;
@@ -13500,71 +13569,623 @@ function exportAMReqPDF(){
   w.document.close();
 }
 
-async function approveAMRequest(ref){
-  const approver=prompt('Approved by (your name):');
-  if(!approver)return;
-  try{
-    await _SBC.from('am_weekly_requests').update({status:'approved',approved_by:approver,approved_at:new Date().toISOString()}).eq('request_ref',ref);
-    showToastHub('Request approved ✓');
-    await loadAMHubData();
-  }catch(e){showToastHub('Error: '+e.message);}
+function approveAMRequest(ref){
+  const req=_amHubData.requests.find(r=>r.request_ref===ref);
+  if(!req)return;
+  _amApproveRef=ref;
+  _amApproveItems=(Array.isArray(req.items)?req.items:[]).map(it=>({...it}));
+  const totalReq=_amApproveItems.reduce((s,i)=>s+(i.qty||0),0);
+
+  const rows=_amApproveItems.map((it,idx)=>`
+    <div class="approve-fq-row">
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:var(--f-mono);font-size:9px;color:var(--gold-dark);font-weight:700;margin-bottom:2px;">${it.code}</div>
+        <div style="font-family:var(--f-body);font-size:12px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${it.en}</div>
+        ${it.ar?`<div style="font-family:var(--f-ar);font-size:11px;color:var(--ink-mid);direction:rtl;text-align:right;">${it.ar}</div>`:''}
+      </div>
+      <div style="min-width:52px;text-align:center;">
+        <div class="approve-fq-col">Req'd</div>
+        <div style="font-family:var(--f-mono);font-size:16px;font-weight:700;color:var(--ink-mid);">${it.qty}</div>
+      </div>
+      <div style="min-width:72px;text-align:center;">
+        <div class="approve-fq-col" style="color:var(--gold-dark);">✎ Fulfill</div>
+        <input type="number" id="fq_${idx}" class="approve-fq-inp" value="${it.qty}" min="0" max="999"
+          oninput="_amApproveItems[${idx}].qty=Math.max(0,parseInt(this.value)||0);_updApproveTotal()">
+      </div>
+    </div>`).join('');
+
+  document.getElementById('amHubModalCard').innerHTML=`
+    <div class="amhub-modal-drag"></div>
+    <div class="amhub-modal-title">✓ Approve &amp; Adjust Stock Request</div>
+    <div style="font-family:var(--f-body);font-size:11px;color:#1D4ED8;margin-bottom:14px;padding:9px 12px;background:#EFF6FF;border-radius:7px;border:1px solid #BFDBFE;line-height:1.6;">
+      Edit quantities to match what the warehouse can actually dispatch.<br>
+      <span style="color:#1D4ED8;font-weight:700;">Set to 0</span> for any SKU that cannot be fulfilled this week.
+    </div>
+    <div style="border:1.5px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:14px;">
+      <div style="background:var(--gold-pale);padding:8px 14px;display:flex;gap:10px;">
+        <div style="flex:1;font-family:var(--f-body);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink-light);">SKU / Product</div>
+        <div style="min-width:52px;text-align:center;font-family:var(--f-body);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink-light);">Req'd</div>
+        <div style="min-width:72px;text-align:center;font-family:var(--f-body);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold-dark);">✎ Fulfill</div>
+      </div>
+      <div style="max-height:38vh;overflow-y:auto;">${rows}</div>
+      <div style="background:var(--gold-pale);padding:9px 14px;display:flex;justify-content:space-between;align-items:center;border-top:1.5px solid var(--border);">
+        <div style="font-family:var(--f-body);font-size:11px;color:var(--ink-mid);">Total Requested: <strong>${totalReq}</strong></div>
+        <div style="font-family:var(--f-body);font-size:11px;color:var(--gold-dark);font-weight:700;">Fulfilling: <span id="approveTotal" style="font-family:var(--f-mono);font-size:13px;">${totalReq}</span> units</div>
+      </div>
+    </div>
+    <div class="amhub-mf">
+      <label class="amhub-ml">Approval Remarks · سبب التعديل على الكميات</label>
+      <textarea class="amhub-mta" id="appRemarks" style="height:80px;"
+        placeholder="e.g. White 100ml out of stock — will dispatch balance next week · الوايت 100مل غير متوفر، سيتم شحن الباقي الأسبوع القادم"></textarea>
+    </div>
+    <div class="amhub-mf">
+      <label class="amhub-ml">Approved By · اعتمدت بواسطة</label>
+      <input type="text" class="amhub-mi" id="appBy" placeholder="Your name · اسمك">
+    </div>
+    <div class="amhub-modal-actions">
+      <button class="amhub-save-btn" onclick="_doApproveRequest()">✓ Confirm Approval</button>
+      <button class="amhub-cancel-btn" onclick="closeAMHubModal()">Cancel · إلغاء</button>
+    </div>`;
+  document.getElementById('amHubModal').style.display='flex';
 }
 
-async function dispatchAMRequest(ref){
-  const who=prompt('Dispatched by (your name):');
-  if(!who)return;
-  const notes=prompt('Dispatch notes (optional):');
+function _updApproveTotal(){
+  const t=_amApproveItems.reduce((s,i)=>s+(i.qty||0),0);
+  const el=document.getElementById('approveTotal');
+  if(el)el.textContent=t;
+}
+
+async function _doApproveRequest(){
+  const approver=(document.getElementById('appBy').value||'').trim();
+  if(!approver){
+    const el=document.getElementById('appBy');
+    el.style.borderColor='#EF4444';el.focus();
+    el.placeholder='Required · مطلوب';return;
+  }
+  const remarks=(document.getElementById('appRemarks').value||'').trim();
+  const btn=document.querySelector('#amHubModalCard .amhub-save-btn');
+  btn.disabled=true;btn.textContent='Saving…';
   try{
-    await _SBC.from('am_weekly_requests').update({status:'dispatched',dispatched_by:who,dispatched_at:new Date().toISOString(),dispatch_notes:notes||''}).eq('request_ref',ref);
-    showToastHub('Marked as dispatched 🚚');
+    await _SBC.from('am_weekly_requests').update({
+      status:'approved',
+      approved_by:approver,
+      approved_at:new Date().toISOString(),
+      fulfilled_items:_amApproveItems,
+      approval_remarks:remarks||null
+    }).eq('request_ref',_amApproveRef);
+    const fulfilTotal=_amApproveItems.reduce((s,i)=>s+(i.qty||0),0);
+    closeAMHubModal();
+    showToastHub('Approved ✓ — '+fulfilTotal+' units to dispatch');
     await loadAMHubData();
-  }catch(e){showToastHub('Error: '+e.message);}
+  }catch(e){showToastHub('Error: '+e.message);btn.disabled=false;btn.textContent='✓ Confirm Approval';}
+}
+
+function dispatchAMRequest(ref){
+  const req=_amHubData.requests.find(r=>r.request_ref===ref);
+  if(!req)return;
+  const items=Array.isArray(req.fulfilled_items)&&req.fulfilled_items.length?req.fulfilled_items:(Array.isArray(req.items)?req.items:[]);
+  const totalU=items.reduce((s,i)=>s+(i.qty||0),0);
+  const skuRows=items.filter(i=>i.qty>0).map(i=>`
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--f-body);font-size:11px;">
+      <span style="color:var(--ink-mid);"><span style="font-family:var(--f-mono);font-size:9px;color:var(--gold-dark);font-weight:700;">${i.code}</span>&nbsp;${i.en}</span>
+      <span style="font-family:var(--f-mono);font-weight:700;color:var(--ink);">×${i.qty}</span>
+    </div>`).join('');
+
+  document.getElementById('amHubModalCard').innerHTML=`
+    <div class="amhub-modal-drag"></div>
+    <div class="amhub-modal-title">🚚 Mark as Dispatched</div>
+    <div style="background:var(--gold-pale);border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;">
+      <div style="font-family:var(--f-body);font-size:12px;font-weight:700;color:var(--ink);margin-bottom:4px;">${req.store_name||req.store_code} (${req.store_code})</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-mid);">${req.am_name}&nbsp;·&nbsp;Week: ${req.week_starting||'—'}&nbsp;·&nbsp;${items.filter(i=>i.qty>0).length} SKUs&nbsp;·&nbsp;${totalU} units</div>
+      <div style="max-height:22vh;overflow-y:auto;margin-top:8px;">${skuRows}</div>
+    </div>
+    <div class="amhub-mf">
+      <label class="amhub-ml">Dispatched By · شُحن بواسطة</label>
+      <input type="text" class="amhub-mi" id="dispBy" placeholder="Warehouse staff name · اسم موظف المستودع">
+    </div>
+    <div class="amhub-mf">
+      <label class="amhub-ml">Dispatch Notes / Remarks · ملاحظات الشحن</label>
+      <textarea class="amhub-mta" id="dispNotes" style="height:80px;"
+        placeholder="Any delivery notes, partial shipment details... · أي ملاحظات للتسليم أو شحن جزئي..."></textarea>
+    </div>
+    <div class="amhub-modal-actions">
+      <button class="amhub-save-btn" style="background:#059669;" onclick="_doDispatchRequest('${ref}')">🚚 Confirm Dispatch</button>
+      <button class="amhub-cancel-btn" onclick="closeAMHubModal()">Cancel · إلغاء</button>
+    </div>`;
+  document.getElementById('amHubModal').style.display='flex';
+}
+
+async function _doDispatchRequest(ref){
+  const who=(document.getElementById('dispBy').value||'').trim();
+  if(!who){
+    const el=document.getElementById('dispBy');
+    el.style.borderColor='#EF4444';el.focus();
+    el.placeholder='Required · مطلوب';return;
+  }
+  const notes=(document.getElementById('dispNotes').value||'').trim();
+  const btn=document.querySelector('#amHubModalCard .amhub-save-btn');
+  btn.disabled=true;btn.textContent='Saving…';
+  try{
+    await _SBC.from('am_weekly_requests').update({
+      status:'dispatched',
+      dispatched_by:who,
+      dispatched_at:new Date().toISOString(),
+      dispatch_notes:notes||null
+    }).eq('request_ref',ref);
+    closeAMHubModal();
+    showToastHub('Dispatched! 🚚 Request closed.');
+    await loadAMHubData();
+  }catch(e){showToastHub('Error: '+e.message);btn.disabled=false;btn.textContent='🚚 Confirm Dispatch';}
+}
+
+/* ══════════════════════════════════
+   REQUEST DETAIL VIEW
+══════════════════════════════════ */
+function viewAMRequest(ref){
+  _viewingReq=_amHubData.requests.find(r=>r.request_ref===ref);
+  if(!_viewingReq)return;
+  const r=_viewingReq;
+  const origItems=Array.isArray(r.items)?r.items:[];
+  const prevFulfil=Array.isArray(r.fulfilled_items)&&r.fulfilled_items.length?r.fulfilled_items:null;
+  // Safer init using index access
+  _viewEditItems=origItems.map((item,idx)=>{
+    const fItem=prevFulfil?prevFulfil[idx]:null;
+    return {...item,qty:fItem!=null?fItem.qty:item.qty};
+  });
+  document.getElementById('amHubBody').innerHTML=_renderReqDetail();
+  document.getElementById('amHubBody').scrollTop=0;
+}
+
+function _backToReqList(){
+  _viewingReq=null;
+  _viewEditItems=[];
+  renderAMHubTab();
+}
+
+function _renderReqDetail(){
+  const r=_viewingReq;
+  const origItems=Array.isArray(r.items)?r.items:[];
+  const canEdit=r.status!=='dispatched';
+  const wk=r.week_starting?new Date(r.week_starting+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
+  const fmtDT=dt=>dt?new Date(dt).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+  const totalReq=origItems.reduce((s,i)=>s+(i.qty||0),0);
+  const totalFul=_viewEditItems.reduce((s,i)=>s+(i.qty||0),0);
+  const totalDiff=totalFul-totalReq;
+
+  /* ── Item rows ── */
+  const itemRows=origItems.map((item,idx)=>{
+    const wq=_viewEditItems[idx]?.qty??item.qty;
+    const diff=wq-item.qty;
+    const isZero=wq===0;
+    const rowClass=isZero?'zero-row':diff!==0?'adj-row':'';
+    const diffHtml=diff===0?`<span class="rdet-diff-nil">—</span>`
+      :diff>0?`<span class="rdet-diff-plus">+${diff}</span>`
+      :`<span class="rdet-diff-minus">${diff}</span>`;
+    return `<tr class="${rowClass}" id="rdrow_${idx}">
+      <td style="font-family:var(--f-mono);font-size:9px;font-weight:700;color:var(--gold-dark);white-space:nowrap;">${item.code}</td>
+      <td>
+        <div style="font-family:var(--f-body);font-size:12px;font-weight:500;color:${isZero?'#EF4444':'var(--ink)'};">${item.en}${isZero?' <span style="font-size:9px;color:#EF4444;font-weight:700;">[NOT DISPATCHING]</span>':''}</div>
+        ${item.ar?`<div style="font-family:var(--f-ar);font-size:11px;color:var(--ink-mid);direction:rtl;text-align:right;">${item.ar}</div>`:''}
+      </td>
+      <td style="text-align:center;font-family:var(--f-mono);font-size:14px;font-weight:700;color:var(--ink-mid);">${item.qty}</td>
+      <td style="text-align:center;">
+        <input type="number" class="rdet-fq" id="rdfq_${idx}" value="${wq}" min="0" max="999"
+          ${canEdit?'':'disabled'}
+          oninput="_rdetOnInput(${idx},this.value)">
+      </td>
+      <td style="text-align:center;" id="rddiff_${idx}">${diffHtml}</td>
+    </tr>`;
+  }).join('');
+
+  /* ── Timeline ── */
+  const tlRows=[
+    {icon:'📥',label:'Received',active:true,color:'var(--ink)',
+      sub:fmtDT(r.submitted_at),extra:''},
+    {icon:'✓',label:'Approved'+(r.approved_by?' by <strong>'+r.approved_by+'</strong>':''),
+      active:!!r.approved_at,color:r.approved_at?'#2563EB':'var(--ink-light)',
+      sub:fmtDT(r.approved_at),
+      extra:r.approval_remarks?`<div style="margin-top:4px;font-family:var(--f-body);font-size:11px;color:var(--gold-dark);background:var(--gold-pale);padding:5px 9px;border-radius:5px;border-left:2px solid var(--gold);">📝 ${r.approval_remarks}</div>`:''},
+    {icon:'🚚',label:'Dispatched'+(r.dispatched_by?' by <strong>'+r.dispatched_by+'</strong>':''),
+      active:!!r.dispatched_at,color:r.dispatched_at?'#059669':'var(--ink-light)',
+      sub:fmtDT(r.dispatched_at),
+      extra:r.dispatch_notes?`<div style="margin-top:4px;font-family:var(--f-body);font-size:11px;color:var(--ink-mid);">📋 ${r.dispatch_notes}</div>`:''}
+  ].map(tl=>`<div class="rdet-tl-row" style="${!tl.active&&tl.icon!=='📥'?'opacity:0.4;':''}">
+    <div class="rdet-tl-icon">${tl.icon}</div>
+    <div style="flex:1;">
+      <div class="rdet-tl-main" style="color:${tl.color};">${tl.label}</div>
+      <div class="rdet-tl-sub">${tl.sub}</div>
+      ${tl.extra}
+    </div>
+  </div>`).join('');
+
+  /* ── Edit history ── */
+  const hist=Array.isArray(r.edit_history)?r.edit_history:[];
+  const histHtml=hist.length?[...hist].reverse().map(h=>{
+    const typeLabel=h.type==='approved'?'<span style="color:#2563EB;font-weight:700;">✓ Approved</span>'
+      :h.type==='dispatched'?'<span style="color:#059669;font-weight:700;">🚚 Dispatched</span>'
+      :'<span style="color:var(--gold-dark);">💾 Draft Saved</span>';
+    const changes=(h.changes||[]).map(c=>{
+      const col=c.to_qty===0?'#EF4444':c.to_qty<c.from_qty?'#D97706':'#059669';
+      return `<span style="color:${col};font-weight:600;">${c.code}: ${c.from_qty}→${c.to_qty}</span>`;
+    });
+    return `<div class="rdet-hist-row">
+      <div class="rdet-hist-meta">
+        <span class="rdet-hist-by">${h.by||'—'}</span>
+        <span class="rdet-hist-dt">${fmtDT(h.at)}</span>
+      </div>
+      <div class="rdet-hist-body">${typeLabel}${changes.length?' &nbsp;— '+changes.join(', '):'&nbsp;— no qty changes'}</div>
+      ${h.remarks?`<div class="rdet-hist-note">"${h.remarks}"</div>`:''}
+    </div>`;
+  }).join('')
+  :`<div style="padding:16px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:12px;">No edits recorded yet · لا توجد تعديلات بعد</div>`;
+
+  /* ── Totals diff display ── */
+  const tDiffHtml=totalDiff===0?`<span class="rdet-diff-nil">—</span>`
+    :totalDiff>0?`<span class="rdet-diff-plus">+${totalDiff}</span>`
+    :`<span class="rdet-diff-minus">${totalDiff}</span>`;
+
+  /* ── AM original notes ── */
+  const amNotesHtml=r.notes?`<div class="rdet-section">
+    <div class="rdet-sec-hdr">AM Notes (from original request)</div>
+    <div style="padding:12px 16px;font-family:var(--f-body);font-size:12px;color:var(--ink-mid);font-style:italic;">"${r.notes}"</div>
+  </div>`:'';
+
+  /* ── Action bar ── */
+  const rJ=JSON.stringify(r).replace(/"/g,'&quot;');
+  let actionWrap='';
+  if(r.status==='pending'){
+    actionWrap=`<div class="rdet-actions-wrap">
+      <div class="rdet-name-row">
+        <label class="rdet-name-lbl">Approved By · اعتمدت بواسطة <span style="color:#EF4444;">*</span></label>
+        <input type="text" class="rdet-name-inp" id="rdetNameInp" placeholder="Your name · اسمك">
+      </div>
+      <div class="rdet-btns">
+        <button class="rdet-btn-save" onclick="_saveReqDraft(true,null,document.getElementById('rdetNameInp')?.value||'Manager')">💾 Save Draft</button>
+        <button class="rdet-btn-approve" onclick="_approveReqFromDetail()">✓ Approve Request</button>
+      </div>
+    </div>`;
+  } else if(r.status==='approved'){
+    actionWrap=`<div class="rdet-actions-wrap">
+      <div class="rdet-name-row">
+        <label class="rdet-name-lbl">Dispatched By · شُحن بواسطة <span style="color:#EF4444;">*</span></label>
+        <input type="text" class="rdet-name-inp" id="rdetNameInp" placeholder="Warehouse staff · اسم موظف المستودع">
+        <label class="rdet-name-lbl" style="margin-top:4px;">Dispatch Notes · ملاحظات الشحن</label>
+        <input type="text" class="rdet-name-inp" id="rdetDispNotes" placeholder="Optional: partial shipment, next delivery date... · شحن جزئي، موعد التسليم التالي...">
+      </div>
+      <div class="rdet-btns">
+        <button class="rdet-btn-save" onclick="_saveReqDraft(true,null,document.getElementById('rdetNameInp')?.value||'Manager')">💾 Save Changes</button>
+        <button class="rdet-btn-dispatch" onclick="_dispatchReqFromDetail()">🚚 Mark as Dispatched</button>
+      </div>
+    </div>`;
+  } else {
+    actionWrap=`<div class="rdet-actions-wrap">
+      <div style="padding:8px 16px;font-family:var(--f-body);font-size:11px;color:var(--ink-light);">Request fully dispatched — read only. تم الشحن — للعرض فقط.</div>
+      <div class="rdet-btns">
+        <button class="rdet-btn-save" style="flex:2;" onclick="printAMRequest(${rJ})">⬇ Download PDF</button>
+      </div>
+    </div>`;
+  }
+
+  return `
+    <div class="rdet-hdr">
+      <button class="rdet-back" onclick="_backToReqList()">← All Requests</button>
+      <div class="rdet-ref">${r.request_ref}</div>
+      <span class="status-pill sp-${r.status}">${r.status}</span>
+      <button onclick="printAMRequest(${rJ})" style="background:var(--gold-pale);border:1.5px solid var(--border);border-radius:7px;color:var(--gold-dark);font-family:var(--f-body);font-size:11px;font-weight:700;padding:7px 12px;cursor:pointer;flex-shrink:0;">⬇ PDF</button>
+    </div>
+    <div class="rdet-body">
+      <div class="rdet-store-card">
+        <div class="rdet-store-name">${r.store_name||r.store_code}</div>
+        <div class="rdet-store-meta">
+          ${r.store_code} &nbsp;·&nbsp; ${r.am_name} &nbsp;·&nbsp; Week of ${wk}<br>
+          ${origItems.length} SKUs &nbsp;·&nbsp; ${totalReq} units requested${totalFul!==totalReq?' &nbsp;·&nbsp; <strong style="color:var(--gold-dark);">'+totalFul+' units to fulfill</strong>':''}
+        </div>
+      </div>
+
+      <div class="rdet-section">
+        <div class="rdet-sec-hdr">Request Timeline · مسار الطلب</div>
+        ${tlRows}
+      </div>
+
+      <div class="rdet-section">
+        <div class="rdet-sec-hdr">
+          Stock Items · البنود (${origItems.length} SKUs)
+          ${canEdit?`<span style="font-family:var(--f-body);font-size:9px;color:var(--ink-light);font-weight:400;text-transform:none;letter-spacing:0;">Edit "Fulfill" column · عدّل كمية التوفير</span>`:'<span style="font-weight:400;color:var(--ink-light);font-size:9px;text-transform:none;letter-spacing:0;">Read-only</span>'}
+        </div>
+        ${canEdit?`<div style="padding:8px 16px;background:#EFF6FF;border-bottom:1px solid #BFDBFE;font-family:var(--f-body);font-size:11px;color:#1D4ED8;line-height:1.5;">
+          Set <strong>Fulfill</strong> to the actual qty the warehouse can dispatch. Set to <strong style="color:#EF4444;">0</strong> to mark a SKU as unavailable — it will still appear in the record. Save Draft before Approving.
+        </div>`:''}
+        <table class="rdet-tbl">
+          <thead><tr>
+            <th style="width:80px;">SKU Code</th>
+            <th>Product / المنتج</th>
+            <th style="text-align:center;width:60px;">Req'd</th>
+            <th style="text-align:center;width:76px;">✎ Fulfill</th>
+            <th style="text-align:center;width:50px;">Diff</th>
+          </tr></thead>
+          <tbody>${itemRows}</tbody>
+          <tfoot><tr>
+            <td colspan="2" style="text-align:right;font-family:var(--f-body);">Totals</td>
+            <td style="text-align:center;font-family:var(--f-mono);font-size:14px;">${totalReq}</td>
+            <td style="text-align:center;font-family:var(--f-mono);font-size:14px;" id="rdetFulTotal">${totalFul}</td>
+            <td style="text-align:center;" id="rdetDiffTotal">${tDiffHtml}</td>
+          </tr></tfoot>
+        </table>
+      </div>
+
+      <div class="rdet-section">
+        <div class="rdet-sec-hdr">${r.status==='approved'?'Fulfillment Remarks · ملاحظات الموافقة':'Approval Remarks / Reason for Adjustments · ملاحظات'}</div>
+        <textarea class="rdet-ta" id="rdetRemarks" ${!canEdit?'disabled':''}
+          placeholder="e.g. White 100ml out of stock — will dispatch balance next week · الوايت 100مل غير متوفر، سيتم شحن الباقي الأسبوع القادم"
+          >${r.approval_remarks||''}</textarea>
+      </div>
+
+      ${amNotesHtml}
+
+      <div class="rdet-section">
+        <div class="rdet-sec-hdr" onclick="const b=document.getElementById('rdetHistPanel');b.style.display=b.style.display==='none'?'block':'none';" style="cursor:pointer;">
+          Edit History · سجل التعديلات
+          <span style="font-family:var(--f-body);font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-light);">${hist.length} record${hist.length!==1?'s':''} &nbsp;▾</span>
+        </div>
+        <div id="rdetHistPanel">${histHtml}</div>
+      </div>
+
+      <div style="height:8px;"></div>
+    </div>
+    ${actionWrap}`;
+}
+
+function _rdetOnInput(idx,val){
+  if(!_viewEditItems[idx])return;
+  _viewEditItems[idx].qty=Math.max(0,parseInt(val)||0);
+  _rdetUpdTotals();
+  const wq=_viewEditItems[idx].qty;
+  const origQty=(_viewingReq?.items||[])[idx]?.qty??wq;
+  const diff=wq-origQty;
+  const diffEl=document.getElementById('rddiff_'+idx);
+  if(diffEl)diffEl.innerHTML=diff===0?`<span class="rdet-diff-nil">—</span>`
+    :diff>0?`<span class="rdet-diff-plus">+${diff}</span>`
+    :`<span class="rdet-diff-minus">${diff}</span>`;
+  const row=document.getElementById('rdrow_'+idx);
+  if(row){row.className=wq===0?'zero-row':diff!==0?'adj-row':'';}
+}
+
+function _rdetUpdTotals(){
+  const origItems=Array.isArray(_viewingReq?.items)?_viewingReq.items:[];
+  const totalReq=origItems.reduce((s,i)=>s+(i.qty||0),0);
+  const totalFul=_viewEditItems.reduce((s,i)=>s+(i.qty||0),0);
+  const diff=totalFul-totalReq;
+  const fulEl=document.getElementById('rdetFulTotal');
+  const dEl=document.getElementById('rdetDiffTotal');
+  if(fulEl)fulEl.textContent=totalFul;
+  if(dEl)dEl.innerHTML=diff===0?`<span class="rdet-diff-nil">—</span>`
+    :diff>0?`<span class="rdet-diff-plus">+${diff}</span>`
+    :`<span class="rdet-diff-minus">${diff}</span>`;
+}
+
+async function _saveReqDraft(showMsg,histType,byName){
+  const r=_viewingReq;
+  if(!r)return false;
+  const remarks=(document.getElementById('rdetRemarks')?.value||'').trim();
+  const by=byName||'Manager';
+  // Compute changes vs previous fulfilled_items (or original if none)
+  const prevBase=Array.isArray(r.fulfilled_items)&&r.fulfilled_items.length?r.fulfilled_items:(Array.isArray(r.items)?r.items:[]);
+  const changes=_viewEditItems.reduce((acc,item,idx)=>{
+    const prev=prevBase[idx]?.qty??item.qty;
+    if(item.qty!==prev)acc.push({code:item.code,en:item.en,from_qty:prev,to_qty:item.qty});
+    return acc;
+  },[]);
+  const histEntry={at:new Date().toISOString(),by,type:histType||'draft_save',changes,remarks:remarks||null};
+  const prevHist=Array.isArray(r.edit_history)?r.edit_history:[];
+  try{
+    await _SBC.from('am_weekly_requests').update({
+      fulfilled_items:_viewEditItems,
+      approval_remarks:remarks||null,
+      edit_history:[...prevHist,histEntry]
+    }).eq('request_ref',r.request_ref);
+    // Update local state
+    _viewingReq.fulfilled_items=[..._viewEditItems];
+    _viewingReq.approval_remarks=remarks||null;
+    _viewingReq.edit_history=[...prevHist,histEntry];
+    const li=_amHubData.requests.find(x=>x.request_ref===r.request_ref);
+    if(li){li.fulfilled_items=[..._viewEditItems];li.approval_remarks=remarks||null;li.edit_history=[...prevHist,histEntry];}
+    if(showMsg)showToastHub('Changes saved ✓');
+    _refreshHistPanel([...prevHist,histEntry]);
+    return true;
+  }catch(e){if(showMsg)showToastHub('Save error: '+e.message);return false;}
+}
+
+function _refreshHistPanel(hist){
+  const panel=document.getElementById('rdetHistPanel');
+  if(!panel)return;
+  const fmtDT=dt=>dt?new Date(dt).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+  if(!hist.length){panel.innerHTML='<div style="padding:16px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:12px;">No edits recorded yet</div>';return;}
+  panel.innerHTML=[...hist].reverse().map(h=>{
+    const typeLabel=h.type==='approved'?'<span style="color:#2563EB;font-weight:700;">✓ Approved</span>'
+      :h.type==='dispatched'?'<span style="color:#059669;font-weight:700;">🚚 Dispatched</span>'
+      :'<span style="color:var(--gold-dark);">💾 Draft Saved</span>';
+    const changes=(h.changes||[]).map(c=>{
+      const col=c.to_qty===0?'#EF4444':c.to_qty<c.from_qty?'#D97706':'#059669';
+      return `<span style="color:${col};font-weight:600;">${c.code}: ${c.from_qty}→${c.to_qty}</span>`;
+    });
+    return `<div class="rdet-hist-row">
+      <div class="rdet-hist-meta">
+        <span class="rdet-hist-by">${h.by||'—'}</span>
+        <span class="rdet-hist-dt">${fmtDT(h.at)}</span>
+      </div>
+      <div class="rdet-hist-body">${typeLabel}${changes.length?' &nbsp;— '+changes.join(', '):'&nbsp;— no qty changes'}</div>
+      ${h.remarks?`<div class="rdet-hist-note">"${h.remarks}"</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+async function _approveReqFromDetail(){
+  const r=_viewingReq;
+  const nameEl=document.getElementById('rdetNameInp');
+  const approver=(nameEl?.value||'').trim();
+  if(!approver){
+    if(nameEl){nameEl.style.borderColor='#EF4444';nameEl.focus();nameEl.placeholder='Required · مطلوب';}
+    showToastHub('Enter your name to approve · أدخل اسمك للموافقة');return;
+  }
+  const remarks=(document.getElementById('rdetRemarks')?.value||'').trim();
+  const origItems=Array.isArray(r.items)?r.items:[];
+  const changes=origItems.reduce((acc,item,idx)=>{
+    const wq=_viewEditItems[idx]?.qty??item.qty;
+    if(wq!==item.qty)acc.push({code:item.code,en:item.en,from_qty:item.qty,to_qty:wq});
+    return acc;
+  },[]);
+  const prevHist=Array.isArray(r.edit_history)?r.edit_history:[];
+  const histEntry={at:new Date().toISOString(),by:approver,type:'approved',changes,remarks:remarks||null};
+  const btn=document.querySelector('.rdet-btn-approve');
+  if(btn){btn.disabled=true;btn.textContent='Approving…';}
+  try{
+    await _SBC.from('am_weekly_requests').update({
+      status:'approved',
+      approved_by:approver,
+      approved_at:new Date().toISOString(),
+      fulfilled_items:_viewEditItems,
+      approval_remarks:remarks||null,
+      edit_history:[...prevHist,histEntry]
+    }).eq('request_ref',r.request_ref);
+    const fulTotal=_viewEditItems.reduce((s,i)=>s+(i.qty||0),0);
+    showToastHub('Approved ✓ by '+approver+' — '+fulTotal+' units');
+    await loadAMHubData();
+    _backToReqList();
+  }catch(e){showToastHub('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent='✓ Approve Request';}}
+}
+
+async function _dispatchReqFromDetail(){
+  const r=_viewingReq;
+  const nameEl=document.getElementById('rdetNameInp');
+  const who=(nameEl?.value||'').trim();
+  if(!who){
+    if(nameEl){nameEl.style.borderColor='#EF4444';nameEl.focus();nameEl.placeholder='Required · مطلوب';}
+    showToastHub('Enter warehouse staff name · أدخل اسم موظف المستودع');return;
+  }
+  const dispNotes=(document.getElementById('rdetDispNotes')?.value||'').trim();
+  const prevHist=Array.isArray(r.edit_history)?r.edit_history:[];
+  const histEntry={at:new Date().toISOString(),by:who,type:'dispatched',changes:[],remarks:dispNotes||null};
+  const btn=document.querySelector('.rdet-btn-dispatch');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  try{
+    await _SBC.from('am_weekly_requests').update({
+      status:'dispatched',
+      dispatched_by:who,
+      dispatched_at:new Date().toISOString(),
+      dispatch_notes:dispNotes||null,
+      edit_history:[...prevHist,histEntry]
+    }).eq('request_ref',r.request_ref);
+    showToastHub('🚚 Dispatched! Request closed.');
+    await loadAMHubData();
+    _backToReqList();
+  }catch(e){showToastHub('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent='🚚 Mark as Dispatched';}}
 }
 
 function printAMRequest(r){
   const items=Array.isArray(r.items)?r.items:[];
+  const fulfilled=Array.isArray(r.fulfilled_items)&&r.fulfilled_items.length?r.fulfilled_items:null;
+  const hasAdj=fulfilled&&fulfilled.some((fi,idx)=>fi.qty!==(items[idx]?.qty||0));
   const wk=r.week_starting?new Date(r.week_starting+'T00:00:00').toLocaleDateString('en-GB'):'—';
-  const rows=items.map(i=>`<tr><td style="font-family:monospace;color:#7A6525;">${i.code}</td><td>${i.en}</td><td style="direction:rtl;text-align:right;font-family:sans-serif;">${i.ar||'—'}</td><td style="text-align:center;font-weight:700;">${i.qty}</td><td style="font-size:10px;color:#8A8278;">${i.cat||''}</td></tr>`).join('');
-  const totalQty=items.reduce((s,i)=>s+(i.qty||0),0);
-  const w=window.open('','_blank','width=800,height:900');
+  const fmtDT=dt=>dt?new Date(dt).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+  const totalReq=items.reduce((s,i)=>s+(i.qty||0),0);
+  const totalFul=fulfilled?fulfilled.reduce((s,i)=>s+(i.qty||0),0):totalReq;
+
+  // Build table rows — show both Req and Fulfilled columns if adjustments exist
+  const rows=items.map((item,idx)=>{
+    const fulQty=fulfilled?fulfilled[idx]?.qty??item.qty:item.qty;
+    const adjusted=fulfilled&&fulQty!==item.qty;
+    const adjStyle=adjusted?'background:#FEF3C7;':'';
+    const fulCell=hasAdj?`<td style="text-align:center;font-weight:700;font-size:13px;${adjusted?'color:#D97706;font-weight:800;':''}">${fulQty}${adjusted?` <span style="font-size:9px;color:#9CA3AF;">(was ${item.qty})</span>`:''}</td>`:'';
+    return `<tr style="${adjStyle}">
+      <td style="font-family:monospace;color:#7A6525;font-size:11px;">${item.code}</td>
+      <td>${item.en}</td>
+      <td style="direction:rtl;text-align:right;font-family:sans-serif;">${item.ar||'—'}</td>
+      ${hasAdj?'':`<td style="text-align:center;font-weight:700;font-size:13px;">${item.qty}</td>`}
+      ${fulCell}
+      <td style="font-size:10px;color:#8A8278;">${item.cat||''}</td>
+    </tr>`;
+  }).join('');
+
+  const qtyHeader=hasAdj
+    ?`<th style="text-align:center;">Requested</th><th style="text-align:center;background:#FEF3C7;color:#D97706;">✎ Approved Qty</th>`
+    :`<th style="text-align:center;">Qty الكمية</th>`;
+  const totalFooter=hasAdj
+    ?`<td style="text-align:center;font-size:13px;">${totalReq}</td><td style="text-align:center;font-size:15px;font-weight:800;color:#D97706;">${totalFul}</td>`
+    :`<td style="text-align:center;font-size:15px;font-weight:800;color:#6B5B35;">${totalReq}</td>`;
+
+  // Timestamp timeline
+  const timeline=`
+    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px;padding:10px 14px;background:#F5F2EC;border-radius:6px;border:1px solid #E5E0D8;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#8A8278;margin-bottom:4px;">Request Timeline · مسار الطلب</div>
+      <div style="font-size:11px;color:#4A4540;">📥 <strong>Received:</strong> ${fmtDT(r.submitted_at)}</div>
+      ${r.approved_at?`<div style="font-size:11px;color:#4A4540;">✓ <strong>Approved:</strong> ${fmtDT(r.approved_at)}${r.approved_by?' &nbsp;·&nbsp; '+r.approved_by:''}</div>`:''}
+      ${r.dispatched_at?`<div style="font-size:11px;color:#4A4540;">🚚 <strong>Dispatched:</strong> ${fmtDT(r.dispatched_at)}${r.dispatched_by?' &nbsp;·&nbsp; '+r.dispatched_by:''}</div>`:''}
+    </div>`;
+
+  const remarksHtml=(r.approval_remarks||r.dispatch_notes)?`
+    <div style="margin-bottom:14px;padding:10px 14px;background:#FFFBEB;border-radius:6px;border:1px solid #FCD34D;font-size:12px;color:#92400E;">
+      ${r.approval_remarks?`<div><strong>📝 Approval Remarks:</strong> ${r.approval_remarks}</div>`:''}
+      ${r.dispatch_notes?`<div style="margin-top:4px;"><strong>🚚 Dispatch Notes:</strong> ${r.dispatch_notes}</div>`:''}
+    </div>`:'';
+
+  const w=window.open('','_blank','width=820,height=1000');
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Request ${r.request_ref}</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Montserrat:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
-  <style>body{font-family:Montserrat,sans-serif;padding:28px;max-width:800px;margin:auto;}
+  <style>body{font-family:Montserrat,sans-serif;padding:28px;max-width:820px;margin:auto;}
   .hdr{text-align:center;border-bottom:3px solid #6B5B35;padding-bottom:14px;margin-bottom:16px;}
   .brand{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#6B5B35;}
-  .meta{display:flex;flex-wrap:wrap;gap:14px 24px;background:#F5F2EC;padding:10px 14px;border-radius:6px;margin-bottom:14px;border:1px solid #E5E0D8;}
+  .meta{display:flex;flex-wrap:wrap;gap:12px 24px;background:#F5F2EC;padding:10px 14px;border-radius:6px;margin-bottom:14px;border:1px solid #E5E0D8;}
   .mi{font-size:11px;color:#4A4540;} .mi strong{color:#1A1A1A;}
-  table{width:100%;border-collapse:collapse;font-size:12px;}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;}
   th{background:#F5F2EC;padding:8px 10px;text-align:left;border:1px solid #E5E0D8;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#4A4540;}
-  td{padding:8px 10px;border:1px solid #E5E0D8;} tr:nth-child(even) td{background:#FAFAF8;}
+  td{padding:8px 10px;border:1px solid #E5E0D8;vertical-align:middle;}
+  tr:nth-child(even) td{background:#FAFAF8;}
   tfoot td{background:#F5F2EC;font-weight:700;}
   .sig{display:flex;justify-content:space-between;margin-top:28px;}
-  .sbox{border-top:1.5px solid #D0C8B8;padding-top:6px;font-size:10px;color:#8A8278;min-width:130px;}
+  .sbox{border-top:1.5px solid #D0C8B8;padding-top:6px;font-size:10px;color:#8A8278;min-width:140px;}
   @media print{body{padding:16px;}}
   </style></head><body>
-  <div class="hdr"><div class="brand">Emirates Pride Perfumes</div>
-  <div style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:15px;color:#6B5B35;margin-top:2px;">فخر الإمارات للعطور</div>
-  <div style="font-size:13px;font-weight:700;color:#4A4540;margin-top:5px;text-transform:uppercase;letter-spacing:1px;">Weekly Stock Request · طلب البضاعة الأسبوعي</div></div>
+  <div class="hdr">
+    <div class="brand">Emirates Pride Perfumes</div>
+    <div style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:15px;color:#6B5B35;margin-top:2px;">فخر الإمارات للعطور</div>
+    <div style="font-size:13px;font-weight:700;color:#4A4540;margin-top:5px;text-transform:uppercase;letter-spacing:1px;">Weekly Stock Request · طلب البضاعة الأسبوعي</div>
+  </div>
   <div class="meta">
-  <div class="mi"><strong>Ref:</strong> ${r.request_ref}</div>
-  <div class="mi"><strong>AM:</strong> ${r.am_name}</div>
-  <div class="mi"><strong>Store:</strong> ${r.store_name} (${r.store_code})</div>
-  <div class="mi"><strong>Week Starting:</strong> ${wk}</div>
-  <div class="mi"><strong>Status:</strong> ${r.status.toUpperCase()}</div>
-  ${r.approved_by?`<div class="mi"><strong>Approved by:</strong> ${r.approved_by}</div>`:''}
-  ${r.dispatched_by?`<div class="mi"><strong>Dispatched by:</strong> ${r.dispatched_by}</div>`:''}
+    <div class="mi"><strong>Ref:</strong> ${r.request_ref}</div>
+    <div class="mi"><strong>AM / المدير:</strong> ${r.am_name}</div>
+    <div class="mi"><strong>Store / المحل:</strong> ${r.store_name||r.store_code} (${r.store_code})</div>
+    <div class="mi"><strong>Week Starting / أسبوع من:</strong> ${wk}</div>
+    <div class="mi"><strong>Status / الحالة:</strong> <span style="font-weight:700;text-transform:uppercase;color:${r.status==='dispatched'?'#059669':r.status==='approved'?'#2563EB':'#D97706'};">${r.status}</span></div>
+    ${hasAdj?`<div class="mi" style="color:#D97706;font-weight:700;">⚠ ${totalReq} units requested → ${totalFul} units approved</div>`:''}
   </div>
-  <table><thead><tr><th>SKU Code</th><th>Product (EN)</th><th style="text-align:right;">المنتج (AR)</th><th style="text-align:center;">Qty</th><th>Category</th></tr></thead>
-  <tbody>${rows}</tbody>
-  <tfoot><tr><td colspan="3" style="text-align:right;">Total Qty · إجمالي الكمية</td><td style="text-align:center;font-size:14px;">${totalQty}</td><td></td></tr></tfoot></table>
-  ${r.notes?`<div style="margin-top:12px;padding:10px;background:#F5F2EC;border-radius:6px;font-size:12px;border:1px solid #E5E0D8;"><strong>Notes:</strong> ${r.notes}</div>`:''}
+  ${timeline}
+  ${remarksHtml}
+  <table>
+    <thead><tr>
+      <th>SKU Code</th>
+      <th>Product (English)</th>
+      <th style="text-align:right;">المنتج (عربي)</th>
+      ${qtyHeader}
+      <th>Category</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr>
+      <td colspan="3" style="text-align:right;font-weight:700;">Total · الإجمالي</td>
+      ${totalFooter}
+      <td></td>
+    </tr></tfoot>
+  </table>
+  ${r.notes?`<div style="margin-bottom:14px;padding:10px 14px;background:#F5F2EC;border-radius:6px;font-size:12px;border:1px solid #E5E0D8;"><strong>AM Notes · ملاحظات المدير:</strong> ${r.notes}</div>`:''}
   <div class="sig">
-    <div class="sbox">AM Signature · توقيع المدير</div>
-    <div class="sbox">Approved By · اعتماد</div>
-    <div class="sbox">Dispatched By · شحن بواسطة</div>
+    <div class="sbox">AM Signature · توقيع مدير المنطقة</div>
+    <div class="sbox">Approved By · اعتمدت بواسطة<br>${r.approved_by||'________________________'}</div>
+    <div class="sbox">Dispatched By · شُحن بواسطة<br>${r.dispatched_by||'________________________'}</div>
   </div>
-  <div style="text-align:center;font-size:10px;color:#8A8278;margin-top:18px;border-top:1px solid #E5E0D8;padding-top:10px;">Emirates Pride Perfumes · ${r.request_ref} · Printed: ${new Date().toLocaleString('en-GB')}</div>
-  <script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
+  <div style="text-align:center;font-size:10px;color:#8A8278;margin-top:18px;border-top:1px solid #E5E0D8;padding-top:10px;">
+    Emirates Pride Perfumes &nbsp;·&nbsp; ${r.request_ref} &nbsp;·&nbsp; Printed: ${new Date().toLocaleString('en-GB')}
+  </div>
+  <script>window.onload=()=>{window.print();window.close();}<\/script>
+  </body></html>`);
   w.document.close();
 }
 

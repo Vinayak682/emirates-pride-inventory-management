@@ -202,6 +202,116 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 
 ---
 
+### Session — 21 May 2026 (Session 13 — AM Form Arabic + Manager Hub Approval/Dispatch Overhaul)
+**Files changed**: `am-stock-request.html` (bilingual upgrade), `stock-register.html` (manager hub requests tab), `am_requests_migration.sql` (new)
+**Commit**: pending push
+
+#### What was built:
+
+**1. `am-stock-request.html` — Full bilingual upgrade + phone UX**
+- Every English-only string now has Arabic alongside it throughout all 4 screens
+- iOS Safari zoom fix: all `input`/`select`/`textarea` bumped to `font-size:16px` (prevents auto-zoom on focus)
+- Tap target enlargement: product rows `min-height:60px`, + button `44px`, qty steppers `40px`, remove button `44×44px`
+- Screen 1 footer note: + `جميع الطلبات محفوظة في لوحة تحكم المدير`
+- Screen 2 browse bar: "← Change" → "← Change · تغيير"; week line now shows dual Arabic date below
+- Screen 3: added "Review Request / مراجعة الطلب" title; meta labels now bilingual (AM · المدير, Store · المحل, Week · أسبوع); notes placeholder + Arabic; "Add More Items" + Arabic
+- Screen 4: confirm sub-text + Arabic; "Submit Another" → "Submit Another · طلب جديد"
+- JS fixes: `onAMChange` fallback option + Arabic; `barWeekAr` element populated; cart empty state + Arabic; `resetForm` pill bug fixed (was `textContent === 'All'` — now correctly `dataset.cat === 'All'`)
+
+**2. `stock-register.html` — Manager Hub: Requests tab overhaul**
+
+**Approve modal (replaces `prompt()`):**
+- Full slide-up modal with scrollable SKU table
+- Each item shows: SKU code, EN name, AR name, Requested qty (read-only), Fulfil qty (editable input)
+- Running total updates live as manager edits fulfil quantities
+- Set to 0 = SKU will not be dispatched this week
+- "Approval Remarks" textarea — manager explains any shortfalls (e.g. "White 100ml out of stock")
+- "Approved By" required name field
+- Saves to Supabase: `status:'approved'`, `approved_by`, `approved_at`, `fulfilled_items` (JSONB), `approval_remarks`
+
+**Dispatch modal (replaces two `prompt()` calls):**
+- Slide-up modal showing store/AM/week summary + scrollable list of approved items (only qty>0)
+- "Dispatched By" required name field
+- "Dispatch Notes / Remarks" textarea
+- Saves: `status:'dispatched'`, `dispatched_by`, `dispatched_at`, `dispatch_notes`
+
+**Request cards — three-timestamp timeline:**
+- 📥 Received: [submitted_at datetime]
+- ✓ Approved: [approved_at] · [approved_by] + "X req → Y approved" badge if quantities differ
+- 🚚 Dispatched: [dispatched_at] · [dispatched_by] + dispatch notes inline
+- Approval remarks shown as gold-bordered callout block below timeline
+- AM notes shown in italics
+
+**PDF (`printAMRequest`) — updated:**
+- Meta section: status with colour coding, all three timestamps in a "Request Timeline" block
+- If stock was adjusted: table shows two qty columns (Requested + Approved Qty) with amber highlight on changed rows, warning banner showing total difference
+- Approval Remarks + Dispatch Notes section in amber callout
+- Signature boxes pre-filled with approved_by / dispatched_by names
+
+**3. `am_requests_migration.sql` (new)**
+- `ALTER TABLE am_weekly_requests ADD COLUMN IF NOT EXISTS fulfilled_items JSONB`
+- `ALTER TABLE am_weekly_requests ADD COLUMN IF NOT EXISTS approval_remarks TEXT`
+- **⚠️ USER ACTION REQUIRED: Run this in Supabase SQL Editor before using the Approve & Adjust feature**
+- URL: https://supabase.com/dashboard/project/ncszurcrkngjcjqsowln/sql
+
+---
+
+### Session — 21 May 2026 (Session 12 — SAP S/4HANA PDF + Excel Demand Planner Master Workbook)
+**Files changed**: `generate_sap_pdf.py` (new), `build_excel_p1.py` (new), `build_excel_p2.py` (new), `build_excel_p3.py` (new), `build_excel_p4.py` (new), `build_excel_p5.py` (new)
+**Output files**: `EP_SAP_S4HANA_Transaction_Report_Register_v1.pdf` (59.2 KB), `EP_Demand_Planner_SAP_Reporting_Master_v2.xlsx` (128 KB, 30 sheets)
+**Commit**: Not pushed (local Python output files — no web app changes)
+
+#### What was built:
+
+**1. SAP S/4HANA Executive PDF (`generate_sap_pdf.py` → `EP_SAP_S4HANA_Transaction_Report_Register_v1.pdf`)**
+- 11-page executive-grade PDF for submission to Narendra Rai (SCM) + IT/SAP team
+- Brand palette: Olive #6B5B35, Gold #C9A84C, executive dark-cream theme
+- Sections: Cover Page, Executive Summary, Org Structure (Company Codes/Plants/Storage Locs/Sales Orgs), Movement Type Register (14 movement types), SD/MM Transactions, FG-to-Tester Flow (9-step process), IBP Demand Planning Configuration, Full Reports Register (40+ reports), Custom Z-Codes (9 Z-transactions), Data Migration Plan, Sign-off Page
+- Framework: ReportLab Platypus with custom Flowables (SectionHeader, ProcessStep)
+- Fixed: UnicodeEncodeError on Windows cp1252 by removing emoji from print statement
+
+**2. Excel Demand Planner Master Workbook — 27 Sheets Total**
+Built across 5 Python scripts in sequence:
+
+| Script | Sheets | Content |
+|--------|--------|---------|
+| `build_excel_p1.py` | 1–6 | INDEX, Daily Stock Overview, Goods Movement Log, Monthly Sales SKU, Store Sales Summary, Replenishment Plan |
+| `build_excel_p2.py` | 7–11 | Transfer Tracker, Tester Register, Dead Stock Report, Demand Forecast vs Actuals, AM Stock Request Tracker |
+| `build_excel_p3.py` | 12–16 | Physical Inventory Count, PO & GRN Log, Write-off Log, Regional KPI Dashboard, Seasonal Demand Planner |
+| `build_excel_p4.py` | 17–23 | **7 TESTER DEEP-DIVE SHEETS** (see below) |
+| `build_excel_p5.py` | 24–27 | Inventory Turnover Analysis, ABC-XYZ Classification, Safety Stock Calculator, Stock Age & FIFO |
+| `build_excel_p6.py` | 28–30 | Event-Based Demand Forecast 2026, Seasonal ABC Reclassification, SAP IBP Seasonal Config Guide |
+
+**Tester Deep-Dive Sheets (17–23) — Added in response to user: "THIS IS HIGH POINT OF CONFLICT":**
+- **Sheet 17 — Tester Allocation Master**: GRN qty → 10% entitlement → deployed → WH pool tracking per SKU. Status: Fully/Under/Over-Allocated / Critical Gap
+- **Sheet 18 — Tester Distribution Plan**: Per-SKU per-store allocation by sales rank tiers (Tier 1 Must Have → Tier 4 No Tester)
+- **Sheet 19 — Tester Age & Condition Monitor**: Every live tester with ZTC ref, age days, fill level %, replacement urgency rules (>120 days OR <20% fill = REPLACE NOW)
+- **Sheet 20 — Tester Wastage Deep Analysis**: Root cause per write-off — Normal End-of-Life, Premature, Damaged, Expired-Idle, Missing/Theft
+- **Sheet 21 — Tester Effectiveness ROI**: Before/after sales comparison per SKU-store, Lift%, Revenue from Lift, ROI, verdict
+- **Sheet 22 — Tester Full Lifecycle Pipeline**: 10-stage pipeline with SLA (7 days request to in-store), BLOCKED/OVERDUE alerts
+- **Sheet 23 — Store Tester Coverage Matrix**: 18 stores × 20 SKUs grid with A/L/X/N/C codes + coverage %
+
+**Advanced Analytics Sheets (24–27):**
+- **Sheet 24 — Inventory Turnover**: Turnover Rate (x/year), Days on Hand, Velocity Class (A/B/C/D), action column
+- **Sheet 25 — ABC-XYZ Classification**: ABC by revenue contribution + XYZ by CoV; 9-cell strategy matrix with inventory policies
+- **Sheet 26 — Safety Stock Calculator**: Formula-driven — Z-score × StdDev × √LT = SS; ROP auto-calc; IBP upload steps; status alerts (BELOW SAFETY / ADEQUATE)
+- **Sheet 27 — Stock Age & FIFO Compliance**: Batch-level age tracking, FIFO compliance flag, age brackets with color coding, write-off escalation logic
+
+**Bugs fixed in this session:**
+- `build_excel_p4.py` line 748: `UnboundLocalError: INK_MID` — fixed by moving assignment before usage
+- `build_excel_p4.py` line 800: `PermissionError` on OneDrive file — fixed by using temp file (`C:\AppData\Local\Temp\`) + copy back
+- `build_excel_p5.py` line 161: `ValueError: too many values to unpack` — fixed by adding `_unused` to unpack 8-tuple
+
+**Business rules embedded throughout:**
+- Tester 10% rule (production sends 10% of GRN qty as testers)
+- FIFO: Oldest batch issued first; >365 days = write-off escalation
+- Safety stock: A-class 99% service level (Z=2.33), B=95% (Z=1.65), C=90% (Z=1.28)
+- ABC: A = top 70% revenue, B = 70-90%, C = 90-100%
+- XYZ: X = CoV <30%, Y = 30-60%, Z = >60%
+- Tester age rule: >120 days OR <20% fill = REPLACE NOW
+
+---
+
 ### Session — 20 May 2026 (Session 10 — AM Feedback Hub + Weekly Stock Request Form)
 **Files changed**: `am-stock-request.html` (new), `am_requests_setup.sql` (new), `stock-register.html` (AM Hub button + panel + JS added)
 **Commit**: pending — not yet pushed
@@ -267,6 +377,52 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 - `AM_HESSIN` = Mohamed Hessin → 17 stores (Abu Dhabi + Al Ain)
 - `AM_IMAD` = Mohammed Imad → 4 stores (Dubai)
 - `AM_ELMAT` = Mohammed Elmatloub → 6 stores (RAK, Sharjah, Ajman, Fujairah)
+
+---
+
+### Session — 20 May 2026 (Session 11 — AM Hub: Stock Request Form + Manager Export + Inline Qty)
+**Files changed**: `am-stock-request.html` (new), `stock-register.html` (modified), `am_requests_setup.sql` (new)
+**Commit**: `d45a409` → pushed to `main` → GitHub Pages live
+**Live URL**: https://vinayak682.github.io/emirates-pride-inventory-management/am-stock-request.html
+
+#### What was built:
+
+**New file: `am-stock-request.html`** — standalone mobile-first stock request form for Area Managers
+- 4-screen flow: Identity (AM + store select) → Browse products → Review cart → Confirmation
+- Full CATS catalogue (163 perfume SKUs) + TESTERS array (40 items) + SUPPLIES (bags S/M/L, tissue paper)
+- Bilingual product names: EN + AR displayed for every SKU
+- Bilingual category pills with stacked EN+AR text; `data-cat` attribute used for active state toggling (not textContent — fixes setCat bug when bilingual text was added)
+- Inline qty controls in Browse screen: `+` button → adds item with qty=1; then `− [input] +` replaces button in-place (no scroll jump via `_refreshRow()` DOM update)
+- Review screen: typed `<input class="qinp">` for qty, `adjQty()` uses `el.value`
+- Cart float badge shows count, navigates to review
+- Submit generates unique `AMR-YYYYMMDD-XXXX` ref, saves to Supabase `am_weekly_requests`, downloads PDF, shows WhatsApp share prompt
+- PDF generation via `window.print()` — styled print-only template showing full request details
+
+**`_esc` helper** — escapes backslashes and single quotes in onclick attribute strings (required for codes like `C00002-T`)
+
+**New file: `am_requests_setup.sql`** — creates 3 Supabase tables:
+- `am_weekly_requests` — stock request submissions with JSONB `items` column
+- `am_feedback_sessions` — call/WhatsApp/meeting log entries
+- `am_issues_log` — issue tracker per store with severity + status
+- RLS policies: anon can insert + read + update requests; all operations for sessions/issues
+- **⚠️ USER ACTION REQUIRED: Run this SQL in Supabase SQL Editor before form will work**
+
+**`stock-register.html` modifications:**
+- Added "👥 AM Feedback" button (green gradient) to MGR dashboard header
+- Added full `#amHubPanel` overlay with 4 tabs: Requests / Feedback / Issues / TODO
+- Requests tab: loads `am_weekly_requests` from Supabase, filter by AM/store/status/period
+- Export functions: CSV (UTF-8 BOM for Arabic in Excel) + PDF (print window with summary + detail tables)
+- Feedback tab: log sessions (Call/WhatsApp/Meeting/Visit), view history
+- Issues tab: raise/track issues per store with severity, status progression
+- TODO tab: daily AM checklist (Stock/Sales/Testers check-ins)
+
+#### Bugs fixed:
+- `setCat()` broke after bilingual pills — fixed by using `p.dataset.cat === cat` instead of `p.textContent === cat`
+- Review screen qty: changed `<span class="qval">` to `<input class="qinp">`, updated `adjQty()` to use `el.value`
+- Git push permission error (loose object) — fixed with `git gc --prune=now`, then push succeeded
+
+#### Still pending (user action):
+- Run `am_requests_setup.sql` in Supabase SQL Editor: https://supabase.com/dashboard/project/ncszurcrkngjcjqsowln/sql
 
 ---
 

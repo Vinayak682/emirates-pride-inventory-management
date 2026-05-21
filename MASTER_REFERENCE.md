@@ -65,6 +65,22 @@ All HTML files in this folder are automatically served from that URL. Pushing ch
 | `fg-to-tester-form.html` | Alternate variant of FG-to-tester form | Open |
 | `stock-register-REGION-SPECIFIC.html` | Region-specific variant of the stock register | Store PINs |
 
+### New Files — AM Hub (May 2026)
+
+| File | What It Does | Who Can Access |
+|------|-------------|---------------|
+| `am-stock-request.html` | **AM Weekly Stock Request Form** — Mobile-first form for Area Managers to submit weekly stock requests. 4-screen flow: Identity → Browse → Review → Confirm. 163 perfume SKUs + 40 testers + supplies (bags/tissue). Bilingual EN+AR. Saves to Supabase `am_weekly_requests`. | AMs (no login required) |
+| `fg-tester-manager.html` | **FG Tester Manager Portal** — Standalone password-gated portal for reviewing and actioning FG-to-Tester conversion requests. Password: `Vinayak@1998`. Shows pending/approved/rejected with PDF download. | Password: `Vinayak@1998` |
+
+### Setup SQL Files
+
+| File | Purpose | Status |
+|------|---------|--------|
+| `am_requests_setup.sql` | Creates `am_weekly_requests`, `am_feedback_sessions`, `am_issues_log` tables with RLS policies | ✅ Run in Supabase 20 May 2026 |
+| `pin_table_setup.sql` | Creates `store_pins` table + `verify_store_pin()` RPC — secure PIN storage | ✅ Run in Supabase |
+| `security_setup.sql` | Creates `store_sessions`, `audit_log`, `security_config` tables + triggers | ✅ Run in Supabase |
+| `pin_inserts.sql` | Populates all 35 store PINs — LOCAL ONLY, gitignored, never commit | ✅ Run locally in Supabase |
+
 ### Data Files (in this folder — for Supabase upload)
 
 | File | What It Contains | Status |
@@ -120,6 +136,102 @@ max_monthly    NUMERIC    -- maximum monthly stock target
 ```
 -- Audit trail of all data upload events
 -- Schema: TBD (check Supabase dashboard)
+```
+
+#### `store_pins` (security — PIN storage)
+```
+store_code   TEXT PRIMARY KEY
+pin_hash     TEXT   -- bcrypt hash of the PIN (never stored plain)
+```
+RLS: **anon has zero policies** — completely invisible to client. Only accessible via `verify_store_pin()` RPC (SECURITY DEFINER). This means even if someone has the anon key, they cannot read PINs.
+
+#### `store_sessions` (security — login tracking)
+```
+id           BIGSERIAL PRIMARY KEY
+store_code   TEXT
+login_type   TEXT    -- 'store','manager','warehouse','am'
+user_agent   TEXT
+login_at     TIMESTAMPTZ
+last_active  TIMESTAMPTZ
+is_active    BOOLEAN
+```
+
+#### `audit_log` (security — every event)
+```
+id           BIGSERIAL PRIMARY KEY
+session_id   BIGINT
+store_code   TEXT
+operation    TEXT    -- 'LOGIN','LOGOUT','WRITE','FAILED_LOGIN'
+record_key   TEXT    -- e.g. "DX001/2026-05-19/AP001/sold"
+old_value    TEXT
+new_value    TEXT
+is_flagged   BOOLEAN
+flag_reason  TEXT
+```
+Server-side Postgres trigger `trg_audit_stock_cells` on `stock_cells` — tamper-proof backup.
+
+#### `security_config` (tunable thresholds)
+```
+max_writes_per_min    INT   DEFAULT 25
+large_qty             INT   DEFAULT 100
+off_hours_start       TIME  DEFAULT '22:00'
+off_hours_end         TIME  DEFAULT '06:00'
+failed_login_threshold INT  DEFAULT 3
+```
+
+#### `am_weekly_requests` (AM Hub — stock request submissions)
+```
+id              BIGSERIAL PRIMARY KEY
+request_ref     TEXT NOT NULL UNIQUE   -- AMR-YYYYMMDD-XXXX
+am_code         TEXT                   -- AM_HESSIN / AM_IMAD / AM_ELMAT
+am_name         TEXT
+store_code      TEXT
+store_name      TEXT
+week_starting   DATE
+items           JSONB    -- [{code, en, ar, qty, cat}]
+notes           TEXT
+status          TEXT     -- pending/approved/dispatched/cancelled
+submitted_at    TIMESTAMPTZ
+approved_by     TEXT
+approved_at     TIMESTAMPTZ
+dispatched_by   TEXT
+dispatched_at   TIMESTAMPTZ
+dispatch_notes  TEXT
+```
+
+#### `am_feedback_sessions` (AM Hub — call/meeting log)
+```
+id              BIGSERIAL PRIMARY KEY
+am_code         TEXT
+am_name         TEXT
+session_date    DATE
+session_type    TEXT    -- Call/WhatsApp/Meeting/Visit
+duration_mins   INTEGER
+stock_notes     TEXT
+tester_notes    TEXT
+sales_notes     TEXT
+general_notes   TEXT
+action_items    TEXT
+logged_by       TEXT
+created_at      TIMESTAMPTZ
+```
+
+#### `am_issues_log` (AM Hub — issue tracker)
+```
+id              BIGSERIAL PRIMARY KEY
+am_code         TEXT
+am_name         TEXT
+store_code      TEXT
+store_name      TEXT
+category        TEXT    -- Stock/Sales/Testers/Packaging/Staff/Other
+title           TEXT
+details         TEXT
+severity        TEXT    -- Low/Medium/High/Critical
+status          TEXT    -- Open/In Progress/Resolved/Closed
+raised_date     DATE
+resolved_date   DATE
+resolution      TEXT
+logged_by       TEXT
 ```
 
 ### Tables Planned (not yet created)
@@ -287,6 +399,44 @@ max_monthly    NUMERIC    -- maximum monthly stock target
 - Production delivery schedule integration (parses weekly production Excel)
 - Fixed product name lookup using `item_spec_name` + transfers as fallback
 
+### Phase 8 — Security Layer (May 2026)
+- **PIN migration**: All PINs removed from source code → stored in Supabase `store_pins` with RLS; only `verify_store_pin()` RPC returns boolean
+- **Audit log**: Every LOGIN, LOGOUT, WRITE, FAILED_LOGIN event written to `audit_log`; server-side trigger on `stock_cells` for tamper-proof backup
+- **Session tracking**: `store_sessions` table tracks who is logged in, when, from what device
+- **Anomaly detection**: Off-hours writes (22:00–06:00 UAE), large qty (>100), rapid writes (>25/min), 3 failed logins all trigger alerts
+- **Email alerts**: Supabase Edge Function `security-alert` sends branded HTML email via Resend (3,000/month free)
+- **Security dashboard**: "🔐 Security Log" button in MGR view — active sessions panel + flagged event table with filters
+- **GitHub hardened**: Repo made private; `.gitignore` blocks `pin_inserts.sql`, `*.env`, `secrets.json`
+
+### Phase 9 — Brand Redesign (May 2026)
+- **Light theme**: Full audit and replacement of all dark backgrounds (`#1A1A1A`, `#141414`, `rgba(0,0,0,0.88)`) → brand light palette
+- **Color system**: `--gold-bar: #6B5B35` (olive-gold) replaces navy `#1a2744` for all dark headers via CSS alias
+- **Font stack upgraded**: Cormorant Garamond (luxury serif for KPIs/headings) + Montserrat (body/buttons) + IBM Plex Mono (codes/numbers)
+- **Login screen**: Executive dark glass-morphism login retained as deliberate cinematic entry point (only dark screen in app)
+- **Training Guide**: Upgraded to v9 — new sections for Sales Associate, Area Manager, Security; updated hero stats; animated
+
+### Phase 10 — FG Tester Manager Portal (May 2026)
+- **`fg-tester-manager.html`**: Standalone password-gated portal (`Vinayak@1998`) to review and action FG-to-Tester requests
+- Stats strip: live pending/approved/rejected counts
+- Filter chips: All / Pending / Approved / Rejected
+- Approve → prompts approver name → updates Supabase → downloads PDF
+- Reject → prompts approver name + reason → updates Supabase → downloads PDF
+- Re-download PDF on already-processed cards
+- Area Manager login access control: AM logins see filtered dashboard (their stores only); Demand Planning button hidden from AM
+
+### Phase 11 — AM Hub (May 2026)
+- **`am-stock-request.html`**: Mobile-first 4-screen stock request form for Area Managers
+  - 163 perfume SKUs + 40 testers + 4 supplies (bags S/M/L, tissue paper)
+  - Bilingual EN+AR product names and category pills
+  - Inline qty controls in browse screen (no scroll jump via in-place DOM update)
+  - Generates `AMR-YYYYMMDD-XXXX` ref, saves to Supabase, downloads bilingual PDF
+- **AM Hub panel** in `stock-register.html` (MGR access): 4 tabs
+  - **Weekly Requests**: table of all submissions from `am_weekly_requests`; Approve / Dispatch / PDF per row; CSV + PDF export
+  - **AM Sessions**: log calls/WhatsApp/meetings per AM; timeline view per AM from Supabase
+  - **Issue Log**: raise and track issues per store (Stock/Sales/Testers/Packaging/Staff/Other); severity + status workflow
+  - **Daily TODO**: AM checklist (morning stock updates, AM check-ins, tester reviews, weekly tasks); localStorage per day
+- AM assignments: Hessin = 17 stores (Abu Dhabi + Al Ain), Imad = 4 stores (Dubai), Elmatloub = 6 stores (Northern + Eastern)
+
 ---
 
 ## 8. PENDING BUILD QUEUE
@@ -298,6 +448,10 @@ max_monthly    NUMERIC    -- maximum monthly stock target
 | 🟡 MED | Provide ASL UAE Excel sales files for upload | Waiting for Amal |
 | 🟡 MED | Create `sop_inventory_uploads` table in Supabase (migrate from localStorage) | Not started |
 | 🟡 MED | Add kiosk store list — apply 50% capacity multiplier to benchmarks | Waiting for Amal |
+| 🟡 MED | Rotate all store PINs before go-live (old PINs were briefly in GitHub README) | Critical security action |
+| 🟢 LOW | S&OP Inventory tab — Excel upload + deviation report | Spec ready in CLAUDE.md |
+| 🟢 LOW | S&OP Testers tab — 5 KPIs from Supabase | Spec ready in CLAUDE.md |
+| 🟢 LOW | Store replenishment schedule — confirm delivery days with warehouse | Template in INTELLIGENCE_SKILL.md |
 | 🟢 LOW | Monthly Excel auto-upload script with new month detection | Not started |
 | 🟢 LOW | KSA stores and sales data | Deferred — no data |
 | 🟢 LOW | Sales targets input form | Future feature |
@@ -308,16 +462,32 @@ max_monthly    NUMERIC    -- maximum monthly stock target
 
 ## 9. DESIGN SYSTEM
 
-All files use these consistent styles:
+All files use these consistent styles (updated to light brand theme May 2026):
 
 ```css
---gold:   #C9A84C  (gradient end: #E8C97A)
---navy:   #1a2744
---dark:   #0f1824
---darker: #0D0D0D
+--gold:       #C9A84C   /* Primary brand gold */
+--gold-dark:  #7A6525   /* Headings, store codes, active text */
+--gold-bar:   #6B5B35   /* Olive-gold — ALL dark headers, topbars, category separators */
+--gold-pale:  #F5F2EC   /* Card tint — website product card background */
+--border:     #E5E0D8   /* Standard separator */
+--ink:        #1A1A1A   /* Primary text */
+--ink-mid:    #4A4540   /* Secondary text */
+--ink-light:  #8A8278   /* Muted — column headers, sub-labels */
+--page:       #FFFFFF   /* Page background — pure white */
+--navy:       #6B5B35   /* ALIAS for gold-bar — all legacy navy refs auto-remap */
 ```
 
-**Login pattern**: Full-screen overlay `position:fixed; inset:0` — password checked in JS constant, no server auth, no session storage.
+**Typography system**:
+```
+Headings / KPI numbers / Store names → Cormorant Garamond 500–600 (luxury serif)
+Body / Labels / Buttons / Tabs       → Montserrat 400–700 (geometric sans)
+SKU codes / Numbers / Timestamps     → IBM Plex Mono 400–600 (technical)
+Arabic text                          → IBM Plex Sans Arabic 400–600
+```
+
+**Login screen**: Intentional exception — executive dark glass-morphism theme. All other screens are light brand palette.
+
+**Login pattern**: Full-screen overlay `position:fixed; inset:0` — password checked via Supabase `verify_store_pin()` RPC (async), no server auth beyond that, no session storage.
 
 **Libraries loaded via CDN** (no npm, no build step — all plain HTML/JS):
 - **SheetJS (xlsx)** — Excel file parsing for inventory uploads

@@ -29,6 +29,16 @@ The Intelligence Tab is the **operational brain** of the Emirates Pride S&OP Por
 | `benchmarks_cache` | sku_code, store_code, weekly_avg, min_monthly, max_monthly | Pre-calculated velocity benchmarks |
 | `sales_targets` | sku_code, store_code, month_year, target_qty | Achievement gap analysis |
 
+### AM Hub Tables (created May 2026)
+
+| Table | Key Columns | Used For |
+|-------|-------------|---------|
+| `am_weekly_requests` | request_ref, am_code, store_code, week_starting, items (JSONB), status | Weekly stock requests from Area Managers — demand signal per store per week |
+| `am_feedback_sessions` | am_code, session_date, session_type, stock_notes, tester_notes, action_items | Call/WhatsApp/meeting logs for each AM |
+| `am_issues_log` | am_code, store_code, category, severity, status, title, details | Issue tracker per store — Stock/Sales/Testers/Packaging/Staff/Other |
+
+> **Intelligence value of `am_weekly_requests`**: The `items` JSONB column (array of `{code, qty}` per SKU) gives store-level demand signals that can supplement velocity calculations — especially for new SKUs or spike periods. Future enhancement: cross-reference AM requests vs benchmark replenishment quantities to flag discrepancies.
+
 ### Required New Tables (not yet created)
 
 #### `store_replenishment_schedule`
@@ -407,5 +417,18 @@ CREATE POLICY "allow_all_alerts" ON store_alerts FOR ALL USING (true) WITH CHECK
 
 ---
 
+---
+
+## 11. STANDING UPDATE INSTRUCTION
+
+**At the end of EVERY conversation, Claude must update:**
+1. `CLAUDE.md` → PROJECT DETAILS section (session log, files changed, commit hash)
+2. `INTELLIGENCE_SKILL.md` → new tables, new views, build status changes
+3. `MASTER_REFERENCE.md` → new files, schema changes, phase completions, pending queue updates
+
+This applies to all sessions without exception.
+
+---
+
 *This skill file documents the complete S&OP Intelligence system for Emirates Pride Perfumes.*
-*Update after each build session. Cross-reference: MASTER_REFERENCE.md, CLAUDE.md*
+*Last updated: 20 May 2026 | Cross-reference: MASTER_REFERENCE.md, CLAUDE.md*
