@@ -340,145 +340,140 @@ td.td-soh{background:rgba(107,91,53,.06);font-weight:600}
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════════
-let uploadedImages  = [];   // [{file, dataUrl, mimeType}]
-let extractedItems  = [];   // rows in the table
-let currentMode     = 'quick';
-let apiKey          = '';
+// ─── STATE ───────────────────────────────────────────────────────
+var uploadedImages = [];
+var extractedItems = [];
+var currentMode    = 'quick';
+var apiKey         = '';
 
-// ── Backend constants (direct browser → API, no Python server needed) ──
-const GEMINI_BASE   = 'https://generativelanguage.googleapis.com/v1beta/models';
-const SUPABASE_URL  = 'https://ncszurcrkngjcjqsowln.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
-const COLUMN_MAP    = { opening:'op', wh_received:'wh', store_in:'si', sold:'so', transfer_out:'tr', writeoff:'wo', balance:'bl' };
+// ─── CONSTANTS ───────────────────────────────────────────────────
+var GEMINI_BASE  = 'https://generativelanguage.googleapis.com/v1beta/models';
+var SUPABASE_URL = 'https://ncszurcrkngjcjqsowln.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
+var COLUMN_MAP   = { opening:'op', wh_received:'wh', store_in:'si', sold:'so', transfer_out:'tr', writeoff:'wo', balance:'bl' };
 
-// ── Column definitions ────────────────────────────────────────
-const FULL_COLS = [
-  { key:'opening',      label:'Opening',   short:'Op' },
-  { key:'wh_received',  label:'Warehouse', short:'WH' },
-  { key:'store_in',     label:'Store-In',  short:'In' },
-  { key:'sold',         label:'Sold',      short:'Sold' },
-  { key:'transfer_out', label:'Transfer',  short:'Tr' },
-  { key:'writeoff',     label:'Write-Off', short:'WO' },
+var FULL_COLS = [
+  { key:'opening',      label:'Opening',   short:'Op',   isSOH:false },
+  { key:'wh_received',  label:'Warehouse', short:'WH',   isSOH:false },
+  { key:'store_in',     label:'Store-In',  short:'In',   isSOH:false },
+  { key:'sold',         label:'Sold',      short:'Sold', isSOH:false },
+  { key:'transfer_out', label:'Transfer',  short:'Tr',   isSOH:false },
+  { key:'writeoff',     label:'Write-Off', short:'WO',   isSOH:false }
 ];
-const SOH_COL = { key:'balance', label:'SOH / Balance', short:'SOH', isSOH:true };
+var SOH_COL = { key:'balance', label:'SOH / Balance', short:'SOH', isSOH:true };
 
-// ── Stores — grouped by region (mirrors stock-register.html exactly) ──
-const STORE_GROUPS = [
+// ─── STORES ──────────────────────────────────────────────────────
+var STORE_GROUPS = [
   { region:'Abu Dhabi', stores:[
-    {code:'A0001', name:'Bawabat al Sharq Mall Shop'},
-    {code:'A0002', name:'Bawabat al Sharq Mall Kiosk'},
-    {code:'BAS001',name:'Bawabat al Sharq Kiosk ASL'},
-    {code:'A0003', name:'Dalma Mall Shop'},
-    {code:'A0004', name:'Dalma Mall Kiosk'},
-    {code:'A0005', name:'Deerfield Mall Kiosk'},
-    {code:'A0009', name:'Yas Mall Podium'},
-    {code:'A0007', name:'Yas Mall Kiosk 2'},
-    {code:'A0008', name:'Yas Mall Kiosk 3'},
-    {code:'YMK001',name:'Yas Mall ASL'},
+    {code:'A0001',  name:'Bawabat al Sharq Mall Shop'},
+    {code:'A0002',  name:'Bawabat al Sharq Mall Kiosk'},
+    {code:'BAS001', name:'Bawabat al Sharq Kiosk ASL'},
+    {code:'A0003',  name:'Dalma Mall Shop'},
+    {code:'A0004',  name:'Dalma Mall Kiosk'},
+    {code:'A0005',  name:'Deerfield Mall Kiosk'},
+    {code:'A0009',  name:'Yas Mall Podium'},
+    {code:'A0007',  name:'Yas Mall Kiosk 2'},
+    {code:'A0008',  name:'Yas Mall Kiosk 3'},
+    {code:'YMK001', name:'Yas Mall ASL'}
   ]},
   { region:'Al Ain', stores:[
-    {code:'AL001', name:'Al Ain Mall Kiosk'},
-    {code:'AL002', name:'Bawadi Mall Kiosk 1'},
-    {code:'AL003', name:'Bawadi Mall Kiosk 2'},
-    {code:'BAW001',name:'Bawadi Mall ASL'},
-    {code:'AL004', name:'Jimi Mall Shop'},
-    {code:'AL006', name:'Makhani Zakhar Mall Shop'},
-    {code:'MAK001',name:'Makhani Zakhar Mall ASL'},
+    {code:'AL001',  name:'Al Ain Mall Kiosk'},
+    {code:'AL002',  name:'Bawadi Mall Kiosk 1'},
+    {code:'AL003',  name:'Bawadi Mall Kiosk 2'},
+    {code:'BAW001', name:'Bawadi Mall ASL'},
+    {code:'AL004',  name:'Jimi Mall Shop'},
+    {code:'AL006',  name:'Makhani Zakhar Mall Shop'},
+    {code:'MAK001', name:'Makhani Zakhar Mall ASL'}
   ]},
   { region:'Dubai', stores:[
     {code:'DX001', name:'Dubai Mall Shop'},
     {code:'DX004', name:'Mall of the Emirates Kiosk'},
     {code:'DX005', name:'Mirdif City Centre Kiosk'},
-    {code:'DX006', name:'Dubai Hills Mall Shop'},
+    {code:'DX006', name:'Dubai Hills Mall Shop'}
   ]},
   { region:'Ras Al Khaimah', stores:[
     {code:'RK001', name:'Manar Mall Shop'},
-    {code:'RK002', name:'Manar Mall Kiosk'},
+    {code:'RK002', name:'Manar Mall Kiosk'}
   ]},
   { region:'Fujairah', stores:[
-    {code:'FJ001', name:'Fujairah City Centre Kiosk'},
-    {code:'FJ001A',name:'Fujairah City Centre ASL'},
+    {code:'FJ001',  name:'Fujairah City Centre Kiosk'},
+    {code:'FJ001A', name:'Fujairah City Centre ASL'}
   ]},
   { region:'Sharjah', stores:[
-    {code:'SH001', name:'Zahia City Centre Kiosk'},
+    {code:'SH001', name:'Zahia City Centre Kiosk'}
   ]},
   { region:'Ajman', stores:[
-    {code:'AJ001', name:'Ajman City Centre Kiosk'},
+    {code:'AJ001', name:'Ajman City Centre Kiosk'}
   ]},
   { region:'Oman', stores:[
-    {code:'OM001',    name:'Mall of Oman'},
-    {code:'OM002',    name:'Muscat City Centre'},
-    {code:'OM_ASL001',name:'ASL Mall of Oman'},
-  ]},
+    {code:'OM001',     name:'Mall of Oman'},
+    {code:'OM002',     name:'Muscat City Centre'},
+    {code:'OM_ASL001', name:'ASL Mall of Oman'}
+  ]}
 ];
-// Flat list for lookups
-const STORES = STORE_GROUPS.flatMap(g => g.stores);
 
-// ═══════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-  // Load API key
+// Flat list (no flatMap — compatible with older browsers)
+var STORES = [];
+for (var _gi = 0; _gi < STORE_GROUPS.length; _gi++) {
+  var _grp = STORE_GROUPS[_gi].stores;
+  for (var _si = 0; _si < _grp.length; _si++) { STORES.push(_grp[_si]); }
+}
+
+// ─── INIT ────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
   apiKey = localStorage.getItem('ep_ocr_api_key') || '';
   updateApiStatus();
 
-  // Populate stores grouped by region
-  const sel = document.getElementById('storeSelect');
-  STORE_GROUPS.forEach(g => {
-    const grp = document.createElement('optgroup');
-    grp.label = `── ${g.region} ──`;
-    g.stores.forEach(s => {
-      const opt = document.createElement('option');
+  var sel = document.getElementById('storeSelect');
+  for (var gi = 0; gi < STORE_GROUPS.length; gi++) {
+    var g = STORE_GROUPS[gi];
+    var grp = document.createElement('optgroup');
+    grp.label = '── ' + g.region + ' ──';
+    for (var si = 0; si < g.stores.length; si++) {
+      var s = g.stores[si];
+      var opt = document.createElement('option');
       opt.value = s.code;
-      opt.textContent = `${s.code} — ${s.name}`;
+      opt.textContent = s.code + ' — ' + s.name;
       grp.appendChild(opt);
-    });
+    }
     sel.appendChild(grp);
-  });
+  }
 
-  // Default date = today
   document.getElementById('dateInput').value = todays();
 
-  // Drag & drop
-  const dz = document.getElementById('dropZone');
-  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-  dz.addEventListener('drop', e => {
+  var dz = document.getElementById('dropZone');
+  dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', function() { dz.classList.remove('drag-over'); });
+  dz.addEventListener('drop', function(e) {
     e.preventDefault(); dz.classList.remove('drag-over');
-    handleFiles([...e.dataTransfer.files]);
+    handleFiles(Array.prototype.slice.call(e.dataTransfer.files));
   });
-  document.getElementById('fileInput').addEventListener('change', e => {
-    handleFiles([...e.target.files]);
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    handleFiles(Array.prototype.slice.call(e.target.files));
     e.target.value = '';
   });
 
-  // Build table header
   buildTableHead();
 });
 
-// ═══════════════════════════════════════════════════════════════
-// SETTINGS
-// ═══════════════════════════════════════════════════════════════
+// ─── SETTINGS ────────────────────────────────────────────────────
 function openSettings() {
   document.getElementById('apiKeyInput').value = apiKey;
   document.getElementById('settingsModal').classList.add('open');
 }
 function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
 function saveSettings() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (!key || !key.startsWith('AIza')) { showToast('Enter a valid Gemini API key (starts with AIzaSy)', 'error'); return; }
+  var key = document.getElementById('apiKeyInput').value.trim();
+  if (!key || key.indexOf('AIza') !== 0) { showToast('Enter a valid Gemini API key (starts with AIzaSy)', 'error'); return; }
   apiKey = key;
   localStorage.setItem('ep_ocr_api_key', key);
   updateApiStatus();
   closeSettings();
-  showToast('Gemini API key saved ✓', 'success');
+  showToast('Gemini API key saved', 'success');
 }
 function updateApiStatus() {
-  const el = document.getElementById('apiStatus');
-  if (apiKey && apiKey.startsWith('AIza')) {
+  var el = document.getElementById('apiStatus');
+  if (apiKey && apiKey.indexOf('AIza') === 0) {
     el.textContent = '✓ GEMINI READY (FREE)';
     el.className = 'api-status ok';
   } else {
@@ -487,39 +482,41 @@ function updateApiStatus() {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// IMAGE UPLOAD
-// ═══════════════════════════════════════════════════════════════
+// ─── IMAGE UPLOAD ─────────────────────────────────────────────────
 function handleFiles(files) {
-  const imageFiles = files.filter(f => f.type.startsWith('image/'));
+  var imageFiles = [];
+  for (var i = 0; i < files.length; i++) {
+    if (files[i].type && files[i].type.indexOf('image/') === 0) imageFiles.push(files[i]);
+  }
   if (!imageFiles.length) { showToast('Please upload image files only', 'error'); return; }
-
-  imageFiles.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      uploadedImages.push({ file, dataUrl: e.target.result, mimeType: file.type || 'image/jpeg' });
-      renderThumbs();
-    };
-    reader.readAsDataURL(file);
-  });
+  for (var j = 0; j < imageFiles.length; j++) {
+    (function(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        uploadedImages.push({ file: file, dataUrl: e.target.result, mimeType: file.type || 'image/jpeg' });
+        renderThumbs();
+      };
+      reader.readAsDataURL(file);
+    })(imageFiles[j]);
+  }
 }
 
 function renderThumbs() {
-  const row = document.getElementById('thumbRow');
+  var row = document.getElementById('thumbRow');
   row.innerHTML = '';
-  uploadedImages.forEach((img, i) => {
-    const div = document.createElement('div');
-    div.className = 'thumb';
-    div.innerHTML = `
-      <img src="${img.dataUrl}" alt="Page ${i+1}">
-      <div class="thumb-num">${i+1}</div>
-      <button class="thumb-del" onclick="removeThumb(${i})">×</button>`;
-    row.appendChild(div);
-  });
-  // Update drop zone text
-  const dz = document.getElementById('dropZone');
+  for (var i = 0; i < uploadedImages.length; i++) {
+    (function(img, idx) {
+      var div = document.createElement('div');
+      div.className = 'thumb';
+      div.innerHTML = '<img src="' + img.dataUrl + '" alt="Page ' + (idx+1) + '">' +
+        '<div class="thumb-num">' + (idx+1) + '</div>' +
+        '<button class="thumb-del" onclick="removeThumb(' + idx + ')">×</button>';
+      row.appendChild(div);
+    })(uploadedImages[i], i);
+  }
+  var dz = document.getElementById('dropZone');
   if (uploadedImages.length > 0) {
-    dz.querySelector('.drop-title').textContent = `${uploadedImages.length} image${uploadedImages.length>1?'s':''} ready`;
+    dz.querySelector('.drop-title').textContent = uploadedImages.length + ' image' + (uploadedImages.length > 1 ? 's' : '') + ' ready';
     dz.querySelector('.drop-sub').textContent = 'Click to add more';
   }
 }
@@ -529,97 +526,109 @@ function removeThumb(i) {
   renderThumbs();
 }
 
-// ═══════════════════════════════════════════════════════════════
-// EXTRACT — calls Gemini API directly from the browser
-// ═══════════════════════════════════════════════════════════════
+// ─── OCR PROMPT ──────────────────────────────────────────────────
 function buildGeminiPrompt(storeCode, date, nImages) {
-  return `You are reading Emirates Pride Perfumes stock register sheets.
-Store: ${storeCode}  |  Date: ${date}  |  Images: ${nImages}
-
-EXTRACT every product row. The sheet has these columns (order may vary):
-SKU Code | Product Name | Opening Stock | WH Received | Store-In | Sold | Transfer Out | Write-Off | SOH / Balance (Closing Stock)
-
-MOST IMPORTANT: The SOH / Balance (closing stock) column is the LAST column — this is the physical stock on hand. Read it with maximum accuracy.
-
-VALID SKU CODE PREFIXES: AP, AO, AH, AG, AC, B, C, D, O, SP, BX, C, AL
-(Examples: AP001, AO005, B00001, C00002, D00001, O00001, SP001)
-
-ACCURACY RULES:
-- Numbers: distinguish 1 vs 7 | 0 vs 6 | 3 vs 8 | 5 vs 6 (stock qty is usually 0–200)
-- Empty cell = 0. Truly illegible cell = null.
-- SOH should equal: Opening + WH_received + Store_in - Sold - Transfer_out - Write_off
-- If sheet SOH doesn't match formula, set balance_check to "MISMATCH"
-- Do NOT skip any row. Include every product visible.
-- If multiple images are pages of the same sheet, combine all rows (no duplicates).
-- Short codes on sheet (e.g. "C002") expand to full code (C00002).
-
-RETURN ONLY THIS JSON — no markdown, no extra text:
-{"sheet_date":"${date}","store_hint":"any store name visible","overall_confidence":0.95,"items":[{"sku_code":"AP001","product_name":"Product Name","opening":10,"wh_received":5,"store_in":0,"sold":3,"transfer_out":0,"writeoff":0,"balance":12,"balance_check":"OK","row_confidence":0.97}],"total_skus":1,"issues":[]}`;
+  return 'You are reading Emirates Pride Perfumes stock register sheets.\n' +
+    'Store: ' + storeCode + '  |  Date: ' + date + '  |  Images: ' + nImages + '\n\n' +
+    'EXTRACT every product row. The sheet has these columns (order may vary):\n' +
+    'SKU Code | Product Name | Opening Stock | WH Received | Store-In | Sold | Transfer Out | Write-Off | SOH / Balance (Closing Stock)\n\n' +
+    'MOST IMPORTANT: The SOH / Balance (closing stock) column is the LAST column — this is the physical stock on hand. Read it with maximum accuracy.\n\n' +
+    'VALID SKU CODE PREFIXES: AP, AO, AH, AG, AC, B, C, D, O, SP, BX, AL\n' +
+    '(Examples: AP001, AO005, B00001, C00002, D00001, O00001, SP001)\n\n' +
+    'ACCURACY RULES:\n' +
+    '- Numbers: distinguish 1 vs 7 | 0 vs 6 | 3 vs 8 | 5 vs 6 (stock qty is usually 0-200)\n' +
+    '- Empty cell = 0. Truly illegible cell = null.\n' +
+    '- SOH should equal: Opening + WH_received + Store_in - Sold - Transfer_out - Write_off\n' +
+    '- If sheet SOH does not match formula, set balance_check to "MISMATCH"\n' +
+    '- Do NOT skip any row. Include every product visible.\n' +
+    '- If multiple images are pages of the same sheet, combine all rows (no duplicates).\n' +
+    '- Short codes on sheet (e.g. "C002") expand to full code (C00002).\n\n' +
+    'RETURN ONLY THIS JSON - no markdown, no extra text:\n' +
+    '{"sheet_date":"' + date + '","store_hint":"any store name visible","overall_confidence":0.95,"items":[{"sku_code":"AP001","product_name":"Product Name","opening":10,"wh_received":5,"store_in":0,"sold":3,"transfer_out":0,"writeoff":0,"balance":12,"balance_check":"OK","row_confidence":0.97}],"total_skus":1,"issues":[]}';
 }
 
-async function callGemini(model, parts) {
-  const url = `${GEMINI_BASE}/${model}:generateContent?key=${apiKey}`;
-  const body = { contents:[{ parts }], generationConfig:{ temperature:0.1 } };
-  var controller = new AbortController();
-  var timeoutId = setTimeout(function(){ controller.abort(); }, 120000);
-  var resp;
-  try {
-    resp = await fetch(url, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(body), signal: controller.signal
+// ─── GEMINI API CALL ─────────────────────────────────────────────
+function callGemini(model, parts) {
+  var url = GEMINI_BASE + '/' + model + ':generateContent?key=' + apiKey;
+  var body = JSON.stringify({ contents: [{ parts: parts }], generationConfig: { temperature: 0.1 } });
+  var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  var timeoutId = null;
+  if (controller) {
+    timeoutId = setTimeout(function() { controller.abort(); }, 120000);
+  }
+  var fetchOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body };
+  if (controller) fetchOpts.signal = controller.signal;
+
+  return fetch(url, fetchOpts).then(function(resp) {
+    if (timeoutId) clearTimeout(timeoutId);
+    return resp.json().then(function(json) {
+      if (!resp.ok) {
+        var msg = (json && json.error && json.error.message) ? json.error.message : ('Gemini error ' + resp.status);
+        if (resp.status === 429) throw new Error('Rate limit hit — wait 60 seconds and try again.');
+        if (resp.status === 400) throw new Error('Invalid API key. Check Settings.');
+        throw new Error(msg);
+      }
+      var text = '';
+      try { text = json.candidates[0].content.parts[0].text; } catch(e) {}
+      return text;
     });
-  } finally {
-    clearTimeout(timeoutId);
-  }
-  const json = await resp.json();
-  if (!resp.ok) {
-    var errMsg = (json && json.error && json.error.message) ? json.error.message : ('Gemini error ' + resp.status);
-    if (resp.status === 429) throw new Error('Rate limit hit — wait 60 seconds and try again.');
-    if (resp.status === 400) throw new Error('Invalid API key. Check Settings.');
-    throw new Error(errMsg);
-  }
-  var text = '';
-  try { text = json.candidates[0].content.parts[0].text; } catch(e) {}
-  return text;
+  }).catch(function(err) {
+    if (timeoutId) clearTimeout(timeoutId);
+    throw err;
+  });
 }
 
 function parseGeminiJSON(text) {
+  if (!text) return null;
   try {
-    const m = text.match(/\{[\s\S]*\}/);
+    var m = text.match(/\{[\s\S]*\}/);
     return m ? JSON.parse(m[0]) : null;
   } catch(e) { return null; }
 }
 
 function validateItems(items) {
-  return (items || []).map(item => {
-    ['opening','wh_received','store_in','sold','transfer_out','writeoff','balance'].forEach(k => {
-      const v = item[k];
-      item[k] = (v === null || v === undefined || v === '') ? null : Math.max(0, parseInt(v, 10) || 0);
-    });
-    const nums = ['opening','wh_received','store_in','sold','transfer_out','writeoff'].map(k => item[k]);
-    if (nums.every(v => v !== null)) {
-      const expected = nums[0]+nums[1]+nums[2]-nums[3]-nums[4]-nums[5];
-      const bal = item.balance;
+  if (!items) return [];
+  var cols = ['opening','wh_received','store_in','sold','transfer_out','writeoff','balance'];
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    for (var c = 0; c < cols.length; c++) {
+      var k = cols[c];
+      var v = item[k];
+      if (v === null || v === undefined || v === '') { item[k] = null; }
+      else { item[k] = Math.max(0, parseInt(v, 10) || 0); }
+    }
+    var numCols = ['opening','wh_received','store_in','sold','transfer_out','writeoff'];
+    var allSet = true;
+    var nums = [];
+    for (var nc = 0; nc < numCols.length; nc++) {
+      if (item[numCols[nc]] === null) { allSet = false; break; }
+      nums.push(item[numCols[nc]]);
+    }
+    if (allSet) {
+      var expected = nums[0] + nums[1] + nums[2] - nums[3] - nums[4] - nums[5];
+      var bal = item.balance;
       if (bal !== null && Math.abs(expected - bal) > 1) {
-        item.balance_check = 'MISMATCH'; item.balance_expected = expected;
+        item.balance_check = 'MISMATCH';
+        item.balance_expected = expected;
         item.row_confidence = Math.min(item.row_confidence || 0.9, 0.55);
       } else {
         item.balance_check = 'OK';
         if (item.balance === null) item.balance = expected;
       }
     }
-    return item;
-  });
+  }
+  return items;
 }
 
-async function runExtract() {
-  if (!apiKey || !apiKey.startsWith('AIza')) {
+// ─── EXTRACT ─────────────────────────────────────────────────────
+function runExtract() {
+  if (!apiKey || apiKey.indexOf('AIza') !== 0) {
     openSettings();
-    showToast('Please enter your Gemini API key first (Settings button)', 'error');
+    showToast('Please enter your Gemini API key first', 'error');
     return;
   }
-  const store = document.getElementById('storeSelect').value;
-  const date  = document.getElementById('dateInput').value;
+  var store = document.getElementById('storeSelect').value;
+  var date  = document.getElementById('dateInput').value;
   if (!store) { showToast('Please select a store first', 'error'); return; }
   if (!date)  { showToast('Please select a date', 'error'); return; }
   if (!uploadedImages.length) { showToast('Please upload at least one stock sheet photo', 'error'); return; }
@@ -627,55 +636,64 @@ async function runExtract() {
   setExtracting(true);
   setProgress(10, 'Preparing images...');
 
-  try {
-    // Build Gemini parts: all images + prompt text
-    const parts = uploadedImages.map(img => ({
-      inlineData: { mimeType: img.mimeType || 'image/jpeg', data: img.dataUrl.split(',')[1] }
-    }));
-    parts.push({ text: buildGeminiPrompt(store, date, uploadedImages.length) });
+  var parts = [];
+  for (var i = 0; i < uploadedImages.length; i++) {
+    var img = uploadedImages[i];
+    var b64 = img.dataUrl.split(',')[1];
+    parts.push({ inlineData: { mimeType: img.mimeType || 'image/jpeg', data: b64 } });
+  }
+  parts.push({ text: buildGeminiPrompt(store, date, uploadedImages.length) });
 
-    setProgress(30, `Sending ${uploadedImages.length} image${uploadedImages.length>1?'s':''} to Gemini...`);
+  var imgCount = uploadedImages.length;
+  setProgress(30, 'Sending ' + imgCount + ' image' + (imgCount > 1 ? 's' : '') + ' to Gemini...');
 
-    // Pass 1: Flash Lite (fast)
-    let raw = await callGemini('gemini-2.5-flash-lite', parts);
-    let parsed = parseGeminiJSON(raw);
+  callGemini('gemini-2.5-flash-lite', parts).then(function(raw) {
+    var parsed = parseGeminiJSON(raw);
+    var conf = parsed ? (parsed.overall_confidence || 0) : 0;
 
-    // Pass 2: Flash if confidence low
-    if (!parsed || (parsed.overall_confidence || 0) < 0.80) {
-      const reason = !parsed ? 'parse failed' : `${Math.round((parsed.overall_confidence||0)*100)}% conf`;
-      setProgress(60, `Upgrading to Gemini 2.5 Flash for better accuracy (${reason})...`);
-      raw = await callGemini('gemini-2.5-flash', parts);
-      parsed = parseGeminiJSON(raw);
+    if (!parsed || conf < 0.80) {
+      var reason = !parsed ? 'parse failed' : (Math.round(conf * 100) + '% conf');
+      setProgress(60, 'Upgrading to Gemini Flash for better accuracy (' + reason + ')...');
+      return callGemini('gemini-2.5-flash', parts);
     }
-
-    if (!parsed) throw new Error('Could not read the stock sheet. Try a clearer, brighter photo.');
+    return raw;
+  }).then(function(raw2) {
+    var parsed2 = parseGeminiJSON(raw2);
+    if (!parsed2) throw new Error('Could not read the stock sheet. Try a clearer, brighter photo.');
 
     setProgress(85, 'Validating data...');
-    const items = validateItems(parsed.items || []);
-    const lowConf = items.filter(i => (i.row_confidence||1) < 0.80 || i.balance_check === 'MISMATCH').length;
+    var items = validateItems(parsed2.items || []);
+    var lowConf = 0;
+    for (var i = 0; i < items.length; i++) {
+      if ((items[i].row_confidence || 1) < 0.80 || items[i].balance_check === 'MISMATCH') lowConf++;
+    }
 
     setProgress(100, 'Complete!');
-    await new Promise(r => setTimeout(r, 300));
+    setTimeout(function() {
+      renderResults({
+        items: items,
+        overall_confidence: parsed2.overall_confidence || 0.9,
+        total_skus: items.length,
+        issues: parsed2.issues || [],
+        low_confidence_count: lowConf
+      });
+      showToast(items.length + ' SKUs extracted — please review before saving', 'success');
+      setExtracting(false);
+    }, 300);
 
-    renderResults({ items, overall_confidence: parsed.overall_confidence || 0.9,
-      total_skus: items.length, issues: parsed.issues || [],
-      low_confidence_count: lowConf });
-    showToast(`✓ ${items.length} SKUs extracted — please review before saving`, 'success');
-
-  } catch (err) {
+  }).catch(function(err) {
     setProgress(0, '');
     document.getElementById('progressWrap').style.display = 'none';
-    showToast(err.message, 'error');
+    showToast(err.message || 'OCR failed — check your API key and try again', 'error');
     console.error(err);
-  }
-
-  setExtracting(false);
+    setExtracting(false);
+  });
 }
 
 function setExtracting(on) {
-  const btn = document.getElementById('extractBtn');
+  var btn = document.getElementById('extractBtn');
   btn.disabled = on;
-  document.getElementById('extractBtnIcon').textContent = on ? '⏳' : '🔍';
+  document.getElementById('extractBtnIcon').textContent = on ? '⧗' : '🔍';
   document.getElementById('extractBtnText').textContent = on ? 'EXTRACTING DATA...' : 'EXTRACT STOCK DATA';
   document.getElementById('progressWrap').style.display = on ? 'block' : 'none';
 }
@@ -685,64 +703,59 @@ function setProgress(pct, text) {
   document.getElementById('progressText').textContent = text;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// TABLE
-// ═══════════════════════════════════════════════════════════════
+// ─── TABLE ───────────────────────────────────────────────────────
 function setMode(mode) {
   currentMode = mode;
   document.getElementById('modeQuick').classList.toggle('active', mode === 'quick');
   document.getElementById('modeFull').classList.toggle('active', mode === 'full');
-  const lbl = document.getElementById('saveBtnLabel');
+  var lbl = document.getElementById('saveBtnLabel');
   if (lbl) lbl.textContent = mode === 'quick' ? 'SAVE SOH TO STOCK REGISTER' : 'SAVE ALL COLUMNS TO STOCK REGISTER';
   buildTableHead();
   if (extractedItems.length) renderTableBody();
 }
 
 function buildTableHead() {
-  const tr = document.getElementById('tableHead');
-  const cols = currentMode === 'quick'
-    ? [SOH_COL]
-    : [...FULL_COLS, SOH_COL];
-
-  tr.innerHTML = `
-    <th style="width:32px">#</th>
-    <th style="width:16px"></th>
-    <th style="text-align:left;min-width:80px">SKU CODE</th>
-    <th style="text-align:left;min-width:160px">PRODUCT NAME</th>
-    ${cols.map(c => `<th class="${c.isSOH?'soh-col':''}" style="min-width:60px">${c.short}</th>`).join('')}
-    <th style="width:32px"></th>`;
+  var tr = document.getElementById('tableHead');
+  var cols = currentMode === 'quick' ? [SOH_COL] : FULL_COLS.concat([SOH_COL]);
+  var html = '<th style="width:32px">#</th>' +
+    '<th style="width:16px"></th>' +
+    '<th style="text-align:left;min-width:80px">SKU CODE</th>' +
+    '<th style="text-align:left;min-width:160px">PRODUCT NAME</th>';
+  for (var i = 0; i < cols.length; i++) {
+    var c = cols[i];
+    html += '<th class="' + (c.isSOH ? 'soh-col' : '') + '" style="min-width:60px">' + c.short + '</th>';
+  }
+  html += '<th style="width:32px"></th>';
+  tr.innerHTML = html;
 }
 
 function renderResults(result) {
   extractedItems = result.items || [];
 
-  // KPIs
   document.getElementById('kpiSkuNum').textContent = result.total_skus || extractedItems.length;
-  const conf = result.overall_confidence || 0;
-  const badge = document.getElementById('confBadge');
-  badge.textContent = `${Math.round(conf * 100)}% confidence`;
-  badge.className = 'conf-badge ' + (conf >= .90 ? 'high' : conf >= .75 ? 'med' : 'low');
+  var conf = result.overall_confidence || 0;
+  var badge = document.getElementById('confBadge');
+  badge.textContent = Math.round(conf * 100) + '% confidence';
+  badge.className = 'conf-badge ' + (conf >= 0.90 ? 'high' : conf >= 0.75 ? 'med' : 'low');
 
-  // Issues
   if (result.issues && result.issues.length > 0) {
     document.getElementById('issuesBanner').style.display = 'block';
     document.getElementById('issuesList').textContent = result.issues.join(' · ');
   }
 
-  // Review warnings
-  const reviewRows = extractedItems.filter(i =>
-    (i.row_confidence || 1) < .80 || i.balance_check === 'MISMATCH'
-  ).length;
+  var reviewRows = 0;
+  for (var i = 0; i < extractedItems.length; i++) {
+    if ((extractedItems[i].row_confidence || 1) < 0.80 || extractedItems[i].balance_check === 'MISMATCH') reviewRows++;
+  }
   if (reviewRows > 0) {
     document.getElementById('reviewWarning').style.display = 'inline';
     document.getElementById('reviewWarnCount').textContent = reviewRows;
     document.getElementById('reviewCount').style.display = 'inline';
-    document.getElementById('reviewCount').textContent = `⚠ ${reviewRows} rows to review`;
+    document.getElementById('reviewCount').textContent = '⚠ ' + reviewRows + ' rows to review';
   }
 
   buildTableHead();
   renderTableBody();
-
   document.getElementById('resultsCard').style.display = 'block';
   document.getElementById('saveBar').style.display = 'flex';
   updateSaveSummary();
@@ -750,100 +763,94 @@ function renderResults(result) {
 }
 
 function renderTableBody() {
-  const tbody = document.getElementById('tableBody');
+  var tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
-  extractedItems.forEach((item, idx) => renderRow(item, idx, tbody));
+  for (var i = 0; i < extractedItems.length; i++) {
+    renderRow(extractedItems[i], i, tbody);
+  }
 }
 
 function renderRow(item, idx, tbody) {
-  const cols = currentMode === 'quick' ? [SOH_COL] : [...FULL_COLS, SOH_COL];
-  const conf = item.row_confidence || 1;
-  const isMismatch = item.balance_check === 'MISMATCH';
-  const rowClass = (conf < 0.65 || isMismatch) ? 'row-red' : (conf < 0.82) ? 'row-amber' : '';
-  const dotClass = (conf < 0.65 || isMismatch) ? 'low' : conf < 0.82 ? 'med' : 'high';
+  var cols = currentMode === 'quick' ? [SOH_COL] : FULL_COLS.concat([SOH_COL]);
+  var conf = item.row_confidence || 1;
+  var isMismatch = item.balance_check === 'MISMATCH';
+  var rowClass = (conf < 0.65 || isMismatch) ? 'row-red' : (conf < 0.82 ? 'row-amber' : '');
+  var dotClass = (conf < 0.65 || isMismatch) ? 'low' : (conf < 0.82 ? 'med' : 'high');
+  var confPct  = Math.round(conf * 100);
 
-  const tr = document.createElement('tr');
+  var tr = document.createElement('tr');
   tr.className = rowClass;
-  tr.dataset.idx = idx;
-  tr.dataset.sku = (item.sku_code || '').toUpperCase();
-  tr.dataset.name = (item.product_name || '').toLowerCase();
+  tr.setAttribute('data-idx', idx);
+  tr.setAttribute('data-sku',  (item.sku_code || '').toUpperCase());
+  tr.setAttribute('data-name', (item.product_name || '').toLowerCase());
 
-  const mismatchNote = isMismatch
-    ? `<span class="issue-note">⚠ Expected ${item.balance_expected ?? '?'}</span>` : '';
+  var mismatchNote = isMismatch
+    ? '<span class="issue-note">⚠ Expected ' + (item.balance_expected !== undefined ? item.balance_expected : '?') + '</span>'
+    : '';
+  var balanceClass = isMismatch ? ' mismatch' : '';
 
-  const balanceClass = isMismatch ? 'mismatch' : '';
+  var html = '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--ink-light)">' + (idx + 1) + '</td>' +
+    '<td><span class="conf-dot ' + dotClass + '" title="' + confPct + '% confidence"></span></td>' +
+    '<td class="td-name"><input class="cell-input sku-input" value="' + esc(item.sku_code || '') + '" ' +
+      'onchange="updateItem(' + idx + ',\'sku_code\',this.value.toUpperCase())" placeholder="AP001" style="text-transform:uppercase"></td>' +
+    '<td class="td-name"><input class="cell-input name-input" value="' + esc(item.product_name || '') + '" ' +
+      'onchange="updateItem(' + idx + ',\'product_name\',this.value)" placeholder="Product name"></td>';
 
-  tr.innerHTML = `
-    <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-light)">${idx+1}</td>
-    <td><span class="conf-dot ${dotClass}" title="${Math.round(conf*100)}% confidence"></span></td>
-    <td class="td-name">
-      <input class="cell-input sku-input" value="${esc(item.sku_code||'')}"
-        onchange="updateItem(${idx},'sku_code',this.value.toUpperCase())"
-        placeholder="AP001" style="text-transform:uppercase">
-    </td>
-    <td class="td-name">
-      <input class="cell-input name-input" value="${esc(item.product_name||'')}"
-        onchange="updateItem(${idx},'product_name',this.value)" placeholder="Product name">
-    </td>
-    ${cols.map(c => {
-      const val = item[c.key];
-      const cls = `cell-input${c.isSOH?' soh-input '+balanceClass:''}`;
-      const onch = c.isSOH
-        ? `onchange="updateSOH(${idx},this.value)"`
-        : `onchange="updateItem(${idx},'${c.key}',this.value);recalcSOH(${idx})"`;
-      return `<td class="${c.isSOH?'td-soh':''}">
-        <input class="${cls}" type="number" min="0" value="${val??''}" ${onch}
-          placeholder="0" style="min-width:50px">
-        ${c.isSOH ? mismatchNote : ''}
-      </td>`;
-    }).join('')}
-    <td><button class="row-del-btn" onclick="deleteRow(${idx})" title="Remove row">✕</button></td>`;
-
+  for (var i = 0; i < cols.length; i++) {
+    var c = cols[i];
+    var val = item[c.key];
+    var valStr = (val !== null && val !== undefined) ? val : '';
+    if (c.isSOH) {
+      html += '<td class="td-soh"><input class="cell-input soh-input' + balanceClass + '" type="number" min="0" value="' + valStr + '" ' +
+        'onchange="updateSOH(' + idx + ',this.value)" placeholder="0" style="min-width:50px">' + mismatchNote + '</td>';
+    } else {
+      html += '<td><input class="cell-input" type="number" min="0" value="' + valStr + '" ' +
+        'onchange="updateItem(' + idx + ',\'' + c.key + '\',this.value);recalcSOH(' + idx + ')" placeholder="0" style="min-width:50px"></td>';
+    }
+  }
+  html += '<td><button class="row-del-btn" onclick="deleteRow(' + idx + ')" title="Remove row">✕</button></td>';
+  tr.innerHTML = html;
   tbody.appendChild(tr);
 }
 
 function updateItem(idx, key, value) {
-  extractedItems[idx][key] = key === 'sku_code' ? value.toUpperCase() : value;
+  extractedItems[idx][key] = (key === 'sku_code') ? value.toUpperCase() : value;
   updateSaveSummary();
 }
 
 function updateSOH(idx, value) {
-  extractedItems[idx].balance = value === '' ? null : parseInt(value, 10) || 0;
+  extractedItems[idx].balance = (value === '') ? null : (parseInt(value, 10) || 0);
   extractedItems[idx].balance_check = 'MANUAL';
 }
 
 function recalcSOH(idx) {
-  const item = extractedItems[idx];
-  const op = n(item.opening), wh = n(item.wh_received), si = n(item.store_in);
-  const so = n(item.sold),    tr = n(item.transfer_out), wo = n(item.writeoff);
-  if ([op,wh,si,so,tr,wo].every(v => v !== null)) {
-    const calc = op + wh + si - so - tr - wo;
+  var item = extractedItems[idx];
+  var op = n(item.opening), wh = n(item.wh_received), si = n(item.store_in);
+  var so = n(item.sold), tr2 = n(item.transfer_out), wo = n(item.writeoff);
+  if (op !== null && wh !== null && si !== null && so !== null && tr2 !== null && wo !== null) {
+    var calc = op + wh + si - so - tr2 - wo;
     item.balance = calc;
     item.balance_check = 'OK';
-  }
-  // Update SOH cell in that row
-  const tbody = document.getElementById('tableBody');
-  const tr = tbody.querySelector(`tr[data-idx="${idx}"]`);
-  if (tr) {
-    const sohInput = tr.querySelector('.soh-input');
-    if (sohInput) {
-      sohInput.value = item.balance ?? '';
-      sohInput.classList.remove('mismatch');
+    var tbody = document.getElementById('tableBody');
+    var row = tbody.querySelector('[data-idx="' + idx + '"]');
+    if (row) {
+      var sohInput = row.querySelector('.soh-input');
+      if (sohInput) { sohInput.value = calc; sohInput.classList.remove('mismatch'); }
     }
   }
   updateSaveSummary();
 }
 
 function recalcAll() {
-  extractedItems.forEach((_, i) => recalcSOH(i));
+  for (var i = 0; i < extractedItems.length; i++) recalcSOH(i);
   showToast('SOH recalculated for all rows', 'success');
 }
 
 function addRow() {
   extractedItems.push({ sku_code:'', product_name:'', opening:0, wh_received:0,
     store_in:0, sold:0, transfer_out:0, writeoff:0, balance:0, row_confidence:1.0 });
-  const tbody = document.getElementById('tableBody');
-  renderRow(extractedItems[extractedItems.length-1], extractedItems.length-1, tbody);
+  var tbody = document.getElementById('tableBody');
+  renderRow(extractedItems[extractedItems.length - 1], extractedItems.length - 1, tbody);
   updateSaveSummary();
 }
 
@@ -862,149 +869,172 @@ function clearResults() {
 }
 
 function filterTable() {
-  const q = document.getElementById('tableSearch').value.toLowerCase();
-  document.querySelectorAll('#tableBody tr').forEach(tr => {
-    const sku  = (tr.dataset.sku  || '').toLowerCase();
-    const name = (tr.dataset.name || '').toLowerCase();
-    tr.style.display = (!q || sku.includes(q) || name.includes(q)) ? '' : 'none';
-  });
+  var q = document.getElementById('tableSearch').value.toLowerCase();
+  var rows = document.getElementById('tableBody').querySelectorAll('tr');
+  for (var i = 0; i < rows.length; i++) {
+    var sku  = (rows[i].getAttribute('data-sku')  || '').toLowerCase();
+    var name = (rows[i].getAttribute('data-name') || '').toLowerCase();
+    rows[i].style.display = (!q || sku.indexOf(q) >= 0 || name.indexOf(q) >= 0) ? '' : 'none';
+  }
 }
 
 function updateSaveSummary() {
-  const validRows = extractedItems.filter(i => i.sku_code).length;
-  const sohTotal  = extractedItems.reduce((a, i) => a + (n(i.balance) || 0), 0);
-  document.getElementById('saveSummary').textContent =
-    `${validRows} SKUs ready · Total SOH: ${sohTotal.toLocaleString()} units`;
+  var validRows = 0, sohTotal = 0;
+  for (var i = 0; i < extractedItems.length; i++) {
+    if (extractedItems[i].sku_code) validRows++;
+    sohTotal += (n(extractedItems[i].balance) || 0);
+  }
+  document.getElementById('saveSummary').textContent = validRows + ' SKUs ready · Total SOH: ' + sohTotal.toLocaleString() + ' units';
 }
 
-// ═══════════════════════════════════════════════════════════════
-// SAVE TO STOCK REGISTER — direct to Supabase stock_cells table
-// ═══════════════════════════════════════════════════════════════
-async function saveToRegister() {
-  const store = document.getElementById('storeSelect').value;
-  const date  = document.getElementById('dateInput').value;
-  const valid = extractedItems.filter(i => i.sku_code && i.sku_code.trim());
+// ─── SAVE TO SUPABASE ─────────────────────────────────────────────
+function saveToRegister() {
+  var store = document.getElementById('storeSelect').value;
+  var date  = document.getElementById('dateInput').value;
+  var valid = [];
+  for (var i = 0; i < extractedItems.length; i++) {
+    if (extractedItems[i].sku_code && extractedItems[i].sku_code.trim()) valid.push(extractedItems[i]);
+  }
 
   if (!store || !date) { showToast('Select store and date first', 'error'); return; }
   if (!valid.length)   { showToast('No valid rows to save', 'error'); return; }
 
-  const btn = document.getElementById('saveBtn');
+  var btn = document.getElementById('saveBtn');
   btn.disabled = true;
-  btn.innerHTML = '<span>⏳</span> SAVING...';
+  btn.innerHTML = '<span>⧗</span> SAVING...';
 
-  const resultEl = document.getElementById('saveResult');
+  var resultEl = document.getElementById('saveResult');
   resultEl.style.display = 'none';
 
-  const storeName = (STORES.find(s => s.code === store) || {}).name || store;
-  const modeLabel = currentMode === 'quick' ? 'SOH only' : 'all columns';
+  var storeName = store;
+  for (var si = 0; si < STORES.length; si++) { if (STORES[si].code === store) { storeName = STORES[si].name; break; } }
+  var modeLabel = currentMode === 'quick' ? 'SOH only' : 'all columns';
+  var saveCols  = currentMode === 'quick' ? { balance:'bl' } : COLUMN_MAP;
 
-  // Quick = only balance (bl). Full = all 7 columns.
-  const saveCols = currentMode === 'quick'
-    ? { balance:'bl' }
-    : COLUMN_MAP;
-
-  // Build flat cell rows for Supabase upsert
-  const cells = [];
-  valid.forEach(item => {
-    const sku = item.sku_code.trim().toUpperCase();
-    Object.entries(saveCols).forEach(([field, col]) => {
-      const val = item[field];
+  var cells = [];
+  for (var vi = 0; vi < valid.length; vi++) {
+    var item = valid[vi];
+    var sku  = item.sku_code.trim().toUpperCase();
+    var keys = Object.keys(saveCols);
+    for (var ki = 0; ki < keys.length; ki++) {
+      var field = keys[ki];
+      var col   = saveCols[field];
+      var val   = item[field];
       if (val !== null && val !== undefined && val !== '') {
-        const num = parseInt(val, 10);
-        if (!isNaN(num)) cells.push({ store_code:store, date, sku_code:sku, col, val:num });
+        var num = parseInt(val, 10);
+        if (!isNaN(num)) cells.push({ store_code: store, date: date, sku_code: sku, col: col, val: num });
       }
-    });
-  });
+    }
+  }
 
-  if (!cells.length) { showToast('No valid data to save', 'error'); btn.disabled=false; btn.innerHTML='<span>💾</span> <span id="saveBtnLabel">SAVE SOH TO STOCK REGISTER</span>'; return; }
+  if (!cells.length) {
+    showToast('No valid data to save', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<span>💾</span> <span id="saveBtnLabel">SAVE SOH TO STOCK REGISTER</span>';
+    return;
+  }
 
-  try {
-    // Supabase upsert in batches of 500
-    let saved = 0;
-    for (let i = 0; i < cells.length; i += 500) {
-      const batch = cells.slice(i, i+500);
-      const resp = await fetch(`${SUPABASE_URL}/rest/v1/stock_cells`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates,return=minimal'
-        },
-        body: JSON.stringify(batch)
-      });
+  var saved = 0;
+  var batches = [];
+  for (var bi = 0; bi < cells.length; bi += 500) batches.push(cells.slice(bi, bi + 500));
+
+  function sendBatch(batchIdx) {
+    if (batchIdx >= batches.length) {
+      resultEl.textContent = '✓ ' + valid.length + ' SKUs (' + saved + ' values) saved → ' + storeName + ' · ' + date;
+      resultEl.className = 'save-result ok';
+      resultEl.style.display = 'inline';
+      showToast(valid.length + ' SKUs saved to Stock Register (' + modeLabel + ')', 'success');
+      btn.innerHTML = '<span>✓</span> SAVED TO REGISTER';
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.innerHTML = '<span>💾</span> <span id="saveBtnLabel">' + (currentMode === 'quick' ? 'SAVE SOH TO STOCK REGISTER' : 'SAVE ALL COLUMNS TO STOCK REGISTER') + '</span>';
+      }, 4000);
+      return;
+    }
+    var batch = batches[batchIdx];
+    fetch(SUPABASE_URL + '/rest/v1/stock_cells', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify(batch)
+    }).then(function(resp) {
       if (!resp.ok) {
-        const err = await resp.text();
-        throw new Error(`Database error: ${err}`);
+        return resp.text().then(function(txt) { throw new Error('Database error: ' + txt); });
       }
       saved += batch.length;
-    }
-
-    resultEl.textContent = `✓ ${valid.length} SKUs (${saved} values) saved → ${storeName} · ${date}`;
-    resultEl.className = 'save-result ok';
-    resultEl.style.display = 'inline';
-    showToast(`✓ ${valid.length} SKUs saved to Stock Register (${modeLabel})`, 'success');
-    btn.innerHTML = '<span>✓</span> SAVED TO REGISTER';
-    setTimeout(() => {
+      sendBatch(batchIdx + 1);
+    }).catch(function(err) {
+      resultEl.textContent = 'Error: ' + err.message;
+      resultEl.className = 'save-result err';
+      resultEl.style.display = 'inline';
+      showToast(err.message, 'error');
       btn.disabled = false;
-      btn.innerHTML = `<span>💾</span> <span id="saveBtnLabel">${currentMode==='quick'?'SAVE SOH TO STOCK REGISTER':'SAVE ALL COLUMNS TO STOCK REGISTER'}</span>`;
-    }, 4000);
-
-  } catch (err) {
-    resultEl.textContent = `Error: ${err.message}`;
-    resultEl.className = 'save-result err';
-    resultEl.style.display = 'inline';
-    showToast(err.message, 'error');
-    btn.disabled = false;
-    btn.innerHTML = `<span>💾</span> <span id="saveBtnLabel">${currentMode==='quick'?'SAVE SOH TO STOCK REGISTER':'SAVE ALL COLUMNS TO STOCK REGISTER'}</span>`;
+      btn.innerHTML = '<span>💾</span> <span id="saveBtnLabel">' + (currentMode === 'quick' ? 'SAVE SOH TO STOCK REGISTER' : 'SAVE ALL COLUMNS TO STOCK REGISTER') + '</span>';
+    });
   }
+  sendBatch(0);
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CSV DOWNLOAD
-// ═══════════════════════════════════════════════════════════════
+// ─── CSV DOWNLOAD ─────────────────────────────────────────────────
 function downloadCSV() {
-  const store = document.getElementById('storeSelect').value;
-  const date  = document.getElementById('dateInput').value;
-
-  const headers = ['Store','Date','SKU Code','Product Name','Opening','WH Received',
-                   'Store-In','Sold','Transfer Out','Write-Off','SOH (Balance)'];
-  const rows = extractedItems
-    .filter(i => i.sku_code)
-    .map(i => [
-      store, date,
-      i.sku_code, i.product_name||'',
-      i.opening??'', i.wh_received??'', i.store_in??'',
-      i.sold??'', i.transfer_out??'', i.writeoff??'', i.balance??''
+  var store = document.getElementById('storeSelect').value;
+  var date  = document.getElementById('dateInput').value;
+  var headers = ['Store','Date','SKU Code','Product Name','Opening','WH Received','Store-In','Sold','Transfer Out','Write-Off','SOH (Balance)'];
+  var rows = [];
+  for (var i = 0; i < extractedItems.length; i++) {
+    var it = extractedItems[i];
+    if (!it.sku_code) continue;
+    rows.push([
+      store, date, it.sku_code, it.product_name || '',
+      it.opening !== null && it.opening !== undefined ? it.opening : '',
+      it.wh_received !== null && it.wh_received !== undefined ? it.wh_received : '',
+      it.store_in !== null && it.store_in !== undefined ? it.store_in : '',
+      it.sold !== null && it.sold !== undefined ? it.sold : '',
+      it.transfer_out !== null && it.transfer_out !== undefined ? it.transfer_out : '',
+      it.writeoff !== null && it.writeoff !== undefined ? it.writeoff : '',
+      it.balance !== null && it.balance !== undefined ? it.balance : ''
     ]);
-
-  const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url;
-  a.download = `EP_Stock_${store}_${date}.csv`;
-  a.click();
+  }
+  var csv = '';
+  var all = [headers].concat(rows);
+  for (var r = 0; r < all.length; r++) {
+    var line = [];
+    for (var c = 0; c < all[r].length; c++) line.push('"' + all[r][c] + '"');
+    csv += line.join(',') + '\n';
+  }
+  var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url; a.download = 'EP_Stock_' + store + '_' + date + '.csv'; a.click();
   URL.revokeObjectURL(url);
   showToast('CSV downloaded', 'success');
 }
 
-// ═══════════════════════════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════════════════════════
+// ─── UTILS ───────────────────────────────────────────────────────
 function todays() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  var d = new Date();
+  var mm = String(d.getMonth() + 1).padStart(2, '0');
+  var dd = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + mm + '-' + dd;
 }
-function n(v) { if (v===null||v===undefined||v==='') return null; const x=parseInt(v,10); return isNaN(x)?null:x; }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
+function n(v) {
+  if (v === null || v === undefined || v === '') return null;
+  var x = parseInt(v, 10);
+  return isNaN(x) ? null : x;
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = `toast ${type} show`;
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.className = 'toast', 3500);
+  t.className = 'toast' + (type ? ' ' + type : '') + ' show';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function() { t.className = 'toast'; }, 3500);
 }
 </script>
 </body>
