@@ -671,6 +671,40 @@ function validateItems(items) {
   return items;
 }
 
+// ─── IMAGE COMPRESSION ────────────────────────────────────────────
+// Resize to max 1500px on longest side, JPEG 82% — cuts 5MB → ~150KB
+function compressOneImage(dataUrl, callback) {
+  var img = new Image();
+  img.onload = function() {
+    var MAX = 1500;
+    var w = img.width, h = img.height;
+    if (w > MAX || h > MAX) {
+      if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+      else        { w = Math.round(w * MAX / h); h = MAX; }
+    }
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.82));
+  };
+  img.onerror = function() { callback(dataUrl); }; // fallback: use original
+  img.src = dataUrl;
+}
+
+function compressAllImages(images, onDone) {
+  var results = new Array(images.length);
+  var remaining = images.length;
+  for (var i = 0; i < images.length; i++) {
+    (function(img, idx) {
+      compressOneImage(img.dataUrl, function(compressed) {
+        results[idx] = { dataUrl: compressed, mimeType: 'image/jpeg' };
+        remaining--;
+        if (remaining === 0) onDone(results);
+      });
+    })(images[i], i);
+  }
+}
+
 // ─── EXTRACT ─────────────────────────────────────────────────────
 function runExtract() {
   if (!apiKey || apiKey.indexOf('AIza') !== 0) {
@@ -685,60 +719,56 @@ function runExtract() {
   if (!uploadedImages.length) { showToast('Please upload at least one stock sheet photo', 'error'); return; }
 
   setExtracting(true);
-  setProgress(10, 'Preparing images...');
+  setProgress(15, 'Compressing images...');
 
-  var parts = [];
-  for (var i = 0; i < uploadedImages.length; i++) {
-    var img = uploadedImages[i];
-    var b64 = img.dataUrl.split(',')[1];
-    parts.push({ inlineData: { mimeType: img.mimeType || 'image/jpeg', data: b64 } });
-  }
-  parts.push({ text: buildGeminiPrompt(store, date, uploadedImages.length) });
+  // Step 1: compress all images client-side before sending
+  compressAllImages(uploadedImages, function(compressed) {
 
-  var imgCount = uploadedImages.length;
-  setProgress(30, 'Sending ' + imgCount + ' image' + (imgCount > 1 ? 's' : '') + ' to Gemini...');
-
-  callGemini('gemini-2.5-flash-lite', parts).then(function(raw) {
-    var parsed = parseGeminiJSON(raw);
-    var conf = parsed ? (parsed.overall_confidence || 0) : 0;
-
-    if (!parsed || conf < 0.80) {
-      var reason = !parsed ? 'parse failed' : (Math.round(conf * 100) + '% conf');
-      setProgress(60, 'Upgrading to Gemini Flash for better accuracy (' + reason + ')...');
-      return callGemini('gemini-2.5-flash', parts);
+    // Step 2: build Gemini parts
+    var parts = [];
+    for (var i = 0; i < compressed.length; i++) {
+      var b64 = compressed[i].dataUrl.split(',')[1];
+      parts.push({ inlineData: { mimeType: 'image/jpeg', data: b64 } });
     }
-    return raw;
-  }).then(function(raw2) {
-    var parsed2 = parseGeminiJSON(raw2);
-    if (!parsed2) throw new Error('Could not read the stock sheet. Try a clearer, brighter photo.');
+    parts.push({ text: buildGeminiPrompt(store, date, compressed.length) });
 
-    setProgress(85, 'Validating data...');
-    var items = validateItems(parsed2.items || []);
-    var lowConf = 0;
-    for (var i = 0; i < items.length; i++) {
-      if ((items[i].row_confidence || 1) < 0.80 || items[i].balance_check === 'MISMATCH') lowConf++;
-    }
+    var imgCount = compressed.length;
+    setProgress(30, 'Reading ' + imgCount + ' sheet' + (imgCount > 1 ? 's' : '') + ' with Gemini...');
 
-    setProgress(100, 'Complete!');
-    setTimeout(function() {
-      renderResults({
-        items: items,
-        overall_confidence: parsed2.overall_confidence || 0.9,
-        total_skus: items.length,
-        issues: parsed2.issues || [],
-        low_confidence_count: lowConf
-      });
-      showToast(items.length + ' SKUs extracted — please review before saving', 'success');
+    // Step 3: single-pass with gemini-2.5-flash (fast + accurate, no double round-trip)
+    callGemini('gemini-2.5-flash', parts).then(function(raw) {
+      var parsed = parseGeminiJSON(raw);
+      if (!parsed) throw new Error('Could not read the stock sheet. Try a clearer, brighter photo.');
+
+      setProgress(90, 'Validating ' + (parsed.total_skus || '?') + ' SKUs...');
+      var items = validateItems(parsed.items || []);
+      var lowConf = 0;
+      for (var i = 0; i < items.length; i++) {
+        if ((items[i].row_confidence || 1) < 0.80 || items[i].balance_check === 'MISMATCH') lowConf++;
+      }
+
+      setProgress(100, 'Done!');
+      setTimeout(function() {
+        renderResults({
+          items: items,
+          overall_confidence: parsed.overall_confidence || 0.9,
+          total_skus: items.length,
+          issues: parsed.issues || [],
+          low_confidence_count: lowConf
+        });
+        showToast(items.length + ' SKUs extracted — review then save', 'success');
+        setExtracting(false);
+      }, 200);
+
+    }).catch(function(err) {
+      setProgress(0, '');
+      document.getElementById('progressWrap').style.display = 'none';
+      showToast(err.message || 'OCR failed — check your API key and try again', 'error');
+      console.error(err);
       setExtracting(false);
-    }, 300);
+    });
 
-  }).catch(function(err) {
-    setProgress(0, '');
-    document.getElementById('progressWrap').style.display = 'none';
-    showToast(err.message || 'OCR failed — check your API key and try again', 'error');
-    console.error(err);
-    setExtracting(false);
-  });
+  }); // end compressAllImages
 }
 
 function setExtracting(on) {
