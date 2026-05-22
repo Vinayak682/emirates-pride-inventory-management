@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emirates Pride — Stock Sheet Scanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#C9A84C;--gold-bar:#6B5B35;--gold-deep:#5C4A1A;--gold-pale:#F5F2EC;
+  --border:#E5E0D8;--ink:#1A1A1A;--ink-mid:#4A4540;--ink-light:#8A8278;
+  --page:#FFFFFF;--sheet:#FAFAF8;--row-alt:#F7F4EF;
+  --green:#1A6A40;--green-bg:#EAF5EE;--amber:#7A5A00;--amber-bg:#FFF8E7;
+  --red:#B92B27;--red-bg:#FEF0EF;--blue:#1A3A6A;--blue-bg:#EEF3FA;
+  --r:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Montserrat',sans-serif;background:var(--sheet);color:var(--ink);min-height:100vh;font-size:14px}
+
+/* ── Header ── */
+.topbar{background:var(--gold-bar);padding:0 24px;height:56px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(107,91,53,.25)}
+.topbar-logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#fff;letter-spacing:2px;flex:1}
+.topbar-logo span{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:500;opacity:.7;display:block;letter-spacing:3px;margin-top:2px}
+.topbar-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;padding:7px 16px;border-radius:4px;cursor:pointer;transition:background .15s}
+.topbar-btn:hover{background:rgba(255,255,255,.22)}
+.topbar-btn.primary{background:var(--gold);border-color:var(--gold);color:#fff}
+.api-status{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:4px 10px;border-radius:20px;font-weight:500}
+.api-status.ok{background:#EAF5EE;color:#1A6A40}
+.api-status.missing{background:#FEF0EF;color:#B92B27}
+
+/* ── Main layout ── */
+.main{max-width:1400px;margin:0 auto;padding:24px 24px 80px}
+
+/* ── Section card ── */
+.card{background:var(--page);border:1px solid var(--border);border-radius:var(--r);margin-bottom:20px;overflow:hidden}
+.card-header{background:var(--gold-pale);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:10px}
+.card-num{background:var(--gold-bar);color:#fff;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-title{font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gold-bar)}
+.card-body{padding:20px}
+
+/* ── Step 1: Setup ── */
+.setup-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-light)}
+.form-control{border:1.5px solid var(--border);border-radius:6px;padding:10px 14px;font-family:'Montserrat',sans-serif;font-size:14px;color:var(--ink);background:var(--page);transition:border-color .15s;outline:none}
+.form-control:focus{border-color:var(--gold-bar)}
+.form-control option{color:var(--ink)}
+.mode-toggle{display:flex;border:1.5px solid var(--border);border-radius:6px;overflow:hidden}
+.mode-btn{flex:1;padding:10px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;border:none;background:var(--page);color:var(--ink-light);cursor:pointer;transition:all .15s;letter-spacing:.5px}
+.mode-btn.active{background:var(--gold-bar);color:#fff}
+
+/* ── Step 2: Upload ── */
+.drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:48px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--sheet)}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--gold-bar);background:var(--gold-pale)}
+.drop-icon{font-size:48px;margin-bottom:12px;opacity:.4}
+.drop-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink-mid);margin-bottom:6px}
+.drop-sub{font-size:12px;color:var(--ink-light)}
+.drop-hint{font-size:11px;color:var(--ink-light);margin-top:8px;font-family:'IBM Plex Mono',monospace}
+#fileInput{display:none}
+
+.thumb-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
+.thumb{position:relative;width:100px;height:100px;border-radius:6px;overflow:hidden;border:2px solid var(--border);flex-shrink:0}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb-num{position:absolute;top:4px;left:4px;background:var(--gold-bar);color:#fff;font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px}
+.thumb-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+
+/* ── Step 3: Extract ── */
+.extract-btn{width:100%;padding:18px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:var(--gold-bar);color:#fff;border:none;border-radius:var(--r);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px}
+.extract-btn:hover:not(:disabled){background:var(--gold-deep);transform:translateY(-1px);box-shadow:0 4px 16px rgba(107,91,53,.3)}
+.extract-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+.progress-wrap{margin-top:16px;display:none}
+.progress-bar-bg{background:var(--border);border-radius:20px;height:6px;overflow:hidden}
+.progress-bar{background:linear-gradient(90deg,var(--gold-bar),var(--gold));height:100%;border-radius:20px;transition:width .4s ease;width:0%}
+.progress-text{font-size:12px;color:var(--ink-light);margin-top:8px;font-family:'IBM Plex Mono',monospace;text-align:center}
+
+/* ── Step 4: Results ── */
+.results-header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.results-kpi{background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;padding:8px 16px;text-align:center}
+.results-kpi .kpi-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--gold-bar);line-height:1}
+.results-kpi .kpi-lbl{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-light);margin-top:2px}
+.conf-badge{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+.conf-badge.high{background:var(--green-bg);color:var(--green)}
+.conf-badge.med{background:var(--amber-bg);color:var(--amber)}
+.conf-badge.low{background:var(--red-bg);color:var(--red)}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
+table{width:100%;border-collapse:collapse;min-width:900px}
+table thead{background:var(--gold-bar);position:sticky;top:56px}
+table thead th{color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 8px;text-align:center;white-space:nowrap}
+table thead th:nth-child(3){text-align:left}
+table thead th.soh-col{background:var(--gold-deep);font-size:11px;letter-spacing:1.5px}
+table tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+table tbody tr:nth-child(even){background:var(--row-alt)}
+table tbody tr:hover{background:var(--gold-pale)}
+table tbody tr.row-amber{background:#FFF8E7!important}
+table tbody tr.row-amber:hover{background:#FFF3D0!important}
+table tbody tr.row-red{background:#FEF0EF!important}
+table tbody tr.row-red:hover{background:#FDDFDE!important}
+td{padding:6px 6px;text-align:center;vertical-align:middle}
+td.td-name{text-align:left;max-width:180px}
+td.td-soh{background:rgba(107,91,53,.06);font-weight:600}
+
+.cell-input{border:1px solid transparent;border-radius:4px;padding:4px 6px;width:100%;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;text-align:center;background:transparent;color:var(--ink);transition:border-color .15s;min-width:44px}
+.cell-input:focus{border-color:var(--gold-bar);background:#fff;outline:none}
+.cell-input.sku-input{font-size:12px;font-weight:600;color:var(--gold-bar);text-align:left;min-width:70px}
+.cell-input.name-input{text-align:left;font-family:'Montserrat',sans-serif;font-size:12px;min-width:120px}
+.cell-input.soh-input{font-size:14px;font-weight:600;background:rgba(107,91,53,.04)}
+.cell-input.mismatch{border-color:var(--red)!important;background:#FEF0EF}
+
+.conf-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.conf-dot.high{background:var(--green)}
+.conf-dot.med{background:#E5A000}
+.conf-dot.low{background:var(--red);animation:pulse-red 1.2s infinite}
+@keyframes pulse-red{0%,100%{opacity:1}50%{opacity:.4}}
+
+.row-del-btn{background:none;border:none;color:var(--ink-light);cursor:pointer;font-size:16px;padding:4px;border-radius:3px;transition:color .15s}
+.row-del-btn:hover{color:var(--red)}
+
+.issue-note{font-size:10px;color:var(--amber);font-family:'IBM Plex Mono',monospace;display:block;margin-top:2px}
+
+/* ── Table controls ── */
+.table-controls{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.tc-btn{border:1.5px solid var(--border);background:var(--page);color:var(--ink-mid);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;padding:7px 14px;border-radius:6px;cursor:pointer;transition:all .15s}
+.tc-btn:hover{border-color:var(--gold-bar);color:var(--gold-bar)}
+.tc-btn.danger:hover{border-color:var(--red);color:var(--red)}
+.tc-search{border:1.5px solid var(--border);border-radius:6px;padding:7px 12px;font-family:'Montserrat',sans-serif;font-size:13px;outline:none;width:200px}
+.tc-search:focus{border-color:var(--gold-bar)}
+.review-count{background:var(--amber-bg);color:var(--amber);font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;display:none}
+
+/* ── Save bar ── */
+.save-bar{position:fixed;bottom:0;left:0;right:0;background:var(--page);border-top:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:12px;z-index:100;box-shadow:0 -4px 16px rgba(0,0,0,.06)}
+.save-btn{background:var(--gold-bar);color:#fff;border:none;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:12px 28px;border-radius:6px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px}
+.save-btn:hover:not(:disabled){background:var(--gold-deep);transform:translateY(-1px)}
+.save-btn:disabled{opacity:.5;cursor:not-allowed}
+.csv-btn{background:var(--page);color:var(--gold-bar);border:1.5px solid var(--gold-bar);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;padding:10px 20px;border-radius:6px;cursor:pointer;transition:all .15s}
+.csv-btn:hover{background:var(--gold-pale)}
+.save-summary{flex:1;font-size:12px;color:var(--ink-light)}
+.save-result{font-size:13px;font-weight:600;display:none}
+.save-result.ok{color:var(--green)}
+.save-result.err{color:var(--red)}
+
+/* ── Settings modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--page);border-radius:var(--r);padding:28px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;margin-bottom:20px;color:var(--gold-bar)}
+.modal-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-light);margin-bottom:6px;display:block}
+.modal-input{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:13px;outline:none;margin-bottom:16px}
+.modal-input:focus{border-color:var(--gold-bar)}
+.modal-hint{font-size:11px;color:var(--ink-light);margin-bottom:20px;line-height:1.6}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+.modal-save{background:var(--gold-bar);color:#fff;border:none;padding:10px 24px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.modal-cancel{background:var(--page);color:var(--ink-mid);border:1.5px solid var(--border);padding:10px 20px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:13px;cursor:pointer}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--gold-bar);color:#fff;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;padding:12px 24px;border-radius:24px;z-index:300;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:#1A6A40}
+.toast.error{background:#B92B27}
+
+/* ── Empty / placeholder states ── */
+.empty-state{text-align:center;padding:48px 24px;color:var(--ink-light)}
+.empty-state .empty-icon{font-size:48px;opacity:.3;margin-bottom:12px}
+.empty-state p{font-size:14px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .setup-grid{grid-template-columns:1fr 1fr}
+  .topbar-logo span{display:none}
+  .save-bar{flex-wrap:wrap}
+}
+@media(max-width:500px){
+  .setup-grid{grid-template-columns:1fr}
+  .main{padding:16px 12px 80px}
+}
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="topbar-logo">
+    EMIRATES PRIDE
+    <span>STOCK SHEET SCANNER</span>
+  </div>
+  <div id="apiStatus" class="api-status missing">⚠ GEMINI KEY MISSING</div>
+  <button class="topbar-btn" onclick="openSettings()">⚙ Settings</button>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- STEP 1: Store & Date -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-num">1</div>
+      <div class="card-title">Select Store &amp; Date</div>
+    </div>
+    <div class="card-body">
+      <div class="setup-grid">
+        <div class="form-group">
+          <label class="form-label">Store</label>
+          <select id="storeSelect" class="form-control">
+            <option value="">— Select Store —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock Sheet Date</label>
+          <input type="date" id="dateInput" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">View Mode</label>
+          <div class="mode-toggle">
+            <button class="mode-btn active" onclick="setMode('quick')" id="modeQuick">Quick (SOH only)</button>
+            <button class="mode-btn" onclick="setMode('full')" id="modeFull">Full (all columns)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Upload -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-num">2</div>
+      <div class="card-title">Upload Stock Sheet Photos</div>
+      <div style="margin-left:auto;font-size:11px;color:var(--ink-light)">Multiple images OK — all pages of the same sheet</div>
+    </div>
+    <div class="card-body">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="drop-icon">📷</div>
+        <div class="drop-title">Drag &amp; drop stock sheet photos here</div>
+        <div class="drop-sub">or click to browse files</div>
+        <div class="drop-hint">JPG · PNG · HEIC · WebP — up to 10 images per upload</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" multiple>
+      <div class="thumb-row" id="thumbRow"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Extract -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-num">3</div>
+      <div class="card-title">Extract Stock Data with Gemini AI</div>
+    </div>
+    <div class="card-body">
+      <button class="extract-btn" id="extractBtn" onclick="runExtract()">
+        <span id="extractBtnIcon">🔍</span>
+        <span id="extractBtnText">EXTRACT STOCK DATA</span>
+      </button>
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="progress-text" id="progressText">Connecting to Claude AI...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Review & Edit -->
+  <div class="card" id="resultsCard" style="display:none">
+    <div class="card-header">
+      <div class="card-num">4</div>
+      <div class="card-title">Review &amp; Edit Extracted Data</div>
+      <div id="reviewCount" class="review-count" style="margin-left:8px"></div>
+      <div style="margin-left:auto;font-size:11px;color:var(--ink-light);display:flex;gap:16px">
+        <span id="resultKpiSkus" class="results-kpi" style="padding:4px 12px">
+          <div class="kpi-num" id="kpiSkuNum">0</div>
+          <div class="kpi-lbl">SKUs Found</div>
+        </span>
+        <span id="confBadge" class="conf-badge high">—</span>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <!-- Issues banner -->
+      <div id="issuesBanner" style="display:none;background:var(--amber-bg);border:1px solid #E5C000;border-radius:6px;padding:10px 16px;margin-bottom:14px;font-size:12px;color:var(--amber)">
+        <strong>⚠ Notes from OCR:</strong> <span id="issuesList"></span>
+      </div>
+
+      <div class="table-controls">
+        <input type="text" class="tc-search" id="tableSearch" placeholder="🔍 Search SKU or product..." oninput="filterTable()">
+        <button class="tc-btn" onclick="addRow()">＋ Add Row</button>
+        <button class="tc-btn" onclick="recalcAll()">⟳ Recalculate SOH</button>
+        <button class="tc-btn danger" onclick="clearResults()">✕ Clear All</button>
+        <span id="reviewWarning" style="font-size:12px;color:var(--amber);display:none">
+          ⚠ <span id="reviewWarnCount">0</span> rows need review (highlighted amber/red)
+        </span>
+      </div>
+
+      <div class="table-wrap">
+        <table id="resultsTable">
+          <thead>
+            <tr id="tableHead"></tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- Save Bar (fixed bottom) -->
+<div class="save-bar" id="saveBar" style="display:none">
+  <div class="save-summary" id="saveSummary"></div>
+  <span class="save-result" id="saveResult"></span>
+  <button class="csv-btn" onclick="downloadCSV()">⬇ Download CSV</button>
+  <button class="save-btn" id="saveBtn" onclick="saveToRegister()">
+    <span>💾</span> <span id="saveBtnLabel">SAVE SOH TO STOCK REGISTER</span>
+  </button>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-title">Scanner Settings</div>
+    <label class="modal-label">Google Gemini API Key — FREE</label>
+    <input type="password" id="apiKeyInput" class="modal-input" placeholder="AIzaSy...">
+    <div class="modal-hint">
+      <strong style="color:var(--green)">✓ Completely free — no credit card needed.</strong><br><br>
+      <strong>How to get your free key (2 minutes):</strong><br>
+      1. Open <strong>aistudio.google.com/apikey</strong> in a new tab<br>
+      2. Sign in with your Google account<br>
+      3. Click <strong>"Create API Key"</strong><br>
+      4. Copy the key (starts with <code>AIzaSy</code>) and paste it here<br><br>
+      <strong>Free limits:</strong> 1,500 scans per day · 15 per minute — more than enough for all 32 stores.<br>
+      Your key is stored only in this browser. It never leaves your computer.
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeSettings()">Cancel</button>
+      <button class="modal-save" onclick="saveSettings()">Save Key</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let uploadedImages  = [];   // [{file, dataUrl, mimeType}]
+let extractedItems  = [];   // rows in the table
+let currentMode     = 'quick';
+let apiKey          = '';
+
+// ── Backend constants (direct browser → API, no Python server needed) ──
+const GEMINI_BASE   = 'https://generativelanguage.googleapis.com/v1beta/models';
+const SUPABASE_URL  = 'https://ncszurcrkngjcjqsowln.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
+const COLUMN_MAP    = { opening:'op', wh_received:'wh', store_in:'si', sold:'so', transfer_out:'tr', writeoff:'wo', balance:'bl' };
+
+// ── Column definitions ────────────────────────────────────────
+const FULL_COLS = [
+  { key:'opening',      label:'Opening',   short:'Op' },
+  { key:'wh_received',  label:'Warehouse', short:'WH' },
+  { key:'store_in',     label:'Store-In',  short:'In' },
+  { key:'sold',         label:'Sold',      short:'Sold' },
+  { key:'transfer_out', label:'Transfer',  short:'Tr' },
+  { key:'writeoff',     label:'Write-Off', short:'WO' },
+];
+const SOH_COL = { key:'balance', label:'SOH / Balance', short:'SOH', isSOH:true };
+
+// ── Stores — grouped by region (mirrors stock-register.html exactly) ──
+const STORE_GROUPS = [
+  { region:'Abu Dhabi', stores:[
+    {code:'A0001', name:'Bawabat al Sharq Mall Shop'},
+    {code:'A0002', name:'Bawabat al Sharq Mall Kiosk'},
+    {code:'BAS001',name:'Bawabat al Sharq Kiosk ASL'},
+    {code:'A0003', name:'Dalma Mall Shop'},
+    {code:'A0004', name:'Dalma Mall Kiosk'},
+    {code:'A0005', name:'Deerfield Mall Kiosk'},
+    {code:'A0009', name:'Yas Mall Podium'},
+    {code:'A0007', name:'Yas Mall Kiosk 2'},
+    {code:'A0008', name:'Yas Mall Kiosk 3'},
+    {code:'YMK001',name:'Yas Mall ASL'},
+  ]},
+  { region:'Al Ain', stores:[
+    {code:'AL001', name:'Al Ain Mall Kiosk'},
+    {code:'AL002', name:'Bawadi Mall Kiosk 1'},
+    {code:'AL003', name:'Bawadi Mall Kiosk 2'},
+    {code:'BAW001',name:'Bawadi Mall ASL'},
+    {code:'AL004', name:'Jimi Mall Shop'},
+    {code:'AL006', name:'Makhani Zakhar Mall Shop'},
+    {code:'MAK001',name:'Makhani Zakhar Mall ASL'},
+  ]},
+  { region:'Dubai', stores:[
+    {code:'DX001', name:'Dubai Mall Shop'},
+    {code:'DX004', name:'Mall of the Emirates Kiosk'},
+    {code:'DX005', name:'Mirdif City Centre Kiosk'},
+    {code:'DX006', name:'Dubai Hills Mall Shop'},
+  ]},
+  { region:'Ras Al Khaimah', stores:[
+    {code:'RK001', name:'Manar Mall Shop'},
+    {code:'RK002', name:'Manar Mall Kiosk'},
+  ]},
+  { region:'Fujairah', stores:[
+    {code:'FJ001', name:'Fujairah City Centre Kiosk'},
+    {code:'FJ001A',name:'Fujairah City Centre ASL'},
+  ]},
+  { region:'Sharjah', stores:[
+    {code:'SH001', name:'Zahia City Centre Kiosk'},
+  ]},
+  { region:'Ajman', stores:[
+    {code:'AJ001', name:'Ajman City Centre Kiosk'},
+  ]},
+  { region:'Oman', stores:[
+    {code:'OM001',    name:'Mall of Oman'},
+    {code:'OM002',    name:'Muscat City Centre'},
+    {code:'OM_ASL001',name:'ASL Mall of Oman'},
+  ]},
+];
+// Flat list for lookups
+const STORES = STORE_GROUPS.flatMap(g => g.stores);
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Load API key
+  apiKey = localStorage.getItem('ep_ocr_api_key') || '';
+  updateApiStatus();
+
+  // Populate stores grouped by region
+  const sel = document.getElementById('storeSelect');
+  STORE_GROUPS.forEach(g => {
+    const grp = document.createElement('optgroup');
+    grp.label = `── ${g.region} ──`;
+    g.stores.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.code;
+      opt.textContent = `${s.code} — ${s.name}`;
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  });
+
+  // Default date = today
+  document.getElementById('dateInput').value = todays();
+
+  // Drag & drop
+  const dz = document.getElementById('dropZone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag-over');
+    handleFiles([...e.dataTransfer.files]);
+  });
+  document.getElementById('fileInput').addEventListener('change', e => {
+    handleFiles([...e.target.files]);
+    e.target.value = '';
+  });
+
+  // Build table header
+  buildTableHead();
+});
+
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════════
+function openSettings() {
+  document.getElementById('apiKeyInput').value = apiKey;
+  document.getElementById('settingsModal').classList.add('open');
+}
+function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
+function saveSettings() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key || !key.startsWith('AIza')) { showToast('Enter a valid Gemini API key (starts with AIzaSy)', 'error'); return; }
+  apiKey = key;
+  localStorage.setItem('ep_ocr_api_key', key);
+  updateApiStatus();
+  closeSettings();
+  showToast('Gemini API key saved ✓', 'success');
+}
+function updateApiStatus() {
+  const el = document.getElementById('apiStatus');
+  if (apiKey && apiKey.startsWith('AIza')) {
+    el.textContent = '✓ GEMINI READY (FREE)';
+    el.className = 'api-status ok';
+  } else {
+    el.textContent = '⚠ GEMINI KEY MISSING';
+    el.className = 'api-status missing';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// IMAGE UPLOAD
+// ═══════════════════════════════════════════════════════════════
+function handleFiles(files) {
+  const imageFiles = files.filter(f => f.type.startsWith('image/'));
+  if (!imageFiles.length) { showToast('Please upload image files only', 'error'); return; }
+
+  imageFiles.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadedImages.push({ file, dataUrl: e.target.result, mimeType: file.type || 'image/jpeg' });
+      renderThumbs();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderThumbs() {
+  const row = document.getElementById('thumbRow');
+  row.innerHTML = '';
+  uploadedImages.forEach((img, i) => {
+    const div = document.createElement('div');
+    div.className = 'thumb';
+    div.innerHTML = `
+      <img src="${img.dataUrl}" alt="Page ${i+1}">
+      <div class="thumb-num">${i+1}</div>
+      <button class="thumb-del" onclick="removeThumb(${i})">×</button>`;
+    row.appendChild(div);
+  });
+  // Update drop zone text
+  const dz = document.getElementById('dropZone');
+  if (uploadedImages.length > 0) {
+    dz.querySelector('.drop-title').textContent = `${uploadedImages.length} image${uploadedImages.length>1?'s':''} ready`;
+    dz.querySelector('.drop-sub').textContent = 'Click to add more';
+  }
+}
+
+function removeThumb(i) {
+  uploadedImages.splice(i, 1);
+  renderThumbs();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXTRACT — calls Gemini API directly from the browser
+// ═══════════════════════════════════════════════════════════════
+function buildGeminiPrompt(storeCode, date, nImages) {
+  return `You are reading Emirates Pride Perfumes stock register sheets.
+Store: ${storeCode}  |  Date: ${date}  |  Images: ${nImages}
+
+EXTRACT every product row. The sheet has these columns (order may vary):
+SKU Code | Product Name | Opening Stock | WH Received | Store-In | Sold | Transfer Out | Write-Off | SOH / Balance (Closing Stock)
+
+MOST IMPORTANT: The SOH / Balance (closing stock) column is the LAST column — this is the physical stock on hand. Read it with maximum accuracy.
+
+VALID SKU CODE PREFIXES: AP, AO, AH, AG, AC, B, C, D, O, SP, BX, C, AL
+(Examples: AP001, AO005, B00001, C00002, D00001, O00001, SP001)
+
+ACCURACY RULES:
+- Numbers: distinguish 1 vs 7 | 0 vs 6 | 3 vs 8 | 5 vs 6 (stock qty is usually 0–200)
+- Empty cell = 0. Truly illegible cell = null.
+- SOH should equal: Opening + WH_received + Store_in - Sold - Transfer_out - Write_off
+- If sheet SOH doesn't match formula, set balance_check to "MISMATCH"
+- Do NOT skip any row. Include every product visible.
+- If multiple images are pages of the same sheet, combine all rows (no duplicates).
+- Short codes on sheet (e.g. "C002") expand to full code (C00002).
+
+RETURN ONLY THIS JSON — no markdown, no extra text:
+{"sheet_date":"${date}","store_hint":"any store name visible","overall_confidence":0.95,"items":[{"sku_code":"AP001","product_name":"Product Name","opening":10,"wh_received":5,"store_in":0,"sold":3,"transfer_out":0,"writeoff":0,"balance":12,"balance_check":"OK","row_confidence":0.97}],"total_skus":1,"issues":[]}`;
+}
+
+async function callGemini(model, parts) {
+  const url = `${GEMINI_BASE}/${model}:generateContent?key=${apiKey}`;
+  const body = { contents:[{ parts }], generationConfig:{ temperature:0.1 } };
+  const resp = await fetch(url, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body), signal: AbortSignal.timeout(120000)
+  });
+  const json = await resp.json();
+  if (!resp.ok) {
+    const msg = json?.error?.message || `Gemini error ${resp.status}`;
+    if (resp.status === 429) throw new Error('Rate limit hit — wait 60 seconds and try again.');
+    if (resp.status === 400) throw new Error('Invalid API key. Check Settings.');
+    throw new Error(msg);
+  }
+  return json?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+function parseGeminiJSON(text) {
+  try {
+    const m = text.match(/\{[\s\S]*\}/);
+    return m ? JSON.parse(m[0]) : null;
+  } catch { return null; }
+}
+
+function validateItems(items) {
+  return (items || []).map(item => {
+    ['opening','wh_received','store_in','sold','transfer_out','writeoff','balance'].forEach(k => {
+      const v = item[k];
+      item[k] = (v === null || v === undefined || v === '') ? null : Math.max(0, parseInt(v, 10) || 0);
+    });
+    const nums = ['opening','wh_received','store_in','sold','transfer_out','writeoff'].map(k => item[k]);
+    if (nums.every(v => v !== null)) {
+      const expected = nums[0]+nums[1]+nums[2]-nums[3]-nums[4]-nums[5];
+      const bal = item.balance;
+      if (bal !== null && Math.abs(expected - bal) > 1) {
+        item.balance_check = 'MISMATCH'; item.balance_expected = expected;
+        item.row_confidence = Math.min(item.row_confidence || 0.9, 0.55);
+      } else {
+        item.balance_check = 'OK';
+        if (item.balance === null) item.balance = expected;
+      }
+    }
+    return item;
+  });
+}
+
+async function runExtract() {
+  if (!apiKey || !apiKey.startsWith('AIza')) {
+    openSettings();
+    showToast('Please enter your Gemini API key first (Settings button)', 'error');
+    return;
+  }
+  const store = document.getElementById('storeSelect').value;
+  const date  = document.getElementById('dateInput').value;
+  if (!store) { showToast('Please select a store first', 'error'); return; }
+  if (!date)  { showToast('Please select a date', 'error'); return; }
+  if (!uploadedImages.length) { showToast('Please upload at least one stock sheet photo', 'error'); return; }
+
+  setExtracting(true);
+  setProgress(10, 'Preparing images...');
+
+  try {
+    // Build Gemini parts: all images + prompt text
+    const parts = uploadedImages.map(img => ({
+      inlineData: { mimeType: img.mimeType || 'image/jpeg', data: img.dataUrl.split(',')[1] }
+    }));
+    parts.push({ text: buildGeminiPrompt(store, date, uploadedImages.length) });
+
+    setProgress(30, `Sending ${uploadedImages.length} image${uploadedImages.length>1?'s':''} to Gemini...`);
+
+    // Pass 1: Flash Lite (fast)
+    let raw = await callGemini('gemini-2.5-flash-lite', parts);
+    let parsed = parseGeminiJSON(raw);
+
+    // Pass 2: Flash if confidence low
+    if (!parsed || (parsed.overall_confidence || 0) < 0.80) {
+      const reason = !parsed ? 'parse failed' : `${Math.round((parsed.overall_confidence||0)*100)}% conf`;
+      setProgress(60, `Upgrading to Gemini 2.5 Flash for better accuracy (${reason})...`);
+      raw = await callGemini('gemini-2.5-flash', parts);
+      parsed = parseGeminiJSON(raw);
+    }
+
+    if (!parsed) throw new Error('Could not read the stock sheet. Try a clearer, brighter photo.');
+
+    setProgress(85, 'Validating data...');
+    const items = validateItems(parsed.items || []);
+    const lowConf = items.filter(i => (i.row_confidence||1) < 0.80 || i.balance_check === 'MISMATCH').length;
+
+    setProgress(100, 'Complete!');
+    await new Promise(r => setTimeout(r, 300));
+
+    renderResults({ items, overall_confidence: parsed.overall_confidence || 0.9,
+      total_skus: items.length, issues: parsed.issues || [],
+      low_confidence_count: lowConf });
+    showToast(`✓ ${items.length} SKUs extracted — please review before saving`, 'success');
+
+  } catch (err) {
+    setProgress(0, '');
+    document.getElementById('progressWrap').style.display = 'none';
+    showToast(err.message, 'error');
+    console.error(err);
+  }
+
+  setExtracting(false);
+}
+
+function setExtracting(on) {
+  const btn = document.getElementById('extractBtn');
+  btn.disabled = on;
+  document.getElementById('extractBtnIcon').textContent = on ? '⏳' : '🔍';
+  document.getElementById('extractBtnText').textContent = on ? 'EXTRACTING DATA...' : 'EXTRACT STOCK DATA';
+  document.getElementById('progressWrap').style.display = on ? 'block' : 'none';
+}
+
+function setProgress(pct, text) {
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = text;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE
+// ═══════════════════════════════════════════════════════════════
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeQuick').classList.toggle('active', mode === 'quick');
+  document.getElementById('modeFull').classList.toggle('active', mode === 'full');
+  const lbl = document.getElementById('saveBtnLabel');
+  if (lbl) lbl.textContent = mode === 'quick' ? 'SAVE SOH TO STOCK REGISTER' : 'SAVE ALL COLUMNS TO STOCK REGISTER';
+  buildTableHead();
+  if (extractedItems.length) renderTableBody();
+}
+
+function buildTableHead() {
+  const tr = document.getElementById('tableHead');
+  const cols = currentMode === 'quick'
+    ? [SOH_COL]
+    : [...FULL_COLS, SOH_COL];
+
+  tr.innerHTML = `
+    <th style="width:32px">#</th>
+    <th style="width:16px"></th>
+    <th style="text-align:left;min-width:80px">SKU CODE</th>
+    <th style="text-align:left;min-width:160px">PRODUCT NAME</th>
+    ${cols.map(c => `<th class="${c.isSOH?'soh-col':''}" style="min-width:60px">${c.short}</th>`).join('')}
+    <th style="width:32px"></th>`;
+}
+
+function renderResults(result) {
+  extractedItems = result.items || [];
+
+  // KPIs
+  document.getElementById('kpiSkuNum').textContent = result.total_skus || extractedItems.length;
+  const conf = result.overall_confidence || 0;
+  const badge = document.getElementById('confBadge');
+  badge.textContent = `${Math.round(conf * 100)}% confidence`;
+  badge.className = 'conf-badge ' + (conf >= .90 ? 'high' : conf >= .75 ? 'med' : 'low');
+
+  // Issues
+  if (result.issues && result.issues.length > 0) {
+    document.getElementById('issuesBanner').style.display = 'block';
+    document.getElementById('issuesList').textContent = result.issues.join(' · ');
+  }
+
+  // Review warnings
+  const reviewRows = extractedItems.filter(i =>
+    (i.row_confidence || 1) < .80 || i.balance_check === 'MISMATCH'
+  ).length;
+  if (reviewRows > 0) {
+    document.getElementById('reviewWarning').style.display = 'inline';
+    document.getElementById('reviewWarnCount').textContent = reviewRows;
+    document.getElementById('reviewCount').style.display = 'inline';
+    document.getElementById('reviewCount').textContent = `⚠ ${reviewRows} rows to review`;
+  }
+
+  buildTableHead();
+  renderTableBody();
+
+  document.getElementById('resultsCard').style.display = 'block';
+  document.getElementById('saveBar').style.display = 'flex';
+  updateSaveSummary();
+  document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderTableBody() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  extractedItems.forEach((item, idx) => renderRow(item, idx, tbody));
+}
+
+function renderRow(item, idx, tbody) {
+  const cols = currentMode === 'quick' ? [SOH_COL] : [...FULL_COLS, SOH_COL];
+  const conf = item.row_confidence || 1;
+  const isMismatch = item.balance_check === 'MISMATCH';
+  const rowClass = (conf < 0.65 || isMismatch) ? 'row-red' : (conf < 0.82) ? 'row-amber' : '';
+  const dotClass = (conf < 0.65 || isMismatch) ? 'low' : conf < 0.82 ? 'med' : 'high';
+
+  const tr = document.createElement('tr');
+  tr.className = rowClass;
+  tr.dataset.idx = idx;
+  tr.dataset.sku = (item.sku_code || '').toUpperCase();
+  tr.dataset.name = (item.product_name || '').toLowerCase();
+
+  const mismatchNote = isMismatch
+    ? `<span class="issue-note">⚠ Expected ${item.balance_expected ?? '?'}</span>` : '';
+
+  const balanceClass = isMismatch ? 'mismatch' : '';
+
+  tr.innerHTML = `
+    <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-light)">${idx+1}</td>
+    <td><span class="conf-dot ${dotClass}" title="${Math.round(conf*100)}% confidence"></span></td>
+    <td class="td-name">
+      <input class="cell-input sku-input" value="${esc(item.sku_code||'')}"
+        onchange="updateItem(${idx},'sku_code',this.value.toUpperCase())"
+        placeholder="AP001" style="text-transform:uppercase">
+    </td>
+    <td class="td-name">
+      <input class="cell-input name-input" value="${esc(item.product_name||'')}"
+        onchange="updateItem(${idx},'product_name',this.value)" placeholder="Product name">
+    </td>
+    ${cols.map(c => {
+      const val = item[c.key];
+      const cls = `cell-input${c.isSOH?' soh-input '+balanceClass:''}`;
+      const onch = c.isSOH
+        ? `onchange="updateSOH(${idx},this.value)"`
+        : `onchange="updateItem(${idx},'${c.key}',this.value);recalcSOH(${idx})"`;
+      return `<td class="${c.isSOH?'td-soh':''}">
+        <input class="${cls}" type="number" min="0" value="${val??''}" ${onch}
+          placeholder="0" style="min-width:50px">
+        ${c.isSOH ? mismatchNote : ''}
+      </td>`;
+    }).join('')}
+    <td><button class="row-del-btn" onclick="deleteRow(${idx})" title="Remove row">✕</button></td>`;
+
+  tbody.appendChild(tr);
+}
+
+function updateItem(idx, key, value) {
+  extractedItems[idx][key] = key === 'sku_code' ? value.toUpperCase() : value;
+  updateSaveSummary();
+}
+
+function updateSOH(idx, value) {
+  extractedItems[idx].balance = value === '' ? null : parseInt(value, 10) || 0;
+  extractedItems[idx].balance_check = 'MANUAL';
+}
+
+function recalcSOH(idx) {
+  const item = extractedItems[idx];
+  const op = n(item.opening), wh = n(item.wh_received), si = n(item.store_in);
+  const so = n(item.sold),    tr = n(item.transfer_out), wo = n(item.writeoff);
+  if ([op,wh,si,so,tr,wo].every(v => v !== null)) {
+    const calc = op + wh + si - so - tr - wo;
+    item.balance = calc;
+    item.balance_check = 'OK';
+  }
+  // Update SOH cell in that row
+  const tbody = document.getElementById('tableBody');
+  const tr = tbody.querySelector(`tr[data-idx="${idx}"]`);
+  if (tr) {
+    const sohInput = tr.querySelector('.soh-input');
+    if (sohInput) {
+      sohInput.value = item.balance ?? '';
+      sohInput.classList.remove('mismatch');
+    }
+  }
+  updateSaveSummary();
+}
+
+function recalcAll() {
+  extractedItems.forEach((_, i) => recalcSOH(i));
+  showToast('SOH recalculated for all rows', 'success');
+}
+
+function addRow() {
+  extractedItems.push({ sku_code:'', product_name:'', opening:0, wh_received:0,
+    store_in:0, sold:0, transfer_out:0, writeoff:0, balance:0, row_confidence:1.0 });
+  const tbody = document.getElementById('tableBody');
+  renderRow(extractedItems[extractedItems.length-1], extractedItems.length-1, tbody);
+  updateSaveSummary();
+}
+
+function deleteRow(idx) {
+  extractedItems.splice(idx, 1);
+  renderTableBody();
+  updateSaveSummary();
+}
+
+function clearResults() {
+  if (!confirm('Clear all extracted data?')) return;
+  extractedItems = [];
+  document.getElementById('tableBody').innerHTML = '';
+  document.getElementById('resultsCard').style.display = 'none';
+  document.getElementById('saveBar').style.display = 'none';
+}
+
+function filterTable() {
+  const q = document.getElementById('tableSearch').value.toLowerCase();
+  document.querySelectorAll('#tableBody tr').forEach(tr => {
+    const sku  = (tr.dataset.sku  || '').toLowerCase();
+    const name = (tr.dataset.name || '').toLowerCase();
+    tr.style.display = (!q || sku.includes(q) || name.includes(q)) ? '' : 'none';
+  });
+}
+
+function updateSaveSummary() {
+  const validRows = extractedItems.filter(i => i.sku_code).length;
+  const sohTotal  = extractedItems.reduce((a, i) => a + (n(i.balance) || 0), 0);
+  document.getElementById('saveSummary').textContent =
+    `${validRows} SKUs ready · Total SOH: ${sohTotal.toLocaleString()} units`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SAVE TO STOCK REGISTER — direct to Supabase stock_cells table
+// ═══════════════════════════════════════════════════════════════
+async function saveToRegister() {
+  const store = document.getElementById('storeSelect').value;
+  const date  = document.getElementById('dateInput').value;
+  const valid = extractedItems.filter(i => i.sku_code && i.sku_code.trim());
+
+  if (!store || !date) { showToast('Select store and date first', 'error'); return; }
+  if (!valid.length)   { showToast('No valid rows to save', 'error'); return; }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span>⏳</span> SAVING...';
+
+  const resultEl = document.getElementById('saveResult');
+  resultEl.style.display = 'none';
+
+  const storeName = (STORES.find(s => s.code === store) || {}).name || store;
+  const modeLabel = currentMode === 'quick' ? 'SOH only' : 'all columns';
+
+  // Quick = only balance (bl). Full = all 7 columns.
+  const saveCols = currentMode === 'quick'
+    ? { balance:'bl' }
+    : COLUMN_MAP;
+
+  // Build flat cell rows for Supabase upsert
+  const cells = [];
+  valid.forEach(item => {
+    const sku = item.sku_code.trim().toUpperCase();
+    Object.entries(saveCols).forEach(([field, col]) => {
+      const val = item[field];
+      if (val !== null && val !== undefined && val !== '') {
+        const num = parseInt(val, 10);
+        if (!isNaN(num)) cells.push({ store_code:store, date, sku_code:sku, col, val:num });
+      }
+    });
+  });
+
+  if (!cells.length) { showToast('No valid data to save', 'error'); btn.disabled=false; btn.innerHTML='<span>💾</span> <span id="saveBtnLabel">SAVE SOH TO STOCK REGISTER</span>'; return; }
+
+  try {
+    // Supabase upsert in batches of 500
+    let saved = 0;
+    for (let i = 0; i < cells.length; i += 500) {
+      const batch = cells.slice(i, i+500);
+      const resp = await fetch(`${SUPABASE_URL}/rest/v1/stock_cells`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates,return=minimal'
+        },
+        body: JSON.stringify(batch),
+        signal: AbortSignal.timeout(30000)
+      });
+      if (!resp.ok) {
+        const err = await resp.text();
+        throw new Error(`Database error: ${err}`);
+      }
+      saved += batch.length;
+    }
+
+    resultEl.textContent = `✓ ${valid.length} SKUs (${saved} values) saved → ${storeName} · ${date}`;
+    resultEl.className = 'save-result ok';
+    resultEl.style.display = 'inline';
+    showToast(`✓ ${valid.length} SKUs saved to Stock Register (${modeLabel})`, 'success');
+    btn.innerHTML = '<span>✓</span> SAVED TO REGISTER';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = `<span>💾</span> <span id="saveBtnLabel">${currentMode==='quick'?'SAVE SOH TO STOCK REGISTER':'SAVE ALL COLUMNS TO STOCK REGISTER'}</span>`;
+    }, 4000);
+
+  } catch (err) {
+    resultEl.textContent = `Error: ${err.message}`;
+    resultEl.className = 'save-result err';
+    resultEl.style.display = 'inline';
+    showToast(err.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = `<span>💾</span> <span id="saveBtnLabel">${currentMode==='quick'?'SAVE SOH TO STOCK REGISTER':'SAVE ALL COLUMNS TO STOCK REGISTER'}</span>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CSV DOWNLOAD
+// ═══════════════════════════════════════════════════════════════
+function downloadCSV() {
+  const store = document.getElementById('storeSelect').value;
+  const date  = document.getElementById('dateInput').value;
+
+  const headers = ['Store','Date','SKU Code','Product Name','Opening','WH Received',
+                   'Store-In','Sold','Transfer Out','Write-Off','SOH (Balance)'];
+  const rows = extractedItems
+    .filter(i => i.sku_code)
+    .map(i => [
+      store, date,
+      i.sku_code, i.product_name||'',
+      i.opening??'', i.wh_received??'', i.store_in??'',
+      i.sold??'', i.transfer_out??'', i.writeoff??'', i.balance??''
+    ]);
+
+  const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `EP_Stock_${store}_${date}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded', 'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════
+function todays() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function n(v) { if (v===null||v===undefined||v==='') return null; const x=parseInt(v,10); return isNaN(x)?null:x; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className = 'toast', 3500);
+}
+</script>
+</body>
+</html>
