@@ -6,6 +6,7 @@
 <title>Emirates Pride — Stock Sheet Scanner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
   --gold:#C9A84C;--gold-bar:#6B5B35;--gold-deep:#5C4A1A;--gold-pale:#F5F2EC;
@@ -307,6 +308,7 @@ td.td-soh{background:rgba(107,91,53,.06);font-weight:600}
 <div class="save-bar" id="saveBar" style="display:none">
   <div class="save-summary" id="saveSummary"></div>
   <span class="save-result" id="saveResult"></span>
+  <button class="csv-btn" onclick="downloadExcel()" style="background:var(--green-bg);color:var(--green);border-color:var(--green)">⬇ Download Excel</button>
   <button class="csv-btn" onclick="downloadCSV()">⬇ Download CSV</button>
   <button class="save-btn" id="saveBtn" onclick="saveToRegister()">
     <span>💾</span> <span id="saveBtnLabel">SAVE SOH TO STOCK REGISTER</span>
@@ -977,6 +979,118 @@ function saveToRegister() {
     });
   }
   sendBatch(0);
+}
+
+// ─── EXCEL DOWNLOAD ───────────────────────────────────────────────
+function downloadExcel() {
+  var store = document.getElementById('storeSelect').value;
+  var date  = document.getElementById('dateInput').value;
+
+  var storeName = store;
+  for (var si = 0; si < STORES.length; si++) {
+    if (STORES[si].code === store) { storeName = STORES[si].name; break; }
+  }
+
+  var wb = XLSX.utils.book_new();
+
+  // ── Sheet data ────────────────────────────────────────────────
+  // Row 1: Title
+  // Row 2: Store / Date meta
+  // Row 3: blank
+  // Row 4: Column headers
+  // Row 5+: Data
+
+  var wsData = [
+    ['EMIRATES PRIDE PERFUMES — STOCK SHEET SCAN', '', '', '', '', '', '', '', '', '', ''],
+    ['Store:', storeName, '', '', 'Date:', date, '', '', '', '', ''],
+    ['', '', '', '', '', '', '', '', '', '', ''],
+    ['#', 'SKU Code', 'Product Name',
+     'Opening Stock', 'WH Received', 'Store-In',
+     'Sold', 'Transfer Out', 'Write-Off',
+     'SOH / Balance']
+  ];
+
+  var rowNum = 0;
+  for (var i = 0; i < extractedItems.length; i++) {
+    var it = extractedItems[i];
+    if (!it.sku_code) continue;
+    rowNum++;
+    wsData.push([
+      rowNum,
+      it.sku_code,
+      it.product_name || '',
+      '',   // Opening — blank (not scanned in SOH-only mode)
+      '',   // WH Received
+      '',   // Store-In
+      '',   // Sold
+      '',   // Transfer Out
+      '',   // Write-Off
+      (it.balance !== null && it.balance !== undefined) ? it.balance : ''
+    ]);
+  }
+
+  var ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // ── Column widths ──────────────────────────────────────────────
+  ws['!cols'] = [
+    { wch: 4  },  // #
+    { wch: 10 },  // SKU Code
+    { wch: 32 },  // Product Name
+    { wch: 13 },  // Opening
+    { wch: 13 },  // WH Received
+    { wch: 10 },  // Store-In
+    { wch: 10 },  // Sold
+    { wch: 13 },  // Transfer Out
+    { wch: 11 },  // Write-Off
+    { wch: 14 }   // SOH / Balance
+  ];
+
+  // ── Merge title row across all columns ─────────────────────────
+  ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }];
+
+  // ── Cell styles (requires xlsx-style; applies where supported) ──
+  // Title cell
+  var titleCell = ws['A1'];
+  if (titleCell) {
+    titleCell.s = {
+      font:      { bold: true, sz: 14, color: { rgb: 'FFFFFF' } },
+      fill:      { fgColor: { rgb: '6B5B35' } },
+      alignment: { horizontal: 'center', vertical: 'center' }
+    };
+  }
+  // Header row (row index 3 = row 4)
+  var hdrCols = ['A','B','C','D','E','F','G','H','I','J'];
+  for (var hc = 0; hc < hdrCols.length; hc++) {
+    var cell = ws[hdrCols[hc] + '4'];
+    if (cell) {
+      cell.s = {
+        font:      { bold: true, color: { rgb: 'FFFFFF' } },
+        fill:      { fgColor: { rgb: '6B5B35' } },
+        alignment: { horizontal: 'center' },
+        border: {
+          bottom: { style: 'medium', color: { rgb: 'C9A84C' } }
+        }
+      };
+    }
+  }
+  // SOH column highlight (column J, rows 5+)
+  var dataStart = 5;
+  for (var dr = dataStart; dr < dataStart + rowNum; dr++) {
+    var sohCell = ws['J' + dr];
+    if (sohCell) {
+      sohCell.s = {
+        font:      { bold: true },
+        fill:      { fgColor: { rgb: 'F5F2EC' } },
+        alignment: { horizontal: 'center' }
+      };
+    }
+  }
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Stock Scan');
+
+  var filename = 'EP_Stock_' + (store || 'Unknown') + '_' + (date || 'NoDate') + '.xlsx';
+  XLSX.writeFile(wb, filename);
+  showToast('Excel downloaded: ' + filename, 'success');
 }
 
 // ─── CSV DOWNLOAD ─────────────────────────────────────────────────
