@@ -202,6 +202,95 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 
 ---
 
+### Session — 22 May 2026 (Session 14 — Excel 30-Sheet Consolidation → 6 Sheets)
+**Files changed**: `build_excel_consolidated.py` (new), `EP_Demand_Planner_SAP_Reporting_Master_v3.xlsx` (output)
+**Commit**: Not pushed (local Python output — no web app changes)
+
+#### What was built:
+
+**Problem solved**: The 30-sheet Excel workbook (`v2`) had significant overlap and was too unwieldy for a single demand planner to operate. User requested consolidation to a maximum of 6 sheets with no data loss.
+
+**New file: `build_excel_consolidated.py`** → outputs `EP_Demand_Planner_SAP_Reporting_Master_v3.xlsx`
+
+| Sheet | Name | Replaces (from v2) | Key Design Decisions |
+|-------|------|--------------------|----------------------|
+| 1 | MASTER DASHBOARD | INDEX (S1) + Regional KPI Dashboard (S15) + Demand Forecast vs Actuals (S10) | 3 sections: Navigation table, Regional KPI Scorecard (EPP/ASL/Oman/KSA), Forecast Accuracy table with colour-coded acc% |
+| 2 | INVENTORY INTELLIGENCE | Daily Stock Overview (S2) + Physical Inventory Count (S12) + Inventory Turnover (S24) + ABC-XYZ (S25) + Dead Stock (S9) + Stock Age & FIFO (S27) + Safety Stock Calculator (S26) | One 33-column master table. Header groups colour-coded by domain (teal=stock, purple=count, blue=analytics, orange=age, red=deadstock). Filter-ready. |
+| 3 | SALES & DEMAND PLANNING | Monthly Sales SKU (S4) + Store Sales Summary (S5) + Seasonal Demand Planner (S16) + Event Forecast 2026 (S28) + Seasonal ABC Reclassification (S29) + Replenishment Plan (S6) | 5 sections in one sheet with bold section divider rows. Sections A-E separated by olive section headers. |
+| 4 | OPERATIONS LOG | Goods Movement Log (S3) + Transfer Tracker (S7) + PO & GRN Log (S13) + Write-off Log (S14) + AM Stock Request Tracker (S11) | Single master log with TYPE column. Colour-coded by type: GRN=green, Transfer=blue, Write-off=red, AM Request=purple, Count Adj=orange. Drop-down validation. |
+| 5 | TESTER HUB | Tester Register (S8) + Allocation Master (S17) + Distribution Plan (S18) + Age & Condition (S19) + Wastage Analysis (S20) + Effectiveness ROI (S21) + Lifecycle Pipeline (S22) + Store Coverage Matrix (S23) | 7 sections A-G in one sheet. Tester gold (#8B6914) tab and section headers. AGE: CRITICAL rows auto-red. Coverage Matrix: A/L/X/N/C cell codes colour-coded. |
+| 6 | SAP REFERENCE & CONFIG | SAP IBP Seasonal Config (S30) + movement type content scattered across sheets | 4 sections: Movement Type Register (14 types), Key T-Codes (23 codes), IBP Seasonal Profiles (6 profiles), Formula Reference (15 metrics) |
+
+**Colour architecture maintained throughout**:
+- OLIVE `#6B5B35` header bars, GOLD `#C9A84C` subtitle bars — matches brand
+- GREEN = OK/Complete, AMBER = Review/Monitor, RED = Action Required/Critical, BLUE = In Transit/Planned
+- Section divider rows: `#EDEBE6` background with gold medium border top/bottom
+- Tab colours: Olive (S1), Teal (S2), Blue (S3), Purple (S4), Tester Gold (S5), Gold Dark (S6)
+
+**Sample data quality**:
+- All 15 sample store-SKU combinations in Sheet 2 include real store codes (DX001, DX004, A0001, SH001, AJ001, RK001, OM001, OM002)
+- Realistic forecast accuracy % with proper colour-coding (green≥95%, amber 90-94%, red<90%)
+- AM Request entries in Operations Log reference real AMR refs from existing system
+
+**Bug fixed**: `UnicodeEncodeError` on Windows cp1252 console — removed ← arrow from print() statements (file itself unaffected)
+
+**Temp file pattern used**: Saves to `%TEMP%\EP_v3_consolidated.xlsx` first, then `shutil.copy2()` to OneDrive path (avoids OneDrive lock)
+
+---
+
+### Session — 22 May 2026 (Session 15 — AM Form Full Bilingual + Manager Hub View/Edit/Approve/Dispatch)
+**Files changed**: `am-stock-request.html`, `stock-register.html`, `am_requests_migration.sql` (new)
+**Commit**: `a0154da` → pushed to `main` → GitHub Pages live
+
+#### What was built:
+
+**1. `am-stock-request.html` — Full bilingual + phone UX overhaul**
+- Arabic added alongside every English-only string across all 4 screens
+- iOS Safari zoom fix: all `input`/`select`/`textarea` bumped to `font-size:16px`
+- Tap targets enlarged: product rows `min-height:60px`, + button `44px`, qty steppers `40px`, remove `44×44px`
+- Screen 1: footer note + `جميع الطلبات محفوظة في لوحة تحكم المدير`
+- Screen 2: "← Change · تغيير", Arabic week label `barWeekAr` element populated
+- Screen 3: added "Review Request / مراجعة الطلب" title, all meta labels bilingual, notes placeholder Arabic, "Add More Items · إضافة منتجات أخرى"
+- Screen 4: confirm sub-text Arabic, "Submit Another · طلب جديد"
+- JS: `onAMChange` fallback Arabic, `resetForm` pill bug fixed (`dataset.cat` not `textContent`), empty cart state Arabic
+
+**2. `stock-register.html` — Manager Hub: Full View → Edit → Save → Approve/Dispatch flow**
+
+**Request cards**: replaced inline Approve/Dispatch buttons with single "👁 View" button → forces manager to view before acting
+
+**Detail panel (`viewAMRequest` / `_renderReqDetail`)**:
+- Sticky header: ← All Requests | Ref | Status badge | ⬇ PDF
+- Store info card: store name, AM, week, SKU count, units requested
+- Request Timeline section: 📥 Received / ✓ Approved / 🚚 Dispatched — each with full datetime + who + remarks; greyed out if not yet reached
+- Stock Items table: SKU code | Product EN+AR | Req'd qty (read-only) | ✎ Fulfill qty (editable input) | Diff column (green +, amber −, red if 0)
+  - Live per-row diff + totals footer update as manager types
+  - Row turns amber if adjusted, red if set to 0 with [NOT DISPATCHING] label
+  - Blue info banner explaining how to use the edit (canEdit only)
+- Approval Remarks textarea (editable when pending/approved, locked when dispatched)
+- AM Notes section (original notes from the request form, read-only)
+- Edit History panel (collapsible ▾): every save/approval/dispatch logged with who, when, and what changed per SKU code (from_qty → to_qty, colour-coded)
+
+**Sticky action bar (changes per status)**:
+- Pending: [Approved By name input] + [💾 Save Draft] [✓ Approve Request]
+- Approved: [Dispatched By input] + [Dispatch Notes input] + [💾 Save Changes] [🚚 Mark as Dispatched]
+- Dispatched: read-only message + [⬇ Download PDF]
+
+**Traceability (all stored in Supabase)**:
+- `fulfilled_items` JSONB — manager-adjusted quantities (original `items` never overwritten)
+- `approval_remarks` TEXT — reason for shortfalls
+- `edit_history` JSONB array — every event: `{at, by, type, changes:[{code,en,from_qty,to_qty}], remarks}`
+- Three-timestamp timeline on request cards: Received / Approved (with who + adj badge) / Dispatched
+- PDF updated: two qty columns if adjusted, full Request Timeline block, amber remarks callout
+
+**3. `am_requests_migration.sql` (new file)**
+- `ADD COLUMN IF NOT EXISTS fulfilled_items JSONB DEFAULT NULL`
+- `ADD COLUMN IF NOT EXISTS approval_remarks TEXT DEFAULT NULL`
+- `ADD COLUMN IF NOT EXISTS edit_history JSONB DEFAULT '[]'::jsonb`
+- Verification SELECT included
+- **✅ User confirmed: migration was run successfully in Supabase and all features checked OK**
+
+---
+
 ### Session — 21 May 2026 (Session 13 — AM Form Arabic + Manager Hub Approval/Dispatch Overhaul)
 **Files changed**: `am-stock-request.html` (bilingual upgrade), `stock-register.html` (manager hub requests tab), `am_requests_migration.sql` (new)
 **Commit**: pending push
