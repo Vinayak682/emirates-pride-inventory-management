@@ -232,8 +232,8 @@ td.td-soh{background:rgba(107,91,53,.06);font-weight:600}
     <div class="card-body">
       <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
         <div class="drop-icon">📷</div>
-        <div class="drop-title">Drag &amp; drop stock sheet photos here</div>
-        <div class="drop-sub">or click to browse files</div>
+        <div class="drop-title">Drag &amp; drop · Click to browse · Paste (Ctrl+V)</div>
+        <div class="drop-sub">WhatsApp photo? Right-click → Copy Image → then paste here</div>
         <div class="drop-hint">JPG · PNG · HEIC · WebP — up to 10 images per upload</div>
       </div>
       <input type="file" id="fileInput" accept="image/*" multiple>
@@ -422,6 +422,11 @@ for (var _gi = 0; _gi < STORE_GROUPS.length; _gi++) {
 }
 
 // ─── INIT ────────────────────────────────────────────────────────
+
+// Prevent browser from navigating to dropped files anywhere on the page
+document.addEventListener('dragover', function(e) { e.preventDefault(); e.stopPropagation(); });
+document.addEventListener('drop',     function(e) { e.preventDefault(); e.stopPropagation(); });
+
 document.addEventListener('DOMContentLoaded', function() {
   apiKey = localStorage.getItem('ep_ocr_api_key') || '';
   updateApiStatus();
@@ -443,16 +448,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('dateInput').value = todays();
 
+  // ── Drop zone ────────────────────────────────────────────────
   var dz = document.getElementById('dropZone');
-  dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('drag-over'); });
-  dz.addEventListener('dragleave', function() { dz.classList.remove('drag-over'); });
+  dz.addEventListener('dragover',  function(e) { e.preventDefault(); e.stopPropagation(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', function(e) { e.stopPropagation(); dz.classList.remove('drag-over'); });
   dz.addEventListener('drop', function(e) {
-    e.preventDefault(); dz.classList.remove('drag-over');
-    handleFiles(Array.prototype.slice.call(e.dataTransfer.files));
+    e.preventDefault();
+    e.stopPropagation();
+    dz.classList.remove('drag-over');
+
+    var files = [];
+
+    // Try dataTransfer.files first (standard file drag from Explorer)
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      files = Array.prototype.slice.call(e.dataTransfer.files);
+    }
+
+    // Fallback: dataTransfer.items (some apps provide items but not files)
+    if (!files.length && e.dataTransfer && e.dataTransfer.items) {
+      for (var i = 0; i < e.dataTransfer.items.length; i++) {
+        if (e.dataTransfer.items[i].kind === 'file') {
+          var f = e.dataTransfer.items[i].getAsFile();
+          if (f) files.push(f);
+        }
+      }
+    }
+
+    if (files.length) {
+      handleFiles(files);
+    } else {
+      showToast('Cannot read this photo directly. In WhatsApp: right-click the photo → Copy Image → then press Ctrl+V here', 'error');
+    }
   });
+
+  // ── File input (browse button) ───────────────────────────────
   document.getElementById('fileInput').addEventListener('change', function(e) {
     handleFiles(Array.prototype.slice.call(e.target.files));
     e.target.value = '';
+  });
+
+  // ── Paste (Ctrl+V) — works with WhatsApp Copy Image ─────────
+  document.addEventListener('paste', function(e) {
+    var items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    var pasted = [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type && items[i].type.indexOf('image') === 0) {
+        var file = items[i].getAsFile();
+        if (file) pasted.push(file);
+      }
+    }
+    if (pasted.length) {
+      handleFiles(pasted);
+      showToast(pasted.length + ' photo' + (pasted.length > 1 ? 's' : '') + ' pasted', 'success');
+    }
   });
 
   buildTableHead();
