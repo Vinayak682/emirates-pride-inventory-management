@@ -560,25 +560,34 @@ RETURN ONLY THIS JSON — no markdown, no extra text:
 async function callGemini(model, parts) {
   const url = `${GEMINI_BASE}/${model}:generateContent?key=${apiKey}`;
   const body = { contents:[{ parts }], generationConfig:{ temperature:0.1 } };
-  const resp = await fetch(url, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(body), signal: AbortSignal.timeout(120000)
-  });
+  var controller = new AbortController();
+  var timeoutId = setTimeout(function(){ controller.abort(); }, 120000);
+  var resp;
+  try {
+    resp = await fetch(url, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body), signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
   const json = await resp.json();
   if (!resp.ok) {
-    const msg = json?.error?.message || `Gemini error ${resp.status}`;
+    var errMsg = (json && json.error && json.error.message) ? json.error.message : ('Gemini error ' + resp.status);
     if (resp.status === 429) throw new Error('Rate limit hit — wait 60 seconds and try again.');
     if (resp.status === 400) throw new Error('Invalid API key. Check Settings.');
-    throw new Error(msg);
+    throw new Error(errMsg);
   }
-  return json?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  var text = '';
+  try { text = json.candidates[0].content.parts[0].text; } catch(e) {}
+  return text;
 }
 
 function parseGeminiJSON(text) {
   try {
     const m = text.match(/\{[\s\S]*\}/);
     return m ? JSON.parse(m[0]) : null;
-  } catch { return null; }
+  } catch(e) { return null; }
 }
 
 function validateItems(items) {
@@ -922,8 +931,7 @@ async function saveToRegister() {
           'Content-Type': 'application/json',
           'Prefer': 'resolution=merge-duplicates,return=minimal'
         },
-        body: JSON.stringify(batch),
-        signal: AbortSignal.timeout(30000)
+        body: JSON.stringify(batch)
       });
       if (!resp.ok) {
         const err = await resp.text();
