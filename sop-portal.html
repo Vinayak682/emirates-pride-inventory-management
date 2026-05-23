@@ -17,6 +17,7 @@
 :root {
   --gold:        #C9A84C;
   --gold-dark:   #7A6525;
+  --gold-bar:    #6B5B35;
   --gold-deeper: #5C4A1A;
   --gold-light:  #E8D49A;
   --gold-pale:   #F5EDD8;
@@ -24,6 +25,7 @@
   --cream-mid:   #F2EDE4;
   --border:      #E2D9C8;
   --border-soft: #EDE8DE;
+  --border-dark: #C8BFB0;
   --ink:         #1C1C1C;
   --ink-mid:     #4A4540;
   --ink-light:   #8A8278;
@@ -7755,10 +7757,10 @@ async function doExportDownload() {
   </div>
 
   <!-- Status strip -->
-  <div style="background:var(--gold-pale);border-bottom:1px solid var(--border-dark);padding:11px 28px;display:flex;align-items:center;gap:10px;font-family:'Montserrat',sans-serif;">
+  <div style="background:var(--cream);border-bottom:1px solid var(--border);padding:11px 28px;display:flex;align-items:center;gap:10px;font-family:'Montserrat',sans-serif;">
     <span id="exp-modal-dot" style="width:8px;height:8px;border-radius:50%;background:#0B7A45;flex-shrink:0;"></span>
-    <span style="font-size:11px;color:var(--ink);">Last Updated: <strong id="exp-modal-date" style="color:var(--ink);">—</strong> at <strong id="exp-modal-time" style="color:var(--ink);">—</strong> Dubai Time</span>
-    <span id="exp-modal-records" style="margin-left:auto;font-size:10px;font-weight:600;color:var(--ink-mid);letter-spacing:.05em;">—</span>
+    <span style="font-size:11px;color:var(--ink-mid);">Last Updated: <strong id="exp-modal-date" style="color:var(--ink);">—</strong> at <strong id="exp-modal-time" style="color:var(--ink);">—</strong> Dubai Time</span>
+    <span id="exp-modal-records" style="margin-left:auto;font-size:10px;color:var(--ink-mid);letter-spacing:.05em;">—</span>
   </div>
 
   <!-- Body -->
@@ -7766,41 +7768,41 @@ async function doExportDownload() {
 
     <!-- Company / Division pills -->
     <div id="exp-modal-companies" style="margin-bottom:20px;">
-      <div style="font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);margin-bottom:10px;">Company</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:10px;">Company</div>
       <div id="exp-modal-company-btns" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
     </div>
 
     <!-- Period -->
     <div id="exp-modal-period-row" style="margin-bottom:20px;">
-      <label id="exp-modal-period-label" style="display:block;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);margin-bottom:8px;">Period</label>
-      <select id="exp-modal-period" class="sel" style="width:100%;font-weight:600;color:var(--ink);"></select>
+      <label id="exp-modal-period-label" style="display:block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:8px;">Period</label>
+      <select id="exp-modal-period" class="sel" style="width:100%;"></select>
     </div>
 
     <!-- Report type (Warehouse only) -->
     <div id="exp-modal-type-row" style="margin-bottom:20px;display:none;">
-      <label style="display:block;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);margin-bottom:8px;">Report Type</label>
-      <select id="exp-modal-type" class="sel" style="width:100%;font-weight:600;color:var(--ink);"></select>
+      <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:8px;">Report Type</label>
+      <select id="exp-modal-type" class="sel" style="width:100%;"></select>
     </div>
 
     <!-- Format toggle -->
     <div style="margin-bottom:24px;">
-      <div style="font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);margin-bottom:8px;">Format</div>
-      <div style="display:flex;border:2px solid var(--border-dark);border-radius:2px;overflow:hidden;">
-        <button id="exp-modal-btn-excel" onclick="setExpFormat('excel')" style="flex:1;padding:12px;border:none;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s;">Excel</button>
-        <button id="exp-modal-btn-csv" onclick="setExpFormat('csv')" style="flex:1;padding:12px;border:none;border-left:2px solid var(--border-dark);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s;">CSV</button>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:8px;">Format</div>
+      <div style="display:flex;border:1.5px solid var(--border-dark);border-radius:2px;overflow:hidden;">
+        <button id="exp-modal-btn-excel" onclick="setExpFormat('excel')" style="flex:1;padding:11px;border:none;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s;">Excel</button>
+        <button id="exp-modal-btn-csv" onclick="setExpFormat('csv')" style="flex:1;padding:11px;border:none;border-left:1.5px solid var(--border-dark);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s;">CSV</button>
       </div>
     </div>
 
     <!-- Download -->
-    <button id="exp-modal-dl-btn" onclick="doExportDownload()" style="width:100%;background:var(--gold-bar);color:#fff;border:none;padding:14px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:background .2s;box-shadow:0 2px 8px rgba(107,91,53,.25);">↓ Download Report</button>
+    <button id="exp-modal-dl-btn" onclick="doExportDownload()" style="width:100%;background:var(--gold-bar);color:#fff;border:none;padding:14px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:background .2s;">↓ Download Report</button>
   </div>
 </div>
 
 <style>
-.exp-pill{padding:9px 16px;border:2px solid var(--border-dark);background:var(--white);color:var(--ink);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .15s;}
-.exp-pill:hover{border-color:var(--gold-bar);color:var(--gold-bar);background:var(--gold-pale);}
-.exp-pill.active{background:var(--gold-bar);color:#fff;border-color:var(--gold-bar);box-shadow:0 2px 6px rgba(107,91,53,.28);}
-.exp-pill:disabled{opacity:.35;cursor:not-allowed;}
+.exp-pill{padding:7px 14px;border:1.5px solid var(--border-dark);background:var(--white);color:var(--ink);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .15s;}
+.exp-pill:hover{border-color:var(--gold-bar);color:var(--gold-bar);}
+.exp-pill.active{background:var(--gold-bar);color:#fff;border-color:var(--gold-bar);}
+.exp-pill:disabled{opacity:.4;cursor:not-allowed;}
 </style>
 
 </body>
