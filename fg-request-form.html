@@ -146,7 +146,8 @@ textarea{resize:vertical;min-height:60px;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 const CATS=[
-  {cat:'Caballo Collection',catAr:'كبالو كولكشن',products:[
+  // ── EMIRATES PRIDE PERFUMES ──────────────────────────────
+  {cat:'EPP — Caballo Collection',catAr:'كبالو كولكشن',products:[
     {code:'C00002',en:'White 100ml Perfume',ar:'وايت 100 مل'},
     {code:'C00004',en:'Maroon 100ml Perfume',ar:'مارون 100 مل'},
     {code:'C00012',en:'Navy Perfume 100ml',ar:'عطر نيفي 100 مل'},
@@ -157,7 +158,7 @@ const CATS=[
     {code:'SP0005',en:'No.4',ar:'رقم 4'},
     {code:'C00014',en:'Black Perfume 100ml',ar:'بلاك 100 مل'},
   ]},
-  {cat:'Bel Collection',catAr:'بيل كولكشن',products:[
+  {cat:'EPP — Bel Collection',catAr:'بيل كولكشن',products:[
     {code:'B00001',en:'Bergamot bel Amber',ar:'برغموت بالعنبر'},
     {code:'B00002',en:'Jasmine bel Musk',ar:'جاسمين بالمسك'},
     {code:'B00003',en:'Amber Bel Oud',ar:'عنبر بالعود'},
@@ -180,7 +181,7 @@ const CATS=[
     {code:'B00019',en:'Masters Perfume 100ml',ar:'ماسترز برفيوم'},
     {code:'B00020',en:'Master Signature',ar:'ماستر سيجنتشر'},
   ]},
-  {cat:'Heritage Collection',catAr:'كولكشن التراث',products:[
+  {cat:'EPP — Heritage Collection',catAr:'كولكشن التراث',products:[
     {code:'HR0001',en:'Qalah — Heritage',ar:'قلعة'},
     {code:'HR0002',en:'Danah — Heritage',ar:'دانة'},
     {code:'HR0003',en:'Al Emarat — Heritage',ar:'الإمارات'},
@@ -189,7 +190,7 @@ const CATS=[
     {code:'HR0006',en:'Safeena — Heritage',ar:'سفينة'},
     {code:'HR0007',en:'Dallah — Heritage',ar:'دلة'},
   ]},
-  {cat:'Oud',catAr:'العود',products:[
+  {cat:'EPP — Oud',catAr:'العود',products:[
     {code:'O00001',en:'Oud Amiri',ar:'عود أميري'},
     {code:'O00002',en:'Oud Meydan',ar:'عود ميدان'},
     {code:'O00003',en:'Oud Al Emarat',ar:'عود الإمارات'},
@@ -197,7 +198,7 @@ const CATS=[
     {code:'O00008',en:'Oud Hindi Malaki — White Box',ar:'عود هندي ملكي'},
     {code:'O0007',en:'Oud Hindi Khas — Black Box',ar:'عود هندي خاص'},
   ]},
-  {cat:'Dakhoon',catAr:'الدخون',products:[
+  {cat:'EPP — Dakhoon',catAr:'الدخون',products:[
     {code:'D00001',en:'Dakhoon Al Emarat',ar:'دخون الإمارات'},
     {code:'D00003',en:'Dakhoon Badia',ar:'دخون بادية'},
     {code:'D00002',en:'Dakhoon Al Marasim',ar:'دخون المراسيم'},
@@ -205,45 +206,127 @@ const CATS=[
     {code:'D00005',en:'Dakhoon Al Barzah',ar:'دخون البرزة'},
     {code:'D00008',en:'Dakhoon Retaj',ar:'دخون رتاج'},
   ]},
-  {cat:'Sets & Specials',catAr:'الطقم والإصدارات',products:[
-    {code:'SP0037',en:'Future Bakhoor 100ml',ar:'بخور المستقبل'},
-    {code:'SP0038',en:'Future Oud 100ml',ar:'عود المستقبل'},
-    {code:'SP0022',en:'Reflection',ar:'ريفليكشن'},
-    {code:'SP0039',en:'Future Traditional Set 2×100ml',ar:'مجموعة المستقبل'},
-    {code:'SP0024',en:'My Signature Set Box',ar:'صندوق ماي سيجنتشر'},
+  {cat:'EPP — Sets & Specials',catAr:'الطقم والإصدارات',products:[
     {code:'SP0001',en:'White Oud Set Box',ar:'صندوق الوايت عود'},
     {code:'SP0006',en:'More of Oud',ar:'مور أوف عود'},
     {code:'SP0012',en:'White Set Box',ar:'صندوق وايت'},
     {code:'SP0013',en:'Maroon Set Box',ar:'صندوق مارون'},
+    {code:'SP0037',en:'Future Bakhoor 100ml',ar:'بخور المستقبل'},
+    {code:'SP0038',en:'Future Oud 100ml',ar:'عود المستقبل'},
+    {code:'SP0022',en:'Reflection',ar:'ريفليكشن'},
     {code:'SP0023',en:'Master Signature Box',ar:'صندوق ماستر'},
     {code:'SP0029',en:'Midnight Glow Set Box',ar:'صندوق ميدنايت غلو'},
+    {code:'DIF-001',en:'Future Oud Reed Diffuser',ar:'معطر عود المستقبل'},
+    {code:'SP0039',en:'Future Traditional Set 2×100ml',ar:'مجموعة المستقبل'},
+    {code:'SP0024',en:'My Signature Set Box',ar:'صندوق ماي سيجنتشر'},
   ]},
-  {cat:'Oils & Gifts',catAr:'الزيوت والهدايا',products:[
+  {cat:'EPP — Oils & Gifts',catAr:'الزيوت والهدايا',products:[
     {code:'I00001',en:'Hindi Special',ar:'هندي سبيشل'},
     {code:'I00002',en:'Seufi Special',ar:'سيوفي سبيشل'},
     {code:'I00003',en:'White Oil 8ml',ar:'زيت وايت'},
     {code:'I00004',en:'Maroon Oil 8ml',ar:'زيت مارون'},
     {code:'I00005',en:'No.4 Oil 8ml',ar:'زيت رقم 4'},
     {code:'I00006',en:'Musk Oil 8ml',ar:'زيت مسك'},
-    {code:'G00001',en:'Peaceful Life 10ml + Bag',ar:'بيسفول لايف 10مل'},
-    {code:'G00003',en:'White Oud 10ml + Bag',ar:'وايت عود 10مل'},
     {code:'G00007',en:'Masters 10ml',ar:'ماسترز 10مل'},
+    {code:'G00001',en:'Peaceful Life 10ml + Bag',ar:'بيسفول لايف 10مل'},
+    {code:'G00002',en:'Mysterious Rose 10ml',ar:'ميستيريوس روز 10مل'},
+    {code:'G00003',en:'White Oud 10ml + Bag',ar:'وايت عود 10مل'},
+    {code:'SP0019',en:'Hidden Tobacco 30ml',ar:'هيدن توباكو 30مل'},
+    {code:'SP0031',en:'Summer Collection Set',ar:'طقم مجموعة الصيف'},
+    {code:'SP0021',en:'Dakhoon Sampler',ar:'عينات دخون'},
+    {code:'BG0001',en:'Masters Signature 1.5ml Vial',ar:'ماسترز سيجنتشر 1.5مل'},
     {code:'G00008',en:'Master Signature 10ml',ar:'ماستر سيجنتشر 10مل'},
+    {code:'SP0035',en:'Midnight Bloom Set 2×10ml',ar:'مجموعة ميدنايت بلوم'},
+    {code:'SP0033',en:'White Kit',ar:'طقم وايت'},
     {code:'SP0008',en:'Discovery Set',ar:'طقم الاستكشاف'},
+    {code:'SPG002',en:'Future Oud 1.5ml Sampler',ar:'عينة عود المستقبل 1.5مل'},
+    {code:'SPG001',en:'Future Bakhoor 1.5ml Sampler',ar:'عينة بخور المستقبل 1.5مل'},
   ]},
-  {cat:'Gift Boxes',catAr:'صناديق الهدايا',products:[
-    {code:'BX0002',en:'3 Bel Black Box With 2 Oil',ar:'صندوق 3 بيل أسود'},
-    {code:'BX0011',en:'Dekoon Gift Set',ar:'طقم هدية دخون'},
-    {code:'BX0012',en:'VIP Combo Box',ar:'صندوق VIP'},
-    {code:'BX0015',en:'Luxury Gift Box',ar:'صندوق فاخر'},
-    {code:'BX0014',en:'BOD Gift Box',ar:'صندوق BOD'},
-  ]},
-  {cat:'Accessories',catAr:'الإكسسوارات',products:[
+  {cat:'EPP — Accessories',catAr:'الإكسسوارات',products:[
     {code:'AC0001',en:'Medkhan (Small)',ar:'مدخن صغير'},
     {code:'AC0002',en:'Charcoal',ar:'فحم'},
     {code:'AC0003',en:'Lighter',ar:'ولاعة'},
     {code:'AC0004',en:'Picker',ar:'بيكر'},
     {code:'CDL0001',en:'MS Candle',ar:'شمعة'},
+  ]},
+  {cat:'EPP — Gift Boxes',catAr:'صناديق الهدايا',products:[
+    {code:'BX0002',en:'3 Bel Black Box With 2 Oil',ar:'صندوق 3 بيل أسود'},
+    {code:'BX0014',en:'BOD Gift Box',ar:'صندوق BOD'},
+    {code:'BX0011',en:'Dekoon Gift Set',ar:'طقم هدية دخون'},
+    {code:'BX0012',en:'VIP Combo Box',ar:'صندوق VIP'},
+    {code:'BX0015',en:'Luxury Gift Box',ar:'صندوق فاخر'},
+  ]},
+  {cat:'EPP — Bel Paper Box (Gift Sets)',catAr:'بيل باكيدج هدايا',products:[
+    {code:'B0001-PB',en:'Bergamot bel Amber — Paper Box',ar:'برغموت بالعنبر باكيدج'},
+    {code:'B0002-PB',en:'Jasmine bel Musk — Paper Box',ar:'جاسمين بالمسك باكيدج'},
+    {code:'B0003-PB',en:'Amber Bel Oud — Paper Box',ar:'عنبر بالعود باكيدج'},
+    {code:'B0004-PB',en:'Meydan — Paper Box',ar:'ميدان باكيدج'},
+    {code:'B0005-PB',en:'Mystery — Paper Box',ar:'ميستري باكيدج'},
+    {code:'B0006-PB',en:'Mersal — Paper Box',ar:'مرسال باكيدج'},
+    {code:'B0007-PB',en:'Peaceful Life — Paper Box',ar:'بيسفول لايف باكيدج'},
+    {code:'B0008-PB',en:'Midnight Glow — Paper Box',ar:'ميدنايت غلو باكيدج'},
+    {code:'B00021-PB',en:'Midnight Bloom — Paper Box',ar:'ميدنايت بلوم باكيدج'},
+    {code:'B0009-PB',en:'Golden Chance — Paper Box',ar:'غولدن تشانس باكيدج'},
+    {code:'B0010-PB',en:'Sakura — Paper Box',ar:'سكورا باكيدج'},
+    {code:'B0011-PB',en:'Ambergris — Paper Box',ar:'عنبر باكيدج'},
+    {code:'B0012-PB',en:'Arabica — Paper Box',ar:'أرابيكا باكيدج'},
+    {code:'B0013-PB',en:'Firewood — Paper Box',ar:'فيروود باكيدج'},
+    {code:'B0014-PB',en:'Hidden Leather — Paper Box',ar:'هيدن ليذر باكيدج'},
+    {code:'B0015-PB',en:'Mysterious Rose — Paper Box',ar:'ميستيريوس روز باكيدج'},
+    {code:'B0016-PB',en:'Thekrayat — Paper Box',ar:'ذكريات باكيدج'},
+    {code:'B0017-PB',en:'Hidden Tobacco — Paper Box',ar:'هيدن توباكو باكيدج'},
+    {code:'B0018-PB',en:'Masters — Paper Box',ar:'ماسترز باكيدج'},
+    {code:'B00020-PB',en:'Masters Signature — Paper Box',ar:'ماسترز سيجنتشر باكيدج'},
+  ]},
+  // ── ASL ──────────────────────────────────────────────────
+  {cat:'ASL — Perfumes 50ml',catAr:'عطور ASL ٥٠مل',products:[
+    {code:'AP001',en:'Black Vanilla',ar:'بلاك فانيلا ٥٠مل'},
+    {code:'AP002',en:'Secret Leather',ar:'سيكريت ليذر ٥٠مل'},
+    {code:'AP003',en:'White Bouquet',ar:'وايت بوكيه ٥٠مل'},
+    {code:'AP004',en:'Leather Intense',ar:'ليذر إنتنس ٥٠مل'},
+    {code:'AP005',en:'Rich Vanilla',ar:'ريتش فانيلا ٥٠مل'},
+    {code:'AP006',en:'Spicy Sandal',ar:'سبايسي ساندال ٥٠مل'},
+    {code:'AP007',en:'Velvet Amber',ar:'فيلفيت عنبر ٥٠مل'},
+    {code:'AP008',en:'Dark Musk',ar:'دارك مسك ٥٠مل'},
+    {code:'AP009',en:'Royal Tobacco',ar:'رويال توباكو ٥٠مل'},
+    {code:'AP010',en:'Patchouli Glow',ar:'باتشولي غلو ٥٠مل'},
+    {code:'AP011',en:'Dark Wood Perfume 50ml',ar:'دارك وود برفيوم ٥٠مل'},
+  ]},
+  {cat:'ASL — Hair & Body Mist',catAr:'بخاخ الشعر والجسم ASL',products:[
+    {code:'AH005',en:'Black Vanilla Hair & Body Mist',ar:'بخاخ بلاك فانيلا للشعر والجسم'},
+    {code:'AH006',en:'Secret Leather Hair & Body Mist',ar:'بخاخ سيكريت ليذر للشعر والجسم'},
+    {code:'AH003',en:'Velvet Amber Hair & Body Mist',ar:'بخاخ فيلفيت عنبر للشعر والجسم'},
+    {code:'AH008',en:'Dark Musk Hair & Body Mist',ar:'بخاخ دارك مسك للشعر والجسم'},
+    {code:'AH009',en:'Royal Tobacco Hair & Body Mist',ar:'بخاخ رويال توباكو للشعر والجسم'},
+  ]},
+  {cat:'ASL — Oils 6ml',catAr:'زيوت ASL ٦مل',products:[
+    {code:'AO001',en:'Black Vanilla Oil 6ml',ar:'زيت بلاك فانيلا ٦مل'},
+    {code:'AO002',en:'Secret Leather Oil 6ml',ar:'زيت سيكريت ليذر ٦مل'},
+    {code:'AO003',en:'White Bouquet Oil 6ml',ar:'زيت وايت بوكيه ٦مل'},
+    {code:'AO004',en:'Leather Intense Oil 6ml',ar:'زيت ليذر إنتنس ٦مل'},
+    {code:'AO005',en:'Rich Vanilla Oil 6ml',ar:'زيت ريتش فانيلا ٦مل'},
+    {code:'AO006',en:'Spicy Sandal Oil 6ml',ar:'زيت سبايسي ساندال ٦مل'},
+    {code:'AO007',en:'Velvet Amber Oil 6ml',ar:'زيت فيلفيت عنبر ٦مل'},
+    {code:'AO008',en:'Dark Musk Oil 6ml',ar:'زيت دارك مسك ٦مل'},
+    {code:'AO009',en:'Royal Tobacco Oil 6ml',ar:'زيت رويال توباكو ٦مل'},
+    {code:'AO010',en:'Patchouli Glow Oil 6ml',ar:'زيت باتشولي غلو ٦مل'},
+    {code:'AO011',en:'Dark Wood Oil 6ml',ar:'زيت دارك وود ٦مل'},
+  ]},
+  {cat:'ASL — Body Lotions',catAr:'لوشن الجسم ASL',products:[
+    {code:'ABL001',en:'Royal Tobacco Body Lotion 200ml',ar:'لوشن رويال توباكو ٢٠٠مل'},
+    {code:'ABL002',en:'Velvet Amber Body Lotion 200ml',ar:'لوشن فيلفيت عنبر ٢٠٠مل'},
+    {code:'ABL003',en:'Secret Leather Body Lotion 200ml',ar:'لوشن سيكريت ليذر ٢٠٠مل'},
+    {code:'ABL004',en:'Dark Musk Body Lotion 200ml',ar:'لوشن دارك مسك ٢٠٠مل'},
+  ]},
+  {cat:'ASL — Reed Diffusers & Air Fresheners',catAr:'معطرات ASL',products:[
+    {code:'ARD001',en:'Secret Leather Reed Diffuser 110ml',ar:'معطر سيكريت ليذر ١١٠مل'},
+    {code:'ARD002',en:'Cool Violet Reed Diffuser 110ml',ar:'معطر كول فيوليت ١١٠مل'},
+    {code:'ARD003',en:'White Bouquet Reed Diffuser 110ml',ar:'معطر وايت بوكيه ١١٠مل'},
+    {code:'AAF001',en:'Cool Violet Air Freshener 250ml',ar:'معطر جو كول فيوليت ٢٥٠مل'},
+    {code:'AAF002',en:'White Bouquet Air Freshener 250ml',ar:'معطر جو وايت بوكيه ٢٥٠مل'},
+  ]},
+  {cat:'ASL — Tanning Oil',catAr:'زيت التان ASL',products:[
+    {code:'ATO001',en:'Sunbeam Tanning Oil 250ml',ar:'زيت تان سانبيم ٢٥٠مل'},
   ]},
 ];
 const SB_URL='https://ncszurcrkngjcjqsowln.supabase.co';
