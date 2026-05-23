@@ -758,6 +758,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
         <option value="sku">View B — SKU Performance</option>
         <option value="targets">View C — Targets vs Actuals</option>
       </select>
+      <button class="filter-btn-ghost" onclick="openExportModal('sales')" style="margin-left:auto;">↓ Export</button>
     </div>
 
     <!-- DATA STATUS BAR — SALES -->
@@ -774,65 +775,6 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
         <span class="metric" id="sales-metric-regions">Regions: EPP, ASL, Oman</span>
       </div>
       <button class="refresh-btn" onclick="refreshSalesStatus()">↻ Refresh</button>
-    </div>
-
-    <!-- EXPORT PANEL — SALES -->
-    <div class="export-panel">
-      <div class="export-panel-header">
-        <div class="export-title">⬇ EXPORT OPTIONS — SALES BY COMPANY</div>
-        <div class="export-subtitle">Download professional executive reports in Excel or CSV format</div>
-      </div>
-
-      <div class="export-filters">
-        <div class="export-filter-group">
-          <label class="export-label">Period:</label>
-          <select class="sel" id="exp-sales-period" style="width:180px;">
-            <option value="monthly">Monthly (Default)</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="ytd">Year-to-Date</option>
-          </select>
-        </div>
-
-        <div class="export-filter-group">
-          <label class="export-label">Format:</label>
-          <div class="format-toggle">
-            <button class="fmt-btn active" data-format="excel" onclick="setSalesExportFormat('excel')">📊 Excel</button>
-            <button class="fmt-btn" data-format="csv" onclick="setSalesExportFormat('csv')">📄 CSV</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="export-company-buttons">
-        <button class="company-btn epp" onclick="exportSalesByCompany('EPP', 'excel')" title="Emirates Pride Perfumes Direct Stores">
-          <span class="company-badge">EPP</span>
-          <span class="company-name">EPP Sales</span>
-          <span class="company-stores">~30 UAE Stores</span>
-        </button>
-        <button class="company-btn asl" onclick="exportSalesByCompany('ASL', 'excel')" title="ASL Franchise Stores">
-          <span class="company-badge">ASL</span>
-          <span class="company-name">ASL Sales</span>
-          <span class="company-stores">~9 UAE Stores</span>
-        </button>
-        <button class="company-btn oman" onclick="exportSalesByCompany('OMAN', 'excel')" title="Oman Operations">
-          <span class="company-badge">OMAN</span>
-          <span class="company-name">Oman Sales</span>
-          <span class="company-stores">3 Stores</span>
-        </button>
-        <button class="company-btn ksa" onclick="exportSalesByCompany('KSA', 'excel')" title="Saudi Arabia (Data Pending)" disabled>
-          <span class="company-badge">KSA</span>
-          <span class="company-name">KSA Sales</span>
-          <span class="company-stores">Pending Data</span>
-        </button>
-      </div>
-
-      <div class="export-action-bar">
-        <button class="export-btn-consolidated" onclick="exportAllCompanies('excel')">
-          ⬇ Download All Companies (Excel)
-        </button>
-        <div class="export-metadata" id="sales-export-metadata">
-          Export will include: Monthly breakdown, Store performance, SKU analysis, Data audit sheet
-        </div>
-      </div>
     </div>
 
     <!-- E-Commerce Pending Notice -->
@@ -1227,6 +1169,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       </select>
       <button class="filter-btn-ghost" id="p-upload-btn" onclick="toggleProdPanel('prod-upload-panel','p-upload-btn','↑ Upload Plan','↓ Close')">↑ Upload Plan</button>
       <button class="filter-btn-ghost" id="p-wh-btn" onclick="toggleProdPanel('prod-wh-panel','p-wh-btn','⬡ WH Stock','↓ Close WH')" style="margin-left:auto;">⬡ WH Stock</button>
+      <button class="filter-btn-ghost" onclick="openExportModal('production')">↓ Export</button>
     </div>
 
     <!-- DATA STATUS BAR — PRODUCTION -->
@@ -1243,55 +1186,6 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
         <span class="metric" id="prod-metric-range">Date Range: —</span>
       </div>
       <button class="refresh-btn" onclick="refreshProductionStatus()">↻ Refresh</button>
-    </div>
-
-    <!-- EXPORT PANEL — PRODUCTION -->
-    <div class="export-panel">
-      <div class="export-panel-header">
-        <div class="export-title">⬇ EXPORT OPTIONS — PRODUCTION PLANS</div>
-        <div class="export-subtitle">Download professional production reports in Excel or CSV format</div>
-      </div>
-
-      <div class="export-filters">
-        <div class="export-filter-group">
-          <label class="export-label">Period:</label>
-          <select class="sel" id="exp-prod-period" style="width:180px;">
-            <option value="current">This Week</option>
-            <option value="next">Next Week</option>
-            <option value="prev">Previous Week</option>
-            <option value="all">All Weeks</option>
-          </select>
-        </div>
-
-        <div class="export-filter-group">
-          <label class="export-label">Format:</label>
-          <div class="format-toggle">
-            <button class="fmt-btn active" data-format="excel" onclick="setProductionExportFormat('excel')">📊 Excel</button>
-            <button class="fmt-btn" data-format="csv" onclick="setProductionExportFormat('csv')">📄 CSV</button>
-          </div>
-        </div>
-
-        <div class="export-filter-group">
-          <label class="export-label">Include:</label>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
-              <input type="checkbox" id="exp-prod-schedule" checked> Schedule
-            </label>
-            <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
-              <input type="checkbox" id="exp-prod-actuals" checked> Actual vs Plan
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="export-action-bar">
-        <button class="export-btn-consolidated" onclick="exportProductionReport('excel')">
-          ⬇ Download Production Report (Excel)
-        </button>
-        <div class="export-metadata">
-          Export will include: Weekly schedule, FG & Tester planned vs actual, WH coverage impact
-        </div>
-      </div>
     </div>
 
     <!-- ── Upload Production Plan Panel ── -->
@@ -1461,6 +1355,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
         <option value="transfers">Transfer History</option>
       </select>
       <button class="btn-outline" onclick="togglePanel('wh-upload-panel','wh-upload-btn','↑ Upload Report','↓ Close')" id="wh-upload-btn">↑ Upload Report</button>
+      <button class="filter-btn-ghost" onclick="openExportModal('warehouse')">↓ Export</button>
     </div>
 
     <!-- DATA STATUS BAR — WAREHOUSE -->
@@ -1477,67 +1372,6 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
         <span class="metric" id="wh-metric-quality">Data Quality: —</span>
       </div>
       <button class="refresh-btn" onclick="refreshWarehouseStatus()">↻ Refresh</button>
-    </div>
-
-    <!-- EXPORT PANEL — WAREHOUSE -->
-    <div class="export-panel">
-      <div class="export-panel-header">
-        <div class="export-title">⬇ EXPORT OPTIONS — WAREHOUSE REPORTS</div>
-        <div class="export-subtitle">Download professional warehouse stock & transfer reports in Excel or CSV format</div>
-      </div>
-
-      <div class="export-filters">
-        <div class="export-filter-group">
-          <label class="export-label">Division:</label>
-          <select class="sel" id="exp-wh-division" style="width:180px;">
-            <option value="ALL">All Divisions</option>
-            <option value="EPP">EPP UAE</option>
-            <option value="ASL">ASL UAE</option>
-            <option value="Oman">Oman</option>
-          </select>
-        </div>
-
-        <div class="export-filter-group">
-          <label class="export-label">Report Type:</label>
-          <select class="sel" id="exp-wh-type" style="width:220px;">
-            <option value="soh">Stock on Hand (SOH)</option>
-            <option value="transfers">Transfer History</option>
-            <option value="consolidated">Stock + Transfers (Consolidated)</option>
-          </select>
-        </div>
-
-        <div class="export-filter-group">
-          <label class="export-label">Format:</label>
-          <div class="format-toggle">
-            <button class="fmt-btn active" data-format="excel" onclick="setWarehouseExportFormat('excel')">📊 Excel</button>
-            <button class="fmt-btn" data-format="csv" onclick="setWarehouseExportFormat('csv')">📄 CSV</button>
-          </div>
-        </div>
-
-        <div class="export-filter-group">
-          <label class="export-label">Include:</label>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
-              <input type="checkbox" id="exp-wh-summary" checked> Stock Summary
-            </label>
-            <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
-              <input type="checkbox" id="exp-wh-detail" checked> Detailed Ledger
-            </label>
-            <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
-              <input type="checkbox" id="exp-wh-alerts" checked> Critical Alerts
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="export-action-bar">
-        <button class="export-btn-consolidated" onclick="exportWarehouseReport('excel')">
-          ⬇ Download Warehouse Report (Excel)
-        </button>
-        <div class="export-metadata">
-          Export will include: Stock summary, SKU analysis, critical alerts, data audit
-        </div>
-      </div>
     </div>
 
     <!-- Upload Panel -->
@@ -7745,6 +7579,227 @@ async function fcExportExcel() {
   window.XLSX.writeFile(wb, `EmiratesPride_DemandPlan_${now.toISOString().slice(0,10)}.xlsx`);
 }
 
+
+
+// ════════════════════════════════════════════════════════════════════════════
+// PROFESSIONAL EXPORT MODAL — shared across Sales, Production, Warehouse
+// ════════════════════════════════════════════════════════════════════════════
+
+let _exp = { tab: null, company: 'ALL', format: 'excel' };
+
+function openExportModal(tab) {
+  _exp.tab = tab;
+  _exp.company = 'ALL';
+  _exp.format = 'excel';
+
+  const modal = document.getElementById('exp-modal');
+  const overlay = document.getElementById('exp-modal-overlay');
+
+  // Reset format buttons
+  document.getElementById('exp-modal-btn-excel').setAttribute('data-active','1');
+  document.getElementById('exp-modal-btn-csv').removeAttribute('data-active');
+  _syncFormatBtns();
+
+  if (tab === 'sales') {
+    document.getElementById('exp-modal-eyebrow').textContent = 'SALES REPORT';
+    document.getElementById('exp-modal-heading').textContent = 'Download Sales Report';
+    // Status from sales bar
+    _syncModalStatus('sales-last-updated-date','sales-last-updated-time','sales-status-icon','sales-metric-records');
+    // Company pills
+    document.getElementById('exp-modal-companies').style.display = '';
+    document.getElementById('exp-modal-company-btns').innerHTML =
+      ['ALL','EPP','ASL','OMAN','KSA'].map((c,i) =>
+        `<button class="exp-pill${c==='ALL'?' active':''}"${c==='KSA'?' disabled title="No data yet"':''} onclick="selectExpCompany('${c}',this)">${c==='ALL'?'All Companies':c}</button>`
+      ).join('');
+    // Period
+    document.getElementById('exp-modal-period-row').style.display = '';
+    document.getElementById('exp-modal-period').innerHTML = `
+      <option value="monthly">Monthly</option>
+      <option value="quarterly">Quarterly</option>
+      <option value="ytd">Year-to-Date</option>`;
+    document.getElementById('exp-modal-period-label').textContent = 'Period';
+    // Type row hidden for sales
+    document.getElementById('exp-modal-type-row').style.display = 'none';
+
+  } else if (tab === 'production') {
+    document.getElementById('exp-modal-eyebrow').textContent = 'PRODUCTION REPORT';
+    document.getElementById('exp-modal-heading').textContent = 'Download Production Report';
+    _syncModalStatus('prod-last-updated-date','prod-last-updated-time','prod-status-icon','prod-metric-records');
+    // No company pills for production
+    document.getElementById('exp-modal-companies').style.display = 'none';
+    // Period
+    document.getElementById('exp-modal-period-row').style.display = '';
+    document.getElementById('exp-modal-period').innerHTML = `
+      <option value="current">This Week</option>
+      <option value="prev">Previous Week</option>
+      <option value="all">All Weeks</option>`;
+    document.getElementById('exp-modal-period-label').textContent = 'Period';
+    // Type row hidden for production
+    document.getElementById('exp-modal-type-row').style.display = 'none';
+
+  } else if (tab === 'warehouse') {
+    document.getElementById('exp-modal-eyebrow').textContent = 'WAREHOUSE REPORT';
+    document.getElementById('exp-modal-heading').textContent = 'Download Warehouse Report';
+    _syncModalStatus('wh-last-updated-date','wh-last-updated-time','wh-status-icon','wh-metric-records');
+    // Division pills
+    document.getElementById('exp-modal-companies').style.display = '';
+    document.getElementById('exp-modal-company-btns').innerHTML =
+      ['ALL','EPP','ASL','Oman'].map(c =>
+        `<button class="exp-pill${c==='ALL'?' active':''}" onclick="selectExpCompany('${c}',this)">${c==='ALL'?'All Divisions':c}</button>`
+      ).join('');
+    // Report type
+    document.getElementById('exp-modal-type-row').style.display = '';
+    document.getElementById('exp-modal-type').innerHTML = `
+      <option value="soh">Stock on Hand</option>
+      <option value="transfers">Transfer History</option>
+      <option value="consolidated">Stock + Transfers</option>`;
+    // Period hidden for warehouse
+    document.getElementById('exp-modal-period-row').style.display = 'none';
+  }
+
+  overlay.style.display = 'block';
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeExportModal() {
+  document.getElementById('exp-modal-overlay').style.display = 'none';
+  document.getElementById('exp-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function _syncModalStatus(dateId, timeId, iconId, recordsId) {
+  const d = document.getElementById(dateId)?.textContent || '—';
+  const t = document.getElementById(timeId)?.textContent || '—';
+  const rec = document.getElementById(recordsId)?.textContent || '—';
+  const iconEl = document.getElementById(iconId);
+  const dotColor = iconEl && iconEl.classList.contains('fresh') ? '#0B7A45'
+                 : iconEl && iconEl.classList.contains('stale') ? '#D4A127' : '#CC0000';
+  document.getElementById('exp-modal-dot').style.background = dotColor;
+  document.getElementById('exp-modal-date').textContent = d;
+  document.getElementById('exp-modal-time').textContent = t;
+  document.getElementById('exp-modal-records').textContent = rec;
+}
+
+function selectExpCompany(company, btn) {
+  _exp.company = company;
+  document.querySelectorAll('.exp-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setExpFormat(fmt) {
+  _exp.format = fmt;
+  if (fmt === 'excel') {
+    document.getElementById('exp-modal-btn-excel').setAttribute('data-active','1');
+    document.getElementById('exp-modal-btn-csv').removeAttribute('data-active');
+  } else {
+    document.getElementById('exp-modal-btn-csv').setAttribute('data-active','1');
+    document.getElementById('exp-modal-btn-excel').removeAttribute('data-active');
+  }
+  _syncFormatBtns();
+}
+
+function _syncFormatBtns() {
+  const excelActive = document.getElementById('exp-modal-btn-excel').hasAttribute('data-active');
+  const eb = document.getElementById('exp-modal-btn-excel');
+  const cb = document.getElementById('exp-modal-btn-csv');
+  eb.style.background = excelActive ? 'var(--gold-bar)' : 'var(--white)';
+  eb.style.color       = excelActive ? '#fff' : 'var(--ink-light)';
+  cb.style.background  = !excelActive ? 'var(--gold-bar)' : 'var(--white)';
+  cb.style.color       = !excelActive ? '#fff' : 'var(--ink-light)';
+}
+
+async function doExportDownload() {
+  const btn = document.getElementById('exp-modal-dl-btn');
+  btn.textContent = 'Preparing…';
+  btn.disabled = true;
+
+  const fmt    = _exp.format;
+  const period = document.getElementById('exp-modal-period')?.value || 'monthly';
+  const type   = document.getElementById('exp-modal-type')?.value   || 'soh';
+
+  closeExportModal();
+
+  try {
+    if (_exp.tab === 'sales') {
+      if (_exp.company === 'ALL') exportAllCompanies(fmt);
+      else exportSalesByCompany(_exp.company, fmt);
+
+    } else if (_exp.tab === 'production') {
+      await exportProductionReport(fmt);
+
+    } else if (_exp.tab === 'warehouse') {
+      await exportWarehouseReport(fmt);
+    }
+  } finally {
+    btn.textContent = '↓ Download Report';
+    btn.disabled = false;
+  }
+}
+
 </script>
+
+<!-- ══════════════════ EXPORT MODAL ══════════════════ -->
+<div id="exp-modal-overlay" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(15,12,8,.52);" onclick="closeExportModal()"></div>
+<div id="exp-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3001;width:500px;max-width:96vw;background:var(--white);border-radius:3px;box-shadow:0 24px 64px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.10);">
+
+  <!-- Header -->
+  <div style="background:var(--gold-bar);padding:22px 28px;border-radius:3px 3px 0 0;display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <div id="exp-modal-eyebrow" style="color:var(--gold);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin-bottom:5px;">SALES REPORT</div>
+      <div id="exp-modal-heading" style="color:#fff;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;line-height:1.1;">Download Sales Report</div>
+    </div>
+    <button onclick="closeExportModal()" style="background:none;border:none;color:rgba(255,255,255,.55);font-size:24px;line-height:1;cursor:pointer;padding:0 0 0 16px;margin-top:2px;">&times;</button>
+  </div>
+
+  <!-- Status strip -->
+  <div style="background:var(--cream);border-bottom:1px solid var(--border);padding:11px 28px;display:flex;align-items:center;gap:10px;font-family:'Montserrat',sans-serif;">
+    <span id="exp-modal-dot" style="width:8px;height:8px;border-radius:50%;background:#0B7A45;flex-shrink:0;"></span>
+    <span style="font-size:11px;color:var(--ink-mid);">Last Updated: <strong id="exp-modal-date" style="color:var(--ink);">—</strong> at <strong id="exp-modal-time" style="color:var(--ink);">—</strong> Dubai Time</span>
+    <span id="exp-modal-records" style="margin-left:auto;font-size:10px;color:var(--ink-light);letter-spacing:.05em;">—</span>
+  </div>
+
+  <!-- Body -->
+  <div style="padding:24px 28px 28px;">
+
+    <!-- Company / Division pills -->
+    <div id="exp-modal-companies" style="margin-bottom:20px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:10px;">Company</div>
+      <div id="exp-modal-company-btns" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>
+
+    <!-- Period -->
+    <div id="exp-modal-period-row" style="margin-bottom:20px;">
+      <label id="exp-modal-period-label" style="display:block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:8px;">Period</label>
+      <select id="exp-modal-period" class="sel" style="width:100%;"></select>
+    </div>
+
+    <!-- Report type (Warehouse only) -->
+    <div id="exp-modal-type-row" style="margin-bottom:20px;display:none;">
+      <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:8px;">Report Type</label>
+      <select id="exp-modal-type" class="sel" style="width:100%;"></select>
+    </div>
+
+    <!-- Format toggle -->
+    <div style="margin-bottom:24px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:8px;">Format</div>
+      <div style="display:flex;border:1.5px solid var(--border);border-radius:2px;overflow:hidden;">
+        <button id="exp-modal-btn-excel" onclick="setExpFormat('excel')" style="flex:1;padding:11px;border:none;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s;">Excel</button>
+        <button id="exp-modal-btn-csv" onclick="setExpFormat('csv')" style="flex:1;padding:11px;border:none;border-left:1.5px solid var(--border);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s;">CSV</button>
+      </div>
+    </div>
+
+    <!-- Download -->
+    <button id="exp-modal-dl-btn" onclick="doExportDownload()" style="width:100%;background:var(--gold-bar);color:#fff;border:none;padding:14px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:background .2s;">↓ Download Report</button>
+  </div>
+</div>
+
+<style>
+.exp-pill{padding:7px 14px;border:1.5px solid var(--border);background:var(--white);color:var(--ink-mid);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .15s;}
+.exp-pill:hover{border-color:var(--gold);color:var(--gold-dark);}
+.exp-pill.active{background:var(--gold-bar);color:#fff;border-color:var(--gold-bar);}
+.exp-pill:disabled{opacity:.4;cursor:not-allowed;}
+</style>
+
 </body>
 </html>
