@@ -267,7 +267,10 @@ function render(){
     html+='<div class="req-card">';
     html+='<div class="req-top">';
     html+='<div><div class="req-ref">'+r.request_ref+'</div><div class="req-time">'+fmtDT(r.submitted_at)+'</div></div>';
+    html+='<div style="display:flex;align-items:center;gap:7px;">';
+    html+='<button class="act-btn btn-pdf" style="padding:5px 11px;font-size:10px;font-weight:700;flex:none;" onclick="dlPDF(\''+r.request_ref+'\')">⬇ PDF</button>';
     html+='<div class="pill '+pillCls+'">'+r.status.toUpperCase()+'</div>';
+    html+='</div>';
     html+='</div>';
     html+='<div class="req-row"><b>Store:</b> '+store+'</div>';
     html+='<div class="req-row"><b>Employee:</b> '+r.employee_name+' ('+r.employee_id+')</div>';
@@ -320,11 +323,37 @@ async function rejectReq(ref){
 function dlPDF(ref){const rec=allData.find(r=>r.request_ref===ref);if(rec)generatePDF(rec);}
 
 function generatePDF(rec){
+  const isPending=rec.status==='pending';
   const isApproved=rec.status==='approved';
-  const sc=isApproved?'#10B981':'#EF4444';
-  const sbg=isApproved?'#D1FAE5':'#FEE2E2';
+  const sc=isPending?'#92400E':isApproved?'#10B981':'#EF4444';
+  const sbg=isPending?'#FEF3C7':isApproved?'#D1FAE5':'#FEE2E2';
+  const badge=isPending?'⏳ PENDING':isApproved?'✓ APPROVED':'✕ REJECTED';
+  const docTitle=isPending?'Pending Request':isApproved?'Approval Copy':'Rejection Copy';
   const itemRows=(rec.items||[]).map((it,i)=>`<tr style="border-bottom:1px solid #F0EDE6;"><td style="padding:8px 12px;color:#888;">${i+1}</td><td style="padding:8px 12px;">${it.product||'—'}</td><td style="padding:8px 12px;text-align:center;font-weight:700;">${it.qty}</td></tr>`).join('');
   const totalQty=(rec.items||[]).reduce((s,i)=>s+(i.qty||0),0);
+
+  let actionBox='';
+  if(isPending){
+    actionBox=`<div class="action-box"><div class="action-title">⏳ Awaiting Manager Approval</div>
+    <div class="grid">
+      <div class="fi"><label>Submitted At</label><span>${fmtDT(rec.submitted_at)}</span></div>
+      <div class="fi"><label>Status</label><span style="color:#92400E;">Pending Review</span></div>
+    </div></div>`;
+  }else if(isApproved){
+    actionBox=`<div class="action-box"><div class="action-title">✓ Approved by Manager</div>
+    <div class="grid">
+      <div class="fi"><label>Approved By</label><span>${rec.approved_by||'—'}</span></div>
+      <div class="fi"><label>Approval Date</label><span>${rec.approved_at?fmtDate(rec.approved_at):'—'}</span></div>
+    </div></div>`;
+  }else{
+    actionBox=`<div class="action-box"><div class="action-title">✕ Rejected by Manager</div>
+    <div class="grid">
+      <div class="fi"><label>Rejected By</label><span>${rec.approved_by||'—'}</span></div>
+      <div class="fi"><label>Rejection Date</label><span>${rec.approved_at?fmtDate(rec.approved_at):'—'}</span></div>
+      ${rec.rejection_reason?`<div class="fi" style="grid-column:1/-1;"><label>Reason for Rejection</label><span style="color:#991B1B;">${rec.rejection_reason}</span></div>`:''}
+    </div></div>`;
+  }
+
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>FG ${rec.status.toUpperCase()} ${rec.request_ref}</title>
   <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:#fff;color:#1A1A1A;}
@@ -343,22 +372,17 @@ function generatePDF(rec){
   td{font-size:12px;}tfoot td{background:#F0EDE6;font-weight:700;}
   .foot{margin-top:20px;padding-top:14px;border-top:2px solid #E8E4DC;display:flex;justify-content:space-between;font-size:10px;color:#888;}
   @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>
-  <div class="hdr"><div class="hdr-l"><h1>EMIRATES PRIDE</h1><p>FG to Tester Request — ${isApproved?'Approval':'Rejection'} Copy</p></div>
-  <div class="hdr-r"><div class="ref">${rec.request_ref}</div><div class="badge">${isApproved?'✓ APPROVED':'✕ REJECTED'}</div></div></div>
+  <div class="hdr"><div class="hdr-l"><h1>EMIRATES PRIDE</h1><p>FG to Tester Request — ${docTitle}</p></div>
+  <div class="hdr-r"><div class="ref">${rec.request_ref}</div><div class="badge">${badge}</div></div></div>
   <div class="body">
-    <div class="action-box"><div class="action-title">${isApproved?'✓ Approved':'✕ Rejected'} by Manager</div>
-    <div class="grid">
-      <div class="fi"><label>${isApproved?'Approved':'Rejected'} By</label><span>${rec.approved_by||'—'}</span></div>
-      <div class="fi"><label>${isApproved?'Approval':'Rejection'} Date</label><span>${rec.approved_at?fmtDate(rec.approved_at):'—'}</span></div>
-      ${!isApproved&&rec.rejection_reason?`<div class="fi" style="grid-column:1/-1;"><label>Reason for Rejection</label><span style="color:#991B1B;">${rec.rejection_reason}</span></div>`:''}
-    </div></div>
+    ${actionBox}
     <div class="sec"><div class="sec-title">Request Details</div><div class="grid">
       <div class="fi"><label>Date Submitted</label><span>${fmtDate(rec.submitted_at)}</span></div>
       <div class="fi"><label>Store</label><span>${(rec.store_name||'').split('|')[0].trim()}</span></div>
       <div class="fi"><label>Employee Name</label><span>${rec.employee_name||'—'}</span></div>
       <div class="fi"><label>Employee ID</label><span>${rec.employee_id||'—'}</span></div>
     </div></div>
-    <div class="sec"><div class="sec-title">Items ${isApproved?'Approved':'Requested'} — ${(rec.items||[]).length} Products</div>
+    <div class="sec"><div class="sec-title">Items ${isPending?'Requested':isApproved?'Approved':'Requested'} — ${(rec.items||[]).length} Products</div>
       <table><thead><tr><th>#</th><th>Product</th><th style="text-align:center;">Qty</th></tr></thead>
       <tbody>${itemRows}</tbody>
       <tfoot><tr><td colspan="2" style="padding:8px 12px;text-align:right;">Total Units:</td><td style="padding:8px 12px;text-align:center;">${totalQty}</td></tr></tfoot>
