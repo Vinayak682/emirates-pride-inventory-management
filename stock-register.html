@@ -12964,7 +12964,7 @@ function generateFGApprovalPDF(rec){
   <div class="hdr"><div class="hdr-l"><h1>EMIRATES PRIDE</h1><p>FG to Tester Request — ${isApproved?'Approval':'Rejection'} Copy</p></div>
   <div class="hdr-r"><div class="ref">${rec.request_ref}</div><div class="badge">${isApproved?'✓ APPROVED':'✕ REJECTED'}</div></div></div>
   <div class="body">
-    <div class="action-box"><div class="action-title">${isApproved?'✓ Approved':'✕ Rejected'} by Manager</div>
+    <div class="action-box"><div class="action-title">${isApproved?'✓ Approved By':'✕ Rejected By'}</div>
     <div class="grid">
       <div class="fi"><label>${isApproved?'Approved':'Rejected'} By</label><span>${rec.approved_by||'—'}</span></div>
       <div class="fi"><label>${isApproved?'Approval':'Rejection'} Date</label><span>${rec.approved_at?fmtDate(rec.approved_at):'—'}</span></div>
