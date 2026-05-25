@@ -3053,71 +3053,52 @@ function setInvDefaultDate(){ document.getElementById('inv-date').value=new Date
 async function loadInvFromSupabase(){
   if(invLoading) return;
   invLoading = true;
-
-  // Show skeleton in history table
   document.getElementById('inv-history-tbody').innerHTML=
     `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-light);">
-      <div class="spinner" style="margin:0 auto 10px;"></div>Loading inventory history…
+      <div class="spinner" style="margin:0 auto 10px;"></div>Loading store inventory…
     </td></tr>`;
-
   try {
-    const { data: uploads, error: uErr } = await sb
-      .from('sop_inventory_uploads')
-      .select('*')
-      .order('uploaded_at', { ascending: false })
-      .limit(300);
-    if(uErr) throw uErr;
+    // Read from store_soh_snapshots (excludes warehouse rows WH_EPP / WH_ASL)
+    const { data: rows, error } = await sb
+      .from('store_soh_snapshots')
+      .select('store_code,store_name,snapshot_date,sku_code,product_name,soh_qty')
+      .not('store_code','in','(WH_EPP,WH_ASL)')
+      .order('snapshot_date',{ascending:false})
+      .order('store_code')
+      .limit(8000);
+    if(error) throw error;
 
-    if(!uploads.length){
-      // One-time migration: check localStorage for legacy data
-      const local = JSON.parse(localStorage.getItem('sop_inv_v2') || '[]');
-      if(local.length){
-        toast('Migrating local inventory to cloud…');
-        await _migrateLocalInvToSupabase(local);
-        return; // _migrate calls loadInvFromSupabase again at the end
-      }
-      invLoaded = true; invLoading = false;
+    if(!rows||!rows.length){
+      invLoaded=true; invLoading=false;
       refreshInvHistory(); loadCurrentInventory(); return;
     }
 
-    // Fetch all lines for these uploads
-    const uploadIds = uploads.map(u => u.id);
-    const { data: lines, error: lErr } = await sb
-      .from('sop_inventory_history')
-      .select('upload_id,sku_code,product_name,qty_on_hand')
-      .in('upload_id', uploadIds);
-    if(lErr) throw lErr;
-
-    // Group lines by upload_id
-    const linesByUpload = {};
-    (lines||[]).forEach(l => {
-      (linesByUpload[l.upload_id] = linesByUpload[l.upload_id] || []).push(l);
+    // Group by store_code + snapshot_date → one "upload" entry per store per date
+    const groups={};
+    (rows||[]).forEach(r=>{
+      const key=`${r.store_code}||${r.snapshot_date}`;
+      if(!groups[key]) groups[key]={store:r.store_code,date:r.snapshot_date,data:[]};
+      groups[key].data.push({sku_code:r.sku_code||'',name:r.product_name,qty_upload:r.soh_qty||0});
     });
 
-    // Reconstruct invHistory in the same shape the rest of the code expects
-    invHistory = uploads.map(u => ({
-      id:    u.id,
-      store: u.store_code,
-      date:  u.snapshot_date,
-      skus:  u.sku_count,
-      total: u.total_units,
-      by:    u.uploaded_by || 'S&OP Portal',
-      data:  (linesByUpload[u.id] || []).map(l => ({
-        sku_code:   l.sku_code,
-        name:       l.product_name,
-        qty_upload: l.qty_on_hand
-      }))
+    let uid=1;
+    invHistory=Object.values(groups).map(g=>({
+      id: uid++,
+      store: g.store,
+      date:  g.date,
+      skus:  g.data.filter(d=>d.sku_code).length,
+      total: g.data.reduce((s,d)=>s+(d.qty_upload||0),0),
+      by:    'Store SOH — 24 May 2026',
+      data:  g.data
     }));
-
-    invLoaded = true;
-  } catch(e) {
-    toast('Inventory load failed: ' + e.message);
-    // Fall back to localStorage so the tab isn't empty
-    invHistory = JSON.parse(localStorage.getItem('sop_inv_v2') || '[]');
-    invLoaded = true;
+    invHistory.sort((a,b)=>b.date.localeCompare(a.date)||a.store.localeCompare(b.store));
+    invLoaded=true;
+  } catch(e){
+    toast('Inventory load failed: '+e.message);
+    invHistory=[];
+    invLoaded=true;
   }
-
-  invLoading = false;
+  invLoading=false;
   _populateInvViewStore();
   refreshInvHistory();
   loadCurrentInventory();
@@ -4877,23 +4858,38 @@ async function loadWarehouseData(){
   document.getElementById('wh-loading').style.display='block';
   document.getElementById('wh-content').style.display='none';
   document.getElementById('wh-empty').style.display='none';
-
-  // Set today as default snapshot date
   const dateEl=document.getElementById('wh-up-date');
   if(dateEl&&!dateEl.value) dateEl.value=isoDate(new Date());
 
-  let sohQ=sb.from('wh_stock_on_hand').select('*').order('qty',{ascending:false}).limit(2000);
-  let trfQ=sb.from('wh_transfers').select('*').order('transfer_date',{ascending:false}).limit(5000);
-  if(div!=='ALL'){ sohQ=sohQ.eq('division',div); trfQ=trfQ.eq('division',div); }
+  // Read warehouse rows from store_soh_snapshots (WH_EPP = EPP warehouse, WH_ASL = ASL warehouse)
+  let q=sb.from('store_soh_snapshots')
+    .select('store_code,category,sku_code,product_name,soh_qty,snapshot_date')
+    .in('store_code',['WH_EPP','WH_ASL'])
+    .order('soh_qty',{ascending:false})
+    .limit(2000);
+  if(div!=='ALL'){ const wc=div==='EPP'?'WH_EPP':'WH_ASL'; q=q.eq('store_code',wc); }
 
-  const [{data:soh,error:e1},{data:trf,error:e2}]=await Promise.all([sohQ,trfQ]);
-  if(e1||e2){
+  const {data:soh,error}=await q;
+  if(error||!soh||!soh.length){
     document.getElementById('wh-loading').style.display='none';
     document.getElementById('wh-empty').style.display='block';
-    document.getElementById('wh-empty').innerHTML=`<div style="color:#C0392B;font-size:18px;margin-bottom:8px;">⚠ No warehouse data yet</div><div style="font-size:13px;">Run the SQL in Supabase to create tables, then use ↑ Upload Report to add data</div>`;
+    document.getElementById('wh-empty').innerHTML=
+      `<div style="color:#C0392B;font-size:18px;margin-bottom:8px;">&#9888; No warehouse data found</div>
+       <div style="font-size:13px;">Run upload_warehouse_soh.py to populate WH stock from ATALO CSVs</div>`;
     return;
   }
-  whSohData=soh||[]; whTrfData=trf||[]; whLoaded=true;
+  // Map to the shape renderSOHTable expects: {division, sku_code, item_name, stock_type, qty, snapshot_date}
+  whSohData=soh.map(r=>({
+    division:       r.store_code==='WH_EPP'?'EPP':'ASL',
+    sku_code:       r.sku_code||'',
+    item_name:      r.product_name||'',
+    item_spec_name: '',
+    stock_type:     'Good Stock',
+    qty:            r.soh_qty||0,
+    snapshot_date:  r.snapshot_date,
+    category:       r.category||''
+  }));
+  whTrfData=[]; whLoaded=true;
   document.getElementById('wh-loading').style.display='none';
   renderWarehouseKPIs(); renderWarehouseView();
   refreshWarehouseStatus();
