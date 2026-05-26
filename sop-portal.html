@@ -7893,12 +7893,42 @@ function intelAppendMsg(role, text) {
   const msgs = document.getElementById('intel-chat-msgs');
   const div = document.createElement('div');
   div.className = role === 'user' ? 'intel-msg-user' : 'intel-msg-bot';
-  div.innerHTML = text
+
+  // Strip Excel block from display text, keep a download button instead
+  let displayText = text;
+  let csvData = null;
+  const excelMatch = text.match(/\[EXCEL_START\]([\s\S]*?)\[EXCEL_END\]/);
+  if (excelMatch) {
+    csvData = excelMatch[1].trim();
+    displayText = text.replace(/\[EXCEL_START\][\s\S]*?\[EXCEL_END\]/, '').trim();
+  }
+
+  div.innerHTML = displayText
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/### (.*?)(\n|$)/g, '<strong style="font-size:13px;color:var(--gold-bar)">$1</strong><br>')
+    .replace(/\| (.+) \|/g, (m) => `<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px">${m}</span>`)
     .replace(/\n/g, '<br>');
+
+  if (csvData) {
+    const btn = document.createElement('button');
+    btn.innerHTML = '⬇ Download Excel';
+    btn.style.cssText = 'margin-top:10px;padding:7px 14px;background:var(--gold);color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-family:\'Montserrat\',sans-serif;font-weight:600;display:block;';
+    btn.onclick = () => intelDownloadExcel(csvData);
+    div.appendChild(btn);
+  }
+
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
   return div;
+}
+
+function intelDownloadExcel(csvData) {
+  if (typeof XLSX === 'undefined') { alert('Excel library not loaded'); return; }
+  const rows = csvData.split('\n').map(r => r.split(',').map(c => c.trim()));
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Intelligence Report');
+  XLSX.writeFile(wb, `Emirates_Pride_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 function intelAppendTyping() {
