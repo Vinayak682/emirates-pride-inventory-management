@@ -29,7 +29,7 @@ Guidelines:
 - Use bullet points and short tables for comparisons. Avoid long paragraphs.
 - When identifying risks, be specific (store name, SKU, weeks of cover remaining).
 - Translate data into decisions: "Store X needs Y units of SKU Z this week."
-- If data is insufficient to answer confidently, say so and suggest what data would help.
+- If data is insufficient to answer confidently, say so.
 - Currency: AED. Dates: DD/MM/YYYY or Month-YYYY format.`
 
 serve(async (req) => {
@@ -67,7 +67,6 @@ serve(async (req) => {
       salesByStore[row.store_code][row.month_year] = (salesByStore[row.store_code][row.month_year] || 0) + row.qty_sold
     }
 
-    // Stockout alerts: high velocity + low recent qty
     const alerts = (benchRes.data || []).filter(b => b.weekly_avg > 5 && b.l30d_qty < b.weekly_avg * 2).slice(0, 15)
 
     const dataContext = `
@@ -87,41 +86,34 @@ ${JSON.stringify((transferRes.data || []).slice(0, 80), null, 2)}
 ${JSON.stringify((amRes.data || []).slice(0, 30), null, 2)}
 `
 
-    const geminiKey = Deno.env.get('GEMINI_API_KEY')!
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`
+    // Build messages for Groq (OpenAI-compatible format)
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...conversation_history.slice(-6),
+      { role: 'user', content: `[LIVE DATA SNAPSHOT]\n${dataContext}\n\n[USER QUESTION]\n${message}` },
+    ]
 
-    // Build Gemini contents array from conversation history
-    const contents = []
-
-    for (const turn of conversation_history.slice(-6)) {
-      contents.push({
-        role: turn.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: turn.content }],
-      })
-    }
-
-    contents.push({
-      role: 'user',
-      parts: [{ text: `[LIVE DATA SNAPSHOT]\n${dataContext}\n\n[USER QUESTION]\n${message}` }],
-    })
-
-    const geminiRes = await fetch(geminiUrl, {
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('GROQ_API_KEY')}`,
+      },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents,
-        generationConfig: { temperature: 0.3, maxOutputTokens: 1500 },
+        model: 'llama-3.3-70b-versatile',
+        messages,
+        temperature: 0.3,
+        max_tokens: 1500,
       }),
     })
 
-    if (!geminiRes.ok) {
-      const err = await geminiRes.text()
-      throw new Error(`Gemini API error: ${geminiRes.status} — ${err}`)
+    if (!groqRes.ok) {
+      const err = await groqRes.text()
+      throw new Error(`Groq API error: ${groqRes.status} — ${err}`)
     }
 
-    const geminiData = await geminiRes.json()
-    const reply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.'
+    const groqData = await groqRes.json()
+    const reply = groqData.choices?.[0]?.message?.content || 'No response generated.'
 
     return new Response(JSON.stringify({ reply }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
