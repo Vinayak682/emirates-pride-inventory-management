@@ -1,6 +1,6 @@
 # Emirates Pride — Intelligence Tab Skill
 ## S&OP Intelligence, Replenishment Planning & Proactive Notification System
-**Version**: 2.0 | **Owner**: Amal Kandathil, Demand Planner | **Last Updated**: May 2026
+**Version**: 2.0 | **Owner**: Emirates Pride Operations | **Last Updated**: May 2026
 
 ---
 
@@ -131,7 +131,7 @@ CREATE POLICY "allow_all" ON store_alerts FOR ALL USING (true) WITH CHECK (true)
 
 ### Nad Al Hammar Warehouse → Store Delivery Schedule
 
-**To be confirmed by Amal and warehouse team.** Template below:
+**To be confirmed with the warehouse team.** Template below:
 
 | Store Code | Store Name | Delivery Days | Frequency | Lead Time | Route |
 |-----------|-----------|--------------|-----------|-----------|-------|
@@ -340,7 +340,7 @@ rec_qty(sku, store) =
 | 8 | Consumables View (View 8) | 🔲 Framework only | consumable_stock table needs data |
 | 9 | store_replenishment_schedule table + SQL | 🔲 SQL written, not created | Run SQL in Supabase |
 | 10 | consumable_items + consumable_stock tables | 🔲 SQL written, not created | Run SQL in Supabase |
-| 11 | Per-store delivery calendar UI | 🔲 Not started | Schedule data from Amal |
+| 11 | Per-store delivery calendar UI | 🔲 Not started | Schedule data from warehouse team |
 | 12 | WhatsApp notification integration | 🔲 Not started | WhatsApp Business API key |
 | 13 | pg_cron nightly alert generation | 🔲 Not started | Supabase Pro plan required |
 | 14 | Tab data sharing (reuse cached data) | ✅ Built | — |

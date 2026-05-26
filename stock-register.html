@@ -14360,7 +14360,7 @@ async function saveAMSession(){
     sales_notes:'',
     general_notes:document.getElementById('mGeneralNotes').value||'',
     action_items:document.getElementById('mActionItems').value||'',
-    logged_by:'Amal'
+    logged_by:'Manager'
   };
   try{
     const {error}=await _SBC.from('am_feedback_sessions').insert([payload]);
@@ -14389,7 +14389,7 @@ async function saveAMIssue(){
     severity:document.getElementById('mIssSev').value,
     status:'Open',
     raised_date:document.getElementById('mIssDate').value,
-    logged_by:'Amal'
+    logged_by:'Manager'
   };
   try{
     const {error}=await _SBC.from('am_issues_log').insert([payload]);

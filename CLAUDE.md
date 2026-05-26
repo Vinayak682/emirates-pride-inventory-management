@@ -1,3 +1,130 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+---
+
+## Commands
+
+### Local Development
+No build step. All frontend files are plain HTML/CSS/JS — open directly in a browser or serve locally:
+```bash
+python3 -m http.server 8080
+# then open http://localhost:8080/stock-register.html
+```
+
+### Monthly Sales Upload (Python)
+```bash
+python3 monthly_sales_upload.py path/to/April_2026_Sales.xlsx
+```
+Requires: `openpyxl`, `requests` (`pip install openpyxl requests`).  
+**Set `SUPABASE_SERVICE_KEY`** in the script before running — the placeholder `YOUR_SERVICE_ROLE_KEY_HERE` must be replaced with the actual service role key (never commit this).
+
+### OCR Stock Upload (Python)
+```bash
+python3 stock_ocr_api.py
+```
+Separate API server for the barcode/OCR scanner workflow (`stock-ocr-upload.html`).
+
+### Supabase SQL — Execution Order (one-time setup)
+Run these in Supabase SQL Editor in this order:
+1. `create_tables.sql` — core tables (`sales_history`, `benchmarks_cache`, `transfer_history`, `data_uploads_log`)
+2. `pin_table_setup.sql` — `store_pins` table + `verify_store_pin()` RPC (SECURITY DEFINER)
+3. `security_setup.sql` — `store_sessions`, `audit_log`, `security_config`, Postgres trigger
+4. `am_requests_setup.sql` — `am_weekly_requests`, `am_feedback_sessions`, `am_issues_log`
+5. `am_requests_migration.sql` — adds `fulfilled_items`, `approval_remarks`, `edit_history` columns
+6. `scanner_db_setup.sql` — barcode scanner tables
+
+### Supabase Edge Function
+```bash
+supabase functions deploy security-alert
+# Set secrets:
+supabase secrets set RESEND_API_KEY=xxx ALERT_EMAIL=xxx
+```
+Source: `supabase/functions/security-alert/index.ts`
+
+### Deploy
+Push to `main` → GitHub Pages auto-deploys within ~60 seconds. No CI/CD config needed.
+
+---
+
+## Architecture
+
+### Request / Data Flow
+```
+Browser (GitHub Pages static HTML)
+  └── Supabase REST API (anon key, client-side)
+        ├── verify_store_pin() RPC  →  boolean only (PIN never exposed)
+        ├── stock_cells table        →  read/write per store+day
+        ├── sales_history            →  17K+ rows, read-only for client
+        ├── am_weekly_requests       →  JSONB items column
+        └── audit_log                →  written by Postgres trigger + JS
+              └── anomaly detected → supabase/functions/security-alert → Resend email
+```
+
+### File Roles
+| File | Role | Size |
+|------|------|------|
+| `stock-register.html` | Core daily operations app — all store/MGR/WH logic in one file | 799 KB |
+| `index.html` | Operations 2.0 — older GRN/transfer/tester entry app | 126 KB |
+| `sop-portal.html` | S&OP reporting portal — 8 tabs, queries `sales_history` | 400 KB |
+| `am-stock-request.html` | Mobile AM request form — 4-screen flow, 163 SKUs bilingual | 51 KB |
+| `stock-register-REGION-SPECIFIC.html` | Variant with per-region filtering | 515 KB |
+
+All HTML files are self-contained — styles, scripts, and data (SKU catalogue) are inline. There is no shared JS module or CSS file.
+
+### stock-register.html — Internal Structure
+The file is ~18,000 lines. Key sections in order:
+1. **CSS** (`:root` tokens → layout → grid → panels → modals)
+2. **HTML shell** — login overlay → app topbar → day tabs → product grid → all slide-up panels
+3. **JS constants** — `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `STORES[]` array (35+ entries with store codes, names, AM assignment)
+4. **Auth layer** — `doLogin()` (async RPC), `submitMgrPin()`, session flags (`isAmSession`, `amManagedStores`)
+5. **Grid rendering** — `renderGrid()`, `renderDay()`, cell update functions
+6. **Supabase sync** — `loadDayData()`, `saveCell()`, `loadAllStores()`
+7. **Security module** — `_secCreateSession()`, `_secQAudit()`, anomaly detection, email alert cooldown
+8. **Manager panels** — dashboard, all-stores panel, AM Hub (requests/feedback/issues/TODO tabs)
+9. **Export functions** — CSV, Excel (SheetJS), PDF (print window)
+10. **Demand Planning panel** — reads `benchmarks_cache`, reorder priority logic
+
+### Login / Access Control
+- Store staff → PIN verified via `verify_store_pin()` RPC → session flag `currentStore`
+- AM login → sets `isAmSession = true`, `amManagedStores[]` filtered to their stores only
+- MGR (PIN 9999) → full access; WH (PIN 8888) → warehouse-only panel
+- Demand Planning panel: double-guarded — button hidden + entry function blocked for AM sessions
+- S&OP portal (`sop-portal.html`) and FG manager portal use separate password constant (`Vinayak@1998`), no Supabase auth
+
+### Supabase Patterns
+```js
+// Standard query
+const { data, error } = await supabase
+  .from('table_name')
+  .select('*')
+  .eq('column', value)
+  .limit(5000);
+
+// Upsert (used for all stock cell writes)
+await supabase.from('stock_cells').upsert(payload, { onConflict: 'store_code,day,sku' });
+
+// RPC (PIN verification)
+const { data } = await _SBC.rpc('verify_store_pin', { p_code, p_pin });
+```
+
+### Design System (enforced — do not deviate)
+```css
+--gold-bar: #6B5B35   /* ALL dark headers, topbars, panel headers */
+--gold:     #C9A84C   /* Borders, active states */
+--page:     #FFFFFF   /* Page background */
+--gold-pale:#F5F2EC   /* Card tints, alternating rows */
+```
+Fonts: **Cormorant Garamond** (display/numbers) · **Montserrat** (body/UI) · **IBM Plex Mono** (codes/timestamps) · **IBM Plex Sans Arabic** (Arabic text).
+
+**No dark backgrounds anywhere** — including login screens. The only exception is the executive login in `stock-register.html` which uses a dark theme by deliberate design decision (documented in CLAUDE.md session log Session 8).
+
+### SKU Data
+SKU catalogue (253 SKUs) is embedded as JS arrays inside each HTML file — `CATS[]`, `TESTERS[]`, `SUPPLIES[]`. There is no external SKU JSON file served to the browser. When adding new SKUs, update the array in every HTML file that references it.
+
+---
+
 # Emirates Pride Perfumes — Integrated Operations Platform
 ## CLAUDE Working Memory (updated May 2026)
 
@@ -163,7 +290,7 @@ const { data, error } = await supabase
 
 ## WORKFLOW — S&OP AS DEMAND PLANNER
 
-Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities:
+The S&OP portal is used by Emirates Pride management. Primary responsibilities:
 1. Monthly sales reporting across all regions (EPP, ASL, Oman, KSA)
 2. Inventory accuracy verification per store
 3. Tester tracking and write-off auditing
@@ -180,7 +307,7 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 ## ONGOING BUILD QUEUE (next sessions)
 
 1. [ ] Upload Oman sales JSON to Supabase `sales_history` (oman_sales_upload.json ready)
-2. [ ] ASL UAE sales data — waiting for files from Amal
+2. [ ] ASL UAE sales data — waiting for files
 3. [ ] Create Supabase `sop_inventory_uploads` table for inventory snapshots
 4. [ ] Monthly Excel upload script that auto-maps new months
 5. [ ] KSA stores — deferred until data available
@@ -199,6 +326,158 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 ## PROJECT DETAILS — Full Development Log
 
 > **Format**: Each session listed newest first. Include: date, files changed, what was done, commit hash if pushed.
+
+---
+
+### Session — 24 May 2026 (Session 16 — /init, /architecture, /code-review, /compliance-tracking, /webapp-testing, /data:analyze + Obsidian Vault)
+
+**Files changed**: `CLAUDE.md` (major update — Claude Code guidance section prepended)
+**Commit**: Not yet pushed
+
+#### What was done:
+
+**1. Obsidian Vault — Project Note Created**
+- Created `Emirates Pride — Integrated Operations Platform.md` in `Noah's Ark Bank - LIFE OS Vault / 01 - PROJECTS / In Progress /`
+- Full project summary: all frontend files, Supabase tables, key features, tech stack, brand palette, skills used, regional coverage, next steps
+- Tagged: `#projects #web-development #emirates-pride #supabase #built-by-me`
+
+**2. /init — CLAUDE.md Claude Code Guidance Section**
+- Prepended a proper Claude Code guidance header to `CLAUDE.md` (was only project working memory, lacked commands/architecture for Claude Code)
+- Added: local dev command (`python3 -m http.server 8080`), Python script usage + dependencies, SQL execution order (all 6 files in correct sequence), Edge Function deploy command, deploy workflow
+- Added: request/data flow diagram, file roles table with sizes, `stock-register.html` internal structure map (critical — 18K line file), login/access control matrix, Supabase query patterns, design system tokens
+
+**3. /architecture — ADR-001**
+- Created Architecture Decision Record: Static HTML Monoliths vs React SPA vs Low-Code
+- Decision: self-contained static HTML on GitHub Pages + Supabase — justified by zero ops overhead, one-person maintainability, free hosting
+- Documented consequences + 4 action items (shared SKU catalogue, dynamic regions table, sales query pagination before KSA data, splitting stock-register.html if >1MB)
+
+**4. /code-review — Security & Correctness Audit**
+Three critical issues found:
+- `monthly_sales_upload.py`: `parse_excel_sales()` always returns `[]` — script never uploads anything (incomplete TODO)
+- `stock-register.html` line 11722: `_failedLoginCount` is in-memory only — brute-force bypass via page refresh resets 3-strike counter
+- `stock-register.html` line 11882: `l.flag_reason` interpolated into `innerHTML` unescaped — stored XSS risk in security dashboard
+Two medium issues: AM sessions get `isMgrSession=true` (lines 10740, 10766, 11749 not guarded), Edge Function auth via anon key (any reader of source can call it)
+Fixes provided with code examples for all 5 issues
+
+**5. /compliance-tracking — Regulatory Gap Analysis**
+- Frameworks assessed: UAE PDPL (2021), internal financial controls, retail audit readiness
+- Status: Audit trail ✅ Compliant | Access control ⚠️ Partial | UAE PDPL ❌ Gap
+- Key findings: `am_weekly_requests.am_name` and `approved_by` fields constitute personal data under UAE PDPL (fines up to AED 5M) — no privacy notice shown to AM/staff
+- No data retention policy — `audit_log` accumulates indefinitely
+- MGR PIN rotation not scheduled; `SECURITY_INSTRUCTIONS.md` PIN rotation docs are incorrect (says edit source code, actual path is Supabase SQL)
+- Produced: 7-item control inventory, audit calendar through May 2027, evidence collection plan, prioritised remediation table (P1/P2/P3)
+
+**6. /webapp-testing — Playwright Test Suite**
+- 21/21 tests passed, 0 warnings, 0 failures
+- Tested: all 7 HTML pages, PIN keypad (12 keys), wrong-PIN rejection (DX001 + PIN 1234 → "Wrong PIN — try again."), S&OP password gate (wrong rejected, correct accepted), 32 stores in dropdown, AM form mobile layout at 390px (zero overflow), 0 fatal JS errors across all pages
+- Screenshots saved to /tmp/ep_01 through ep_10
+
+#### Key decisions / findings:
+- `SUPABASE_SERVICE_KEY` in `monthly_sales_upload.py` is correctly a placeholder — never committed with real value
+- All pages load with 0 JS console errors (clean build)
+- AM login sets `isAmSession=true` AND `isMgrSession=true` — access boundary gap at lines 10740, 10766, 11749
+
+**7. /data:analyze — Sales Analysis (257,568 units, 16 months)**
+- Analysed `sales_history_upload.json` (16,201 rows), `oman_sales_upload.json` (844 rows), `benchmarks_upload.json` (1,458 benchmarks)
+- **Dec 2025 confirmed outlier**: 56,993 units = +362% vs normal months (4x–6.5x per store) — confirmed National Day / gifting season; must be excluded from benchmark calculations
+- **YoY Jan–Apr 2025→2026**: −6.8% overall; Jan −13.5%, Feb −13.5%, Mar −39.0%, Apr +63.4% recovery
+- **Seasonality**: clear two-phase year — High season Jan–Apr (1.3x–1.7x avg), Low season May–Nov (0.64x–0.78x avg); September is lowest month
+- **SKU concentration**: C00002 alone = 18.8% of all volume; top 3 SKUs = 34%; 5 near-zero SKUs (ABL004, AH005, AG015, ABL001, AAF002) = 1–2 units total in 16 months → delist candidates
+- **Category mix**: EPP B series 44%, Caballo 25%, Sets/Oud/Dakhoon 8% each; ASL lines only 0.7% (likely because ASL UAE data not yet uploaded)
+- **Store concentration**: DX001 = 18.7% of network; top 4 stores = 35%; OM001 (Oman) is #3 in recent 3-month velocity despite only 6 months of data
+- **Reorder priorities**: 22% of benchmarked SKU-store pairs below 50% of median in Apr 2026; DX001 has severe shortfalls in D00003, D00004, B00003 (3–5% of historical median)
+- **P1 action**: Upload `oman_sales_upload.json` (ready, 844 rows); investigate DX001 April shortfalls; confirm December excluded from `benchmarks_cache` medians
+
+**8. /data:analyze — Security Concerns Severity Register (all findings ranked)**
+- See full register below. 14 issues identified across /code-review, /compliance-tracking, /architecture, /webapp-testing
+- 3 CRITICAL · 3 HIGH · 3 MEDIUM · 5 LOW
+- Top 3 require action within this week (PDPL, brute-force, privacy notice)
+
+---
+
+## SECURITY CONCERNS — MASTER SEVERITY REGISTER
+### Last updated: 24 May 2026 | Scoring: Impact(1–5) × Exploitability(1–5) × Detectability(1–5)/5 | Max = 25
+
+| # | Score | Severity | Source | Issue | Status |
+|---|-------|----------|--------|-------|--------|
+| 1 | 25.0 | 🔴 CRITICAL | compliance | UAE PDPL — personal data (am_name, approved_by) stored without notice | ❌ Open |
+| 2 | 16.0 | 🔴 CRITICAL | code-review | Brute-force PIN bypass — _failedLoginCount resets on page refresh | ❌ Open |
+| 3 | 15.0 | 🔴 CRITICAL | compliance | No privacy notice at point of collection (AM request form) | ❌ Open |
+| 4 | 12.0 | 🟠 HIGH | compliance | MGR PIN never rotated — default 9999 in SETUP_INSTRUCTIONS.md | ❌ Open |
+| 5 | 9.6 | 🟠 HIGH | code-review | AM privilege escalation — isMgrSession=true at lines 10740/10766/11749 | ❌ Open |
+| 6 | 9.0 | 🟠 HIGH | compliance | Off-hours anomaly fires on all ops → alert fatigue | ❌ Open |
+| 7 | 8.0 | 🟡 MEDIUM | code-review | Stored XSS — flag_reason in innerHTML unescaped (line 11882) | ❌ Open |
+| 8 | 6.4 | 🟡 MEDIUM | code-review | monthly_sales_upload.py — service key hardcoded string pattern | ❌ Open |
+| 9 | 6.0 | 🟡 MEDIUM | compliance | SECURITY_INSTRUCTIONS.md PIN rotation docs are wrong | ❌ Open |
+| 10 | 4.0 | 🟢 LOW | code-review | Edge Function auth via anon key — alert endpoint publicly triggerable | ❌ Open |
+| 11 | 4.0 | 🟢 LOW | compliance | No tested backup and restore procedure | ❌ Open |
+| 12 | 3.6 | 🟢 LOW | architecture | No branch protection on GitHub main | ❌ Open |
+| 13 | 3.0 | 🟢 LOW | compliance | No data retention policy — audit_log grows indefinitely | ❌ Open |
+| 14 | 2.0 | 🟢 LOW | compliance | No vendor DPA review (Supabase, Resend) | ❌ Open |
+
+### Fixes — This Week (CRITICAL)
+
+**#1 + #3 — PDPL & Privacy Notice (15 min each)**
+- Add to `am-stock-request.html` above submit: `"Your name and request details are stored securely for Emirates Pride operational purposes · جميع البيانات المُدخلة تُحفظ لأغراض تشغيلية داخلية"`
+- Create data processing register: `am_name`, `approved_by`, `dispatched_by` → retention 12 months → add deletion query to offboarding checklist
+
+**#2 — Brute-force PIN bypass (30 min)**
+```js
+// In _secTrackFailedLogin():
+const key = `ep_fail_${storeCode}`;
+const count = parseInt(sessionStorage.getItem(key) || '0') + 1;
+sessionStorage.setItem(key, count);
+_failedLoginCount[storeCode] = count;
+// On doLogin() success: sessionStorage.removeItem(`ep_fail_${code}`);
+```
+
+### Fixes — This Month (HIGH)
+
+**#4 — MGR PIN rotation**
+```sql
+ALTER TABLE store_pins ADD COLUMN IF NOT EXISTS last_changed_at TIMESTAMPTZ DEFAULT NOW();
+UPDATE store_pins SET pin = 'NEW_PIN', last_changed_at = NOW() WHERE store_code = 'MGR';
+```
+Remove "PIN: 9999" from SETUP_INSTRUCTIONS.md. Set quarterly rotation calendar reminder.
+
+**#5 — AM privilege escalation**
+```js
+function _canFullMgr(){ return isMgrSession && !isAmSession; }
+// Replace isMgrSession checks at lines 10740, 10766, 11749 with _canFullMgr()
+```
+
+**#6 — Alert fatigue fix**
+```js
+// Scope off-hours to WRITE ops on store (not MGR/AM) sessions:
+if (op === 'WRITE' && !storeCode.startsWith('AM_') && storeCode !== 'MGR') {
+  if (uaeHr >= _SEC.OFF_HOUR_START || uaeHr < _SEC.OFF_HOUR_END) { flagged=true; ... }
+}
+```
+
+### Fixes — Medium Term (MEDIUM)
+
+**#7 — XSS escape (5 min)**
+```js
+const _esc = s => String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// Apply to: l.flag_reason (line 11882), l.store_code (11887), l.record_key (11890), l.operation (11889)
+```
+
+**#8 — Service key via env var**
+```python
+SUPABASE_SERVICE_KEY = os.environ.get('SUPABASE_SERVICE_KEY')
+if not SUPABASE_SERVICE_KEY: print("Set env var"); sys.exit(1)
+```
+
+**#9 — Fix SECURITY_INSTRUCTIONS.md**
+Replace line 206: "change store's PIN in STORES array" → `UPDATE store_pins SET pin='NEW' WHERE store_code='DX001';`
+
+### Deferred (LOW — Q3 2026)
+
+- **#10**: Add `x-ep-secret` header check to Edge Function
+- **#11**: Document + test Supabase restore procedure
+- **#12**: Enable GitHub branch protection (2 min in Settings)
+- **#13**: Add annual `audit_log` purge query to runbook
+- **#14**: Review Supabase + Resend DPAs for UAE coverage
 
 ---
 
@@ -941,7 +1220,7 @@ Never use `#1a2744` navy or `#0D0D0D` black anywhere in the app — including th
 ## ONGOING BUILD QUEUE (next sessions)
 
 1. [ ] Upload Oman sales JSON to Supabase `sales_history` (oman_sales_upload.json ready)
-2. [ ] ASL UAE sales data — waiting for files from Amal
+2. [ ] ASL UAE sales data — waiting for files
 3. [ ] Create Supabase `sop_inventory_uploads` table for inventory snapshots
 4. [ ] Monthly Excel upload script that auto-maps new months
 5. [ ] KSA stores — deferred until data available
