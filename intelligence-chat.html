@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emirates Pride — Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --olive: #6B5B35;
+      --cream: #FAFAF7;
+      --white: #FFFFFF;
+      --charcoal: #1C1C1C;
+      --mid: #F0EDE6;
+      --border: rgba(201,168,76,0.25);
+      --shadow: rgba(107,91,53,0.12);
+      --critical: #C0392B;
+      --warning: #E67E22;
+      --success: #27AE60;
+      --info: #2980B9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--cream);
+      color: var(--charcoal);
+      min-height: 100vh;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background: var(--olive);
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px var(--shadow);
+    }
+    .topbar .logo-mark {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .topbar .subtitle {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+    .topbar .spacer { flex: 1; }
+    .topbar .badge {
+      background: rgba(201,168,76,0.15);
+      border: 1px solid var(--border);
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* ── NAV TABS ── */
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 16px 24px 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--white);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      padding: 10px 18px;
+      border: none;
+      background: transparent;
+      color: var(--olive);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: var(--gold); }
+    .tab-btn.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* ── LAYOUT ── */
+    .page-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 0;
+      height: calc(100vh - 110px);
+    }
+
+    /* ── DASHBOARD PANEL ── */
+    .dashboard-panel {
+      padding: 20px 24px;
+      overflow-y: auto;
+    }
+
+    .panel-section { display: none; }
+    .panel-section.active { display: block; }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--olive);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Alert cards */
+    .alert-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .alert-card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--gold);
+      box-shadow: 0 1px 6px var(--shadow);
+    }
+    .alert-card.critical { border-left-color: var(--critical); }
+    .alert-card.warning { border-left-color: var(--warning); }
+    .alert-card.success { border-left-color: var(--success); }
+
+    .alert-card .alert-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .alert-card.critical .alert-label { color: var(--critical); }
+    .alert-card.warning .alert-label { color: var(--warning); }
+    .alert-card .alert-title { font-size: 14px; font-weight: 600; color: var(--charcoal); }
+    .alert-card .alert-meta { font-size: 12px; color: #666; margin-top: 4px; }
+
+    /* Data table */
+    .data-table-wrap {
+      background: var(--white);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 8px var(--shadow);
+      margin-bottom: 20px;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table thead th {
+      background: var(--olive);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .data-table tbody tr { border-bottom: 1px solid var(--mid); }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:hover { background: var(--mid); }
+    .data-table tbody td { padding: 10px 14px; color: var(--charcoal); }
+
+    .badge-risk {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .badge-risk.critical { background: #fdecea; color: var(--critical); }
+    .badge-risk.warning { background: #fef3e2; color: var(--warning); }
+    .badge-risk.ok { background: #eafaf1; color: var(--success); }
+
+    /* Loading state */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      gap: 12px;
+      color: var(--olive);
+    }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── CHAT PANEL ── */
+    .chat-panel {
+      border-left: 1px solid var(--border);
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .chat-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--olive);
+    }
+    .chat-header .chat-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gold);
+    }
+    .chat-header .chat-subtitle {
+      font-size: 11px;
+      color: rgba(201,168,76,0.7);
+      margin-top: 2px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .msg {
+      max-width: 92%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .msg.user {
+      align-self: flex-end;
+      background: var(--olive);
+      color: var(--gold);
+      border-radius: 10px 10px 2px 10px;
+    }
+    .msg.assistant {
+      align-self: flex-start;
+      background: var(--mid);
+      color: var(--charcoal);
+      border-radius: 10px 10px 10px 2px;
+    }
+    .msg.assistant strong { color: var(--olive); }
+    .msg.system-msg {
+      align-self: center;
+      background: transparent;
+      color: #999;
+      font-size: 11px;
+      font-style: italic;
+      text-align: center;
+      max-width: 100%;
+    }
+    .msg-time {
+      font-size: 10px;
+      opacity: 0.5;
+      margin-top: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      align-self: flex-start;
+      display: flex;
+      gap: 4px;
+      padding: 12px 16px;
+      background: var(--mid);
+      border-radius: 10px 10px 10px 2px;
+    }
+    .typing-dot {
+      width: 6px; height: 6px;
+      background: var(--olive);
+      border-radius: 50%;
+      animation: typing 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-4px); }
+    }
+
+    /* Suggestion chips */
+    .suggestion-chips {
+      padding: 8px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      border-top: 1px solid var(--border);
+    }
+    .chip {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--cream);
+      color: var(--olive);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .chip:hover { background: var(--gold); color: var(--white); border-color: var(--gold); }
+
+    /* Chat input */
+    .chat-input-area {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .chat-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      resize: none;
+      min-height: 40px;
+      max-height: 120px;
+      outline: none;
+      background: var(--cream);
+      color: var(--charcoal);
+      transition: border-color 0.2s;
+    }
+    .chat-input:focus { border-color: var(--gold); }
+    .send-btn {
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      border: none;
+      background: var(--gold);
+      color: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .send-btn:hover { background: var(--olive); }
+    .send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* Config banner */
+    .config-banner {
+      background: #fff8e6;
+      border: 1px solid #f0c060;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 16px;
+      font-size: 12px;
+      color: #7a5500;
+    }
+    .config-banner strong { display: block; margin-bottom: 4px; }
+    .config-banner code {
+      background: rgba(0,0,0,0.06);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+    }
+
+    /* KPI row */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .kpi-card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 6px var(--shadow);
+      text-align: center;
+    }
+    .kpi-card .kpi-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--olive);
+    }
+    .kpi-card .kpi-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .page-layout { grid-template-columns: 1fr; }
+      .chat-panel { height: 60vh; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <div class="logo-mark">Emirates Pride</div>
+    <div class="subtitle">Intelligence Centre</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="badge" id="data-status">Loading data…</div>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <button class="tab-btn active" onclick="showTab('alerts')">Proactive Alerts</button>
+  <button class="tab-btn" onclick="showTab('replenishment')">Replenishment Plan</button>
+  <button class="tab-btn" onclick="showTab('coverage')">SKU Coverage</button>
+  <button class="tab-btn" onclick="showTab('fast-movers')">Fast Movers</button>
+  <button class="tab-btn" onclick="showTab('slow-movers')">Slow / Dead Stock</button>
+  <button class="tab-btn" onclick="showTab('history')">Transfer History</button>
+  <button class="tab-btn" onclick="showTab('sales')">Sales Overview</button>
+  <button class="tab-btn" onclick="showTab('am-requests')">AM Requests</button>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="page-layout">
+
+  <!-- DASHBOARD PANEL -->
+  <div class="dashboard-panel">
+
+    <!-- 1. Proactive Alerts -->
+    <div class="panel-section active" id="tab-alerts">
+      <div class="section-title">⚡ Proactive Alerts</div>
+      <div class="kpi-row" id="kpi-row">
+        <div class="kpi-card"><div class="kpi-val" id="kpi-critical">—</div><div class="kpi-label">Critical</div></div>
+        <div class="kpi-card"><div class="kpi-val" id="kpi-warning">—</div><div class="kpi-label">Warnings</div></div>
+        <div class="kpi-card"><div class="kpi-val" id="kpi-stores">—</div><div class="kpi-label">Stores Affected</div></div>
+        <div class="kpi-card"><div class="kpi-val" id="kpi-skus">—</div><div class="kpi-label">SKUs at Risk</div></div>
+      </div>
+      <div class="alert-grid" id="alerts-grid">
+        <div class="loading-state"><div class="spinner"></div><span>Fetching alerts…</span></div>
+      </div>
+    </div>
+
+    <!-- 2. Replenishment Plan -->
+    <div class="panel-section" id="tab-replenishment">
+      <div class="section-title">📦 Store Replenishment Plan</div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Store</th><th>SKU</th><th>Weekly Avg</th><th>L30D Qty</th><th>Recommended Order</th><th>Priority</th></tr></thead>
+          <tbody id="replenishment-body"><tr><td colspan="6" style="text-align:center;padding:30px;color:#999">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. SKU Coverage -->
+    <div class="panel-section" id="tab-coverage">
+      <div class="section-title">📊 Warehouse SKU Coverage</div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr><th>SKU</th><th>Store</th><th>Weekly Avg</th><th>L90D Avg</th><th>Weeks Cover</th><th>Risk</th></tr></thead>
+          <tbody id="coverage-body"><tr><td colspan="6" style="text-align:center;padding:30px;color:#999">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4. Fast Movers -->
+    <div class="panel-section" id="tab-fast-movers">
+      <div class="section-title">🚀 Fast Movers — Top 30 by Velocity</div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>SKU</th><th>Store</th><th>Weekly Avg</th><th>L30D Qty</th><th>L90D Avg</th><th>Last Sale</th></tr></thead>
+          <tbody id="fast-movers-body"><tr><td colspan="7" style="text-align:center;padding:30px;color:#999">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 5. Slow / Dead Stock -->
+    <div class="panel-section" id="tab-slow-movers">
+      <div class="section-title">🐢 Slow Movers & Dead Stock</div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr><th>SKU</th><th>Store</th><th>Weekly Avg</th><th>Months Tracked</th><th>Last Sale</th><th>Status</th></tr></thead>
+          <tbody id="slow-movers-body"><tr><td colspan="6" style="text-align:center;padding:30px;color:#999">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 6. Transfer History -->
+    <div class="panel-section" id="tab-history">
+      <div class="section-title">🚛 Transfer / Delivery History</div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr><th>SKU</th><th>Store</th><th>Month</th><th>Qty Transferred</th><th>Frequency</th></tr></thead>
+          <tbody id="history-body"><tr><td colspan="5" style="text-align:center;padding:30px;color:#999">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 7. Sales Overview -->
+    <div class="panel-section" id="tab-sales">
+      <div class="section-title">💰 Sales Overview</div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Store</th><th>SKU</th><th>Month</th><th>Qty Sold</th></tr></thead>
+          <tbody id="sales-body"><tr><td colspan="4" style="text-align:center;padding:30px;color:#999">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 8. AM Requests -->
+    <div class="panel-section" id="tab-am-requests">
+      <div class="section-title">📋 Area Manager Requests</div>
+      <div id="am-requests-content">
+        <div class="loading-state"><div class="spinner"></div><span>Loading AM requests…</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="chat-title">Intelligence Assistant</div>
+      <div class="chat-subtitle">Ask anything about sales, stock, or demand</div>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg system-msg">Connected to Emirates Pride data. Ask me anything.</div>
+      <div class="msg assistant">
+        Hello! I'm your Emirates Pride Intelligence Assistant. I have live access to your sales history, inventory benchmarks, transfer records, and AM requests.<br><br>
+        You can ask me things like:<br>
+        • "Which stores are at risk of stockout this week?"<br>
+        • "What are the top 5 SKUs by velocity in Dubai?"<br>
+        • "Show me Ramadan demand trends for EP001"<br>
+        • "Which SKUs haven't moved in 60+ days?"
+        <div class="msg-time" id="welcome-time"></div>
+      </div>
+    </div>
+
+    <!-- Suggestion chips -->
+    <div class="suggestion-chips">
+      <div class="chip" onclick="sendChip('Which stores need urgent replenishment?')">🚨 Urgent replenishment</div>
+      <div class="chip" onclick="sendChip('What are the top 10 fastest moving SKUs?')">🚀 Fast movers</div>
+      <div class="chip" onclick="sendChip('Which SKUs have been dead stock for 60+ days?')">🐢 Dead stock</div>
+      <div class="chip" onclick="sendChip('Summarise last month sales performance by store')">📊 Monthly summary</div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-area">
+      <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask about sales, stock, demand…"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── CONFIG ─────────────────────────────────────────────────────
+  // Replace these with your actual values from Supabase dashboard
+  const SUPABASE_URL = 'https://ncszurcrkngjcjqsowln.supabase.co'
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'  // ← paste from Supabase dashboard
+  const EDGE_FN_URL = `${SUPABASE_URL}/functions/v1/intelligence-chat`
+  // ───────────────────────────────────────────────────────────────
+
+  let conversationHistory = []
+  let cachedData = {}
+
+  // ── INIT ──
+  document.getElementById('welcome-time').textContent = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+
+  async function fetchSupabase(table, params = '') {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}&limit=500`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      }
+    })
+    if (!res.ok) throw new Error(`Supabase error fetching ${table}: ${res.status}`)
+    return res.json()
+  }
+
+  async function loadDashboardData() {
+    try {
+      const [benchmarks, transfers, sales, amRequests] = await Promise.all([
+        fetchSupabase('benchmarks_cache', 'order=weekly_avg.desc'),
+        fetchSupabase('transfer_history', 'order=month_year.desc'),
+        fetchSupabase('sales_history', 'order=month_year.desc'),
+        fetchSupabase('am_weekly_requests', 'order=created_at.desc'),
+      ])
+
+      cachedData = { benchmarks, transfers, sales, amRequests }
+
+      renderAlerts(benchmarks)
+      renderReplenishment(benchmarks)
+      renderCoverage(benchmarks)
+      renderFastMovers(benchmarks)
+      renderSlowMovers(benchmarks)
+      renderHistory(transfers)
+      renderSales(sales)
+      renderAMRequests(amRequests)
+
+      document.getElementById('data-status').textContent = `Data live · ${new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'})}`
+    } catch (err) {
+      document.getElementById('data-status').textContent = 'Data error — check config'
+      console.error('Dashboard load error:', err)
+    }
+  }
+
+  // ── ALERTS ──
+  function renderAlerts(benchmarks) {
+    const criticals = benchmarks.filter(b => b.weekly_avg > 8 && b.l30d_qty < b.weekly_avg * 2)
+    const warnings = benchmarks.filter(b => b.weekly_avg > 3 && b.l30d_qty < b.weekly_avg * 4 && !criticals.includes(b))
+    const storesAffected = new Set([...criticals, ...warnings].map(b => b.store_code)).size
+    const skusAtRisk = new Set([...criticals, ...warnings].map(b => b.sku_code)).size
+
+    document.getElementById('kpi-critical').textContent = criticals.length
+    document.getElementById('kpi-warning').textContent = warnings.length
+    document.getElementById('kpi-stores').textContent = storesAffected
+    document.getElementById('kpi-skus').textContent = skusAtRisk
+
+    const grid = document.getElementById('alerts-grid')
+    const items = [...criticals.slice(0, 6).map(b => ({ ...b, sev: 'critical' })),
+                   ...warnings.slice(0, 6).map(b => ({ ...b, sev: 'warning' }))]
+
+    if (!items.length) {
+      grid.innerHTML = '<div class="loading-state" style="padding:40px">✅ No active alerts — stock levels look healthy.</div>'
+      return
+    }
+
+    grid.innerHTML = items.map(b => `
+      <div class="alert-card ${b.sev}">
+        <div class="alert-label">${b.sev === 'critical' ? '🔴 CRITICAL' : '🟡 WARNING'}</div>
+        <div class="alert-title">${b.sku_code} — ${b.store_code}</div>
+        <div class="alert-meta">
+          Weekly avg: <strong>${(+b.weekly_avg).toFixed(1)}</strong> units/wk &nbsp;|&nbsp;
+          L30D sold: <strong>${b.l30d_qty || 0}</strong><br>
+          Est. cover: <strong>${b.weekly_avg > 0 ? ((b.l30d_qty||0) / +b.weekly_avg).toFixed(1) : '—'}</strong> weeks
+        </div>
+      </div>
+    `).join('')
+  }
+
+  // ── REPLENISHMENT ──
+  function renderReplenishment(benchmarks) {
+    const rows = benchmarks
+      .filter(b => b.weekly_avg > 0)
+      .sort((a, b) => (+b.weekly_avg - +a.weekly_avg))
+      .slice(0, 60)
+    document.getElementById('replenishment-body').innerHTML = rows.map(b => {
+      const weeksOfCover = b.l30d_qty / (+b.weekly_avg || 1)
+      const recommended = Math.max(0, Math.round((+b.max_monthly || (+b.weekly_avg * 4)) - (b.l30d_qty || 0)))
+      const priority = weeksOfCover < 2 ? 'critical' : weeksOfCover < 4 ? 'warning' : 'ok'
+      return `<tr>
+        <td>${b.store_code}</td>
+        <td><strong>${b.sku_code}</strong></td>
+        <td>${(+b.weekly_avg).toFixed(1)}</td>
+        <td>${b.l30d_qty || 0}</td>
+        <td><strong>${recommended}</strong> units</td>
+        <td><span class="badge-risk ${priority}">${priority.toUpperCase()}</span></td>
+      </tr>`
+    }).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#999">No data</td></tr>'
+  }
+
+  // ── COVERAGE ──
+  function renderCoverage(benchmarks) {
+    document.getElementById('coverage-body').innerHTML = benchmarks.slice(0, 80).map(b => {
+      const wks = b.weekly_avg > 0 ? ((b.l90d_avg || 0) / +b.weekly_avg).toFixed(1) : '—'
+      const risk = +wks < 2 ? 'critical' : +wks < 4 ? 'warning' : 'ok'
+      return `<tr>
+        <td><strong>${b.sku_code}</strong></td>
+        <td>${b.store_code}</td>
+        <td>${(+b.weekly_avg).toFixed(1)}</td>
+        <td>${(+b.l90d_avg||0).toFixed(1)}</td>
+        <td>${wks}</td>
+        <td><span class="badge-risk ${risk}">${risk === 'critical' ? 'HIGH RISK' : risk === 'warning' ? 'MONITOR' : 'OK'}</span></td>
+      </tr>`
+    }).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#999">No data</td></tr>'
+  }
+
+  // ── FAST MOVERS ──
+  function renderFastMovers(benchmarks) {
+    const top30 = [...benchmarks].sort((a, b) => (+b.weekly_avg - +a.weekly_avg)).slice(0, 30)
+    document.getElementById('fast-movers-body').innerHTML = top30.map((b, i) => `
+      <tr>
+        <td><strong>${i + 1}</strong></td>
+        <td>${b.sku_code}</td>
+        <td>${b.store_code}</td>
+        <td><strong>${(+b.weekly_avg).toFixed(1)}</strong></td>
+        <td>${b.l30d_qty || 0}</td>
+        <td>${(+b.l90d_avg||0).toFixed(1)}</td>
+        <td>${b.last_sale_month || '—'}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:#999">No data</td></tr>'
+  }
+
+  // ── SLOW MOVERS ──
+  function renderSlowMovers(benchmarks) {
+    const slow = benchmarks.filter(b => +b.weekly_avg < 1 || !b.last_sale_month)
+      .sort((a, b) => (+a.weekly_avg - +b.weekly_avg))
+      .slice(0, 60)
+    document.getElementById('slow-movers-body').innerHTML = slow.map(b => {
+      const status = +b.weekly_avg === 0 ? 'DEAD STOCK' : +b.weekly_avg < 0.5 ? 'VERY SLOW' : 'SLOW'
+      const cls = +b.weekly_avg === 0 ? 'critical' : 'warning'
+      return `<tr>
+        <td>${b.sku_code}</td>
+        <td>${b.store_code}</td>
+        <td>${(+b.weekly_avg||0).toFixed(2)}</td>
+        <td>${b.months_tracked || '—'}</td>
+        <td>${b.last_sale_month || 'Never'}</td>
+        <td><span class="badge-risk ${cls}">${status}</span></td>
+      </tr>`
+    }).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#999">No slow movers detected</td></tr>'
+  }
+
+  // ── HISTORY ──
+  function renderHistory(transfers) {
+    document.getElementById('history-body').innerHTML = transfers.slice(0, 100).map(t => `
+      <tr>
+        <td>${t.sku_code}</td>
+        <td>${t.store_code}</td>
+        <td>${t.month_year}</td>
+        <td><strong>${t.qty_transferred}</strong></td>
+        <td>${t.frequency || '—'}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" style="text-align:center;padding:20px;color:#999">No transfer records</td></tr>'
+  }
+
+  // ── SALES ──
+  function renderSales(sales) {
+    document.getElementById('sales-body').innerHTML = sales.slice(0, 120).map(s => `
+      <tr>
+        <td>${s.store_code}</td>
+        <td>${s.sku_code}</td>
+        <td>${s.month_year}</td>
+        <td><strong>${s.qty_sold}</strong></td>
+      </tr>
+    `).join('') || '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999">No sales data</td></tr>'
+  }
+
+  // ── AM REQUESTS ──
+  function renderAMRequests(amRequests) {
+    const container = document.getElementById('am-requests-content')
+    if (!amRequests.length) {
+      container.innerHTML = '<div class="loading-state" style="padding:40px">No pending AM requests.</div>'
+      return
+    }
+    container.innerHTML = `
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr>${Object.keys(amRequests[0]).map(k => `<th>${k}</th>`).join('')}</tr></thead>
+          <tbody>${amRequests.slice(0, 50).map(r =>
+            `<tr>${Object.values(r).map(v => `<td>${v ?? '—'}</td>`).join('')}</tr>`
+          ).join('')}</tbody>
+        </table>
+      </div>`
+  }
+
+  // ── TAB SWITCHING ──
+  function showTab(id) {
+    document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('active'))
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+    document.getElementById(`tab-${id}`).classList.add('active')
+    event.target.classList.add('active')
+  }
+
+  // ── CHAT ──
+  async function sendMessage() {
+    const input = document.getElementById('chat-input')
+    const msg = input.value.trim()
+    if (!msg) return
+
+    input.value = ''
+    autoResize(input)
+    appendMsg('user', msg)
+
+    const typingEl = appendTyping()
+    document.getElementById('send-btn').disabled = true
+
+    try {
+      const res = await fetch(EDGE_FN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ message: msg, conversation_history: conversationHistory }),
+      })
+
+      const data = await res.json()
+      typingEl.remove()
+
+      if (data.error) {
+        appendMsg('assistant', `⚠️ Error: ${data.error}`)
+      } else {
+        const reply = data.reply || 'No response.'
+        appendMsg('assistant', formatReply(reply))
+        conversationHistory.push({ role: 'user', content: msg })
+        conversationHistory.push({ role: 'assistant', content: reply })
+        if (conversationHistory.length > 12) conversationHistory = conversationHistory.slice(-12)
+      }
+    } catch (err) {
+      typingEl.remove()
+      appendMsg('assistant', `⚠️ Could not reach the Intelligence assistant. Check your Supabase Edge Function is deployed and the anon key is correct.`)
+    }
+
+    document.getElementById('send-btn').disabled = false
+    input.focus()
+  }
+
+  function sendChip(text) {
+    document.getElementById('chat-input').value = text
+    sendMessage()
+  }
+
+  function appendMsg(role, html) {
+    const msgs = document.getElementById('chat-messages')
+    const div = document.createElement('div')
+    div.className = `msg ${role}`
+    div.innerHTML = html + `<div class="msg-time">${new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'})}</div>`
+    msgs.appendChild(div)
+    msgs.scrollTop = msgs.scrollHeight
+    return div
+  }
+
+  function appendTyping() {
+    const msgs = document.getElementById('chat-messages')
+    const div = document.createElement('div')
+    div.className = 'typing-indicator'
+    div.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>'
+    msgs.appendChild(div)
+    msgs.scrollTop = msgs.scrollHeight
+    return div
+  }
+
+  function formatReply(text) {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>')
+      .replace(/•/g, '&bull;')
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+  }
+
+  // ── START ──
+  loadDashboardData()
+</script>
+</body>
+</html>
