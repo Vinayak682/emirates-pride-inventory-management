@@ -30,8 +30,7 @@ Guidelines:
 - When identifying risks, be specific (store name, SKU, weeks of cover remaining).
 - Translate data into decisions: "Store X needs Y units of SKU Z this week."
 - If data is insufficient to answer confidently, say so and suggest what data would help.
-- Currency: AED. Dates: DD/MM/YYYY or Month-YYYY format.
-- SKU codes follow the Emirates Pride naming convention (e.g., EP001, EP002…).`
+- Currency: AED. Dates: DD/MM/YYYY or Month-YYYY format.`
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -39,7 +38,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, conversation_history = [], store_filter } = await req.json()
+    const { message, conversation_history = [] } = await req.json()
 
     if (!message || typeof message !== 'string') {
       return new Response(JSON.stringify({ error: 'message is required' }), {
@@ -53,104 +52,81 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Fetch context data in parallel — summarised to stay within token budget
+    // Fetch context data in parallel
     const [salesRes, benchRes, transferRes, amRes] = await Promise.all([
-      supabase
-        .from('sales_history')
-        .select('sku_code, store_code, month_year, qty_sold')
-        .order('month_year', { ascending: false })
-        .limit(600),
-
-      supabase
-        .from('benchmarks_cache')
-        .select('sku_code, store_code, weekly_avg, l30d_qty, l90d_avg, min_monthly, max_monthly, median_monthly, last_sale_month, months_tracked')
-        .order('weekly_avg', { ascending: false })
-        .limit(200),
-
-      supabase
-        .from('transfer_history')
-        .select('sku_code, store_code, month_year, qty_transferred, frequency')
-        .order('month_year', { ascending: false })
-        .limit(300),
-
-      supabase
-        .from('am_weekly_requests')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50),
+      supabase.from('sales_history').select('sku_code,store_code,month_year,qty_sold').order('month_year', { ascending: false }).limit(600),
+      supabase.from('benchmarks_cache').select('sku_code,store_code,weekly_avg,l30d_qty,l90d_avg,min_monthly,max_monthly,last_sale_month,months_tracked').order('weekly_avg', { ascending: false }).limit(200),
+      supabase.from('transfer_history').select('sku_code,store_code,month_year,qty_transferred,frequency').order('month_year', { ascending: false }).limit(300),
+      supabase.from('am_weekly_requests').select('*').order('created_at', { ascending: false }).limit(50),
     ])
 
-    // Summarise sales by store for the last 3 months
+    // Summarise sales by store
     const salesByStore: Record<string, Record<string, number>> = {}
     for (const row of (salesRes.data || [])) {
       if (!salesByStore[row.store_code]) salesByStore[row.store_code] = {}
-      salesByStore[row.store_code][row.month_year] =
-        (salesByStore[row.store_code][row.month_year] || 0) + row.qty_sold
+      salesByStore[row.store_code][row.month_year] = (salesByStore[row.store_code][row.month_year] || 0) + row.qty_sold
     }
 
-    // Top 20 fastest movers by weekly_avg
-    const fastMovers = (benchRes.data || [])
-      .sort((a, b) => (b.weekly_avg || 0) - (a.weekly_avg || 0))
-      .slice(0, 20)
-
-    // Flag potential stockout risks: last_sale_month > 2 months ago or weekly_avg > 0 with low l30d_qty
-    const currentMonthYear = new Date().toLocaleDateString('en-GB', { month: '2-digit', year: 'numeric' }).replace('/', '-')
-    const alerts = (benchRes.data || [])
-      .filter(b => b.weekly_avg > 5 && b.l30d_qty < b.weekly_avg * 2)
-      .slice(0, 15)
+    // Stockout alerts: high velocity + low recent qty
+    const alerts = (benchRes.data || []).filter(b => b.weekly_avg > 5 && b.l30d_qty < b.weekly_avg * 2).slice(0, 15)
 
     const dataContext = `
 --- SALES SUMMARY (by store, recent months) ---
 ${JSON.stringify(salesByStore, null, 2)}
 
---- TOP 20 FAST MOVERS (by weekly velocity) ---
-${JSON.stringify(fastMovers, null, 2)}
+--- TOP FAST MOVERS (by weekly velocity) ---
+${JSON.stringify((benchRes.data || []).slice(0, 30), null, 2)}
 
---- POTENTIAL STOCKOUT ALERTS (high velocity, low recent qty) ---
+--- POTENTIAL STOCKOUT ALERTS ---
 ${JSON.stringify(alerts, null, 2)}
 
---- RECENT TRANSFERS / DELIVERIES ---
+--- RECENT TRANSFERS ---
 ${JSON.stringify((transferRes.data || []).slice(0, 80), null, 2)}
 
---- AREA MANAGER REQUESTS (most recent 30) ---
+--- AREA MANAGER REQUESTS ---
 ${JSON.stringify((amRes.data || []).slice(0, 30), null, 2)}
 `
 
-    // Build messages array with optional conversation history
-    const messages = [
-      ...conversation_history.slice(-6), // Keep last 6 turns for context
-      {
-        role: 'user',
-        content: `[LIVE DATA SNAPSHOT]\n${dataContext}\n\n[USER QUESTION]\n${message}`,
-      },
-    ]
+    const geminiKey = Deno.env.get('GEMINI_API_KEY')!
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`
 
-    const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+    // Build Gemini contents array from conversation history
+    const contents = []
+
+    for (const turn of conversation_history.slice(-6)) {
+      contents.push({
+        role: turn.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: turn.content }],
+      })
+    }
+
+    contents.push({
+      role: 'user',
+      parts: [{ text: `[LIVE DATA SNAPSHOT]\n${dataContext}\n\n[USER QUESTION]\n${message}` }],
+    })
+
+    const geminiRes = await fetch(geminiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': Deno.env.get('CLAUDE_API_KEY')!,
-        'anthropic-version': '2023-06-01',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1500,
-        system: SYSTEM_PROMPT,
-        messages,
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents,
+        generationConfig: { temperature: 0.3, maxOutputTokens: 1500 },
       }),
     })
 
-    if (!claudeRes.ok) {
-      const err = await claudeRes.text()
-      throw new Error(`Claude API error: ${claudeRes.status} — ${err}`)
+    if (!geminiRes.ok) {
+      const err = await geminiRes.text()
+      throw new Error(`Gemini API error: ${geminiRes.status} — ${err}`)
     }
 
-    const claudeData = await claudeRes.json()
-    const reply = claudeData.content?.[0]?.text || 'No response generated.'
+    const geminiData = await geminiRes.json()
+    const reply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.'
 
-    return new Response(JSON.stringify({ reply, usage: claudeData.usage }), {
+    return new Response(JSON.stringify({ reply }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
+
   } catch (err) {
     console.error('intelligence-chat error:', err)
     return new Response(JSON.stringify({ error: String(err) }), {
