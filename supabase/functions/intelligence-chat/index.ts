@@ -88,7 +88,7 @@ ${JSON.stringify((amRes.data || []).slice(0, 30), null, 2)}
 `
 
     const geminiKey = Deno.env.get('GEMINI_API_KEY')!
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`
 
     // Build Gemini contents array from conversation history
     const contents = []
