@@ -1477,6 +1477,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       </select>
       <button class="filter-btn-ghost" onclick="intelLoaded=false;loadIntelligenceData();" style="margin-left:auto;font-size:11px;">↺ Refresh Data</button>
       <button class="filter-btn-ghost" id="intel-export-btn" onclick="exportIntelReport()" style="font-size:11px;display:none;">↓ Export Report</button>
+      <button class="filter-btn" id="intel-chat-btn" onclick="openIntelChat()" style="font-size:11px;display:none;background:var(--navy);color:#fff;border:none;padding:6px 14px;border-radius:4px;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:0.05em;">✦ Ask AI</button>
     </div>
 
     <!-- KPI Row -->
@@ -1559,6 +1560,44 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
     </div>
 
   </div><!-- /tab-intelligence -->
+
+  <!-- ══ INTELLIGENCE AI CHAT PANEL ═══════════════════════════════════ -->
+  <div id="intel-chat-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.45);" onclick="if(event.target===this)closeIntelChat()">
+    <div id="intel-chat-panel" style="position:absolute;right:0;top:0;bottom:0;width:440px;max-width:100vw;background:var(--white);display:flex;flex-direction:column;box-shadow:-4px 0 28px rgba(0,0,0,0.18);">
+      <!-- Header -->
+      <div style="background:var(--navy);padding:16px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <div style="flex:1;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#fff;letter-spacing:0.02em;">✦ S&OP Intelligence AI</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.55);letter-spacing:0.1em;text-transform:uppercase;margin-top:2px;">Powered by Gemini · Live Data</div>
+        </div>
+        <button onclick="closeIntelChat()" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:20px;cursor:pointer;line-height:1;padding:0;">✕</button>
+      </div>
+      <!-- API key warning -->
+      <div id="intel-chat-no-key" style="display:none;background:#FFF3CD;border-bottom:1px solid #FFC107;padding:10px 16px;font-size:12px;color:#856404;">
+        ⚠ Gemini API key not set. <span onclick="promptIntelApiKey()" style="text-decoration:underline;cursor:pointer;font-weight:700;">Click here to enter your key</span> (same key as Stock OCR tool).
+      </div>
+      <!-- Messages -->
+      <div id="intel-chat-msgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;"></div>
+      <!-- Suggested questions (shown initially) -->
+      <div id="intel-chat-suggestions" style="padding:0 16px 10px;display:flex;flex-direction:column;gap:6px;">
+        <div style="font-size:10px;color:var(--ink-light);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:2px;">Try asking:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button onclick="useIntelSuggestion(this)" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;color:var(--ink);">Which stores need delivery now?</button>
+          <button onclick="useIntelSuggestion(this)" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;color:var(--ink);">What are the top 5 critical SKUs?</button>
+          <button onclick="useIntelSuggestion(this)" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;color:var(--ink);">Summarise today's alerts</button>
+          <button onclick="useIntelSuggestion(this)" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;color:var(--ink);">Which SKUs are dead stock?</button>
+        </div>
+      </div>
+      <!-- Input -->
+      <div style="border-top:1px solid var(--border);padding:12px 16px;background:var(--gold-pale);flex-shrink:0;">
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <textarea id="intel-chat-input" rows="2" placeholder="Ask about stock, stores, replenishment priorities…" style="flex:1;border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:12px;font-family:'Montserrat',sans-serif;resize:none;background:var(--white);color:var(--ink);outline:none;" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();sendIntelChat();}"></textarea>
+          <button onclick="sendIntelChat()" id="intel-chat-send-btn" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:10px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;flex-shrink:0;align-self:stretch;letter-spacing:0.04em;">Send</button>
+        </div>
+        <div style="font-size:10px;color:var(--ink-light);margin-top:5px;">Ctrl+Enter to send · Context resets on Refresh Data</div>
+      </div>
+    </div>
+  </div>
 
   <!-- ══════════════════ TAB: CAMPAIGNS & ORDERS ══════════════════ -->
   <div id="tab-campaigns" class="tab-panel">
@@ -5282,7 +5321,8 @@ async function loadIntelligenceData(){
 
   const g = r => r.status==='fulfilled' ? (r.value.data||[]) : [];
   const rawSales = g(r1);
-  intelSalesData  = rawSales.filter(r=>div==='ALL'||r.store_code?.startsWith(div==='EPP'?'':'ASL'));
+  intelSalesData  = rawSales.filter(r=>div==='ALL'||getStore(r.store_code).region===div);
+  intelChatHistory = []; // reset chat context on data reload
   intelWhSoh      = g(r2).filter(r=>div==='ALL'||r.division===div);
   intelTransfers  = g(r3).filter(r=>div==='ALL'||r.division===div);
   intelProdHistory= g(r4);
@@ -5295,6 +5335,7 @@ async function loadIntelligenceData(){
   document.getElementById('intel-loading').style.display='none';
   document.getElementById('intel-content').style.display='block';
   document.getElementById('intel-export-btn').style.display='inline-flex';
+  document.getElementById('intel-chat-btn').style.display='inline-flex';
   renderIntelView();
 }
 
@@ -6018,6 +6059,189 @@ function exportIntelReport(){
   });
   dlFile(`Intel_Report_${new Date().toISOString().slice(0,10)}.csv`,csv,'text/csv');
   toast('Intelligence report exported');
+}
+
+// ══ INTELLIGENCE AI CHAT (GEMINI) ════════════════════════════════════════
+
+let intelChatHistory = [];
+
+function openIntelChat() {
+  document.getElementById('intel-chat-overlay').style.display = 'block';
+  const key = localStorage.getItem('ep_ocr_api_key') || '';
+  document.getElementById('intel-chat-no-key').style.display =
+    (!key || key.indexOf('AIza') !== 0) ? 'block' : 'none';
+  if (!document.getElementById('intel-chat-msgs').children.length) {
+    _addChatBubble('model', _buildWelcomeMsg());
+  }
+  setTimeout(() => document.getElementById('intel-chat-input').focus(), 150);
+}
+
+function closeIntelChat() {
+  document.getElementById('intel-chat-overlay').style.display = 'none';
+}
+
+function promptIntelApiKey() {
+  const k = prompt('Enter your Google Gemini API key (starts with AIzaSy…):');
+  if (k && k.indexOf('AIza') === 0) {
+    localStorage.setItem('ep_ocr_api_key', k);
+    document.getElementById('intel-chat-no-key').style.display = 'none';
+    toast('Gemini API key saved ✓');
+  }
+}
+
+function useIntelSuggestion(btn) {
+  document.getElementById('intel-chat-input').value = btn.textContent;
+  document.getElementById('intel-chat-suggestions').style.display = 'none';
+  sendIntelChat();
+}
+
+function _buildWelcomeMsg() {
+  if (!intelLoaded) return 'Intelligence data is still loading — please wait a moment and try again.';
+  const rates = getWeeklyRates();
+  const soh   = getWhQty();
+  const critN = Object.entries(soh).filter(([k,v]) => (rates[k]||0) > 5 && v / (rates[k]||1) < 2).length;
+  const fastN = Object.values(rates).filter(v => v > 50).length;
+  const skuN  = Object.keys(rates).length;
+  return `Hello! I have live Emirates Pride data loaded — **${skuN} active SKUs**, **${fastN} fast movers** (>50/wk), and **${critN} critical cover alert${critN !== 1 ? 's' : ''}** right now.\n\nAsk me anything about stock, stores, or replenishment priorities.`;
+}
+
+function _buildIntelContext() {
+  const rates = getWeeklyRates();
+  const soh   = getWhQty();
+  const today = new Date().toLocaleDateString('en-GB');
+
+  const top30 = Object.entries(rates)
+    .sort((a, b) => b[1] - a[1]).slice(0, 30)
+    .map(([sku, rate]) => {
+      const wh = soh[sku] || 0;
+      const cover = rate > 0 ? +(wh / rate).toFixed(1) : 'N/A';
+      return `${sku} "${getItemName(sku)}" rate:${rate}/wk WH:${wh} cover:${cover}wks`;
+    }).join('\n');
+
+  const critical = Object.entries(soh)
+    .filter(([k, v]) => (rates[k]||0) > 5 && v / (rates[k]||1) < 2)
+    .map(([k, v]) => `${k} "${getItemName(k)}" — ${v} units, ${(v/(rates[k]||1)).toFixed(1)}wks cover`)
+    .join('\n') || 'None';
+
+  const lastTrf = {};
+  intelTransfers.forEach(r => {
+    if (!r.to_location_code) return;
+    const d = new Date(r.transfer_date);
+    if (!lastTrf[r.to_location_code] || d > lastTrf[r.to_location_code]) lastTrf[r.to_location_code] = d;
+  });
+  const now = new Date();
+  const overdueStores = Object.entries(lastTrf)
+    .map(([code, dt]) => ({
+      code, name: getStore(code).name || code,
+      days: Math.floor((now - dt) / 86400000),
+      interval: _storeInterval(code) + _storeSafety(code)
+    }))
+    .filter(s => s.days > s.interval)
+    .sort((a, b) => b.days - a.days)
+    .map(s => `${s.name} (${s.code}) — ${s.days}d since last delivery, expected every ${s.interval}d`)
+    .join('\n') || 'None — all stores received recently';
+
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 56);
+  const recentTrf = new Set(intelTransfers.filter(r => new Date(r.transfer_date) >= cutoff).map(r => r.sku_code));
+  const dead = Object.entries(soh)
+    .filter(([sku, qty]) => qty > 0 && !recentTrf.has(sku))
+    .map(([sku, qty]) => `${sku} "${getItemName(sku)}" — ${qty} units in WH, no store delivery in 8+ weeks`)
+    .join('\n') || 'No dead stock';
+
+  const prodDelays = intelProdHistory
+    .filter(r => r.record_status === 'not_produced' && r.plan_date && new Date(r.plan_date) < now)
+    .map(r => `${r.sku_code||'?'} "${r.product_name||'?'}" — planned ${r.plan_date}, not yet produced`)
+    .join('\n') || 'None';
+
+  return `Emirates Pride Perfumes — Live S&OP Snapshot (${today})
+Warehouse: Nad Al Hammar, Dubai. Stores: 30+ across UAE and Oman.
+
+=== CRITICAL WH COVER (< 2 weeks) ===
+${critical}
+
+=== OVERDUE STORE DELIVERIES ===
+${overdueStores}
+
+=== TOP 30 SKUs BY WEEKLY SALES VELOCITY ===
+${top30}
+
+=== DEAD STOCK IN WAREHOUSE ===
+${dead}
+
+=== PRODUCTION DELAYS ===
+${prodDelays}`;
+}
+
+async function sendIntelChat() {
+  const input = document.getElementById('intel-chat-input');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  const key = localStorage.getItem('ep_ocr_api_key') || '';
+  if (!key || key.indexOf('AIza') !== 0) { promptIntelApiKey(); return; }
+
+  input.value = '';
+  input.disabled = true;
+  const sendBtn = document.getElementById('intel-chat-send-btn');
+  sendBtn.disabled = true;
+  sendBtn.textContent = '…';
+  document.getElementById('intel-chat-suggestions').style.display = 'none';
+
+  _addChatBubble('user', text);
+
+  // Build contents: prepend context on first turn
+  const contents = [];
+  if (!intelChatHistory.length) {
+    contents.push({ role: 'user', parts: [{ text:
+      'You are the Emirates Pride S&OP Intelligence Assistant helping Amal Kandathil, the Demand Planner. ' +
+      'Use only the data below to answer questions. Be concise and specific — use SKU codes and store names directly. ' +
+      'If data is insufficient to answer precisely, say so.\n\n' + _buildIntelContext()
+    }]});
+    contents.push({ role: 'model', parts: [{ text: 'Understood. I have the live Emirates Pride intelligence data. Ready to help.' }]});
+  }
+  intelChatHistory.forEach(m => contents.push(m));
+  contents.push({ role: 'user', parts: [{ text }] });
+
+  try {
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents, generationConfig: { temperature: 0.2, maxOutputTokens: 800 } }) }
+    );
+    const json = await resp.json();
+    if (!resp.ok) throw new Error(json?.error?.message || 'Gemini error ' + resp.status);
+    const reply = json?.candidates?.[0]?.content?.parts?.[0]?.text || '(No response received)';
+    intelChatHistory.push({ role: 'user',  parts: [{ text }] });
+    intelChatHistory.push({ role: 'model', parts: [{ text: reply }] });
+    if (intelChatHistory.length > 20) intelChatHistory = intelChatHistory.slice(-20);
+    _addChatBubble('model', reply);
+  } catch(e) {
+    _addChatBubble('error', '⚠ ' + (e.message || 'Request failed. Check your API key.'));
+  }
+
+  input.disabled = false;
+  sendBtn.disabled = false;
+  sendBtn.textContent = 'Send';
+  input.focus();
+}
+
+function _addChatBubble(role, text) {
+  const msgs   = document.getElementById('intel-chat-msgs');
+  const isUser = role === 'user';
+  const isErr  = role === 'error';
+  const div    = document.createElement('div');
+  div.style.cssText = `display:flex;flex-direction:column;align-items:${isUser ? 'flex-end' : 'flex-start'};`;
+  const formatted = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g,'<br>');
+  div.innerHTML = `<div style="max-width:88%;background:${isUser ? 'var(--navy)' : isErr ? '#FDECEA' : 'var(--gold-pale)'};
+    color:${isUser ? '#fff' : isErr ? '#C0392B' : 'var(--ink)'};
+    border-radius:${isUser ? '12px 12px 2px 12px' : '2px 12px 12px 12px'};
+    padding:10px 14px;font-size:12px;line-height:1.65;font-family:'Montserrat',sans-serif;
+    border:1px solid ${isUser ? 'transparent' : isErr ? '#F5C6CB' : 'var(--border)'};">${formatted}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
 // ══════════════════════════════════════════════════════════════════════════
