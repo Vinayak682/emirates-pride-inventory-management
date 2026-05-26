@@ -329,6 +329,53 @@ The S&OP portal is used by Emirates Pride management. Primary responsibilities:
 
 ---
 
+### Session — 26 May 2026 (Session 17 — Gemini Intelligence Chat + Amal Purge + Phone Dispatch System)
+
+**Files changed**: `sop-portal.html`, `INTELLIGENCE_SKILL.md`, `CLAUDE.md`, `MASTER_REFERENCE.md`, `am_requests_setup.sql`, `stock-register.html`, `dispatch.html` (new), `mac_dispatch_setup.sql` (new)
+**Commits**: `647629f` (Amal purge), `752c8f3` (Gemini chat + EPP filter fix), `293e801` (dispatch system) — all pushed to main
+
+#### What was built:
+
+**1. Gemini AI Chat — Intelligence Tab (`sop-portal.html`)**
+- Built from scratch: full Gemini 2.0 Flash multi-turn chat overlay inside the S&OP Intelligence tab
+- `✦ Ask AI` button in filter bar → slide-up chat panel with message bubbles + quick suggestion chips
+- `_buildIntelContext()` injects live data snapshot on first turn (top 30 SKUs, critical cover <2wk, overdue stores, dead stock, production delays)
+- `sendIntelChat()` → Gemini API (`generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`), temperature 0.2, maxOutputTokens 800
+- API key: reuses `ep_ocr_api_key` from localStorage (shared with OCR tool) — prompted once if missing
+- `intelChatHistory[]` maintains multi-turn context across messages, cleared on data reload
+- **Fixed EPP division filter bug**: `r.store_code?.startsWith(div==='EPP'?'':'ASL')` was showing ALL stores for EPP filter → fixed to `getStore(r.store_code).region===div`
+
+**2. Complete Amal Kandathil Purge**
+- All references to "Amal Kandathil" and "Amal" (as a person's name) removed from every file:
+  - `sop-portal.html` Gemini system prompt, `INTELLIGENCE_SKILL.md` (owner field, 3 references), `CLAUDE.md` (2 sections + 2 "waiting for files from Amal"), `MASTER_REFERENCE.md` (5 references), `am_requests_setup.sql` (2× `logged_by DEFAULT 'Amal'`→`'Manager'`), `stock-register.html` (2× `logged_by:'Amal'`→`'Manager'`)
+- Final grep confirmed 0 remaining references across all file types
+- Reason: user was using a borrowed system that had the previous owner's name embedded throughout
+
+**3. Morning Briefing Scheduled Task (`ep-morning-briefing`)**
+- Runs 06:30 daily (UAE time = local time)
+- Fetches: `wh_stock_on_hand`, `benchmarks_cache`, `wh_transfers` (120 days), `production_history` (not_produced)
+- Computes: critical cover SKUs (<2wk, rate>5/wk), overdue stores by type (DX=4d, A0/AL=6d, OM=35d, other=10d), dead stock (56+ days), production delays
+- Sends PushNotification: `"EP 06:30 | {crit} CRITICAL SKUs | {overdue} stores overdue | {dead} dead stock"`
+- `notifyOnCompletion: false`
+
+**4. Phone Dispatch System (2-account support)**
+- `dispatch.html` (GitHub Pages): mobile-friendly, EP-branded, PIN-protected (`VP2026EP` → SHA-256 verified client-side), submits instructions to Supabase `mac_dispatch` table, shows live task history with 15s auto-refresh
+- `mac_dispatch_setup.sql`: Supabase table (`id, created_at, instruction, status, result, executed_at, source`) + RLS policies for anon INSERT/SELECT/UPDATE
+- `mac-dispatch-poller` scheduled task: every 2 minutes, fetches pending rows, marks running, executes, marks done/failed with result
+- Live at: `https://vinayak682.github.io/emirates-pride-inventory-management/dispatch.html`
+- Account 2 access: via `dispatch.html` (Supabase-backed, PIN required)
+- Account 1 access: via Claude Remote Control (built-in — user to configure in Claude settings)
+
+#### Pending (not yet done):
+- User to run `mac_dispatch_setup.sql` in Supabase SQL Editor
+- User to click "Run now" on `mac-dispatch-poller` to pre-approve tool permissions
+- Account 1 Remote Control: user to enable in Claude app → Settings → Remote Control
+- Consumables tables (`consumable_items`, `consumable_stock`) — SQL written in INTELLIGENCE_SKILL.md, not yet run
+- `store_replenishment_schedule` table — SQL written, not yet created
+- Week 1 content posts (4 posts) — status unclear
+
+---
+
 ### Session — 24 May 2026 (Session 16 — /init, /architecture, /code-review, /compliance-tracking, /webapp-testing, /data:analyze + Obsidian Vault)
 
 **Files changed**: `CLAUDE.md` (major update — Claude Code guidance section prepended)
