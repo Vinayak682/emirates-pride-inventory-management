@@ -1500,65 +1500,6 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       </div>
       <div id="intel-content" style="display:none;"></div>
     </div>
-    <!-- ── AI CHAT BUTTON ── -->
-    <button id="intel-chat-fab" onclick="toggleIntelChat()"
-      style="position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;
-             background:var(--gold-bar);border:none;cursor:pointer;z-index:500;
-             box-shadow:0 4px 16px rgba(0,0,0,0.25);display:none;
-             align-items:center;justify-content:center;font-size:20px;"
-      title="Intelligence Assistant">✦</button>
-
-    <!-- ── AI CHAT PANEL ── -->
-    <div id="intel-chat-panel"
-      style="display:none;position:fixed;bottom:90px;right:28px;width:380px;height:520px;
-             background:var(--white);border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.18);
-             z-index:499;border:1px solid var(--border);flex-direction:column;overflow:hidden;">
-
-      <!-- header -->
-      <div style="background:var(--gold-bar);padding:14px 16px;display:flex;align-items:center;gap:10px;">
-        <span style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--gold);flex:1;">
-          Intelligence Assistant
-        </span>
-        <span style="font-size:11px;color:rgba(201,168,76,0.7);">Live data</span>
-        <button onclick="toggleIntelChat()"
-          style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:18px;line-height:1;">×</button>
-      </div>
-
-      <!-- messages -->
-      <div id="intel-chat-msgs"
-        style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;">
-        <div style="align-self:flex-start;background:var(--cream-mid);border-radius:10px 10px 10px 2px;
-                    padding:10px 13px;font-size:12.5px;line-height:1.6;max-width:92%;color:var(--ink);">
-          Hello! Ask me anything about your sales, stock levels, replenishment needs, or demand trends.
-          <div style="font-size:10px;color:var(--ink-light);margin-top:4px;">
-            Try: "Which stores need urgent stock?" or "Top 10 fastest SKUs"
-          </div>
-        </div>
-      </div>
-
-      <!-- suggestion chips -->
-      <div style="padding:8px 12px;display:flex;flex-wrap:wrap;gap:5px;border-top:1px solid var(--border-soft);">
-        <span class="intel-chip" onclick="intelChip('Which stores need urgent replenishment?')">🚨 Urgent stock</span>
-        <span class="intel-chip" onclick="intelChip('Top 10 fastest moving SKUs this month')">🚀 Fast movers</span>
-        <span class="intel-chip" onclick="intelChip('Which SKUs are dead stock for 60+ days?')">🐢 Dead stock</span>
-        <span class="intel-chip" onclick="intelChip('Summarise last month sales by store')">📊 Monthly recap</span>
-      </div>
-
-      <!-- input -->
-      <div style="padding:10px 12px;border-top:1px solid var(--border-soft);display:flex;gap:8px;align-items:flex-end;">
-        <textarea id="intel-chat-input" rows="1" placeholder="Ask about sales, stock, demand…"
-          style="flex:1;border:1px solid var(--border);border-radius:7px;padding:8px 12px;
-                 font-family:'Montserrat',sans-serif;font-size:12.5px;resize:none;
-                 min-height:36px;max-height:90px;outline:none;background:var(--cream);color:var(--ink);"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();intelSend();}"
-          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,90)+'px'">
-        </textarea>
-        <button onclick="intelSend()" id="intel-send-btn"
-          style="width:36px;height:36px;border-radius:7px;border:none;background:var(--gold);
-                 color:var(--white);cursor:pointer;font-size:14px;flex-shrink:0;">➤</button>
-      </div>
-    </div>
-
   </div><!-- /tab-intelligence -->
 
   <!-- ══ INTELLIGENCE AI CHAT PANEL ═══════════════════════════════════ -->
@@ -3474,14 +3415,8 @@ function switchTab(id){
   if(id==='intelligence') loadIntelligenceTab();
   if(id==='campaigns')   loadCampaignsTab();
   if(id==='forecast')    loadForecastTab();
-  // show/hide Intelligence chat FAB
-  const fab = document.getElementById('intel-chat-fab');
-  if(fab) fab.style.display = (id==='intelligence') ? 'flex' : 'none';
-  if(id!=='intelligence' && intelChatOpen){
-    intelChatOpen=false;
-    const p=document.getElementById('intel-chat-panel');
-    if(p) p.style.display='none';
-  }
+  // close Intelligence chat overlay when switching away
+  if(id!=='intelligence') closeIntelChat();
 }
 
 function togglePanel(panelId,btnId,openLabel,closeLabel){
@@ -8055,114 +7990,6 @@ async function doExportDownload() {
     btn.textContent = '↓ Download Report';
     btn.disabled = false;
   }
-}
-
-// ══════════════════════════════════════════════
-// INTELLIGENCE CHATBOT
-// ══════════════════════════════════════════════
-const INTEL_EDGE_URL = 'https://ncszurcrkngjcjqsowln.supabase.co/functions/v1/intelligence-chat';
-const INTEL_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
-let intelChatHistory = [];
-let intelChatOpen = false;
-
-function toggleIntelChat() {
-  intelChatOpen = !intelChatOpen;
-  const panel = document.getElementById('intel-chat-panel');
-  panel.style.display = intelChatOpen ? 'flex' : 'none';
-  panel.style.flexDirection = 'column';
-  if (intelChatOpen) document.getElementById('intel-chat-input').focus();
-}
-
-function intelChip(text) {
-  document.getElementById('intel-chat-input').value = text;
-  intelSend();
-}
-
-async function intelSend() {
-  const input = document.getElementById('intel-chat-input');
-  const msg = input.value.trim();
-  if (!msg) return;
-  input.value = '';
-  input.style.height = 'auto';
-
-  intelAppendMsg('user', msg);
-  const typing = intelAppendTyping();
-  document.getElementById('intel-send-btn').disabled = true;
-
-  try {
-    const res = await fetch(INTEL_EDGE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${INTEL_ANON_KEY}`,
-        'apikey': INTEL_ANON_KEY,
-      },
-      body: JSON.stringify({ message: msg, conversation_history: intelChatHistory }),
-    });
-    const data = await res.json();
-    typing.remove();
-    const reply = data.reply || data.error || 'No response.';
-    intelAppendMsg('bot', reply);
-    intelChatHistory.push({ role: 'user', content: msg });
-    intelChatHistory.push({ role: 'assistant', content: reply });
-    if (intelChatHistory.length > 12) intelChatHistory = intelChatHistory.slice(-12);
-  } catch (err) {
-    typing.remove();
-    intelAppendMsg('bot', '⚠️ Could not reach the assistant. Check your internet connection.');
-  }
-  document.getElementById('intel-send-btn').disabled = false;
-}
-
-function intelAppendMsg(role, text) {
-  const msgs = document.getElementById('intel-chat-msgs');
-  const div = document.createElement('div');
-  div.className = role === 'user' ? 'intel-msg-user' : 'intel-msg-bot';
-
-  // Strip Excel block from display text, keep a download button instead
-  let displayText = text;
-  let csvData = null;
-  const excelMatch = text.match(/\[EXCEL_START\]([\s\S]*?)\[EXCEL_END\]/);
-  if (excelMatch) {
-    csvData = excelMatch[1].trim();
-    displayText = text.replace(/\[EXCEL_START\][\s\S]*?\[EXCEL_END\]/, '').trim();
-  }
-
-  div.innerHTML = displayText
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/### (.*?)(\n|$)/g, '<strong style="font-size:13px;color:var(--gold-bar)">$1</strong><br>')
-    .replace(/\| (.+) \|/g, (m) => `<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px">${m}</span>`)
-    .replace(/\n/g, '<br>');
-
-  if (csvData) {
-    const btn = document.createElement('button');
-    btn.innerHTML = '⬇ Download Excel';
-    btn.style.cssText = 'margin-top:10px;padding:7px 14px;background:var(--gold);color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-family:\'Montserrat\',sans-serif;font-weight:600;display:block;';
-    btn.onclick = () => intelDownloadExcel(csvData);
-    div.appendChild(btn);
-  }
-
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-  return div;
-}
-
-function intelDownloadExcel(csvData) {
-  if (typeof XLSX === 'undefined') { alert('Excel library not loaded'); return; }
-  const rows = csvData.split('\n').map(r => r.split(',').map(c => c.trim()));
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Intelligence Report');
-  XLSX.writeFile(wb, `Emirates_Pride_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
-}
-
-function intelAppendTyping() {
-  const msgs = document.getElementById('intel-chat-msgs');
-  const div = document.createElement('div');
-  div.className = 'intel-typing';
-  div.innerHTML = '<span></span><span></span><span></span>';
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-  return div;
 }
 
 
