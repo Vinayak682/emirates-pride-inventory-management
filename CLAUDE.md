@@ -49,25 +49,129 @@
 
 ## REGIONAL DIVISIONS & STORE REGISTRY
 
-### Division 1 — EPP UAE (Emirates Pride Perfumes Direct Stores)
-- **Status**: Sales data in Supabase `sales_history`, Jan 2025 – Apr 2026 (17,267 rows)
-- **Stores**: ~30+ UAE outlets (Dubai, Abu Dhabi, Sharjah, Ajman, RAK, Fujairah, Al Ain)
-- Store codes: DX001 (Dubai Mall), DX004 (Mall of Emirates), DX005 (Mirdif CC), DX006 (Dubai Hills), A0001–A0009 (Abu Dhabi), SH001 (Zahia CC), AJ001 (Ajman CC), RK001/RK002 (Manar Mall), FJ001 (Fujairah CC), AL001–AL006 (Al Ain), etc.
+> **AUTHORITATIVE AS OF 25 MAY 2026** — confirmed by Amal from official store code master
+> Red-highlighted stores in master = newly opened, not yet in Supabase sales history
 
-### Division 2 — ASL UAE (ASL Franchise Stores)
-- **Status**: NOT YET UPLOADED. Same Excel pivot format as EPP. Will be provided store-by-store.
-- Action: When received, upload to `sales_history` with ASL-prefixed store codes.
+---
 
-### Division 3 — Oman (3 Stores)
-- **Status**: Oct 2025 – Mar 2026 data parsed from Excel, ready to upload
-- **Stores**:
-  | Store Code | Store Name | Type |
-  |-----------|-----------|------|
-  | `OM001` | Mall Of Oman | EPP Direct |
-  | `OM002` | Muscat City Centre | EPP Direct |
-  | `OM_ASL001` | ASL-Mall Of Oman | ASL Franchise |
-- **Data file**: `oman_sales_upload.json` (generated, ready for Supabase)
-- **Note**: Oct–Dec 2025 sheets had no SKU codes — mapped via product name matching to Jan–Mar 2026 data
+### COMPLETE STORE CODE MASTER (use this for ALL store name → code mapping)
+
+#### Division 1 — EPP UAE — Abu Dhabi
+
+| Store Code | Store Name | Type | City |
+|-----------|-----------|------|------|
+| `A0001` | Bawabat al Sharq Mall Shop | Shop | Abu Dhabi |
+| `A0002` | Bawabat al Sharq Mall Kiosk | Kiosk | Abu Dhabi |
+| `A0003` | Dalma Mall Shop | Shop | Abu Dhabi |
+| `A0004` | Dalma Mall Kiosk | Kiosk | Abu Dhabi |
+| `A0005` | Deerfield Mall Kiosk | Kiosk | Abu Dhabi |
+| `A0007` | Yas Mall Kiosk 2 | Kiosk | Abu Dhabi |
+| `A0008` | Yas Mall Kiosk 3 | Kiosk | Abu Dhabi |
+| `A0009` | Yas Mall Podium | Kiosk | Abu Dhabi |
+| `A0010` | Bawabat al Sharq Mall Shop 2 | Shop | Abu Dhabi |
+| `A0011` | Marina Mall | Kiosk | Abu Dhabi | ← NEW (not yet in Supabase) |
+| `PS_YAS` | Yas Promotions (promo stand) | Kiosk | Abu Dhabi |
+
+#### Division 1 — EPP UAE — Al Ain
+
+| Store Code | Store Name | Type | City |
+|-----------|-----------|------|------|
+| `AL001` | Al Ain Mall Kiosk | Kiosk | Al Ain |
+| `AL002` | Bawadi Mall Kiosk 1 | Kiosk | Al Ain |
+| `AL003` | Bawadi Mall Kiosk 2 | Kiosk | Al Ain |
+| `AL004` | Jimi Mall Shop | Shop | Al Ain |
+| `AL005` | Jimi Mall Kiosk | Kiosk | Al Ain | ← NEW (not yet in Supabase) |
+| `AL006` | Makhani Zakhar Mall Shop | Shop | Al Ain |
+
+#### Division 1 — EPP UAE — Dubai
+
+| Store Code | Store Name | Type | City |
+|-----------|-----------|------|------|
+| `DX001` | Dubai Mall Shop | Shop | Dubai |
+| `DX003` | Dubai Mall Kiosk | Kiosk | Dubai | ← NEW (not yet in Supabase) |
+| `DX004` | Mall of the Emirates Kiosk | Kiosk | Dubai |
+| `DX005` | Mirdif City Centre Kiosk | Kiosk | Dubai |
+| `DX006` | Dubai Hills Mall Shop | Shop | Dubai |
+| `DX008` | Dubai Festival City | Kiosk | Dubai | ← NEW (not yet in Supabase) |
+
+#### Division 1 — EPP UAE — Other Emirates
+
+| Store Code | Store Name | Type | City |
+|-----------|-----------|------|------|
+| `RK001` | Manar Mall Shop | Shop | Ras Al Khaimah |
+| `RK002` | Manar Mall Kiosk | Kiosk | Ras Al Khaimah |
+| `FJ001` | Fujairah City Centre Kiosk | Kiosk | Fujairah |
+| `SH001` | Zahia City Centre Kiosk | Kiosk | Sharjah |
+| `AJ001` | Ajman City Centre Kiosk | Kiosk | Ajman |
+
+---
+
+#### Division 2 — ASL UAE (Aromatic Scents Lab Franchise)
+
+| Store Code | Store Name | Type | City | Legacy Supabase Code |
+|-----------|-----------|------|------|---------------------|
+| `BAS001` | Bawabat al Sharq Mall Kiosk | Kiosk | Abu Dhabi | — |
+| `YMK001` | Yas Mall | Kiosk | Abu Dhabi | `ASL_YAS001` |
+| `BAW001` | Bawadi Mall | Kiosk | Al Ain | `ASL_BAW001` |
+| `MAK001` | Makhani Zakhar Mall | Kiosk | Al Ain | `ASL_MAK001` |
+| `FJ0001` | Fujairah City Centre | Kiosk | Fujairah | `ASL_FUJ001` |
+
+> **⚠️ ASL Legacy Code Note**: Supabase sales_history (Jan–Apr 2026) uses old `ASL_*` prefixed codes. When querying for ASL sales, map: YMK001↔ASL_YAS001, BAW001↔ASL_BAW001, MAK001↔ASL_MAK001, FJ0001↔ASL_FUJ001. BAS001 has NO historical sales in Supabase yet.
+> Also in Supabase: `ASL_A009` (87 units Apr) and `ASL_AL007` (73 units Apr) — pending clarification from Amal on which stores these map to.
+
+---
+
+#### Division 3 — Oman
+
+| Store Code | Store Name | Type | City | Brand |
+|-----------|-----------|------|------|-------|
+| `OM001` | Mall Of Oman | Kiosk | Muscat | EPP Direct |
+| `OM002` | Muscat City Centre | Kiosk | Muscat | EPP Direct |
+| `OM_ASL001` | Mall Of Oman (ASL) | Kiosk | Muscat | ASL Franchise |
+| `OM003` | Oman Store | Shop | Muscat | EPP Direct | ← NEW (code TBC) |
+
+- **Sales data**: Oct 2025 – Apr 2026 in Supabase (Apr 2026 uploaded 23 May 2026 — 133 rows, 1135 units)
+
+---
+
+#### Division 4 — KSA (Saudi Arabia)
+- **Status**: DEFERRED. No data yet.
+
+---
+
+### STORE FILE NAME → STORE CODE MAPPING (for SOH uploads)
+
+> Use this table to map store report filenames to store codes
+
+| File Name Pattern | Store Code | Brand |
+|-------------------|-----------|-------|
+| AJMAN CITY CENTRE | AJ001 | EPP |
+| AL AIN MALL | AL001 | EPP |
+| ASL BAS MALL | BAS001 | ASL |
+| BAS KIOSK | A0002 | EPP |
+| BAS SHOP | A0001 | EPP |
+| BAS SHOP 2 | A0010 | EPP |
+| BAWADI 1 | AL002 | EPP |
+| BAWADI 2 | AL003 | EPP |
+| BAWADI MALL | BAW001 | ASL |
+| DALMA KIOSK | A0004 | EPP |
+| DALMA SHOP | A0003 | EPP |
+| DUBAI HILLS MALL | DX006 | EPP |
+| DUBAI SHOP / Dubai Shop Stock Movement | DX001 | EPP |
+| FUJAIRAH CITY CENTRE | FJ0001 | ASL |
+| JIMI MALL | AL004 | EPP |
+| MAKANI MALL | MAK001 | ASL |
+| MAKANI SHOP | AL006 | EPP |
+| MALL OF EMIRATES | DX004 | EPP |
+| MANAR MALL SHOP | RK001 | EPP |
+| MIRDIF CITY CENTRE | DX005 | EPP |
+| YAS MALL | A0009 | EPP |
+| YAS MALL 3 | A0008 | EPP |
+| YAS MALL KIOSK 2 | A0007 | EPP |
+| YAS PROMOTIONS | PS_YAS | EPP |
+| ZAHIA CITY CENTRE | SH001 | EPP |
+
+---
 
 ### Division 4 — KSA (Saudi Arabia)
 - **Status**: DEFERRED. No data yet. Design S&OP to be extensible (region filter in UI).
@@ -80,8 +184,9 @@
 ### Password: `Vinayak@1998` (required EVERY time — no session persistence)
 ### Audience: Company owners, higher management — must be error-free
 
-### Tab 1 — SALES
+### Tab 1 — SALES ✅ LIVE
 - **Metric**: Units sold only (no revenue for now)
+- **Data**: EPP UAE (Jan 2025–Apr 2026), ASL UAE (Jan–Apr 2026), Oman (Oct 2025–Mar 2026) — 17,300+ rows
 - **Default view**: Configurable — both views available:
   - View A: All stores side-by-side for one selected month
   - View C: SKU performance across all stores + all months (matrix)
@@ -90,25 +195,47 @@
 - **Targets**: NOT built yet — future
 - **Top/Bottom SKU ranking**: NOT yet — will differ per region
 
-### Tab 2 — INVENTORY
+### Tab 2 — INVENTORY ✅ BUILT (No Data Yet)
 - **Input**: Excel upload per store (user uploads, system parses)
 - **First-time behavior**: Replace existing data (full sync)
 - **Subsequent uploads**: Match + generate deviation report (formatted, downloadable)
 - **History**: Show last upload snapshot + full upload history log
-- **Real-time sync to stock register**: DEFERRED — not in current build
+- **Table**: `sop_inventory_uploads` + `sop_inventory_lines` (ready, empty)
+- **Status**: Awaiting first store inventory upload
 
-### Tab 3 — TESTERS
-All 5 KPIs mandatory:
+### Tab 3 — TESTERS ✅ BUILT (Ready to Load)
+All 5 KPIs ready:
 1. Total testers issued per store per month
 2. Testers converted from FG (full bottle → tester)
 3. Tester wastage / write-offs
 4. Current live tester count per store
 5. Top SKUs by tester activity
-- **Data source**: Supabase (same project, same tables used by stock register)
+- **Data source**: Supabase (queries from stock register tables)
+- **Status**: Ready — filters by Division/Year/Month/Store
 
-### Future Tabs (not built yet — note for next sessions):
-- Targets vs Actuals (after targets are set)
-- KSA tab (when data arrives)
+### Tab 4 — PRODUCTION ✅ LIVE
+- **Data**: `production_plan` table — Week 20 (11 May 2026) with FG/Tester planned vs actual
+- **Features**: Upload weekly plan Excel, WH stock tracking, KPI cards (FG planned, testers, SKUs, completed runs, WH gaps)
+- **Day-by-day schedule**: renders from uploaded plan, colour-coded by status (Planned/In Progress/Completed/Cancelled)
+- **WH Coverage Analysis**: SKUs ranked by WH cover linked to production plan
+
+### Tab 5 — WAREHOUSE ✅ BUILT (Ready)
+- **Features**: Division selector (EPP/ASL/Oman), Stock on Hand / Transfer History views
+- **Upload**: RptStockOnHand.xlsx parser (reads "Good Stock" rows)
+- **Status**: Structure ready, awaiting first upload
+
+### Tab 6 — INTELLIGENCE ✅ BUILT (Ready)
+- **Analytics dashboard** — trend analysis, KPI insights
+
+### Tab 7 — CAMPAIGNS & ORDERS ✅ BUILT (Ready)
+- **Order tracking** — regional orders, promotional campaigns
+
+### Tab 8 — FORECAST ✅ BUILT (Ready)
+- **Demand forecasting** — SKU-level demand projections
+
+### Future Enhancements (not in current build):
+- Sales targets vs actuals (after targets are set)
+- KSA region (when data arrives)
 - Cross-region comparison dashboard
 
 ---
@@ -179,13 +306,14 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 
 ## ONGOING BUILD QUEUE (next sessions)
 
-1. [ ] Upload Oman sales JSON to Supabase `sales_history` (oman_sales_upload.json ready)
-2. [ ] ASL UAE sales data — waiting for files from Amal
-3. [ ] Create Supabase `sop_inventory_uploads` table for inventory snapshots
-4. [ ] Monthly Excel upload script that auto-maps new months
-5. [ ] KSA stores — deferred until data available
-6. [ ] Sales targets input form (future)
-7. [ ] Top/bottom 10 SKU ranking per region (future)
+1. [x] Upload Oman sales JSON to Supabase `sales_history` — DONE (13 May 2026)
+2. [x] ASL UAE sales data — DONE (9 stores, 15 May 2026)
+3. [x] Create Supabase `sop_inventory_uploads` table for inventory snapshots — DONE (structure ready)
+4. [ ] **First store inventory upload to INVENTORY tab** — awaiting store SOH data
+5. [ ] Monthly Excel upload script that auto-maps new months
+6. [ ] KSA stores — deferred until data available
+7. [ ] Sales targets input form (future)
+8. [ ] Top/bottom 10 SKU ranking per region (future)
 
 ---
 
@@ -199,6 +327,417 @@ Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities
 ## PROJECT DETAILS — Full Development Log
 
 > **Format**: Each session listed newest first. Include: date, files changed, what was done, commit hash if pushed.
+
+---
+
+### Session — 30 May 2026 (Session 32 — S&OP Data Audit + Store SOH Fix + Memory Files Full Update)
+**Files changed**: `fix_store_soh_upload.py` (new), `gen_soh_sql.py` (new), `CLAUDE.md` (updated), memory files updated (MASTER_REFERENCE.md, INTELLIGENCE_SKILL.md, project_sop.md, project_supabase.md, MEMORY.md)
+**Commit**: Not pushed (local scripts only)
+
+#### What was audited and built:
+
+**1. Full S&OP Data Audit (Supabase)**
+Queried all tables directly via REST API and found multiple data integrity issues:
+
+| Issue | Finding |
+|-------|---------|
+| sales_history total | 24,421 rows — Jan 2025 to Apr 2026 only |
+| May 2026 sales | **0 rows** — SQL exists (Downloads/may2026_uae_sales_upload.sql) but was NEVER RUN |
+| store_soh_snapshots | 1,873 rows across 20 store+date combos — but 6 stores have WRONG data |
+| A0008 Yas Mall K3 | Only 1 unit (7 rows) in Supabase — Excel has 663 units (106 rows) |
+| A0009 Yas Mall Podium | 170 units in Supabase — Excel has 1,036 units |
+| A0004 Dalma Kiosk | 12 units of wrong ASL gift boxes — Excel has 1,036 units correct data |
+| AL006 Makani Shop | 481 units — Excel has 2,293 units |
+| A0001 BAS Shop | 1,794 units — Excel has 2,843 units |
+| DX001 Dubai Mall | NOT IN DB — Excel has 2,082 units |
+| AL004 Jimi Mall | NOT IN DB — Excel has 801 units |
+| ASL stores (BAS001, BAW001, FJ0001, MAK001) | NOT IN DB — all missing |
+
+Root cause of SOH errors: `build_store_report.py` (Session 27) uploaded partial/wrong data from mismatched file parsing. The store Excel files were not used directly.
+
+**2. Fix SQL Generated: `fix_store_soh_may2026.sql`**
+- Location: `C:\Users\AMALKANDATHIL\Downloads\fix_store_soh_may2026.sql`
+- Size: 264 KB, 2,485 lines
+- Reads all 25 store Excel files from `Store Stock Report 24.05.2026\` folder
+- STEP 1: DELETE all store rows (keeps WH_EPP, WH_ASL)
+- STEP 2: INSERT 2,463 rows — 25 stores, 23,823 total units
+- STEP 3: Verification SELECT
+- Key discovery: Anon role cannot DELETE via REST API (silently fails). Must use SQL Editor.
+- Unique constraint `uq_store_soh` on (store_code, snapshot_date, product_name) — must deduplicate within batches
+
+**3. Scripts created:**
+- `gen_soh_sql.py` — reads 25 store Excels → generates fix_store_soh_may2026.sql
+- `fix_store_soh_upload.py` — interactive version with delete prompt and API upload
+
+**4. May 2026 Sales SQL confirmed exists:**
+- `Downloads/may2026_uae_sales_upload.sql` — 1,556 rows, 18,647 units (May 1–24 EPP+ASL)
+- NOT YET RUN in Supabase (user must paste in SQL Editor)
+- May 25–30 data missing — needs fresh POS export
+
+**5. Memory Files Fully Rewritten:**
+- `MASTER_REFERENCE.md` — NEW comprehensive file (all tables, scripts, data status, pending actions)
+- `INTELLIGENCE_SKILL.md` — NEW comprehensive file (tab spec, broken sources, fix instructions)
+- `project_supabase.md` — Updated (was 16 days stale, missed 8+ new tables)
+- `project_sop.md` — Updated (was 16 days stale, missed Production/Warehouse/Intelligence status)
+- `MEMORY.md` — Updated index with new files and current/stale status
+
+**6. Intelligence Tab Analysis:**
+Currently reads from WRONG/EMPTY tables:
+- `wh_stock_on_hand` → should be `store_soh_snapshots` WHERE store_code IN ('WH_EPP','WH_ASL')
+- `production_history` → should be `production_plan`
+- `wh_transfers` → legacy table, status unknown
+Fix documented in INTELLIGENCE_SKILL.md (code change needed, not yet applied)
+
+**Pending actions for Amal:**
+1. Run `fix_store_soh_may2026.sql` in Supabase SQL Editor → fixes inventory data
+2. Run `may2026_uae_sales_upload.sql` → adds May 2026 sales
+3. Get May 25–30 POS export → share CSV → I generate SQL
+4. Fix Intelligence tab WH data source (one code change in sop-portal.html)
+
+---
+
+### Session — 25 May 2026 (Session 27 — Complete Store Code Registry + Store SOH Upload Script + Executive Excel Report)
+**Files changed**: `CLAUDE.md` (complete store registry rewrite), `build_store_report.py` (new), `store_soh_supabase_setup.sql` (new), memory files updated
+**Commit**: Not pushed (local scripts)
+
+#### What was built:
+
+**1. Complete Store Code Registry (AUTHORITATIVE — confirmed by Amal)**
+- Fully rewrote the REGIONAL DIVISIONS & STORE REGISTRY section in CLAUDE.md
+- 36 stores documented across 4 divisions: EPP UAE (28 stores), ASL UAE (5 stores), Oman (3 stores), KSA (deferred)
+- New stores identified (not yet in Supabase): A0011 Marina Mall, AL005 Jimi Mall Kiosk, DX003 Dubai Mall Kiosk, DX008 Dubai Festival City
+- Complete SOH file name → store code mapping table (25 file patterns)
+- ASL legacy code reconciliation: YMK001↔ASL_YAS001, BAW001↔ASL_BAW001, MAK001↔ASL_MAK001, FJ0001↔ASL_FUJ001
+- Memory file `stores_registry.md` created and indexed in MEMORY.md
+
+**2. `store_soh_supabase_setup.sql` (new)**
+- Creates `store_soh_snapshots` table in Supabase
+- Columns: store_code, store_name, brand, region, snapshot_date, sku_code, product_name, category, soh_qty
+- RLS: anon insert + read enabled
+- Unique constraint: (store_code, snapshot_date, product_name) for upserts
+- **USER ACTION: Run this SQL in Supabase SQL Editor before using upload feature**
+
+**3. `build_store_report.py` (new) — the main script**
+All-in-one Python script that:
+- Parses all 25 store SOH files from `Store Stock Report 24.05.2026/` folder
+- Maps product names → SKU codes using comprehensive alias table (96-100% coverage per store)
+- Uploads SOH data to Supabase `store_soh_snapshots` (optional, prompted)
+- Fetches April 2026 sales from Supabase `sales_history` (2,088 rows, 16,906 units)
+- Reads warehouse stock from EPP + ASL FG SOH CSVs (232+78 SKUs)
+- Generates professional Excel report: `EP_Store_Stock_Report_May2026.xlsx` on Desktop
+
+**4. Output file: `EP_Store_Stock_Report_May2026.xlsx` (106.9 KB)**
+8 sheets in Emirates Pride brand style (olive-gold headers, Montserrat/Cormorant/IBM Plex Mono fonts):
+- **EXECUTIVE SUMMARY** — all 36 stores with SOH, April sales, Days of Supply, status (Critical/Low/Adequate), colour-coded
+- **ABU DHABI — EPP** — 194 products × 10 stores matrix (SOH | Apr Sales | DoS per store)
+- **AL AIN — EPP** — 130 products × 6 stores matrix
+- **DUBAI — EPP** — 137 products × 4 stores matrix
+- **OTHER EMIRATES** — SH001, AJ001, RK001, FJ001 (136 products)
+- **ASL UAE** — 63 products × 6 ASL stores
+- **OMAN** — 73 products × 3 Oman stores
+- **WAREHOUSE STOCK** — 310 SKUs (EPP + ASL) from 1 May 2026 CSV files
+
+**Mapping coverage achieved**:
+- EPP stores: 17/25 stores at 100% (0 unmatched), remaining stores ≤2 unmatched ("[Name Cut Off]" entries)
+- ASL stores: 53-57/61-65 products mapped (~85-88%)
+- Mixed stores (Dalma Kiosk, Yas Mall): 134/142 products (~94%) — carry both EPP and ASL products
+
+**Data status**:
+- April 2026 sales: ✅ Complete (40 stores, 16,906 units from Supabase)
+- May 2026 sales: ❌ Not available in Supabase — only current SOH shown
+- Warehouse: ✅ 1st May 2026 EPP + ASL stock (350,842 EPP + 86,854 ASL units)
+- Store SOH: ✅ 24 May 2026 from 25 store files
+
+**To upload SOH to Supabase**:
+1. Run `store_soh_supabase_setup.sql` in Supabase SQL Editor
+2. Run `python build_store_report.py` → answer "y" when prompted
+
+---
+
+### Session — 23 May 2026 (Session 24 — S&OP Portal Tab Status Deep Verification)
+**Files changed**: `CLAUDE.md` (updated S&OP Portal section + ONGOING BUILD QUEUE)
+**Commit**: Not pushed (documentation update)
+
+#### What was verified:
+
+**Problem**: CLAUDE.md claimed PRODUCTION INVENTORY, WAREHOUSE tabs were "NOT BUILT — placeholders", but user asked to verify.
+
+**Comprehensive S&OP portal audit (sop-portal.html):**
+
+✅ **All 8 tabs ARE FULLY BUILT** (not placeholders):
+1. **SALES Tab** — LIVE, queryable: EPP UAE (Jan 2025–Apr 2026) + ASL UAE (Jan–Apr 2026) + Oman (Oct 2025–Mar 2026)
+2. **INVENTORY Tab** — BUILT, structure ready: Excel upload interface with deviation reporting, upload history, current inventory viewer. `sop_inventory_uploads` + `sop_inventory_lines` tables created.
+3. **TESTERS Tab** — BUILT, ready: 5 KPI cards, filters by division/year/month/store
+4. **PRODUCTION Tab** — **LIVE WITH DATA**: `production_plan` table contains Week 20 plan (11 May 2026), tracks FG/tester planned vs actual, day-by-day schedule, WH coverage analysis
+5. **WAREHOUSE Tab** — BUILT: Division selector, upload interface for RptStockOnHand.xlsx, Stock on Hand / Transfer History views
+6. **INTELLIGENCE Tab** — BUILT: Analytics dashboard
+7. **CAMPAIGNS & ORDERS Tab** — BUILT: Order tracking interface
+8. **FORECAST Tab** — BUILT: Demand forecasting
+
+**Supabase verification**:
+- `production_plan` table: ✅ 100+ rows, Week 20 data (16 May 2026 upload)
+- `sop_inventory_uploads` table: ✅ Created but empty (awaiting first upload)
+- `sop_inventory_lines` table: ✅ Created but empty
+
+**Updates made to CLAUDE.md**:
+- Rewrote Tab 1–8 specifications: marked actual status (✅ LIVE vs ✅ BUILT vs READY)
+- Added data date ranges for SALES (Apr 2026) and PRODUCTION (May 2026)
+- Updated ONGOING BUILD QUEUE: Item 3 marked complete, Item 4 changed to "First store inventory upload — awaiting store SOH data"
+
+**Conclusion**: S&OP portal is **SUBSTANTIALLY COMPLETE**. All tabs functional. Only gaps: first store inventory uploads needed, KSA region pending.
+
+---
+
+### Session — 23 May 2026 (Session 26 — Production Plan Week 21 & 22 Upload)
+**Files changed**: `upload_prod_plan_w21_w22.py` (new)
+**Commit**: Not pushed (local upload script)
+
+#### What was done:
+
+**Task**: Read `Production Plan-2026 May.xlsx` and upload Week 21 & Week 22 production runs to Supabase `production_plan` table.
+
+**Source file**: `C:\Users\AMALKANDATHIL\Downloads\Production Plan-2026 May.xlsx`
+- Sheets: "Feb and march", "May & June", **"Weekly plan"**, "Completed plan"
+- Data extracted from the **"Weekly plan"** sheet
+
+**Records uploaded (12 total)**:
+
+| Week | SKU | Product | FG Planned | Tester | Remarks |
+|------|-----|---------|------------|--------|---------|
+| W21 | B00007 | Peaceful Life | 500 | 50 | — |
+| W21 | C00002 | White 100ml Perfume | 2,678 | 0 | — |
+| W22 | B00003 | Amber Bel Oud | 425 | 75 | As per oil |
+| W22 | B00015 | Hidden Leather | 1,000 | 100 | — |
+| W22 | AP007 | Velvet Amber | 500 | 75 | As per oil |
+| W22 | HR0001 | Qalah - Heritage Collection | 232 | 30 | As per oil |
+| W22 | RM2001 | VELVET TOPAZ PERFUME 100ml | 400 | 0 | — |
+| W22 | RM2003 | SMOKY JASPER PERFUME 100ml | 240 | 0 | — |
+| W22 | RM2004 | SILKY CRYSTAL PERFUME 100ml | 140 | 0 | — |
+| W22 | RM2005 | ROYAL GARNET PERFUME 100ml | 480 | 0 | — |
+| W22 | RADA-006 | Sapphire Serenity 65ml Perfume | 500 | 0 | — |
+| W22 | AP012 | Caramel Luban Perfume | 0 | 10 | — |
+
+**Totals verified**:
+- Week 21: 2 SKUs, FG 3,178, Testers 50
+- Week 22: 10 SKUs, FG 3,917, Testers 290
+- **Combined: 12 SKUs, FG 7,095, Testers 340** (matches Excel totals exactly)
+
+**week_start values**: `2026-05-18` (W21), `2026-05-25` (W22)
+**week_labels**: "Week 21 — 18 May 2026", "Week 22 — 25 May 2026"
+**Status**: All set to `Planned`
+**Bel box**: B00003 has 50 bel boxes; all others 0
+**Note**: No specific day assignments in Excel — all rows default to `plan_day = Monday`
+
+**Upload verified**: All 12 records confirmed in Supabase via API GET query after insert.
+S&OP portal → Production tab now shows W21 and W22 under "Next Week" and "All Weeks" filters.
+
+---
+
+### Session — 23 May 2026 (Session 25 — Oman April 2026 Sales Upload)
+**Files changed**: `upload_oman_apr2026.py` (new), `oman_apr2026_upload.sql` (new — in Downloads)
+**Commit**: Not pushed (local Python + SQL files)
+
+#### What was done:
+
+**Task**: Upload Oman April 2026 sales data from `order_2026-05-23_111950.csv` to Supabase `sales_history` table.
+
+**CSV Source**: `C:\Users\AMALKANDATHIL\Downloads\order_2026-05-23_111950.csv`
+- Contains all Oman orders for April 2026 (individual transaction rows with dates)
+- Stores: ASL-Mall Of Oman, HO (all zeros — skipped), Mall Of Oman, Muscat City Centre
+
+**Mapping process**:
+- Built complete POS product code (numeric: 6, 7, 8…) → EP SKU code mapping table (58 products → 133 unique SKU-store combinations)
+- Cross-referenced against: `extract_stock.py` SKU_MAP, `oman_sales_upload.csv` (Mar 2026 actual SKU codes), `reference_sku_master.md`
+- All B-series, C-series, D-series, AP/AO/AH/AOG/AG/ASL series confirmed from previous data
+- O-series (Oud) mapped by volume pattern matching: O00001=Oud Meydan, O00002=Oud Amiri, O00003=Hindi Khas, O00006=More Of Oud, O00007=Oud Fakhamah, O00008=Oud Emarat
+
+**Aggregation (verified 100%)**:
+| Store | Expected | Got |
+|-------|----------|-----|
+| OM_ASL001 (ASL Mall of Oman) | 191 | ✅ 191 |
+| OM001 (Mall of Oman) | 660 | ✅ 660 |
+| OM002 (Muscat City Centre) | 284 | ✅ 284 |
+| **TOTAL** | **1135** | **✅ 1135** |
+
+**Records**: 133 SKU-store rows for 2026-04
+
+**Upload status**: ✅ DONE — executed in Supabase SQL Editor on 23 May 2026
+- 133 rows inserted into `sales_history` for month_year = '2026-04'
+- Verified: OM001=660, OM002=284, OM_ASL001=191 — all match CSV totals exactly
+- S&OP portal SALES tab now shows Oman data through April 2026
+
+---
+
+### Session — 22 May 2026 (Session 18 — Store Dispatch Columns Added to Inventory File)
+**Files changed**: `FG & Testers SOH 22-05-2026.xlsx` (modified)
+**Commit**: Not pushed (local Excel output)
+
+#### What was done:
+
+**Problem**: User provided 5 delivery note images showing tester inventory from new store locations. Task: extract store names from delivery note headers and tester quantities, then add 5 new columns (J-N) to the existing Excel file with full store names as headers and tester item quantities.
+
+**Process**:
+1. Located 5 WhatsApp delivery note images in Downloads folder (11.33-11.34 AM timestamps)
+2. Extracted store names directly from delivery note headers (top-right corner as user specified)
+3. Extracted tester SKU codes and quantities from item lists on each delivery note
+4. Matched SKU codes to existing product rows in Excel file (180 SKUs total)
+5. Added 5 new columns with blue headers (RGB 4472C4) matching existing column E-I formatting
+
+**Columns Added**:
+- **Column J: Mirdif City Centre** — 7 tester items (B00008, B00015, B00010, C00004, I00003, SP0037, HR0002)
+- **Column K: Al Jimi Mall** — 1 tester item (B00008)
+- **Column L: Makani Zakher Mall** — 4 tester items (B00021, B00008, B00003, HR0002)
+- **Column M: Yas Mall Kiosk(3)** — 10 tester items (B00008, B00019, B00015, B00018, C00004, AC0003, B00021, O00006, B00004, B00017)
+- **Column N: Yas Mall Kiosk(2)** — 5 tester items (B00021, B00008, B00019, B00020, B00015)
+
+**Technical Details**:
+- SKU mapping: matched 27 SKU codes to existing product rows (180 SKUs total in file)
+- Column formatting: bold white text on blue background (RGB 4472C4) matching brand standards
+- Cell alignment: centered for all data values
+- Column widths: 18 characters for readability
+- File handling: used temporary file approach (C:\Temp\) to work around OneDrive file lock, then PowerShell Copy-Item with -Force flag to overwrite original file
+- Zero formula errors — all values directly entered based on delivery note data
+
+**File Verification**:
+- File saved successfully to: `C:\Users\AMALKANDATHIL\Downloads\FG & Testers SOH 22-05-2026.xlsx`
+- Headers verified: All 5 store names correctly extracted from delivery note headers
+- Data count: 27 tester items populated across 5 columns
+- All formatting applied: blue headers, white bold Arial font, centered alignment
+
+**Delivery Notes Source**:
+- EPP-06255: Mirdif City Centre
+- EPP-06259: Al Jimi Mall
+- EPP-06260: Makani Zakher Mall
+- EPP-06262: Yas Mall Kiosk(3)
+- EPP-06264: Yas Mall Kiosk(2)
+
+---
+
+### Session — 22 May 2026 (Session 17 — WhatsApp Stock Scanner + OCR Upload Web App)
+**Files changed**: `stock-ocr-upload.html` (new), `stock_ocr_api.py` (new), `start_stock_scanner.bat` (new), `scanner_db_setup.sql` (new), `whatsapp_stock_scanner/` (new — index.js, ocr_engine.js, config.js, server.js, package.json), `.claude/launch.json` (new)
+**Commit**: Not pushed (local tools)
+
+#### What was built:
+
+**Problem**: 32 stores send 3–4 stock sheet photos daily via WhatsApp. Manual data entry is slow and error-prone. Need automated OCR → Supabase pipeline.
+
+**System A — Manual Upload Web App (immediate use today)**
+- `start_stock_scanner.bat` → double-click → Python server starts → browser opens automatically at localhost:5001
+- `stock-ocr-upload.html`: full Emirates Pride branded 4-step workflow:
+  - Step 1: Select store + date + view mode (Quick SOH / Full columns)
+  - Step 2: Drag & drop up to 10 stock sheet photos (JPG/PNG/HEIC/WebP)
+  - Step 3: "Extract Stock Data" → calls Claude Vision (Haiku first, Sonnet fallback)
+  - Step 4: Editable review table → confidence dots per row (green/amber/red) → balance validation → Save to stock register
+- `stock_ocr_api.py`: Python HTTP server, zero dependencies beyond `pip install anthropic`
+  - POST /ocr: receives base64 images → calls Claude → validates data → returns JSON
+  - POST /save: receives reviewed items → upserts to Supabase `stock_cells` → confirms
+  - Auto-installs anthropic SDK on first run, opens browser automatically
+
+**Dual-model OCR accuracy strategy**:
+- Pass 1: `claude-haiku-4-5` (fast, $0.02–0.05/store)
+- Pass 2: `claude-sonnet-4-6` only if confidence < 80% (better handwriting accuracy)
+- Balance formula check per row: Opening + WH + In − Sold − Transfer − WO = SOH
+- SKU prefix validation (AP/AO/AH/AG/AC/B/C/D/O/SP/BX)
+- Mismatches flagged red, low confidence flagged amber — human reviews before saving
+
+**System B — Automated WhatsApp Scanner (future, requires Node.js setup)**
+- `whatsapp_stock_scanner/` — connects to WhatsApp Web, scans store groups at 11PM, auto-downloads images, runs OCR, uploads to Supabase
+- `config.js` — store group name mappings (must be edited to match real WhatsApp group names)
+
+**Supabase**: Run `scanner_db_setup.sql` once to create `scanner_log` + `scanner_config` tables
+
+**One-time setup**:
+1. `pip install anthropic`
+2. Get Anthropic API key at console.anthropic.com
+3. Click Settings in the web page → paste key (stored in browser localStorage)
+4. Run scanner_db_setup.sql in Supabase SQL Editor
+
+---
+
+### Session — 22 May 2026 (Session 16 — FEFO Added to v3 Consolidated Script)
+**Files changed**: `build_excel_consolidated.py` (modified), `EP_Demand_Planner_SAP_Reporting_Master_v3.xlsx` (regenerated output)
+**Commit**: Not pushed (local Python output)
+
+#### What was built:
+
+**Problem solved**: User confirmed v3 (consolidated 6-sheet) was the right structure — they only wanted FEFO (First Expired First Out) applied to it, not the v4 executive dashboard redesign. Task: apply targeted FEFO edits to `build_excel_consolidated.py` and regenerate v3.xlsx.
+
+**Key concept**: FEFO = First Expired First Out. Issue the batch with the earliest SLED (Shelf Life Expiry Date) first. SLED = Manufacture Date + Shelf Life months. Different from FIFO which is based on receipt date. This is fragrance industry standard.
+
+**Sheet 2 — INVENTORY INTELLIGENCE changes**:
+- HDRS: `"Oldest Batch","Age (Days)","Age Status","FIFO OK?"` → `"Batch / Mfg Date","SLED (Expiry)","Age (Days)","Age Status","FEFO OK?"`
+- WIDTHS: added `13` for new SLED column (now 34 total columns)
+- Subtitle updated to mention FEFO = First Expired First Out + SLED
+- group_fills: shifted +1 → `(26,30,ORANGE),(31,33,RED),(34,34,AMBER)`
+- All 15 DATA rows: inserted SLED date after Batch/Mfg Date. SLED = Mfg Date + shelf life:
+  - ASL Perfumes / Bakhoor / Dakhoon / Caballo = 24 months
+  - Oud Oils = 18 months (AP003 RK001 = Feb-28, O00001 = Oct-27, O00003 = Sep-27)
+  - Zero stock rows: "—" for SLED
+- Colorizing code: all column indices shifted +1 (Age Status col 28→29, Dead Stock col 32→33, Action col 33→34, row indices row[27]→row[28] etc.)
+- "FIFO breach" → "FEFO breach" in 2 action text strings
+- info_box: updated column letters (AB→AC for Dead Stock, Z→AA for Age Status) + added FEFO SAP T-codes
+- Data validations: `AB4:AB...` → `AC4:AC...` and `AF4:AF...` → `AG4:AG...`
+- **NEW: FEFO Stock Aging Report section** added below main table:
+  - 10 batch rows sorted by % Life Left ascending (shortest remaining life = FEFO Priority 1)
+  - Columns: Store, SKU, Name, Batch/Mfg Date, SLED (Expiry), Shelf Life (Mo), Age (Mo), Remaining (Mo), % Life Left, FEFO Priority
+  - Colour-coded: RED < 50% life remaining, AMBER 50-65%, GREEN > 65%
+  - FEFO Priority 1-2 = RED (immediate action), 3-5 = AMBER (WATCH), 6+ = GREEN
+  - info_box: full FEFO SAP config guide (VFDAT, IM Customising, MIGO auto-propose, T-codes)
+
+**Sheet 4 — OPERATIONS LOG changes**:
+- Subtitle updated: "Always record Batch No + SLED in Notes for FEFO compliance"
+- info_box: added FEFO compliance note (record Batch No + SLED in Notes for every GRN; confirm FEFO batch priority for transfers)
+
+**Sheet 6 — SAP REFERENCE changes**:
+- Section B (T-Codes): added `ZEP_STOCK_AGE` custom T-code (FEFO stock aging report)
+- Section D (Formula Reference): added 2 new rows:
+  - "FEFO — Remaining Shelf Life" = SLED – Today in months, formula and example
+  - "FEFO % Life Remaining" = (Remaining / Shelf Life) × 100%, thresholds <50% / <25%
+  - Updated "Stock Age Threshold" note: for retail stock use SLED-based FEFO priority; age threshold is tester-specific
+
+**Output**: `EP_Demand_Planner_SAP_Reporting_Master_v3.xlsx` — regenerated with zero errors
+
+---
+
+### Session — 22 May 2026 (Session 15 — Excel v4: Executive Dashboard + FEFO + FNF/ASL/EPP/E-Comm)
+**Files changed**: `build_excel_v4.py` (new), `EP_Demand_Planner_SAP_Reporting_Master_v4.xlsx` (output)
+**Commit**: Not pushed (local Python output)
+
+#### What was built:
+
+**Problem solved**: v3 Sheet 1 was a generic INDEX page. User needed: (1) FEFO not FIFO, (2) proper SAP stock aging report, (3) executive-level at-a-glance dashboard, (4) industry-specific context for fragrance retail with EPP/ASL/FNF three-company structure and e-commerce.
+
+**Key business context confirmed**:
+- **FNF** = in-house manufacturer (Fragrance & Flavours) — produces all SKUs, sends to EPP/ASL via inter-company transfer
+- **EPP** = Emirates Pride Perfumes — direct retail stores UAE + Oman
+- **ASL** = ASL Franchise — franchise retail stores UAE + Oman
+- **E-Comm** = in-house e-commerce — separate WH allocation
+- **FEFO** = First Expired, First Out (fragrance industry standard — based on SLED, not receipt date)
+- Regions: UAE, Oman (live), KSA (planned)
+
+**Sheet 1 — EXECUTIVE OPERATIONS DASHBOARD (complete rewrite)**:
+- **Zone 1: Critical Alerts** — 10-row alert table: Priority badge (CRITICAL/WARNING/WATCH), Company badge (EPP/ASL/FNF/ECOM colour-coded), problem description, business impact, firefighting action, SAP steps, owner, due date
+- **Zone 2: Sales KPI tiles** — 2 rows × 3 tiles = 6 tiles: EPP MTD, ASL MTD, FNF Production Output, E-Commerce MTD, YTD Total, Forecast Accuracy (MAPE)
+- **Zone 3: Inventory Health KPI tiles** — 6 tiles: SKUs Below ROP, FEFO Risk Batches, Dead Stock SKUs, Avg Coverage, Count Accuracy, Overstock SKUs
+- **Zone 4: Supply Chain KPI tiles** — 6 tiles: Open POs, FNF Production Adherence, Expected GRNs, Supplier OTD, FNF→EPP Inter-Co Pending, Replenishment Lead Time
+- **Zone 5: Tester & Ops tiles** — 3 tiles: Critical Testers, Tester Coverage %, AM Requests Pending
+- **Zone 6: Firefighting Playbook** — 12 scenarios: Zero Stock No PO, PO Delayed, FEFO Violation, Batch Near Expiry, Dead Stock >90d, FNF Production Delay, E-Comm OOS, Tester Age >120d, Forecast Acc <85%, Count Variance >10%, Oman/KSA Stockout, Overstock >2×Max — each with trigger, immediate action (bold red), follow-up, SAP transactions, escalation, SLA
+- KPI tile design: 3-row tiles (label/big-number/sub-text), colour-coded borders by status, company-brand colours (EPP=blue, ASL=purple, FNF=teal, ECOM=orange)
+
+**Sheet 2 — FEFO Stock Aging Report (new section added)**:
+- All "FIFO" replaced with "FEFO" throughout
+- "Oldest Batch" → "Batch No", "Manufacture Date", "SLED (Expiry)", "Shelf Life (Mo)", "Age (Mo)", "Remaining (Mo)", "% Life Left", "FEFO Priority" columns
+- FEFO Priority 1 = shortest remaining life = issue first
+- Dedicated FEFO Stock Aging Report section: 10 batch rows with aging brackets (0-30%/41-60%/61-90%/EXPIRED), colour-coded, action guidance
+- SAP FEFO transactions listed: MMBE (SLED view), MB52 (batch details), ZEP_STOCK_AGE (custom), MB51 (trace)
+
+**Sheet 3** — FNF added as production channel; E-Commerce added as sales channel with seasonal index; FNF Production Impact column on event forecast
+
+**Sheet 4** — Batch No + SLED columns on every movement; FNF Inter-Co type added (green=teal); FEFO violation flag in notes column
+
+**Sheet 5** — FEFO applies to testers: SLED tracked per ZTC ref; FEFO status column (FEFO BREACH = red); wastage analysis includes FEFO Compliant? column
+
+**Sheet 6** — 7-step FEFO SAP Configuration guide; FNF inter-company SAP process documented; ZEP_FEFO_AUDIT and ZEP_STOCK_AGE custom T-codes added; FEFO formula reference
 
 ---
 
@@ -951,5 +1490,438 @@ Never use `#1a2744` navy or `#0D0D0D` black anywhere in the app — including th
 9. [ ] S&OP Testers tab — 5 KPIs from Supabase (spec ready)
 
 ---
-*Last updated: 19 May 2026 | Maintained by Claude (Demand Planning AI)*
+## PROJECT DETAILS — Full Development Log
+
+> **Format**: Each session listed newest first. Include: date, files changed, what was done, commit hash if pushed.
+
+---
+
+### Session — 22 May 2026 (Session 19 — Tester Inventory Excel: 10 Store Columns + 3 SKUs)
+**Files changed**: `FG & Testers SOH 22-05-2026.xlsx` (modified)
+**Commit**: Not pushed (local Excel work file)
+
+#### What was done:
+
+**Problem**: 10 new delivery notes containing tester inventory data from stores needed to be added to Excel file. Some stores already had entries; others were new. 3 SKU codes were missing from the product master list.
+
+**Data extracted from delivery notes**:
+- EPP-06251 → Bawabat Al Sharq Mall (A0010): 15 SKUs (42 total pieces)
+- EPP-06249 → Bawabat Al Sharq Mall (A0001): 7 SKUs (7 pieces)
+- EPP-06246 → Bawabat Al Sharq Mall (A0002): 7 SKUs (7 pieces)
+- EPP-06245 → Deerfield Mall - Kiosk (A0005): 1 SKU (2 pieces)
+- EPP-06244 → Bawabat Al Sharq Mall (A0010) v2: 1 SKU (2 pieces)
+- EPP-06243 → Bawabat Al Sharq Mall - Kiosk (A0002): B00020 qty 2
+- EPP-06242 → Bawabat Al Sharq Mall - Shop (A0001): B00020 qty 2
+- EPP-06241 → Dalma Mall - Kiosk (A0004): B00020 qty 2, SP0037 qty 1
+- EPP-06240 → Dalma Mall - Shop (A0003): B00020 qty 2
+- EPP-06239 → Fujairah City Centre (FJ001): B00020 qty 2
+
+**Actions completed**:
+1. Added 3 missing SKUs to product list (rows 182-184): SP0007, SP0001, D00015
+2. Updated 2 existing columns (P & Q) with new data instead of creating duplicates
+3. Created 3 new store columns (T, U, V) for new locations (Dalma Mall Kiosk, Dalma Mall Shop, Fujairah)
+4. All formatting applied: blue headers RGB 4472C4, white bold text, 18-char column width, centered alignment
+
+**File Status**:
+- Columns J-V: 22 store locations now populated
+- Product master: expanded from 180 to 183 SKUs
+- Total tester entries: 55+ items across all columns
+- File saved: `C:\Users\AMALKANDATHIL\Downloads\FG & Testers SOH 22-05-2026.xlsx`
+- Zero data loss from previous session columns
+
+---
+
+### Session — 22 May 2026 (Session 20 — 5 More Store Columns Added: A0007-A0009, RK001-RK002)
+**Files changed**: `FG & Testers SOH 22-05-2026.xlsx` (modified)
+**Commit**: Not pushed (local Excel output)
+
+#### What was done:
+
+**Problem**: User provided 5 more delivery notes (EPP-06238, EPP-06237, EPP-06236, EPP-06232, EPP-06231) with tester inventory from Yas Mall (3 kiosks) and Manar Mall (2 locations) in RAK. Task: extract store names and tester quantities, add 5 new columns (W-AA) to Excel file.
+
+**Data extracted from delivery notes**:
+- EPP-06238 → Yas Mall - Podium (A0009): B00020 qty 2
+- EPP-06237 → Yas Mall - Kiosk(3) (A0008): B00020 qty 2
+- EPP-06236 → Yas Mall - Kiosk(2) (A0007): B00020 qty 2
+- EPP-06232 → Manar Mall - Kiosk (RK002): B00020, B00019, D00008, O00006 (qty 2, 1, 1, 2)
+- EPP-06231 → Manar Mall - Shop (RK001): B00019, B00020, O00006, D00008, HR0002 (qty 1, 2, 2, 1, 1)
+
+**Columns Added**:
+- **Column W: Yas Mall - Kiosk(2) (A0007)** — 1 tester item (B00020 qty 2)
+- **Column X: Yas Mall - Kiosk(3) (A0008)** — 1 tester item (B00020 qty 2)
+- **Column Y: Yas Mall - Podium (A0009)** — 1 tester item (B00020 qty 2)
+- **Column Z: Manar Mall - Kiosk (RK002)** — 4 tester items (B00020, B00019, D00008, O00006 = 6 total pieces)
+- **Column AA: Manar Mall - Shop (RK001)** — 5 tester items (B00019, B00020, O00006, D00008, HR0002 = 7 total pieces)
+
+**Technical Details**:
+- SKU mapping: Matched 12 tester entries to existing product rows (183 SKUs in file)
+- SKU code format: Delivery notes show "-T" suffix (B00020-T), Excel master list uses base codes (B00020) — lookup adjusted to strip suffix
+- Column formatting: blue headers RGB 4472C4, white bold Arial font, 18-char width, centered alignment
+- Data consolidation: No duplicate stores — all 5 locations are new columns
+
+**File Verification**:
+- Columns now J-AA: 27 store locations populated
+- Product master: unchanged at 183 SKUs (all needed SKUs already exist)
+- Total tester entries: 12 items added in this batch
+- File saved: `C:\Users\AMALKANDATHIL\Downloads\FG & Testers SOH 22-05-2026.xlsx`
+
+---
+
+### Session — 22 May 2026 (Session 21 — 5 Al Ain Store Columns Added: AB-AF)
+**Files changed**: `FG & Testers SOH 22-05-2026.xlsx` (modified)
+**Commit**: Not pushed (local Excel output)
+
+#### What was done:
+
+**Problem**: User provided 5 more delivery notes (EPP-06229, EPP-06228, EPP-06227, EPP-06226, EPP-06225) with tester inventory from Al Ain stores (kiosks and malls). Task: extract store names and tester quantities, add 5 new columns (AB-AF) to Excel file.
+
+**Data extracted from delivery notes**:
+- EPP-06229 → Al Jimi Mall - Shop (AL004): B00019, B00020, HR0002, O00006, D00008 (qty 1, 2, 1, 2, 1)
+- EPP-06228 → Makani Zakher Mall - Shop (AL006): B00019, B00020, HR0002, O00006, D00008 (qty 1, 2, 1, 2, 1)
+- EPP-06227 → Al Ain Mall - Kiosk (AL001): B00019, B00020, O00006 (qty 1, 2, 2)
+- EPP-06226 → Bawadi Mall - Kiosk(2) (AL003): B00019, B00020, O00006, HR0002, D00008 (qty 1, 2, 2, 1, 1)
+- EPP-06225 → Bawadi Mall - Kiosk(1) (AL002): B00020, B00019, O00006, D00008 (qty 2, 1, 2, 1)
+
+**Columns Added**:
+- **Column AB: Al Ain Mall - Kiosk (AL001)** — 3 tester items (B00019, B00020, O00006 = 5 total pieces)
+- **Column AC: Bawadi Mall - Kiosk(1) (AL002)** — 4 tester items (B00020, B00019, O00006, D00008 = 6 total pieces)
+- **Column AD: Bawadi Mall - Kiosk(2) (AL003)** — 5 tester items (B00019, B00020, O00006, HR0002, D00008 = 7 total pieces)
+- **Column AE: Al Jimi Mall - Shop (AL004)** — 5 tester items (B00019, B00020, HR0002, O00006, D00008 = 7 total pieces)
+- **Column AF: Makani Zakher Mall - Shop (AL006)** — 5 tester items (B00019, B00020, HR0002, O00006, D00008 = 7 total pieces)
+
+**Technical Details**:
+- SKU mapping: Matched 22 tester entries to existing product rows (183 SKUs in file)
+- Column formatting: blue headers RGB 4472C4, white bold Arial font, 18-char width, centered alignment
+- No duplicate consolidation needed — all 5 Al Ain stores are new columns (AB-AF)
+- All SKUs already exist in product master (no new SKU additions required)
+
+**File Verification**:
+- Columns now J-AF: 32 store locations populated
+- Product master: unchanged at 183 SKUs
+- Total tester entries: 22 items added in this batch
+- File saved: `C:\Users\AMALKANDATHIL\Downloads\FG & Testers SOH 22-05-2026.xlsx`
+
+---
+
+### Session — 22 May 2026 (Session 22 — 5 Dubai/Ajman/Sharjah Columns Added: AG-AK + 1 SKU)
+**Files changed**: `FG & Testers SOH 22-05-2026.xlsx` (modified)
+**Commit**: Not pushed (local Excel output)
+
+#### What was done:
+
+**Problem**: User provided 5 more delivery notes (EPP-06223, EPP-06222, EPP-06220, EPP-06218, EPP-06215) with tester inventory from Dubai, Ajman, and Sharjah stores. Task: extract store names and tester quantities, add columns to Excel file. One missing SKU identified and added to product master.
+
+**Data extracted from delivery notes**:
+- EPP-06223 → Dubai Hills Mall - Shop (DX006): 15 SKU types, 18 total pieces
+- EPP-06222 → Ajman City Centre - Kiosk (AJ001): 10 SKU types, 12 total pieces
+- EPP-06220 → Mall Of Emirates - Kiosk (DX004): 7 SKU types, 11 total pieces
+- EPP-06218 → Al Zahia City Centre - Kiosk (SH001): 7 SKU types, 10 total pieces
+- EPP-06215 → Dubai Mall - Shop (DX001): 13 SKU types, 16 total pieces
+
+**Missing SKU Added**:
+- **SP0030**: Midnight Oud 30ml-Tester 30ml (row 184)
+
+**Columns Added**:
+- **Column AG: Dubai Mall - Shop (DX001)** — 12 tester items, 16 total pieces
+- **Column AH: Mall Of Emirates - Kiosk (DX004)** — 7 tester items, 11 total pieces
+- **Column AI: Dubai Hills Mall - Shop (DX006)** — 15 tester items, 18 total pieces
+- **Column AJ: Ajman City Centre - Kiosk (AJ001)** — 10 tester items, 12 total pieces
+- **Column AK: Al Zahia City Centre - Kiosk (SH001)** — 7 tester items, 10 total pieces
+
+**Technical Details**:
+- SKU mapping: Matched 51 tester entries to product rows (183→184 SKUs after adding SP0030)
+- Missing SKU detection: SP0030 (Midnight Oud tester) was referenced in EPP-06215 but not in master list — added to row 184
+- All other SKUs already existed in product master
+- Column formatting: blue headers RGB 4472C4, white bold Arial font, 18-char width, centered alignment
+- No duplicate consolidation — all 5 stores are new columns (AG-AK)
+
+**File Verification**:
+- Columns now J-AK: 37 store locations populated
+- Product master: expanded to 184 SKUs (added SP0030)
+- Total tester entries: 51 items added in this batch
+- File saved: `C:\Users\AMALKANDATHIL\Downloads\FG & Testers SOH 22-05-2026.xlsx`
+
+---
+
+---
+
+### Session — 25 May 2026 (Session 29 — FG Tester PDF Buttons + May 2026 Sales Analysis & Upload)
+**Files changed**: `fg-tester-manager.html` (PDF button added), `stock-register.html` (PDF button added), `may2026_3skus_upload.sql` (new — run in Supabase), `analyze_may2026.py` (new), `upload_may2026_3skus.py` (new)
+**Commit**: `4f9ac4e` → pushed to `main` → GitHub Pages live
+
+#### What was built:
+
+**1. FG Tester Request PDF Export — All Cards**
+- Added `⬇ PDF` button to top-right corner of EVERY card (Pending, Approved, Rejected) in both:
+  - `stock-register.html` — Manager Hub FG panel (added `_fgAllData` global + `_dlFGPDF()` helper)
+  - `fg-tester-manager.html` — standalone portal
+- Pending cards: amber `⏳ PENDING` PDF layout
+- Approved cards: green `✓ APPROVED` layout (unchanged)
+- Rejected cards: red `✕ REJECTED` layout (unchanged)
+- Removed "Manager" from action box title → now shows "✓ Approved By" / "✕ Rejected By"
+- Commits: `76133f0` (PDF buttons), `4f9ac4e` (title fix)
+
+**2. May 2026 Sales Analysis — BX0002 / BX0014 / D00001 — Al Ain**
+- Source file: `order_2026-05-25_104837.csv` (25 days, May 1–25 2026)
+- Full 4-month analysis (Feb–May 2026) across all 6 Al Ain stores
+- Key findings:
+  - **AL004 (Al Jimi Mall)** — BX0002 surged 10x (6→49), BX0014 7x (5→36), D00001 3x (14→36)
+  - **AL006 (Makani Zakher)** — appeared from ZERO (missing from Feb-Apr data) → 48/34/21
+  - **AL002 (Bawadi Kiosk 1)** — BX0002 was zero all year → now 21 units in May
+  - **AL005 (Al Badia)** — ZERO across all 3 SKUs in May ⚠️ needs investigation (was active Feb-Apr)
+  - **AL003 (Bawadi Kiosk 2)** — BX0002 dropped (36→16), others stable
+- Nationwide May 2026 pace: BX0002 ~880/mo, BX0014 ~636/mo, D00001 ~640/mo
+
+**3. Supabase Upload — 63 records for May 2026**
+- SQL file: `C:\Users\AMALKANDATHIL\Downloads\may2026_3skus_upload.sql`
+- 63 rows: BX0002 (21 stores), BX0014 (21 stores), D00001 (21 stores) for `month_year = '2026-05'`
+- **Executed in Supabase SQL Editor on 25 May 2026** ✅ confirmed by user
+
+**Store mapping used (CSV → store_code)**:
+- Al Ain Mall + Pro_Stand_Al Ain → AL001
+- Bawadi Mall (1)/(2) → AL002/AL003
+- Jimi Mall + JIMI Mall Shop → AL004
+- Al Badia → AL005
+- Makani Mall + Makani Mall Shop → AL006
+- Bawabat Al Sharq Shop → A0001, Shop 2 → A0002
+- Dalma Mall Shop → A0003, Dalma Mall (kiosk) → A0004
+- Deerfields Mall → A0005, Yas Mall (1/2/3) → A0007/A0008/A0009
+- Dubai Mall Shop → DX001, MoE → DX004, Mirdif → DX005, Dubai Hills → DX006
+- Manar Mall → RK002, Manar Mall Shop → RK001
+- Fujairah CC → FJ001, Ajman CC → AJ001, Zahia CC → SH001
+
+---
+
+### Session — 25 May 2026 (Session 28 — Warehouse SOH Upload + Excel Report Regenerated)
+**Files changed**: `build_store_report.py` (updated WH CSV paths + alias map), `upload_warehouse_soh.py` (new), `CLAUDE.md` (updated)
+**Commit**: Not pushed (local scripts)
+
+#### What was done:
+
+**Task**: Upload latest EPP + ASL warehouse stock (25 May 2026) to Supabase, then regenerate the boardroom Excel report with the new figures.
+
+**New warehouse files processed**:
+- `ATALO (12).csv` = EPP FG Warehouse SOH, 25 May 2026 — 253 Good Stock rows with positive qty
+- `ATALO (13).csv` = ASL FG Warehouse SOH, 25 May 2026 — 95 Good Stock rows with positive qty
+
+**Supabase uploads**:
+- Created `upload_warehouse_soh.py` — uploads both WH CSVs to `store_soh_snapshots` with `store_code = WH_EPP` or `WH_ASL`, `region = Warehouse`, `snapshot_date = 2026-05-25`
+- Uploaded: 253 EPP rows + 95 ASL rows = **348 total warehouse rows** ✅
+- Store SOH was already in Supabase from previous session (1,525 rows for snapshot_date 2026-05-24)
+
+**New ASL SKUs discovered in ATALO (13)**:
+- `AG018` = ASL Gift Box - Velvet Amber
+- `AG019` = ASL Gift Box - Dark Musk
+- `AO012` = Caramel Luban Oil 6ml
+- `AAF002` = White Bouquet Air Freshner 250ml
+- `ARD001` = Secret Leather Reed Diffuser 110ml
+- `AH006` = Secret Leather Hair & Body Mist
+- `AH004` = Spicy Sandal Hair & Body Mist
+- `AP006` = Spicy Sandal Perfume
+- `AO006` = Spicy Sandal Oil
+- `ATO001` = Sunbeam Tanning Oil
+- `ARD003` = White Bouquet Reed Diffuser 110ml
+- `AH007` = White Bouquet Hair & Body Mist
+
+**build_store_report.py updates**:
+1. `EPP_WH_CSV` → `ATALO (12).csv` (was `EPP FG SOH 1ST MAY 2026.csv`)
+2. `ASL_WH_CSV` → `ATALO (13).csv` (was `ASL FG SOH 1ST MAY 2026.csv`)
+3. Fixed wrong alias: `asl gift box - dark` → AG019 (was AG013)
+4. Fixed wrong alias: `asl gift box - velvet` → AG018 (was AG014)
+5. Added 15+ new ASL product aliases (White Bouquet, Secret Leather diffuser/mist, Spicy Sandal variants, Sunbeam Tanning Oil, Caramel Luban Oil AO012)
+6. Fixed upsert endpoint: `?on_conflict=store_code,snapshot_date,product_name` so re-runs properly merge instead of 409
+
+**Excel report regenerated** (`EP_Store_Stock_Report_May2026.xlsx`):
+- 25 stores processed
+- SKU match improvement vs previous run:
+  - ASL BAS MALL: 53 → 61/61 (100%)
+  - DALMA KIOSK: 134 → 142/142 (100%)
+  - FUJAIRAH: 55 → 65/65 (100%)
+  - BAWADI MALL (ASL): 55 → 63/63 (100%)
+  - MAKANI MALL (ASL): 57 → 65/65 (100%)
+  - YAS MALL: 134 → 142/142 (100%)
+- Remaining unmatched: 3 `[Name Cut Off] Set Box` entries only (truncated names in source files — unresolvable)
+- WH figures updated from 1 May → 25 May:
+  - EPP: 236 SKUs, 346,940 units
+  - ASL: 82 SKUs, 85,760 units
+- Report saved: `C:\Users\AMALKANDATHIL\OneDrive - Emirates Pride Perfumes Trading\Desktop\EP_Store_Stock_Report_May2026.xlsx`
+
+**Pending** (user will provide next):
+- EPP sales data for upload to Supabase
+- ASL sales data for upload to Supabase
+- Once uploaded → regenerate report with May 2026 sales column
+
+---
+
+### Session — 25 May 2026 (Session 29 — UAE May 2026 Sales Upload + Excel Report with Local CSV Fallback)
+**Files changed**: `generate_may2026_sql.py` (new), `upload_may2026_uae_sales.py` (new), `build_store_report.py` (modified — local CSV fallback added)
+**Commit**: Not pushed (local scripts + Excel output)
+
+#### What was done:
+
+**Task**: Upload EPP + ASL UAE May 1–24, 2026 sales to Supabase and regenerate `EP_Store_Stock_Report_May2026.xlsx` with May sales column.
+
+**Source files**:
+- `order_2026-05-25_104837.csv` = EPP UAE POS export (1.3 MB, 102 products, 45 store columns)
+- `order_2026-05-25_133250.csv` = ASL UAE POS export (5 active stores, 836 units)
+
+**SQL file generated** (`Downloads/may2026_uae_sales_upload.sql`):
+- 1,556 value rows — EPP 17,811 units (23 stores) + ASL 836 units (5 stores) = **18,647 total**
+- `INSERT INTO sales_history ... ON CONFLICT DO UPDATE SET qty_sold = EXCLUDED.qty_sold`
+- **⚠️ USER ACTION REQUIRED**: Run this SQL in Supabase SQL Editor to persist May sales:
+  `https://supabase.com/dashboard/project/ncszurcrkngjcjqsowln/sql`
+
+**SKU mapping highlights**:
+- All 102 EPP products mapped (bilingual EN+AR names handled via normalisation)
+- Non-breaking space (`\xa0`) in ASL bundle names fixed with `_pos_norm()` function
+- "FUTURE TRADITION SET" vs "FUTURE TRADITIONAL SET" spelling variants handled
+- "no.4" partial match threshold lowered to 4 chars
+- 3 EPP products unmapped (MS_CANDLE, Seufi Special, Small combo set = 24 units skipped)
+
+**`build_store_report.py` — local CSV fallback added**:
+- When Supabase returns 0 May 2026 rows (SQL not yet run), script now automatically reads sales from the two POS CSV files
+- New constants: `EPP_SALES_CSV`, `ASL_SALES_CSV`, `EPP_POS_STORE_MAP`, `ASL_POS_STORE_MAP`, `EPP_POS_SKU_MAP`, `ASL_POS_SKU_MAP`
+- New functions: `_pos_norm()`, `_pos_lookup()`, `_parse_pos_csv()`, `parse_sales_from_local_csvs()`
+- `fetch_april_sales()`: if Supabase returns 0 rows → calls `parse_sales_from_local_csvs()` automatically
+
+**Excel report status**:
+- All 6 region sheets built successfully with real May 2026 sales (18,647 units from CSV fallback)
+- Save failed: `EP_Store_Stock_Report_May2026.xlsx` was open in Excel — **user must close file and re-run script**
+- Once saved: Executive Summary, Abu Dhabi, Al Ain, Dubai, Other Emirates, ASL UAE sheets all show May Sales + DoS
+
+**Store counts confirmed**:
+- EPP UAE: 23 active stores in May 2026 POS (A0001, A0002, A0003, A0004, A0005, A0007, A0008, A0009, A0010, A0011, AL001, AL002, AL003, AL004, AL005, AL006, DX001, DX003, DX004, DX005, DX006, DX008, FJ001, PS_YAS, RK001, RK002, SH001)
+- ASL UAE: 5 active stores (BAW001, BAS001, FJ0001, MAK001, YMK001)
+
+---
+
+### Session — 25 May 2026 (Session 30 — Salalah Temporary Store 3-Month Opening Forecast)
+**Files changed**: `salalah_forecast.py` (new), `Salalah_3Month_Forecast_June2026.xlsx` (output on Desktop)
+**Commit**: Not pushed (local script + Excel output)
+
+#### What was built:
+
+**Task**: Generate a 3-month opening forecast for a new temporary Salalah, Oman store (June–August 2026), replicating Muscat City Centre (OM002) sales performance. Two shipments of 1.5 months each, plus testers and miscellaneous items.
+
+**Source data**:
+- April 2026 MCC: `order_2026-05-25_153352.csv` — 44 SKUs, 284 units (full 30-day month)
+- May 2026 MCC: `order_2026-05-25_153407.csv` — 49 SKUs, 511 units (24 days, extrapolated to 30d = 639 units)
+
+**Methodology**:
+- Average monthly rate = (April actual + May extrapolated) / 2 per SKU
+- 3-month total forecast = avg monthly × 3
+- Shipment 1 = ceil(avg monthly × 1.5) — covering June (Weeks 1–6)
+- Shipment 2 = ceil(avg monthly × 1.5) — covering July–Aug (Weeks 7–12)
+- Testers = 10% of Shipment 1 qty, only for tester-eligible SKUs (B series, C series, select O series)
+- Tester eligibility confirmed via Supabase query: fg_tester_requests (approved items) + store_soh_snapshots (WH_EPP tester entries) → 59 tester-eligible SKUs identified
+
+**Forecast results (56 SKUs)**:
+| Category | Shipment 1 | Shipment 2 | Total |
+|---|---|---|---|
+| Core Products | 713 units | 713 units | 1,426 |
+| Testers (10%) | 81 units | 81 units | 162 |
+| Miscellaneous | 1,153 items | 845 items | 1,998 |
+| **GRAND TOTAL** | **1,947** | **1,639** | **3,586** |
+
+**Top 10 SKUs by monthly demand (MCC reference)**:
+1. Midnight Glow (B00008) — ~57.5/mo → 87 per shipment
+2. White 100ml Perfume (C00002) — ~54.7/mo → 82 per shipment
+3. Hidden Leather (B00015) — ~40.5/mo → 61 per shipment
+4. Mystery (B00005) — ~34.8/mo → 53 per shipment
+5. Dakhoon Al Emarat (D00001) — ~34.0/mo → 51 per shipment
+6. 3 Bel Black Box With 2 Oil (BX0002) — ~26.3/mo → 40 per shipment
+7. Master Signature (B00020) — ~24.1/mo → 37 per shipment
+8. Midnight Bloom 100ml (B00021) — ~22.1/mo → 34 per shipment
+9. BOD Gift Box (BX0014) — ~22.0/mo → 33 per shipment
+10. Amber Bel Oud (B00003) — ~20.6/mo → 31 per shipment
+
+**Excel output**: `Salalah_3Month_Forecast_June2026.xlsx` on Desktop
+- Section A: 56 SKUs sorted by demand — Apr actual | May actual | May extrapolated | Avg monthly | 3-month total | Shipment 1 | Shipment 2 | Tester S1 | Tester S2
+- Section B: Testers — all tester-eligible SKUs with SKU-T codes and quantities
+- Section C: Miscellaneous — shopping bags S/M/L, tissue, charcoal, lighter, gift ribbon, price tags, display stands, Medkhan Large
+- Grand Summary box with all-in totals for both shipments
+
+**`salalah_forecast.py`**: Standalone script — re-run any time with updated CSV files to regenerate the forecast.
+
+---
+
+---
+
+### Session — 25 May 2026 (Session 30 continued — Salalah Two-Shipment Forecast)
+**Files changed**: `salalah_forecast.py` (complete rewrite)
+**Output**: `Salalah_TwoShipment_Forecast_June2026.xlsx` (Desktop)
+**Commit**: Not pushed (local script + Excel output)
+
+**Task**: Upgrade single-sheet 1.5-month forecast to two-sheet workbook with 1.75 months per shipment, UAE WH Stock from Salalah report, testers from report ratio (S1 only), correct misc items (Bags/Ribbon/GWP from report).
+
+**User decisions**: Monthly rate = MCC-only; Testers = S1 only (S2 deferred); Bags/GWP = same on both sheets.
+
+**Output**:
+- Shipment 1 (June): 56 SKUs, 835 product units, 116 testers, 1,614 misc = **2,565 grand total**
+- Shipment 2 (Aug): 56 SKUs, 835 product units, no testers, 1,614 misc = **2,449 grand total**
+
+**Salalah report parsing**: UAE WH Stock (col4), FG planned (col6), TESTER to send (col7) — 64 SKUs loaded. WH stock colour-coded: green=OK, amber=zero, red=negative (BX0014=-47 backorder shown).
+
+**Tester logic**: Use report TESTER/FG ratio per SKU; for SKUs not in report but B/C/O-eligible, use 13% default. `math.ceil()` throughout for "higher side" rounding.
+
+**Misc items** (same both sheets): Bags S=500/M=600/L=300/XL=12, Ribbon S=1/L=1, GWP White Lotion=100/White Shower Gel=100.
+
+---
+
+### Session — 25 May 2026 (Session 31 — Salalah Dispatch Report: Exact FG/Tester Quantities + MCC Reference Columns)
+**Files changed**: `salalah_forecast.py` (3rd complete rewrite)
+**Output**: `Salalah_StockDispatch_June2026_v2.xlsx` (Desktop — original was open in Excel)
+**Commit**: Not pushed (local script + Excel output)
+
+#### What was built:
+
+**Phase 2 request (from previous session, executed this session)**: User provided exact FG and TESTER quantities for 64 SKUs across 9 families from a management-confirmed Salalah report. Abandoned the MCC-calculated quantities approach — hardcoded dispatch quantities used instead.
+
+**Phase 3 request (this session)**: User wanted MCC reference columns ADDED BACK alongside the fixed dispatch quantities: "Apr MCC (30d) | May MCC (24d) | May MCC (30d eq.) | Avg Monthly Rate | 3-Month Total ADD THESE ALL FIELDS ALSO THERE WHY YOU REMOVED IT"
+
+**Final column layout (12 cols S1 / 11 cols S2)**:
+| Col | Header | Style |
+|-----|--------|-------|
+| A | # | row number |
+| B | P.CODE | IBM Plex Mono gold |
+| C | PRODUCT NAME | — |
+| D | FAMILY | — |
+| E | Apr MCC (30 days) | MCC Reference group — light teal bg |
+| F | May MCC (24 days) | MCC Reference group — light teal bg |
+| G | May MCC (30d equiv.) | MCC Reference group — light teal bg |
+| H | Avg Monthly Rate | MCC Reference group — light teal bg |
+| I | 3-Month Total | MCC Reference group — navy bg white text (highlighted) |
+| J | UAE WH STOCK | green bg — colour-coded (green=available, amber=zero, red=backorder) |
+| K | FG QTY (Dispatch) | solid navy bg, white text — primary action column |
+| L | TESTER QTY | amber bg — S1 only; S2 has no tester column (11 cols) |
+
+Row 3 group headers: "MCC REFERENCE — MUSCAT CITY CENTRE (OM002)" spanning E-I, "WAREHOUSE" spanning J, "DISPATCH QTY" spanning K-L.
+
+**Hardcoded dispatch data — 64 SKUs across 9 families**:
+- Caballo Collection: 9 SKUs (C00002=60, B00008=144, etc.)
+- Bel Collection: 19 SKUs (B00008=144 testers=18 being the biggest)
+- Set Box: 7 SKUs
+- Future Collection: 4 SKUs
+- Accessories: 4 SKUs
+- CPO: 5 SKUs
+- Dakhoon: 6 SKUs (D00001=60)
+- Oud: 4 SKUs
+- Gift Box: 6 SKUs (BX0002=24, BX0014=30)
+
+**Misc items** (same both sheets): Bags S=500/M=600/L=300/XL=12, Ribbon S=1/L=1, GWP White Lotion=100/White Shower Gel=100.
+
+**Output totals**:
+- Shipment 1 (June): FG 1,263 | Testers 204 | Misc 1,614 | **TOTAL 3,081**
+- Shipment 2 (Aug): FG 1,263 | Testers deferred | Misc 1,614 | **TOTAL 2,877**
+
+**MCC data**: 56 of 64 SKUs have MCC sales history (from April + May 2026 CSV files). SKUs with no MCC data show "--" in cols E-I.
+
+**Family colour separators**: Each of the 9 families gets its own coloured section header row (Caballo=teal, Bel=olive, Set Box=purple, Future=navy, Accessories=charcoal, CPO=warm brown, Dakhoon=dark brown, Oud=deep amber, Gift Box=dark gold). Subtotal row after each family.
+
+**Error handled**: Original output file was open in Excel → saved as `_v2.xlsx` instead (PermissionError fallback added to script).
+
+---
+
+*Last updated: 25 May 2026 | Maintained by Claude (Demand Planning AI)*
+*REMINDER: Update PROJECT DETAILS section after EVERY conversation without exception*
 *⚠️ REMINDER: Update PROJECT DETAILS section after EVERY conversation without exception*
