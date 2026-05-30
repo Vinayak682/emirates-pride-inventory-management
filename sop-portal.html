@@ -1477,7 +1477,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       </select>
       <button class="filter-btn-ghost" onclick="intelLoaded=false;loadIntelligenceData();" style="margin-left:auto;font-size:11px;">↺ Refresh Data</button>
       <button class="filter-btn-ghost" id="intel-export-btn" onclick="exportIntelReport()" style="font-size:11px;display:none;">↓ Export Report</button>
-      <button class="filter-btn" id="intel-chat-btn" onclick="openIntelChat()" style="font-size:11px;display:none;background:var(--navy);color:#fff;border:none;padding:6px 14px;border-radius:4px;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:0.05em;">✦ Ask AI</button>
+      <button class="filter-btn" id="intel-chat-btn" onclick="openIntelChat()" style="font-size:11px;background:var(--navy);color:#fff;border:none;padding:6px 14px;border-radius:4px;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:0.05em;">✦ Ask AI</button>
     </div>
 
     <!-- KPI Row -->
@@ -5254,7 +5254,7 @@ async function loadIntelligenceData(){
       .limit(2000),
     sb.from('wh_transfers').select('sku_code,item_name,to_location_code,qty_transferred,transfer_date,division').limit(10000),
     // Production — reads from production_plan (W20/W21/W22 May 2026)
-    sb.from('production_plan').select('sku_code,product_name,planned_fg_qty,actual_fg_qty,plan_day,record_status,week_label,week_start').limit(2000),
+    sb.from('production_plan').select('sku_code,product_name,planned_fg,actual_fg,plan_day,status,week_label,week_start').limit(2000),
     sb.from('store_replenishment_schedule').select('*').limit(100),
     sb.from('consumable_items').select('*').limit(200),
     sb.from('consumable_stock').select('*').order('snapshot_date',{ascending:false}).limit(2000),
@@ -5279,10 +5279,10 @@ async function loadIntelligenceData(){
   intelProdHistory= g(r4).map(r=>({
     sku_code:       r.sku_code||'',
     product_name:   r.product_name||'',
-    planned_fg_qty: r.planned_fg_qty||0,
-    actual_fg_qty:  r.actual_fg_qty||0,
+    planned_fg_qty: r.planned_fg||0,
+    actual_fg_qty:  r.actual_fg||0,
     plan_date:      r.plan_day||r.week_start||'',
-    record_status:  r.record_status||'Planned',
+    record_status:  r.status||'Planned',
     week_label:     r.week_label||'',
     week_start:     r.week_start||'',
   }));
