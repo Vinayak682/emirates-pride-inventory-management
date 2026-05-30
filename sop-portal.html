@@ -6071,17 +6071,18 @@ function _buildIntelContext() {
   const soh   = getWhQty();
   const today = new Date().toLocaleDateString('en-GB');
 
-  const top30 = Object.entries(rates)
-    .sort((a, b) => b[1] - a[1]).slice(0, 30)
+  const top20 = Object.entries(rates)
+    .sort((a, b) => b[1] - a[1]).slice(0, 20)
     .map(([sku, rate]) => {
       const wh = soh[sku] || 0;
       const cover = rate > 0 ? +(wh / rate).toFixed(1) : 'N/A';
-      return `${sku} "${getItemName(sku)}" rate:${rate}/wk WH:${wh} cover:${cover}wks`;
+      return `${sku} rate:${rate}/wk WH:${wh} cover:${cover}wks`;
     }).join('\n');
 
   const critical = Object.entries(soh)
     .filter(([k, v]) => (rates[k]||0) > 5 && v / (rates[k]||1) < 2)
-    .map(([k, v]) => `${k} "${getItemName(k)}" — ${v} units, ${(v/(rates[k]||1)).toFixed(1)}wks cover`)
+    .slice(0, 12)
+    .map(([k, v]) => `${k} — ${v} units, ${(v/(rates[k]||1)).toFixed(1)}wks cover`)
     .join('\n') || 'None';
 
   const lastTrf = {};
@@ -6099,38 +6100,38 @@ function _buildIntelContext() {
     }))
     .filter(s => s.days > s.interval)
     .sort((a, b) => b.days - a.days)
-    .map(s => `${s.name} (${s.code}) — ${s.days}d since last delivery, expected every ${s.interval}d`)
-    .join('\n') || 'None — all stores received recently';
+    .slice(0, 10)
+    .map(s => `${s.name} (${s.code}) — ${s.days}d since last delivery`)
+    .join('\n') || 'None';
 
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 56);
   const recentTrf = new Set(intelTransfers.filter(r => new Date(r.transfer_date) >= cutoff).map(r => r.sku_code));
   const dead = Object.entries(soh)
     .filter(([sku, qty]) => qty > 0 && !recentTrf.has(sku))
-    .map(([sku, qty]) => `${sku} "${getItemName(sku)}" — ${qty} units in WH, no store delivery in 8+ weeks`)
-    .join('\n') || 'No dead stock';
-
-  const prodDelays = intelProdHistory
-    .filter(r => r.record_status === 'not_produced' && r.plan_date && new Date(r.plan_date) < now)
-    .map(r => `${r.sku_code||'?'} "${r.product_name||'?'}" — planned ${r.plan_date}, not yet produced`)
+    .slice(0, 10)
+    .map(([sku, qty]) => `${sku} — ${qty} units, no delivery 8wks+`)
     .join('\n') || 'None';
 
-  return `Emirates Pride Perfumes — Live S&OP Snapshot (${today})
-Warehouse: Nad Al Hammar, Dubai. Stores: 30+ across UAE and Oman.
+  const prodSummary = intelProdHistory.slice(0, 10)
+    .map(r => `${r.sku_code||'?'} ${r.week_label||''} FG:${r.planned_fg_qty||0} status:${r.record_status||'Planned'}`)
+    .join('\n') || 'None';
 
-=== CRITICAL WH COVER (< 2 weeks) ===
+  return `Emirates Pride S&OP Snapshot (${today}) — UAE+Oman, 30+ stores
+
+CRITICAL WH COVER (<2wks):
 ${critical}
 
-=== OVERDUE STORE DELIVERIES ===
+OVERDUE STORE DELIVERIES (top 10):
 ${overdueStores}
 
-=== TOP 30 SKUs BY WEEKLY SALES VELOCITY ===
-${top30}
+TOP 20 SKUs BY WEEKLY RATE:
+${top20}
 
-=== DEAD STOCK IN WAREHOUSE ===
+DEAD STOCK (top 10):
 ${dead}
 
-=== PRODUCTION DELAYS ===
-${prodDelays}`;
+RECENT PRODUCTION (last 10):
+${prodSummary}`;
 }
 
 async function sendIntelChat() {
