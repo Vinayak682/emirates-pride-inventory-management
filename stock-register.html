@@ -14417,14 +14417,26 @@ function openAMMinMaxPanel() {
   const panel = document.getElementById('amPanel');
   if (!panel) return;
 
-  // Populate store dropdown (all stores except MGR and WH)
+  // Populate store dropdown grouped by Area Manager
   const sel = document.getElementById('amStoreSelect');
   sel.innerHTML = '<option value="">— Select Store —</option>';
-  STORES.filter(s => s.code !== 'MGR' && s.code !== 'WH').forEach(s => {
-    const o = document.createElement('option');
-    o.value   = s.code;
-    o.textContent = s.code + '  —  ' + s.name;
-    sel.appendChild(o);
+  const amGroups = [
+    { label: '👤 Mohamed Hessin — Abu Dhabi & Al Ain', mgr: 'Mohamed Hessin' },
+    { label: '👤 Mohammed Imad — Dubai',               mgr: 'Mohammed Imad Muwfaq Saleh' },
+    { label: '👤 Mohammed Elmatloub — Northern Emirates', mgr: 'Mohammed Elmatloub' },
+  ];
+  amGroups.forEach(group => {
+    const stores = STORES.filter(s => s.mgr === group.mgr);
+    if (!stores.length) return;
+    const og = document.createElement('optgroup');
+    og.label = group.label;
+    stores.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s.code;
+      o.textContent = s.code + '  —  ' + s.name;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
   });
 
   // If already on a store session, pre-select it
