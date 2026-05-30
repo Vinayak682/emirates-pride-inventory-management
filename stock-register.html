@@ -7289,15 +7289,30 @@ function _dpGetBenchmark(storeCode, skuCode){
   // ── Dead Stock: always zero ───────────────────────────────────────────────
   if (cat === 'DeadStock') return { min:0, max:0, weeklyAvg:0, label:'Dead Stock', cat, abc };
 
+  // ── Gift-set / Dakhoon families: always use peak_month_avg during ANY event ──
+  const _GIFT_PREFIXES = ['BX','AG'];
+  const _GIFT_EXACT    = new Set(['SP0009','SP0029','SP0037','SP0038','SP0039',
+    'SP0013','SP0012','SP0030','SP0031','D00001','D00002','D00003','D00004',
+    'D00005','D00006','D00007','D00008']);
+  const isGiftOrDakhoon = _GIFT_PREFIXES.some(p => skuCode.startsWith(p))
+                        || _GIFT_EXACT.has(skuCode);
+  // December Tourist window: use peak for ALL Seasonal (all perfumes spike in Dec)
+  const isDecWindow = !!(eidWin && eidWin.name.includes('December'));
+
   // ── Baseline weekly rate ───────────────────────────────────────────────────
-  // FastMover → use recent l90d_avg (more reactive to current velocity)
-  // Seasonal  → use peak_month_avg converted to weekly during event window
-  // Regular   → standard weekly_avg
   let weeklyAvg;
   if (cat === 'FastMover' && bench.l90d_avg) {
-    weeklyAvg = +(bench.l90d_avg / 4.33).toFixed(1);   // l90d_avg is monthly, convert to weekly
-  } else if (cat === 'Seasonal' && eidWin && peakAvg > 0) {
-    weeklyAvg = +(peakAvg / 4.33).toFixed(1);           // use peak rate during event prep
+    // FastMover always uses recent 90-day rate — most accurate for current velocity
+    weeklyAvg = +(bench.l90d_avg / 4.33).toFixed(1);
+  } else if (cat === 'Seasonal' && eidWin && peakAvg > 0
+             && (isGiftOrDakhoon || isDecWindow)) {
+    // Gift sets / Dakhoon in ANY event, OR any Seasonal item in December window
+    // → use peak_month_avg (that IS their spike level)
+    weeklyAvg = +(peakAvg / 4.33).toFixed(1);
+  } else if (cat === 'Seasonal' && bench.l90d_avg) {
+    // High-CoV perfumes (C00011, B00003 etc.) outside December window
+    // → use recent l90d_avg rate + Eid multiplier below
+    weeklyAvg = +(bench.l90d_avg / 4.33).toFixed(1);
   } else {
     weeklyAvg = bench.weekly_avg || 0;
   }
