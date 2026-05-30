@@ -97,15 +97,17 @@ WHERE
   )
   OR (cov_pct >= 70 AND cov_pct IS NOT NULL);
 
--- 5d. DeadStock — no recent sales (overrides everything)
-UPDATE benchmarks_cache
+-- 5d. DeadStock — check ACTUAL sales_history for last 3 months, not stale benchmark date
+UPDATE benchmarks_cache bc
 SET sku_category = 'DeadStock'
 WHERE
-  weekly_avg IS NULL
-  OR weekly_avg = 0
-  OR (
-    last_sale_month IS NOT NULL
-    AND TO_DATE(last_sale_month, 'YYYY-MM') < (CURRENT_DATE - INTERVAL '4 months')
+  (bc.weekly_avg IS NULL OR bc.weekly_avg = 0)
+  OR NOT EXISTS (
+    SELECT 1 FROM sales_history sh
+    WHERE sh.sku_code   = bc.sku_code
+      AND sh.store_code = bc.store_code
+      AND sh.qty_sold   > 0
+      AND TO_DATE(sh.month_year, 'YYYY-MM') >= (CURRENT_DATE - INTERVAL '3 months')
   );
 
 -- ───────────────────────────────────────────────────────────────────────────
