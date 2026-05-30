@@ -1517,16 +1517,24 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <div id="intel-chat-no-key" style="display:none;background:#FFF3CD;border-bottom:1px solid #FFC107;padding:10px 16px;font-size:12px;color:#856404;">
         ⚠ Groq API key not set. <span onclick="promptIntelApiKey()" style="text-decoration:underline;cursor:pointer;font-weight:700;">Click here to enter your key</span> — free at console.groq.com
       </div>
+      <!-- Briefing CTA -->
+      <div style="background:#F0EDE6;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <div style="flex:1;">
+          <div style="font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--ink);">📋 Full S&OP Briefing</div>
+          <div style="font-size:10px;color:var(--ink-light);margin-top:1px;">AI reads all live data and generates a management summary</div>
+        </div>
+        <button onclick="generateSopBriefing()" style="background:var(--gold-bar);color:#fff;border:none;border-radius:4px;padding:8px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;letter-spacing:0.04em;">▶ Generate Now</button>
+      </div>
       <!-- Messages -->
       <div id="intel-chat-msgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;"></div>
       <!-- Suggested questions (shown initially) -->
       <div id="intel-chat-suggestions" style="padding:0 16px 10px;display:flex;flex-direction:column;gap:6px;">
-        <div style="font-size:10px;color:var(--ink-light);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:2px;">Try asking:</div>
+        <div style="font-size:10px;color:var(--ink-light);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:2px;">Or ask a specific question:</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
           <button onclick="useIntelSuggestion(this)" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;color:var(--ink);">Which stores need delivery now?</button>
-          <button onclick="useIntelSuggestion(this)" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;color:var(--ink);">What are the top 5 critical SKUs?</button>
-          <button onclick="useIntelSuggestion(this)" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;color:var(--ink);">Summarise today's alerts</button>
-          <button onclick="useIntelSuggestion(this)" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;color:var(--ink);">Which SKUs are dead stock?</button>
+          <button onclick="useIntelSuggestion(this)" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;color:var(--ink);">Top 5 critical SKUs by name</button>
+          <button onclick="useIntelSuggestion(this)" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;color:var(--ink);">What dead stock should I clear?</button>
+          <button onclick="useIntelSuggestion(this)" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;color:var(--ink);">Production plan summary</button>
         </div>
       </div>
       <!-- Input -->
@@ -6075,14 +6083,16 @@ function _buildIntelContext() {
     .sort((a, b) => b[1] - a[1]).slice(0, 20)
     .map(([sku, rate]) => {
       const wh = soh[sku] || 0;
+      const name = getItemName(sku);
       const cover = rate > 0 ? +(wh / rate).toFixed(1) : 'N/A';
-      return `${sku} rate:${rate}/wk WH:${wh} cover:${cover}wks`;
+      return `${sku} "${name}" ${rate}/wk WH:${wh} cover:${cover}wks`;
     }).join('\n');
 
   const critical = Object.entries(soh)
     .filter(([k, v]) => (rates[k]||0) > 5 && v / (rates[k]||1) < 2)
-    .slice(0, 12)
-    .map(([k, v]) => `${k} — ${v} units, ${(v/(rates[k]||1)).toFixed(1)}wks cover`)
+    .sort((a,b) => (rates[a[0]]||0)-(rates[b[0]]||0))
+    .slice(0, 10)
+    .map(([k, v]) => `${k} "${getItemName(k)}" — ${v} units, ${(v/(rates[k]||1)).toFixed(1)}wks cover`)
     .join('\n') || 'None';
 
   const lastTrf = {};
@@ -6100,38 +6110,112 @@ function _buildIntelContext() {
     }))
     .filter(s => s.days > s.interval)
     .sort((a, b) => b.days - a.days)
-    .slice(0, 10)
-    .map(s => `${s.name} (${s.code}) — ${s.days}d since last delivery`)
-    .join('\n') || 'None';
+    .slice(0, 8)
+    .map(s => `${s.name} (${s.code}) — ${s.days}d overdue`)
+    .join('\n') || 'None — all stores on schedule';
 
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 56);
   const recentTrf = new Set(intelTransfers.filter(r => new Date(r.transfer_date) >= cutoff).map(r => r.sku_code));
   const dead = Object.entries(soh)
     .filter(([sku, qty]) => qty > 0 && !recentTrf.has(sku))
-    .slice(0, 10)
-    .map(([sku, qty]) => `${sku} — ${qty} units, no delivery 8wks+`)
+    .slice(0, 8)
+    .map(([sku, qty]) => `${sku} "${getItemName(sku)}" — ${qty} units stagnant`)
     .join('\n') || 'None';
 
-  const prodSummary = intelProdHistory.slice(0, 10)
-    .map(r => `${r.sku_code||'?'} ${r.week_label||''} FG:${r.planned_fg_qty||0} status:${r.record_status||'Planned'}`)
+  const prodSummary = intelProdHistory
+    .filter(r => r.sku_code)
+    .slice(0, 8)
+    .map(r => `${r.sku_code} "${r.product_name||''}" ${r.week_label||''} planned:${r.planned_fg_qty||0} actual:${r.actual_fg_qty||0} status:${r.record_status||'Planned'}`)
     .join('\n') || 'None';
 
   return `Emirates Pride S&OP Snapshot (${today}) — UAE+Oman, 30+ stores
 
-CRITICAL WH COVER (<2wks):
+CRITICAL WH COVER (<2wks, sorted by urgency):
 ${critical}
 
-OVERDUE STORE DELIVERIES (top 10):
+OVERDUE STORE DELIVERIES:
 ${overdueStores}
 
-TOP 20 SKUs BY WEEKLY RATE:
+TOP 20 SKUs BY WEEKLY SALES RATE:
 ${top20}
 
-DEAD STOCK (top 10):
+DEAD STOCK IN WAREHOUSE:
 ${dead}
 
-RECENT PRODUCTION (last 10):
+PRODUCTION PLAN:
 ${prodSummary}`;
+}
+
+async function generateSopBriefing() {
+  const key = _getGroqKey();
+  if (!key) { promptIntelApiKey(); return; }
+  if (!intelLoaded) { toast('Data still loading — please wait'); return; }
+
+  document.getElementById('intel-chat-overlay').style.display = 'block';
+  document.getElementById('intel-chat-suggestions').style.display = 'none';
+  intelChatHistory = [];
+
+  _addChatBubble('model', '**Generating your S&OP briefing…** *(this takes ~10 seconds)*');
+
+  const sendBtn = document.getElementById('intel-chat-send-btn');
+  const input   = document.getElementById('intel-chat-input');
+  sendBtn.disabled = true; input.disabled = true;
+
+  const context = _buildIntelContext();
+  const briefingPrompt = `You are the Emirates Pride S&OP Intelligence Assistant. Based on the live data below, generate a structured S&OP Command Centre Briefing for senior management.
+
+Format your response EXACTLY as follows (use ** for bold headers):
+
+**📊 EXECUTIVE SUMMARY**
+2-3 sentences on overall inventory health.
+
+**🚨 CRITICAL ACTIONS (Do Today)**
+Numbered list of the top 5 most urgent actions — include SKU name, store/location, exact numbers, and what to do.
+
+**📦 WAREHOUSE ALERTS**
+Top urgent SKUs with less than 2 weeks cover — name, cover weeks, recommended production/transfer.
+
+**🏪 STORE REPLENISHMENT**
+Which stores are overdue for delivery and what they need most.
+
+**🏭 PRODUCTION STATUS**
+Summary of current production plan — what's on track, what's delayed, what needs escalation.
+
+**✅ THIS WEEK'S PRIORITIES**
+Numbered list of 5 specific actions for the operations team this week.
+
+Be specific — use actual product names and store names, not just SKU codes.
+
+LIVE DATA:
+${context}`;
+
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: briefingPrompt }],
+        temperature: 0.3, max_tokens: 1200
+      })
+    });
+    const json = await resp.json();
+    if (!resp.ok) throw new Error(json?.error?.message || 'Groq error ' + resp.status);
+    const reply = json?.choices?.[0]?.message?.content || '(No response)';
+    // remove the "generating" bubble and show the briefing
+    const msgs = document.getElementById('intel-chat-msgs');
+    msgs.removeChild(msgs.lastChild);
+    _addChatBubble('model', reply);
+    intelChatHistory.push({ role: 'user', content: briefingPrompt });
+    intelChatHistory.push({ role: 'assistant', content: reply });
+  } catch(e) {
+    const msgs = document.getElementById('intel-chat-msgs');
+    msgs.removeChild(msgs.lastChild);
+    _addChatBubble('error', '⚠ ' + (e.message || 'Briefing failed. Check API key.'));
+  }
+
+  sendBtn.disabled = false; input.disabled = false;
+  setTimeout(() => input.focus(), 150);
 }
 
 async function sendIntelChat() {
