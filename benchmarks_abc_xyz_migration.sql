@@ -79,12 +79,14 @@ WHERE bc.sku_code = ranks.sku_code;
 -- 5a. Start everyone as Regular
 UPDATE benchmarks_cache SET sku_category = 'Regular';
 
--- 5b. FastMovers — high weekly velocity + stable demand
+-- 5b. FastMovers — high weekly velocity (A or B class perfumes/oils/regular SKUs)
+-- These are NEVER overridden by Seasonal — they get a smaller Eid multiplier in JS
 UPDATE benchmarks_cache
 SET sku_category = 'FastMover'
-WHERE weekly_avg >= 20 AND xyz_class IN ('X', 'Y');
+WHERE weekly_avg >= 15;
 
--- 5c. Seasonal — gift sets, bakhoor sets, high-CoV SKUs
+-- 5c. Seasonal — ONLY explicitly seasonal product families (gift sets, bakhoor sets, dakhoon)
+-- CoV condition REMOVED — regular perfumes can have high CoV but are not Eid-driven gift items
 UPDATE benchmarks_cache
 SET sku_category = 'Seasonal'
 WHERE
@@ -94,8 +96,7 @@ WHERE
     'SP0009','SP0029','SP0037','SP0038','SP0039',
     'SP0013','SP0012','SP0005','SP0030','SP0031',
     'D00001','D00002','D00003','D00004','D00005','D00006','D00007','D00008'
-  )
-  OR (cov_pct >= 70 AND cov_pct IS NOT NULL);
+  );
 
 -- 5d. DeadStock — check ACTUAL sales_history for last 3 months, not stale benchmark date
 UPDATE benchmarks_cache bc

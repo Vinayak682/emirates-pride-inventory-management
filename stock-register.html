@@ -7231,15 +7231,19 @@ function _dpStoreInfo(code){
 
 // ── Eid / Event Calendar ─────────────────────────────────────────────────────
 // Prep window = weeks BEFORE the event peak where stock should already be built
+// Multipliers explanation:
+//   Seasonal  = gift sets / bakhoor sets / dakhoon — near-zero normally, huge spike at Eid
+//   FastMover = regular perfumes, oils — already high baseline, modest Eid uplift only
+//   Regular   = slow-moving regular SKUs — small safety buffer increase
 const _EID_CALENDAR = [
   { name:'Ramadan & Eid Al-Fitr 2026', prepStart:'2026-02-01', peakStart:'2026-03-01', end:'2026-03-28',
-    multipliers:{ Seasonal:9, FastMover:2.5, Regular:2 } },
+    multipliers:{ Seasonal:6, FastMover:1.5, Regular:1.3 } },
   { name:'Eid Al-Adha 2026',           prepStart:'2026-05-07', peakStart:'2026-05-27', end:'2026-06-07',
-    multipliers:{ Seasonal:7, FastMover:2, Regular:1.5 } },
+    multipliers:{ Seasonal:5, FastMover:1.4, Regular:1.2 } },
   { name:'UAE National Day 2026',      prepStart:'2026-11-20', peakStart:'2026-12-01', end:'2026-12-05',
-    multipliers:{ Seasonal:4, FastMover:1.5, Regular:1.2 } },
+    multipliers:{ Seasonal:3, FastMover:1.2, Regular:1.1 } },
   { name:'Ramadan & Eid Al-Fitr 2027', prepStart:'2027-01-20', peakStart:'2027-02-17', end:'2027-03-22',
-    multipliers:{ Seasonal:9, FastMover:2.5, Regular:2 } },
+    multipliers:{ Seasonal:6, FastMover:1.5, Regular:1.3 } },
 ];
 
 function _activeEidWindow() {
