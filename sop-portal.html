@@ -5176,9 +5176,15 @@ async function loadIntelligenceData(){
 
   const [r1,r2,r3,r4,r5,r6,r7]=await Promise.allSettled([
     salesSrc,
-    sb.from('wh_stock_on_hand').select('sku_code,item_name,item_spec_name,qty,division,snapshot_date').order('qty',{ascending:false}).limit(2000),
+    // WH SOH — reads from store_soh_snapshots (WH_EPP + WH_ASL rows, snapshot 25 May 2026)
+    sb.from('store_soh_snapshots')
+      .select('store_code,sku_code,product_name,category,soh_qty,snapshot_date')
+      .in('store_code',['WH_EPP','WH_ASL'])
+      .order('soh_qty',{ascending:false})
+      .limit(2000),
     sb.from('wh_transfers').select('sku_code,item_name,to_location_code,qty_transferred,transfer_date,division').limit(10000),
-    sb.from('production_history').select('sku_code,product_name,planned_fg_qty,actual_fg_qty,plan_date,record_status,week_label').limit(2000),
+    // Production — reads from production_plan (W20/W21/W22 May 2026)
+    sb.from('production_plan').select('sku_code,product_name,planned_fg_qty,actual_fg_qty,plan_day,record_status,week_label,week_start').limit(2000),
     sb.from('store_replenishment_schedule').select('*').limit(100),
     sb.from('consumable_items').select('*').limit(200),
     sb.from('consumable_stock').select('*').order('snapshot_date',{ascending:false}).limit(2000),
@@ -5187,9 +5193,28 @@ async function loadIntelligenceData(){
   const g = r => r.status==='fulfilled' ? (r.value.data||[]) : [];
   const rawSales = g(r1);
   intelSalesData  = rawSales.filter(r=>div==='ALL'||r.store_code?.startsWith(div==='EPP'?'':'ASL'));
-  intelWhSoh      = g(r2).filter(r=>div==='ALL'||r.division===div);
+  // Map store_soh_snapshots rows → shape expected by getWhQty() / renderFastMovers() etc.
+  intelWhSoh = g(r2).map(r=>({
+    sku_code:       r.sku_code||'',
+    item_name:      r.product_name||'',
+    item_spec_name: r.product_name||'',
+    qty:            r.soh_qty||0,
+    division:       r.store_code==='WH_EPP'?'EPP':'ASL',
+    snapshot_date:  r.snapshot_date,
+    category:       r.category||'',
+  })).filter(r=>div==='ALL'||r.division===div);
   intelTransfers  = g(r3).filter(r=>div==='ALL'||r.division===div);
-  intelProdHistory= g(r4);
+  // Map production_plan rows → shape expected by renderProdTracker()
+  intelProdHistory= g(r4).map(r=>({
+    sku_code:       r.sku_code||'',
+    product_name:   r.product_name||'',
+    planned_fg_qty: r.planned_fg_qty||0,
+    actual_fg_qty:  r.actual_fg_qty||0,
+    plan_date:      r.plan_day||r.week_start||'',
+    record_status:  r.record_status||'Planned',
+    week_label:     r.week_label||'',
+    week_start:     r.week_start||'',
+  }));
   intelReplSchedule=g(r5);
   intelConsumables = g(r6);
   intelConsStock   = g(r7);
