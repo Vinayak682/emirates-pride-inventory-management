@@ -457,6 +457,81 @@ The S&OP portal is used by Emirates Pride management. Primary responsibilities:
 
 ---
 
+### Session — 30 May 2026 (Session 33 — Week 23 Upload + Intelligence Chatbot + ABC×XYZ Min/Max Engine)
+**Files changed**: `sop-portal.html`, `stock-register.html`, `benchmarks_abc_xyz_migration.sql` (new), `classify_minmax.py` (new)
+**Commits**: `7a2e259`, `389a2df`, `e6f5cea`, `6b1cbee`, `8fd7c21`, `7c5b4dd`, `25480ea`, `26a1e9b`, `033552d`, `26a3723`, `ed2f385` → all pushed to main
+
+#### What was done:
+
+**1. Week 23 Production Plan uploaded to Supabase**
+- Parsed `Production Plan-2026 May.xlsx` Weekly plan sheet
+- 4 SKUs for week starting 2026-06-01: B00008 (FG 1000), B00016 (testers 25), B00021 (FG 1000), B00015 (FG 4000 AS PER OIL)
+- Totals: FG 6,000 · Testers 525 · inserted as ids 127–130 in production_plan
+
+**2. Intelligence AI Chatbot — fixed + switched to Groq**
+- Button was pushed off-screen by flex layout (margin-left:auto) — moved to sit after dropdowns
+- production_plan query used wrong column names (planned_fg_qty → planned_fg, record_status → status) — fixed
+- Gemini free tier quota exhausted — switched to Groq (llama-3.3-70b-versatile, free tier)
+- Added "📋 Generate S&OP Briefing" button that produces full structured management summary
+- Context reduced from 12,243 → ~9,000 tokens to stay under Groq 12k TPM limit
+- Product names restored in AI context (were stripped during token trimming)
+- Groq API key stored in localStorage as ep_groq_key
+
+**3. Stock Guide Store Dropdown — grouped by Area Manager**
+- Stores now grouped under optgroup headers by AM (Hessin / Imad / Elmatloub)
+
+**4. ABC×XYZ Seasonal Min/Max Engine — full build**
+
+**Concept explained to user:**
+- ABC = revenue contribution tier (A=top 70%, B=70-90%, C=rest)
+- XYZ = demand consistency tier (X=CoV<30% stable, Y=30-70% variable, Z=>70% irregular)
+- Combined: CZ gift sets go near-zero in normal months, spike ×5-6 at Eid
+- NOT the same as pure ABC analysis — this is ABC×XYZ demand planning
+
+**SQL migration (benchmarks_abc_xyz_migration.sql):**
+- Adds 5 columns to benchmarks_cache: abc_class, xyz_class, sku_category, peak_month_avg, cov_pct
+- Pure SQL — no Python needed
+- Step 2: CoV% and peak_month_avg from sales_history (array_agg top-2 months)
+- Step 3: XYZ from CoV (X<30, Y30-70, Z>70)
+- Step 4: ABC from cumulative sales volume (window function)
+- Step 5a: Everyone → Regular
+- Step 5b: weekly_avg ≥ 15 → FastMover
+- Step 5c: BX*/AG*/SP gift sets/Dakhoon → Seasonal (CoV catch-all REMOVED — was wrongly classifying perfumes)
+- Step 5d: DeadStock check using actual sales_history last 3 months (not stale benchmark date)
+- User ran SQL 3 times (fixing bugs each time), final results: Regular 863, Seasonal 80, FastMover 57
+
+**Eid calendar in JS (stock-register.html):**
+- Ramadan/Eid Al-Fitr 2026 (Feb 1 – Mar 28): Seasonal ×6, FastMover ×1.5, Regular ×1.3
+- Eid Al-Adha 2026 (May 7 – Jun 7, ACTIVE NOW): Seasonal ×5, FastMover ×1.4, Regular ×1.2
+- UAE National Day 2026 (Nov 20 – Dec 5): Seasonal ×3, FastMover ×1.2, Regular ×1.1
+- Ramadan 2027 (Jan 20 – Mar 22): Seasonal ×6, FastMover ×1.5, Regular ×1.3
+
+**Min/Max calculation engine (_dpGetBenchmark, _dpGetBenchmarkEnhanced):**
+- DeadStock → always 0/0
+- Seasonal + Eid window active → uses peak_month_avg/4.33 as weekly baseline × event multiplier
+- FastMover → uses l90d_avg/4.33 (recent 90-day avg, more reactive)
+- Regular → standard weekly_avg
+- ABC safety buffer: A class lean (maxMult ×1.0), B ×1.2, C ×1.5
+- _dpGetBenchmarkEnhanced now routes through _dpGetBenchmark (was using nonexistent min_stock column)
+
+**Stock Guide table (stock-register.html):**
+- New CLASS column showing ABC class + category badge (⚡FastMover, 🌙Seasonal, 💀DeadStock)
+- 🌙EID flag when event multiplier is active
+- Event banner at top of table when Eid window active or within 6 weeks
+
+**Bug caught and fixed:**
+- C00002 White 100ml showed min=2954, max=8861 — wrongly classified as Seasonal due to CoV≥70 catch-all, then multiplied by Eid ×7
+- Fix 1: Removed CoV≥70 from Seasonal condition (regular perfumes can have high CoV but are NOT gift-set seasonal)
+- Fix 2: Reduced Eid multipliers (FastMover was getting same ×7 as gift sets — wrong)
+- After fix: C00002 at A0004 → Regular, at AL002/RK002 → FastMover ✅
+
+**Final verified state:**
+- BX0002 not in benchmarks_cache (was never benchmarked) — will classify correctly when benchmarks recalculated
+- C00002 correctly splits: Regular at low-volume stores, FastMover at high-volume stores
+- Same SKU classified differently per store based on that store's actual sales velocity ✅
+
+---
+
 ### Session — 30 May 2026 (Session 32 — S&OP Data Audit + Store SOH Fix + Memory Files Full Update)
 **Files changed**: `fix_store_soh_upload.py` (new), `gen_soh_sql.py` (new), `CLAUDE.md` (updated), memory files updated (MASTER_REFERENCE.md, INTELLIGENCE_SKILL.md, project_sop.md, project_supabase.md, MEMORY.md)
 **Commit**: Not pushed (local scripts only)
