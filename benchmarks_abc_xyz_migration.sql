@@ -85,8 +85,9 @@ UPDATE benchmarks_cache
 SET sku_category = 'FastMover'
 WHERE weekly_avg >= 15;
 
--- 5c. Seasonal — ONLY explicitly seasonal product families (gift sets, bakhoor sets, dakhoon)
--- CoV condition REMOVED — regular perfumes can have high CoV but are not Eid-driven gift items
+-- 5c. Seasonal — gift sets/dakhoon families OR extreme CoV > 100%
+-- CoV > 100% = real seasonal spikes (December tourist season, Eid), NOT just normal variability
+-- e.g. C00002 at DX001: Dec=7182, normal=44/month → CoV ~300% → correctly Seasonal
 UPDATE benchmarks_cache
 SET sku_category = 'Seasonal'
 WHERE
@@ -96,7 +97,8 @@ WHERE
     'SP0009','SP0029','SP0037','SP0038','SP0039',
     'SP0013','SP0012','SP0005','SP0030','SP0031',
     'D00001','D00002','D00003','D00004','D00005','D00006','D00007','D00008'
-  );
+  )
+  OR (cov_pct > 100 AND cov_pct IS NOT NULL);
 
 -- 5d. DeadStock — check ACTUAL sales_history for last 3 months, not stale benchmark date
 UPDATE benchmarks_cache bc
