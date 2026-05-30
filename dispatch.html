@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>EP Mac Dispatch</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold-bar: #6B5B35;
+  --gold:     #C9A84C;
+  --page:     #FFFFFF;
+  --gold-pale:#F5F2EC;
+  --red:      #C0392B;
+  --green:    #2E7D32;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: var(--gold-pale);
+  min-height: 100dvh;
+  display: flex; flex-direction: column;
+}
+
+/* ── HEADER ── */
+.ep-header {
+  background: var(--gold-bar);
+  color: #fff;
+  padding: 18px 20px 14px;
+  text-align: center;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.ep-header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem; font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.ep-header .sub {
+  font-size: 0.65rem; letter-spacing: 0.15em;
+  color: var(--gold); margin-top: 2px;
+  text-transform: uppercase; font-weight: 500;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; flex: 1; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ── LOGIN ── */
+#login-screen {
+  align-items: center; justify-content: center;
+  padding: 32px 24px;
+}
+.login-card {
+  background: var(--page);
+  border: 1px solid rgba(201,168,76,0.4);
+  border-radius: 12px;
+  padding: 32px 24px;
+  width: 100%; max-width: 360px;
+  box-shadow: 0 4px 24px rgba(107,91,53,0.1);
+}
+.login-card .label {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em;
+  color: var(--gold-bar); text-transform: uppercase;
+  margin-bottom: 8px; display: block;
+}
+.pin-input {
+  width: 100%; padding: 14px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.2rem; letter-spacing: 0.2em;
+  border: 1.5px solid rgba(201,168,76,0.4);
+  border-radius: 8px; background: var(--gold-pale);
+  color: var(--gold-bar);
+  text-align: center; outline: none;
+  -webkit-text-security: disc;
+}
+.pin-input:focus { border-color: var(--gold); }
+.btn-login {
+  width: 100%; margin-top: 16px;
+  background: var(--gold-bar); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 14px; font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem; font-weight: 600;
+  letter-spacing: 0.08em; cursor: pointer;
+}
+.btn-login:active { background: #5a4d2c; }
+.login-error {
+  color: var(--red); font-size: 0.75rem;
+  text-align: center; margin-top: 10px;
+  min-height: 18px;
+}
+
+/* ── DISPATCH SCREEN ── */
+#dispatch-screen { padding: 20px 16px; gap: 16px; }
+
+.section-title {
+  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.15em;
+  color: var(--gold-bar); text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* compose box */
+.compose-card {
+  background: var(--page);
+  border: 1px solid rgba(201,168,76,0.35);
+  border-radius: 10px;
+  padding: 16px;
+}
+.task-textarea {
+  width: 100%; min-height: 110px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.88rem; line-height: 1.5;
+  border: 1.5px solid rgba(201,168,76,0.35);
+  border-radius: 8px; background: var(--gold-pale);
+  color: #222; padding: 12px;
+  resize: none; outline: none;
+}
+.task-textarea:focus { border-color: var(--gold); }
+.task-textarea::placeholder { color: #aaa; }
+
+.quick-chips {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin: 10px 0;
+}
+.chip {
+  background: var(--gold-pale);
+  border: 1px solid rgba(201,168,76,0.5);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.72rem; font-weight: 500;
+  color: var(--gold-bar); cursor: pointer;
+}
+.chip:active { background: rgba(201,168,76,0.2); }
+
+.btn-dispatch {
+  width: 100%; margin-top: 4px;
+  background: var(--gold);
+  color: var(--gold-bar);
+  border: none; border-radius: 8px;
+  padding: 13px; font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem; font-weight: 700;
+  letter-spacing: 0.06em; cursor: pointer;
+}
+.btn-dispatch:active { background: #b8923e; }
+.btn-dispatch:disabled { opacity: 0.5; cursor: default; }
+
+.dispatch-status {
+  font-size: 0.72rem; color: #777;
+  text-align: center; margin-top: 6px;
+  min-height: 18px; font-family: 'IBM Plex Mono', monospace;
+}
+
+/* history */
+.history-card {
+  background: var(--page);
+  border: 1px solid rgba(201,168,76,0.35);
+  border-radius: 10px;
+  overflow: hidden; flex: 1;
+}
+.history-list { list-style: none; }
+.history-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gold-pale);
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.history-item:last-child { border-bottom: none; }
+.h-status {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem; font-weight: 500;
+  padding: 2px 6px; border-radius: 4px;
+  white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+}
+.h-status.pending  { background:#FFF3E0; color:#E65100; }
+.h-status.running  { background:#E3F2FD; color:#0D47A1; }
+.h-status.done     { background:#E8F5E9; color:var(--green); }
+.h-status.failed   { background:#FFEBEE; color:var(--red); }
+.h-body { flex: 1; min-width: 0; }
+.h-text {
+  font-size: 0.8rem; color: #222;
+  overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.h-time {
+  font-size: 0.65rem; color: #aaa;
+  font-family: 'IBM Plex Mono', monospace;
+  margin-top: 3px;
+}
+.h-result {
+  font-size: 0.7rem; color: #555;
+  margin-top: 3px; font-style: italic;
+  overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.history-empty {
+  padding: 32px 16px; text-align: center;
+  color: #bbb; font-size: 0.8rem;
+}
+
+/* refresh bar */
+.refresh-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.btn-refresh {
+  background: transparent;
+  border: 1px solid rgba(201,168,76,0.5);
+  border-radius: 6px; padding: 4px 10px;
+  font-size: 0.7rem; font-weight: 500;
+  color: var(--gold-bar); cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+}
+.btn-refresh:active { background: var(--gold-pale); }
+.auto-badge {
+  font-size: 0.62rem; color: #aaa;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* logout */
+.btn-logout {
+  background: transparent;
+  border: 1px solid rgba(107,91,53,0.25);
+  border-radius: 6px; padding: 4px 10px;
+  font-size: 0.65rem; color: #999;
+  cursor: pointer; margin: 0 auto 16px;
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* connection indicator */
+.conn-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #ccc; display: inline-block;
+  margin-right: 4px; vertical-align: middle;
+}
+.conn-dot.ok  { background: #4CAF50; }
+.conn-dot.err { background: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="ep-header">
+  <h1>⚡ Mac Dispatch</h1>
+  <div class="sub">Emirates Pride · Remote Control</div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div class="screen active" id="login-screen">
+  <div class="login-card">
+    <span class="label">Access PIN</span>
+    <input type="password" class="pin-input" id="pin-input"
+           placeholder="• • • • • • • •"
+           maxlength="20"
+           inputmode="text"
+           autocomplete="off">
+    <button class="btn-login" onclick="doLogin()">Unlock</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- DISPATCH SCREEN -->
+<div class="screen" id="dispatch-screen">
+
+  <!-- Compose -->
+  <div class="compose-card">
+    <div class="section-title">
+      <span class="conn-dot" id="conn-dot"></span>New Task
+    </div>
+    <textarea class="task-textarea" id="task-input"
+      placeholder="Type an instruction for the Mac…&#10;e.g. Run EP morning briefing&#10;e.g. Check git status of EP repo"></textarea>
+
+    <!-- Quick chips -->
+    <div class="quick-chips">
+      <span class="chip" onclick="fillChip('Run EP morning briefing now')">☀️ Morning Briefing</span>
+      <span class="chip" onclick="fillChip('Check what\'s pending in the EP project and summarise')">📋 Pending Tasks</span>
+      <span class="chip" onclick="fillChip('Push latest EP changes to GitHub')">🚀 Git Push EP</span>
+      <span class="chip" onclick="fillChip('Check if sop-portal.html Gemini chat is working correctly')">🧠 Test Intel Chat</span>
+      <span class="chip" onclick="fillChip('Send EP weekly S&OP summary notification')">📊 S&OP Summary</span>
+    </div>
+
+    <button class="btn-dispatch" id="dispatch-btn" onclick="dispatchTask()">▶ Dispatch to Mac</button>
+    <div class="dispatch-status" id="dispatch-status"></div>
+  </div>
+
+  <!-- History -->
+  <div>
+    <div class="refresh-bar">
+      <div class="section-title" style="margin-bottom:0">Recent Tasks</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="auto-badge" id="auto-badge">auto-refresh</span>
+        <button class="btn-refresh" onclick="loadHistory()">↻ Refresh</button>
+      </div>
+    </div>
+    <div class="history-card">
+      <ul class="history-list" id="history-list">
+        <li class="history-empty">Loading…</li>
+      </ul>
+    </div>
+  </div>
+
+  <button class="btn-logout" onclick="doLogout()">🔒 Lock</button>
+</div>
+
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+const SUPA_URL  = 'https://ncszurcrkngjcjqsowln.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
+const PIN_HASH  = '36db889176ae1adee9087907c38dca6ab4727f9603bdc5783672dbc496ace827';
+const SESSION_KEY = 'ep_dispatch_auth';
+const HISTORY_LIMIT = 20;
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function doLogin() {
+  const pin = document.getElementById('pin-input').value.trim();
+  if (!pin) return;
+  const hash = await sha256(pin);
+  if (hash === PIN_HASH) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    showDispatch();
+  } else {
+    const el = document.getElementById('login-error');
+    el.textContent = 'Incorrect PIN. Try again.';
+    setTimeout(() => el.textContent = '', 3000);
+    document.getElementById('pin-input').value = '';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('dispatch-screen').classList.remove('active');
+  document.getElementById('login-screen').classList.add('active');
+  clearInterval(window._refreshTimer);
+}
+
+// Enter key on PIN input
+document.getElementById('pin-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ── SCREEN SWITCH ─────────────────────────────────────────────────────────────
+function showDispatch() {
+  document.getElementById('login-screen').classList.remove('active');
+  document.getElementById('dispatch-screen').classList.add('active');
+  checkConnection();
+  loadHistory();
+  // Auto-refresh every 15 seconds
+  window._refreshTimer = setInterval(() => {
+    loadHistory();
+    updateAutoBadge();
+  }, 15000);
+}
+
+// On page load — restore session
+if (sessionStorage.getItem(SESSION_KEY) === '1') showDispatch();
+
+// ── CONNECTION CHECK ───────────────────────────────────────────────────────────
+async function checkConnection() {
+  const dot = document.getElementById('conn-dot');
+  try {
+    const r = await fetch(`${SUPA_URL}/rest/v1/mac_dispatch?select=id&limit=1`, {
+      headers: { apikey: SUPA_ANON, Authorization: `Bearer ${SUPA_ANON}` }
+    });
+    dot.className = 'conn-dot ' + (r.ok ? 'ok' : 'err');
+  } catch { dot.className = 'conn-dot err'; }
+}
+
+// ── DISPATCH ──────────────────────────────────────────────────────────────────
+async function dispatchTask() {
+  const instruction = document.getElementById('task-input').value.trim();
+  if (!instruction) return;
+
+  const btn = document.getElementById('dispatch-btn');
+  const status = document.getElementById('dispatch-status');
+  btn.disabled = true;
+  status.textContent = 'Sending to Mac…';
+
+  try {
+    const r = await fetch(`${SUPA_URL}/rest/v1/mac_dispatch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPA_ANON,
+        Authorization: `Bearer ${SUPA_ANON}`,
+        Prefer: 'return=representation'
+      },
+      body: JSON.stringify({
+        instruction,
+        status: 'pending',
+        source: 'dispatch'
+      })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    status.textContent = '✓ Dispatched — Mac will pick it up in ≤2 min';
+    document.getElementById('task-input').value = '';
+    setTimeout(() => loadHistory(), 1500);
+  } catch(e) {
+    status.textContent = '✗ Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => status.textContent = '', 8000);
+  }
+}
+
+// ── HISTORY ───────────────────────────────────────────────────────────────────
+async function loadHistory() {
+  try {
+    const r = await fetch(
+      `${SUPA_URL}/rest/v1/mac_dispatch?select=*&order=created_at.desc&limit=${HISTORY_LIMIT}`,
+      { headers: { apikey: SUPA_ANON, Authorization: `Bearer ${SUPA_ANON}` } }
+    );
+    if (!r.ok) throw new Error(await r.text());
+    const rows = await r.json();
+    renderHistory(rows);
+    document.getElementById('conn-dot').className = 'conn-dot ok';
+  } catch(e) {
+    document.getElementById('conn-dot').className = 'conn-dot err';
+  }
+}
+
+function renderHistory(rows) {
+  const ul = document.getElementById('history-list');
+  if (!rows.length) {
+    ul.innerHTML = '<li class="history-empty">No tasks yet</li>';
+    return;
+  }
+  ul.innerHTML = rows.map(row => {
+    const ago = timeAgo(row.created_at);
+    const result = row.result
+      ? `<div class="h-result">${escHtml(row.result.slice(0,120))}${row.result.length>120?'…':''}</div>`
+      : '';
+    return `<li class="history-item">
+      <span class="h-status ${row.status}">${row.status}</span>
+      <div class="h-body">
+        <div class="h-text">${escHtml(row.instruction)}</div>
+        <div class="h-time">${ago}</div>
+        ${result}
+      </div>
+    </li>`;
+  }).join('');
+}
+
+function timeAgo(ts) {
+  const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── QUICK CHIPS ───────────────────────────────────────────────────────────────
+function fillChip(text) {
+  document.getElementById('task-input').value = text;
+  document.getElementById('task-input').focus();
+}
+
+// ── AUTO-REFRESH BADGE ────────────────────────────────────────────────────────
+let _nextRefresh = 15;
+function updateAutoBadge() {
+  _nextRefresh = (_nextRefresh <= 1) ? 15 : _nextRefresh - 1;
+  document.getElementById('auto-badge').textContent = `↻ ${_nextRefresh}s`;
+}
+setInterval(updateAutoBadge, 1000);
+</script>
+</body>
+</html>

@@ -1,3 +1,130 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+---
+
+## Commands
+
+### Local Development
+No build step. All frontend files are plain HTML/CSS/JS — open directly in a browser or serve locally:
+```bash
+python3 -m http.server 8080
+# then open http://localhost:8080/stock-register.html
+```
+
+### Monthly Sales Upload (Python)
+```bash
+python3 monthly_sales_upload.py path/to/April_2026_Sales.xlsx
+```
+Requires: `openpyxl`, `requests` (`pip install openpyxl requests`).  
+**Set `SUPABASE_SERVICE_KEY`** in the script before running — the placeholder `YOUR_SERVICE_ROLE_KEY_HERE` must be replaced with the actual service role key (never commit this).
+
+### OCR Stock Upload (Python)
+```bash
+python3 stock_ocr_api.py
+```
+Separate API server for the barcode/OCR scanner workflow (`stock-ocr-upload.html`).
+
+### Supabase SQL — Execution Order (one-time setup)
+Run these in Supabase SQL Editor in this order:
+1. `create_tables.sql` — core tables (`sales_history`, `benchmarks_cache`, `transfer_history`, `data_uploads_log`)
+2. `pin_table_setup.sql` — `store_pins` table + `verify_store_pin()` RPC (SECURITY DEFINER)
+3. `security_setup.sql` — `store_sessions`, `audit_log`, `security_config`, Postgres trigger
+4. `am_requests_setup.sql` — `am_weekly_requests`, `am_feedback_sessions`, `am_issues_log`
+5. `am_requests_migration.sql` — adds `fulfilled_items`, `approval_remarks`, `edit_history` columns
+6. `scanner_db_setup.sql` — barcode scanner tables
+
+### Supabase Edge Function
+```bash
+supabase functions deploy security-alert
+# Set secrets:
+supabase secrets set RESEND_API_KEY=xxx ALERT_EMAIL=xxx
+```
+Source: `supabase/functions/security-alert/index.ts`
+
+### Deploy
+Push to `main` → GitHub Pages auto-deploys within ~60 seconds. No CI/CD config needed.
+
+---
+
+## Architecture
+
+### Request / Data Flow
+```
+Browser (GitHub Pages static HTML)
+  └── Supabase REST API (anon key, client-side)
+        ├── verify_store_pin() RPC  →  boolean only (PIN never exposed)
+        ├── stock_cells table        →  read/write per store+day
+        ├── sales_history            →  17K+ rows, read-only for client
+        ├── am_weekly_requests       →  JSONB items column
+        └── audit_log                →  written by Postgres trigger + JS
+              └── anomaly detected → supabase/functions/security-alert → Resend email
+```
+
+### File Roles
+| File | Role | Size |
+|------|------|------|
+| `stock-register.html` | Core daily operations app — all store/MGR/WH logic in one file | 799 KB |
+| `index.html` | Operations 2.0 — older GRN/transfer/tester entry app | 126 KB |
+| `sop-portal.html` | S&OP reporting portal — 8 tabs, queries `sales_history` | 400 KB |
+| `am-stock-request.html` | Mobile AM request form — 4-screen flow, 163 SKUs bilingual | 51 KB |
+| `stock-register-REGION-SPECIFIC.html` | Variant with per-region filtering | 515 KB |
+
+All HTML files are self-contained — styles, scripts, and data (SKU catalogue) are inline. There is no shared JS module or CSS file.
+
+### stock-register.html — Internal Structure
+The file is ~18,000 lines. Key sections in order:
+1. **CSS** (`:root` tokens → layout → grid → panels → modals)
+2. **HTML shell** — login overlay → app topbar → day tabs → product grid → all slide-up panels
+3. **JS constants** — `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `STORES[]` array (35+ entries with store codes, names, AM assignment)
+4. **Auth layer** — `doLogin()` (async RPC), `submitMgrPin()`, session flags (`isAmSession`, `amManagedStores`)
+5. **Grid rendering** — `renderGrid()`, `renderDay()`, cell update functions
+6. **Supabase sync** — `loadDayData()`, `saveCell()`, `loadAllStores()`
+7. **Security module** — `_secCreateSession()`, `_secQAudit()`, anomaly detection, email alert cooldown
+8. **Manager panels** — dashboard, all-stores panel, AM Hub (requests/feedback/issues/TODO tabs)
+9. **Export functions** — CSV, Excel (SheetJS), PDF (print window)
+10. **Demand Planning panel** — reads `benchmarks_cache`, reorder priority logic
+
+### Login / Access Control
+- Store staff → PIN verified via `verify_store_pin()` RPC → session flag `currentStore`
+- AM login → sets `isAmSession = true`, `amManagedStores[]` filtered to their stores only
+- MGR (PIN 9999) → full access; WH (PIN 8888) → warehouse-only panel
+- Demand Planning panel: double-guarded — button hidden + entry function blocked for AM sessions
+- S&OP portal (`sop-portal.html`) and FG manager portal use separate password constant (`Vinayak@1998`), no Supabase auth
+
+### Supabase Patterns
+```js
+// Standard query
+const { data, error } = await supabase
+  .from('table_name')
+  .select('*')
+  .eq('column', value)
+  .limit(5000);
+
+// Upsert (used for all stock cell writes)
+await supabase.from('stock_cells').upsert(payload, { onConflict: 'store_code,day,sku' });
+
+// RPC (PIN verification)
+const { data } = await _SBC.rpc('verify_store_pin', { p_code, p_pin });
+```
+
+### Design System (enforced — do not deviate)
+```css
+--gold-bar: #6B5B35   /* ALL dark headers, topbars, panel headers */
+--gold:     #C9A84C   /* Borders, active states */
+--page:     #FFFFFF   /* Page background */
+--gold-pale:#F5F2EC   /* Card tints, alternating rows */
+```
+Fonts: **Cormorant Garamond** (display/numbers) · **Montserrat** (body/UI) · **IBM Plex Mono** (codes/timestamps) · **IBM Plex Sans Arabic** (Arabic text).
+
+**No dark backgrounds anywhere** — including login screens. The only exception is the executive login in `stock-register.html` which uses a dark theme by deliberate design decision (documented in CLAUDE.md session log Session 8).
+
+### SKU Data
+SKU catalogue (253 SKUs) is embedded as JS arrays inside each HTML file — `CATS[]`, `TESTERS[]`, `SUPPLIES[]`. There is no external SKU JSON file served to the browser. When adding new SKUs, update the array in every HTML file that references it.
+
+---
+
 # Emirates Pride Perfumes — Integrated Operations Platform
 ## CLAUDE Working Memory (updated May 2026)
 
@@ -290,7 +417,7 @@ const { data, error } = await supabase
 
 ## WORKFLOW — S&OP AS DEMAND PLANNER
 
-Amal Kandathil is the Demand Planner at Emirates Pride. Primary responsibilities:
+The S&OP portal is used by Emirates Pride management. Primary responsibilities:
 1. Monthly sales reporting across all regions (EPP, ASL, Oman, KSA)
 2. Inventory accuracy verification per store
 3. Tester tracking and write-off auditing
@@ -1480,7 +1607,7 @@ Never use `#1a2744` navy or `#0D0D0D` black anywhere in the app — including th
 ## ONGOING BUILD QUEUE (next sessions)
 
 1. [ ] Upload Oman sales JSON to Supabase `sales_history` (oman_sales_upload.json ready)
-2. [ ] ASL UAE sales data — waiting for files from Amal
+2. [ ] ASL UAE sales data — waiting for files
 3. [ ] Create Supabase `sop_inventory_uploads` table for inventory snapshots
 4. [ ] Monthly Excel upload script that auto-maps new months
 5. [ ] KSA stores — deferred until data available

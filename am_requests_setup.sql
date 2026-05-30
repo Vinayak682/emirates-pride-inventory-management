@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS am_feedback_sessions (
   sales_notes     TEXT DEFAULT '',                -- Sales feedback
   general_notes   TEXT DEFAULT '',                -- Other feedback / suggestions
   action_items    TEXT DEFAULT '',                -- Follow-up actions agreed
-  logged_by       TEXT DEFAULT 'Amal',
+  logged_by       TEXT DEFAULT 'Manager',
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS am_issues_log (
   raised_date     DATE NOT NULL DEFAULT CURRENT_DATE,
   resolved_date   DATE,
   resolution      TEXT DEFAULT '',
-  logged_by       TEXT DEFAULT 'Amal',
+  logged_by       TEXT DEFAULT 'Manager',
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

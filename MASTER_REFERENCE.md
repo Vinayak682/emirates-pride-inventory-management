@@ -1,5 +1,5 @@
 # Emirates Pride Perfumes — Master Reference Document
-**Last updated: May 2026 | Maintained by Amal Kandathil (Demand Planner)**
+**Last updated: May 2026 | Maintained by Emirates Pride Operations**
 
 > Copy this file with the project folder to any new machine or login. It contains everything needed to resume work.
 
@@ -35,7 +35,7 @@ All HTML files in this folder are automatically served from that URL. Pushing ch
 | **Project REST URL** | `https://ncszurcrkngjcjqsowln.supabase.co` |
 | **Anon Key (read)** | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM` |
 | **Service Role Key** | NOT stored in any file — retrieve from Supabase Dashboard → Settings → API |
-| **Login email** | (Amal's Supabase account email) |
+| **Login email** | (project owner email) |
 
 > **Note**: The anon key is safe in client-side code — it is read-only. The service role key must NEVER go into HTML/JS files.
 
@@ -58,7 +58,7 @@ All HTML files in this folder are automatically served from that URL. Pushing ch
 | `index.html` | **Operations 2.0** — Daily operations for store staff: record sales, GRN receipts, inter-store transfers, tester issuances. All data writes to Supabase. | Store staff (PIN) + Manager (9999) |
 | `stock-register.html` | **Weekly Stock Register** — Spreadsheet-style live stock tracker per store per week. Shows opening stock, GRN, transfers, sales, closing balance. Pulls from Supabase. | Store PINs + Manager 9999 + Warehouse 8888 |
 | `sop-portal.html` | **S&OP Portal** — Management dashboard with 3 tabs: Sales (multi-region), Inventory (Excel upload + deviation), Testers (5 KPIs). For company owners and senior management. | Password: `Vinayak@1998` |
-| `demand-planning-dashboard.html` | **Demand Planning Dashboard** — Shows reorder priorities, benchmarks, min/max targets per SKU per store. Used by Amal for monthly planning. | Manager 9999 |
+| `demand-planning-dashboard.html` | **Demand Planning Dashboard** — Shows reorder priorities, benchmarks, min/max targets per SKU per store. Used for monthly planning. | Manager 9999 |
 | `fg-request-form.html` | Form for store staff to request conversion of FG bottles into testers | Open (no login) |
 | `fg-approve.html` | Manager approves/rejects FG-to-tester conversion requests | Manager 9999 |
 | `fg-report.html` | Audit report of all FG conversion activity | Manager 9999 |
@@ -264,7 +264,7 @@ logged_by       TEXT
 | AL001–AL006 | Al Ain stores |
 
 ### Division 2 — ASL UAE (Franchise Stores)
-**Status**: ⏳ NOT YET UPLOADED — waiting for Excel files from Amal
+**Status**: ⏳ NOT YET UPLOADED — waiting for Excel files
 - Same pivot format as EPP data
 - Will use ASL-prefixed store codes
 
@@ -356,7 +356,7 @@ logged_by       TEXT
 ### Phase 4 — Demand Planning Dashboard (demand-planning-dashboard.html)
 - Reads benchmarks from `benchmarks_cache` in Supabase
 - Shows reorder priorities, min/max stock targets per SKU per store
-- Used by Amal for monthly demand planning cycle
+- Used for monthly demand planning cycle
 - Manager access only
 
 ### Phase 5 — Data Pipeline (Python scripts + JSON files)
@@ -445,9 +445,9 @@ logged_by       TEXT
 |----------|------|--------|
 | 🔴 HIGH | Upload `oman_sales_upload.json` to Supabase `sales_history` | Ready — needs upload |
 | 🔴 HIGH | Check Future Collection sales in original EPP Excel files and upload missing data | Investigation needed |
-| 🟡 MED | Provide ASL UAE Excel sales files for upload | Waiting for Amal |
+| 🟡 MED | Provide ASL UAE Excel sales files for upload | Pending |
 | 🟡 MED | Create `sop_inventory_uploads` table in Supabase (migrate from localStorage) | Not started |
-| 🟡 MED | Add kiosk store list — apply 50% capacity multiplier to benchmarks | Waiting for Amal |
+| 🟡 MED | Add kiosk store list — apply 50% capacity multiplier to benchmarks | Pending |
 | 🟡 MED | Rotate all store PINs before go-live (old PINs were briefly in GitHub README) | Critical security action |
 | 🟢 LOW | S&OP Inventory tab — Excel upload + deviation report | Spec ready in CLAUDE.md |
 | 🟢 LOW | S&OP Testers tab — 5 KPIs from Supabase | Spec ready in CLAUDE.md |
@@ -516,7 +516,7 @@ Arabic text                          → IBM Plex Sans Arabic 400–600
 | Oman sales | JSON ready but not uploaded to Supabase | Upload `oman_sales_upload.json` |
 | ASL UAE sales | No data received yet | Waiting for Excel files |
 | KSA | No data | Deferred |
-| Kiosk capacity list | 5 kiosks confirmed, full list pending | Waiting for Amal |
+| Kiosk capacity list | 5 kiosks confirmed, full list pending | Pending |
 
 ---
 
