@@ -229,10 +229,8 @@
     <div class="lc-divider"></div>
     <div class="lc-title">Customer Complaint Tracker</div>
     <div class="lc-sub">متتبع شكاوى العملاء</div>
+    <div style="font-size:11px;color:var(--ink-mid);margin-bottom:14px;font-family:var(--f-mono);">Office Staff PIN · <span style="color:var(--gold-dark);">5555</span> &nbsp;|&nbsp; Manager PIN · <span style="color:var(--gold-dark);">9999</span></div>
     <div class="lc-err" id="loginErr"></div>
-    <select class="lc-store" id="loginStore">
-      <option value="">— Select your store —</option>
-    </select>
     <div class="pin-row" id="pinRow">
       <div class="pd" id="pd0">●</div>
       <div class="pd" id="pd1">●</div>
@@ -373,6 +371,19 @@
     <button class="panel-close" onclick="closeNew()">✕ Cancel</button>
   </div>
   <div class="panel-body">
+
+    <!-- Store -->
+    <div class="fs">
+      <div class="fs-title">Store · المتجر</div>
+      <div class="fg c1">
+        <div class="fgrp">
+          <label class="flbl">Which store is this complaint from? <span class="req">*</span></label>
+          <select class="fc" id="fComplaintStore">
+            <option value="">— Select the store —</option>
+          </select>
+        </div>
+      </div>
+    </div>
 
     <!-- Customer -->
     <div class="fs">
@@ -612,25 +623,26 @@ const PRODUCTS = [
 // ══════════════════════════════════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════════════════════════════════
+// ── Hardcoded PINs — change these to update access ────────────────
+const STAFF_PIN = '5555';   // Office staff — submit + view all
+const MGR_PIN   = '9999';   // Manager — full access + approve/reject
+
 let me=null, isMgr=false, pinBuf='';
 
 (function init(){
-  // Populate store selector
-  const sel=document.getElementById('loginStore');
-  STORES.forEach(s=>{
-    const o=document.createElement('option');
-    o.value=s.code; o.textContent=s.name+(s.city?' — '+s.city:''); sel.appendChild(o);
-  });
-  const mo=document.createElement('option');
-  mo.value='MGR'; mo.textContent='🔑 Manager — All Stores'; sel.appendChild(mo);
-
-  // Populate filter store
+  // Populate filter store (for manager)
   const fs=document.getElementById('fStore');
   STORES.forEach(s=>{
     const o=document.createElement('option');
     o.value=s.code; o.textContent=s.name; fs.appendChild(o);
   });
-
+  // Populate complaint-form store selector
+  const cs=document.getElementById('fComplaintStore');
+  STORES.forEach(s=>{
+    const o=document.createElement('option');
+    o.value=JSON.stringify({code:s.code,name:s.name});
+    o.textContent=s.name+(s.city?' — '+s.city:''); cs.appendChild(o);
+  });
   // Populate product dropdown
   const pd=document.getElementById('fProduct');
   PRODUCTS.forEach(p=>{
@@ -652,30 +664,23 @@ function updatePinDots(){
     d.textContent=i<pinBuf.length?'★':'●';
   }
 }
-async function doLogin(){
-  const code=document.getElementById('loginStore').value;
-  if(!code){setLE('Select your store first');return;}
+function doLogin(){
   if(pinBuf.length<4){setLE('Enter your 4-digit PIN');return;}
   setLE('');
-  try{
-    const ok=await sb.rpc('verify_store_pin',{p_code:code,p_pin:pinBuf});
-    if(ok){
-      isMgr=code==='MGR';
-      me=isMgr?{code:'MGR',name:'Manager — All Stores',city:'HQ'}:STORES.find(s=>s.code===code);
-      launchApp();
-    }else{
-      setLE('Incorrect PIN — please try again');
-      pinBuf='';updatePinDots();
-    }
-  }catch(e){
-    setLE('Connection error — check internet');
-    pinBuf='';updatePinDots();
+  if(pinBuf===MGR_PIN){
+    isMgr=true; me={code:'MGR',name:'Manager'};
+    launchApp();
+  } else if(pinBuf===STAFF_PIN){
+    isMgr=false; me={code:'STAFF',name:'Office Staff'};
+    launchApp();
+  } else {
+    setLE('Incorrect PIN — try again');
+    pinBuf=''; updatePinDots();
   }
 }
 function setLE(msg){document.getElementById('loginErr').textContent=msg;}
 function doLogout(){
-  me=null;isMgr=false;pinBuf='';updatePinDots();
-  document.getElementById('loginStore').value='';
+  me=null; isMgr=false; pinBuf=''; updatePinDots();
   document.getElementById('appShell').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
   setLE('');
@@ -683,16 +688,16 @@ function doLogout(){
 function launchApp(){
   document.getElementById('loginScreen').style.display='none';
   const shell=document.getElementById('appShell');
-  shell.style.display='flex';shell.style.flexDirection='column';
+  shell.style.display='flex'; shell.style.flexDirection='column';
   document.getElementById('topStore').textContent=me.name;
   if(isMgr){
     document.getElementById('kpiSection').style.display='block';
     document.getElementById('fStore').style.display='block';
     document.getElementById('pageTitle').textContent='All Complaints';
-    document.getElementById('pageSub').textContent='Manager view — all stores';
+    document.getElementById('pageSub').textContent='Manager view — all stores · all time';
   } else {
     document.getElementById('pageTitle').textContent='Complaints';
-    document.getElementById('pageSub').textContent=me.name+' · '+me.city;
+    document.getElementById('pageSub').textContent='Office Staff — submit and track customer complaints';
   }
   loadComplaints();
 }
@@ -796,6 +801,7 @@ function openNew(){
   pendingFiles=[];
   document.getElementById('upPreviews').innerHTML='';
   ['fCustName','fCustPhone','fReceiptNo','fStaff','fDesc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fComplaintStore').value='';
   document.getElementById('fProduct').value='';
   document.getElementById('fSku').value='';
   document.getElementById('fCtype').value='';
@@ -849,12 +855,14 @@ function genRef(){
 }
 
 async function submitComplaint(){
+  const storeVal=document.getElementById('fComplaintStore').value;
   const custName=document.getElementById('fCustName').value.trim();
   const custPhone=document.getElementById('fCustPhone').value.trim();
   const prodVal=document.getElementById('fProduct').value;
   const ctype=document.getElementById('fCtype').value;
   const desc=document.getElementById('fDesc').value.trim();
   const staff=document.getElementById('fStaff').value.trim();
+  if(!storeVal){toast('⚠ Select the store this complaint is from');return;}
   if(!custName){toast('⚠ Enter customer name');return;}
   if(!custPhone){toast('⚠ Enter customer phone');return;}
   if(!prodVal){toast('⚠ Select a product');return;}
@@ -862,6 +870,7 @@ async function submitComplaint(){
   if(!desc){toast('⚠ Describe the complaint');return;}
   if(!staff){toast('⚠ Enter your name');return;}
 
+  const storeObj=JSON.parse(storeVal);
   const prod=JSON.parse(prodVal);
   const ref=genRef();
   const now=new Date().toISOString();
@@ -884,8 +893,8 @@ async function submitComplaint(){
 
   const record={
     complaint_ref:ref,
-    store_code:me.code,
-    store_name:me.name,
+    store_code:storeObj.code,
+    store_name:storeObj.name,
     submitted_by:staff,
     submitted_at:now,
     customer_name:custName,
