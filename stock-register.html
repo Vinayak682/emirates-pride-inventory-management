@@ -2022,12 +2022,23 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         </div>
 
         <!-- Row 4: Store Supplies -->
-        <div>
+        <div style="margin-bottom:10px;">
           <button onclick="goToStockRegister();_pendingScrollSupplies=true;" style="width:100%;background:linear-gradient(135deg,#37474F,#546E7A);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 3px 10px rgba(55,71,79,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <span style="font-size:18px;">🛍️</span>
             <div style="display:flex;flex-direction:column;align-items:flex-start;">
               <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Store Supplies</span>
               <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">مستلزمات المتجر — Bags · Tissue</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Row 5: FG Converted into Tester -->
+        <div>
+          <button onclick="window.open('fg-request-form.html','_blank');" style="width:100%;background:linear-gradient(135deg,#B45309,#D97706);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 3px 10px rgba(180,83,9,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <span style="font-size:18px;">🔄</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-start;">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">FG → Tester Request</span>
+              <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">تحويل منتج إلى تجربة</span>
             </div>
           </button>
         </div>
