@@ -457,9 +457,115 @@ The S&OP portal is used by Emirates Pride management. Primary responsibilities:
 
 ---
 
+### Session — 1 June 2026 (Session 36 — Supplier Quality Control Portal)
+**Files changed**: `supplier-qc.html` (new), `supplier_qc_setup.sql` (new)
+**Commit**: `de96128` → pushed to main → GitHub Pages live
+**Live URL**: https://vinayak682.github.io/emirates-pride-inventory-management/supplier-qc.html
+
+#### What was built:
+
+**Standalone password-gated Supplier QC portal** — full inspection lifecycle for raw material shipments
+
+**4 Tabs:**
+
+1. **Dashboard** — KPI cards (Total Inspections, Pass Rate %, Failed, Partial Pass, Open Actions), supplier scorecard table with quality % scores, recent inspections list, pending actions table
+
+2. **Inspections** — Full inspection log with filters (supplier, result, material type, search). New Inspection Report form captures: supplier, shipment/PO ref, material type & name, batch no, qty, inspector, overall result (Pass/Fail/Partial Pass), fail reason, action required (Credit Note / Replacement / Both / None), QC test parameters table (pre-filled with 6 default parameters: Odour, Colour, Specific Gravity, Flash Point, IFRA Compliance, CoA/Documentation — each with spec, actual, pass/fail). Click any row to view full detail with all test parameters and linked actions.
+
+3. **Actions Tracker** — Dedicated view for all Credit Notes and Replacements. Filter by type and status. KPI cards for open CNs vs open Replacements. Update Status button to move through Pending → In Progress → Received → Resolved.
+
+4. **Suppliers** — Card-based directory showing quality score %, inspection count, open actions per supplier. Add new suppliers with contact details, material types, status (Active/Inactive/Blacklisted).
+
+**Supabase tables created (supplier_qc_setup.sql — run by user 1 Jun 2026):**
+- `suppliers` — 8 seeded (Givaudan, IFF, Symrise, Firmenich, Al Haramain, Arabian Oud, Gulf Packaging, Alkan Alcohol)
+- `qc_inspections` — per-shipment inspection records
+- `qc_line_items` — individual test parameter results per inspection
+- `qc_actions` — credit notes and replacements per inspection
+
+**Password**: `Vinayak@1998` (same as S&OP portal)
+
+---
+
+### Session — 1 June 2026 (Session 35 — Benchmark Column + Hub Screen + Manager Instructions + Store Supplies)
+**Files changed**: `stock-register.html`
+**Commit**: `205b682` → pushed to main → GitHub Pages live
+
+#### What was built:
+
+**1. Benchmark — replaced Min/Max with single target number**
+- The STOCK GUIDE column in the daily grid now shows ONE number (the max/target value) instead of "min | max"
+- Column header: "STOCK GUIDE / Min | Max" → "BENCHMARK / Target Stock"
+- Display: large serif number in colour (red=REORDER, green=GOOD, amber=TOO MUCH) + small status label
+- Background cell tint unchanged (red / green / amber)
+- Action buttons (ⓘ SET ✎ ⚠) remain, repositioned next to the number
+- AM Stock Guide panel: "Min/Max Settings" → "Benchmark Levels" throughout (title, subtitle, print header)
+- Manager Dashboard button: "Stock Guide / Min-Max" → "Stock Guide"
+
+**2. Hub Screen — Store Supplies button added**
+- Added 7th quick-action button "🛍️ Store Supplies" in the hub screen Quick Actions card
+- Full-width button (slate-blue gradient), launches stock register and scrolls to supplies section
+- Bilingual label: "Bags · Tissue / مستلزمات المتجر"
+
+**3. Manager Dashboard — Send Store Instruction strip**
+- Collapsible strip permanently visible at the top of the Manager Dashboard (above the store grid)
+- Header: "📢 Send Store Instruction / إرسال تعليمة للمتجر" — click to expand/collapse
+- Fields: Target (All Stores or any individual store), Priority (Normal / 🔴 Urgent), Message (text input)
+- Send button + Enter key both trigger send
+- Saves to same localStorage notification store as the Hub Screen notification board
+- Bell badge on topbar updates immediately; store staff see it in their notification dropdown
+
+**4. Store Supplies — full daily-tracking grid**
+- Items: Shopping Bag S, M, L, XL, Tissue Paper Roll, Gift Bag (6 items, trimmed from 17)
+- Section header styled identical to Tester Bottles: olive-gold bar, white mono text, Arabic subtitle
+- Columns: Opening | Received | Used | Balance (auto-calculated: O+R−U)
+- Each cell is tappable → numpad opens with correct field context and colour-coded header
+- Balance colour: red if negative, amber if <10, green if ≥10
+- Daily totals row at bottom of table
+- Per-day per-store localStorage (keys: `supp_${store}_d${day}_${item}_${field}`)
+- `renderConsSection()` called on login and on every day-tab switch
+- "Store Supplies" button on Hub Screen scrolls here directly
+
+---
+
+### Session — 31 May 2026 (Session 34 — Seasonal Baseline Split + December Tourist Season)
+**Files changed**: `stock-register.html`
+**Commits**: `cdb0227`, `0767cf9` → pushed to main
+
+#### What was done:
+
+**1. December Tourist Season Added to Eid Calendar**
+- New event window: UAE December Tourist Season (Nov 20 – Jan 10) added alongside Eid events
+- Multipliers: Seasonal ×2.5, FastMover ×1.3, Regular ×1.1 (lower than Eid — tourist uplift, not gifting spike)
+- Rationale: December is peak tourist/expat shopping season in UAE; different demand pattern from Eid
+
+**2. High-CoV Perfumes Reclassified (cdb0227)**
+- Previous CoV≥70 catch-all was wrongly pulling regular perfumes (AP/AO/B/C series) into Seasonal
+- New rule: CoV≥70 → Seasonal ONLY if the SKU is explicitly a gift-set prefix (BX/AG/SP) or Dakhoon (D series)
+- AP/AO/B/C series perfumes with high CoV remain Regular (or FastMover) — high CoV reflects multi-store demand variance, NOT seasonality
+- Affected: B00001, B00003, B00021, AP series — all correctly stay as Regular/FastMover after fix
+
+**3. Seasonal Baseline Split by Event Type (0767cf9) — fixes 27 inflated rows**
+- Root cause: Gift-set SKUs (BX/AG) were using `peak_month_avg` as baseline even when NO Eid event was active. `peak_month_avg` reflects Eid peak months (Apr/May for Eid Al-Adha) — so baseline was already ×5-6 inflated, then Eid multiplier applied again → min/max figures 25-36× over normal
+- Fix: split baseline logic by active event:
+  - **Eid active** → use `peak_month_avg / 4.33` as weekly baseline (correct — this IS the peak)
+  - **No event** → use `weekly_avg` as baseline (normal run rate, not peak)
+  - **December active** → use `weekly_avg × 1.1` (slight tourist uplift from normal base)
+- Result: BX0002 min/max now shows ~4-6 units/week outside Eid, ~12-18 during Eid ✅ (was 2954/8861 previously)
+- 27 SKU-store rows fixed across BX/AG/SP series
+
+**Final verified state (31 May 2026):**
+- Seasonal category: gift sets + Dakhoon only (no perfumes wrongly included)
+- December tourist season: active Nov 20 – Jan 10 with lower multipliers than Eid
+- Baseline logic: event-conditional (peak_month_avg only during Eid, weekly_avg otherwise)
+- All 4 event windows now correctly calibrated
+
+---
+
 ### Session — 30 May 2026 (Session 33 — Week 23 Upload + Intelligence Chatbot + ABC×XYZ Min/Max Engine)
 **Files changed**: `sop-portal.html`, `stock-register.html`, `benchmarks_abc_xyz_migration.sql` (new), `classify_minmax.py` (new)
-**Commits**: `7a2e259`, `389a2df`, `e6f5cea`, `6b1cbee`, `8fd7c21`, `7c5b4dd`, `25480ea`, `26a1e9b`, `033552d`, `26a3723`, `ed2f385` → all pushed to main
+**Commits**: `7a2e259`, `389a2df`, `e6f5cea`, `6b1cbee`, `8fd7c21`, `7c5b4dd`, `25480ea`, `26a1e9b`, `033552d`, `26a3723`, `ed2f385`, `1d9d584` → all pushed to main
+
+**ALSO IN THIS PUSH: Intelligence tab WH data source fix applied** (`1d9d584` — wired `store_soh_snapshots` as WH source, fixed `production_plan` column names)
 
 #### What was done:
 
