@@ -595,29 +595,147 @@ const sb = {
 };
 
 // ══════════════════════════════════════════════════════════════════
-// PRODUCTS
+// PRODUCTS — Full EPP + ASL catalogue with EN + AR names
+// Grouped by brand and category for the dropdown
 // ══════════════════════════════════════════════════════════════════
-const PRODUCTS = [
-  {c:'B00001',n:'Bergamot Bel Amber'},{c:'B00002',n:'Jasmine Bel Musk'},{c:'B00003',n:'Amber Bel Oud'},
-  {c:'B00004',n:'Meydan'},{c:'B00005',n:'Mystery'},{c:'B00006',n:'Mersal'},{c:'B00007',n:'Peaceful Life'},
-  {c:'B00008',n:'Midnight Glow'},{c:'B00009',n:'Golden Chance'},{c:'B00010',n:'Sakura'},
-  {c:'B00011',n:'Vetiveria'},{c:'B00012',n:'Ambergris'},{c:'B00013',n:'Arabica'},
-  {c:'B00015',n:'Hidden Leather'},{c:'B00016',n:'Mysterious Rose'},{c:'B00017',n:'Thekrayat'},
-  {c:'B00018',n:'Hidden Tobacco'},{c:'B00019',n:'Master Signature'},{c:'B00020',n:'Master Signature 50ml'},
-  {c:'B00021',n:'Midnight Bloom 100ml'},
-  {c:'C00002',n:'White 100ml Perfume'},{c:'C00004',n:'Maroon 100ml Perfume'},
-  {c:'C00006',n:'Caballo Green'},{c:'C00008',n:'Caballo Classic'},{c:'C00010',n:'Maroon Intense'},
-  {c:'C00012',n:'Navy Perfume 100ml'},{c:'C00013',n:'White Overdose'},{c:'C00014',n:'Black Perfume 100ml'},
-  {c:'D00001',n:'Dakhoon Al Emarat'},{c:'D00002',n:'Dakhoon Malaki'},{c:'D00003',n:'Dakhoon Oud Meydan'},
-  {c:'D00004',n:'Dakhoon Rose'},{c:'D00005',n:'Dakhoon Al Oud'},{c:'D00006',n:'Dakhoon Malaki Oud'},
-  {c:'D00007',n:'Dakhoon Fakhamah'},{c:'D00008',n:'Dakhoon Express'},
-  {c:'O00001',n:'Oud Meydan'},{c:'O00002',n:'Oud Amiri'},{c:'O00003',n:'Hindi Khas'},
-  {c:'O00006',n:'More Of Oud'},{c:'O00007',n:'Oud Fakhamah'},{c:'O00008',n:'Oud Emarat'},
-  {c:'AP001',n:'ASL — Midnight Glow'},{c:'AP002',n:'ASL — Dark Musk'},{c:'AP003',n:'ASL — Golden Hour'},
-  {c:'AP004',n:'ASL — Desert Rose'},{c:'AP005',n:'ASL — Velvet Oud'},{c:'AP007',n:'ASL — Velvet Amber'},
-  {c:'BX0002',n:'3 Bel Black Box With 2 Oil'},{c:'BX0014',n:'BOD Gift Box'},
-  {c:'SP0005',n:'No.4 Perfume'},{c:'SP0037',n:'Special Set'},
-  {c:'OTHER',n:'Other Product — specify in description'},
+const PRODUCT_GROUPS = [
+  { group:'EPP — Bel Collection · مجموعة بيل', items:[
+    {c:'B00001',en:'Bergamot Bel Amber',           ar:'برغموت بالعنبر'},
+    {c:'B00002',en:'Jasmine Bel Musk',             ar:'جاسمين بالمسك'},
+    {c:'B00003',en:'Amber Bel Oud',                ar:'عنبر بالعود'},
+    {c:'B00004',en:'Meydan',                       ar:'ميدان'},
+    {c:'B00005',en:'Mystery',                      ar:'ميستري'},
+    {c:'B00006',en:'Mersal',                       ar:'مرسال'},
+    {c:'B00007',en:'Peaceful Life',                ar:'بيسفول لايف'},
+    {c:'B00008',en:'Midnight Glow',                ar:'ميدنايت غلو'},
+    {c:'B00009',en:'Golden Chance',                ar:'غولدن تشانس'},
+    {c:'B00010',en:'Sakura',                       ar:'سكورا'},
+    {c:'B00011',en:'Vetiveria',                    ar:'فيتيفيريا'},
+    {c:'B00012',en:'Ambergris',                    ar:'عنبر'},
+    {c:'B00013',en:'Arabica',                      ar:'أرابيكا'},
+    {c:'B00014',en:'Firewood',                     ar:'فيروود'},
+    {c:'B00015',en:'Hidden Leather',               ar:'هيدن ليذر'},
+    {c:'B00016',en:'Mysterious Rose',              ar:'ميستيريوس روز'},
+    {c:'B00017',en:'Thekrayat',                    ar:'ذكريات'},
+    {c:'B00018',en:'Hidden Tobacco',               ar:'هيدن توباكو'},
+    {c:'B00019',en:'Masters Perfume 100ml',        ar:'ماسترز برفيوم'},
+    {c:'B00020',en:'Master Signature',             ar:'ماستر سيجنتشر'},
+    {c:'B00021',en:'Midnight Bloom 100ml',         ar:'ميدنايت بلوم'},
+  ]},
+  { group:'EPP — Caballo Collection · مجموعة كابالو', items:[
+    {c:'C00002',en:'White 100ml Perfume',          ar:'وايت 100 مل'},
+    {c:'C00004',en:'Maroon 100ml Perfume',         ar:'مارون 100 مل'},
+    {c:'C00006',en:'Caballo Green',                ar:'كبالو غرتن'},
+    {c:'C00008',en:'Caballo Classic',              ar:'كبالو كلاسيك'},
+    {c:'C00010',en:'Maroon Intense',               ar:'مارون انتنس'},
+    {c:'C00011',en:'Violet 100ml Perfume',         ar:'فيوليت 100 مل'},
+    {c:'C00012',en:'Navy Perfume 100ml',           ar:'عطر نيفي 100 مل'},
+    {c:'C00013',en:'White Overdose',               ar:'وايت أوفردوز'},
+    {c:'C00014',en:'Black Perfume 100ml',          ar:'بلاك 100 مل'},
+    {c:'SP0005',en:'No.4 Perfume',                 ar:'رقم 4'},
+  ]},
+  { group:'EPP — Dakhoon · دخون', items:[
+    {c:'D00001',en:'Dakhoon Al Emarat',            ar:'دخون الإمارات'},
+    {c:'D00002',en:'Dakhoon Al Marasim',           ar:'دخون المراسيم'},
+    {c:'D00003',en:'Dakhoon Badia',                ar:'دخون بادية'},
+    {c:'D00004',en:'Dakhoon Al Dar',               ar:'دخون الدار'},
+    {c:'D00005',en:'Dakhoon Al Barzah',            ar:'دخون البرزة'},
+    {c:'D00008',en:'Dakhoon Retaj',                ar:'دخون رتاج'},
+  ]},
+  { group:'EPP — Oud · عود', items:[
+    {c:'O00001',en:'Oud Amiri',                    ar:'عود أميري'},
+    {c:'O00002',en:'Oud Meydan',                   ar:'عود ميدان'},
+    {c:'O00003',en:'Oud Al Emarat',                ar:'عود الإمارات'},
+    {c:'O00006',en:'Oud Al Fakhamah',              ar:'عود الفخامة'},
+    {c:'O00007',en:'Oud Hindi Khas — Black Box',   ar:'عود هندي خاص'},
+    {c:'O00008',en:'Oud Hindi Malaki — White Box', ar:'عود هندي ملكي'},
+  ]},
+  { group:'EPP — Heritage · التراث', items:[
+    {c:'HR0001',en:'Qalah — Heritage Collection',  ar:'قلعة'},
+    {c:'HR0002',en:'Danah — Heritage Collection',  ar:'دانة'},
+  ]},
+  { group:'EPP — Gift Sets & Boxes · طقم هدايا', items:[
+    {c:'BX0002',en:'3 Bel Black Box With 2 Oil',   ar:'صندوق بيل الأسود'},
+    {c:'BX0011',en:'Dekoon Gift Set',               ar:'طقم هدية دخون'},
+    {c:'BX0012',en:'VIP Combo Box',                 ar:'صندوق VIP'},
+    {c:'BX0014',en:'BOD Gift Box',                  ar:'صندوق هدية BOD'},
+    {c:'BX0015',en:'Luxury Gift Box',               ar:'صندوق فاخر'},
+    {c:'SP0012',en:'White Set Box',                 ar:'طقم وايت'},
+    {c:'SP0013',en:'Maroon Set Box',                ar:'طقم مارون'},
+    {c:'SP0022',en:'Reflection Set',                ar:'ريفليكشن'},
+    {c:'SP0023',en:'Master Signature Box',          ar:'صندوق ماستر سيجنتشر'},
+    {c:'SP0024',en:'My Signature Set Box',          ar:'صندوق ماي سيجنتشر'},
+    {c:'SP0029',en:'Midnight Glow Set Box',         ar:'طقم ميدنايت غلو'},
+    {c:'SP0037',en:'Future Bakhoor 100ml',          ar:'بخور المستقبل'},
+    {c:'SP0038',en:'Future Oud 100ml',              ar:'عود المستقبل'},
+    {c:'SP0039',en:'Future Traditional Set 2×100ml',ar:'مجموعة المستقبل التقليدية'},
+    {c:'SP0008',en:'Discovery Set',                 ar:'طقم الاستكشاف'},
+    {c:'SP0001',en:'White Oud Set Box',             ar:'طقم وايت عود'},
+  ]},
+  { group:'EPP — Accessories · إكسسوارات', items:[
+    {c:'AC0001',en:'Medkhan (Small)',               ar:'مدخن صغير'},
+    {c:'AC0002',en:'Charcoal',                      ar:'فحم'},
+    {c:'AC0003',en:'Lighter',                       ar:'ولاعة'},
+    {c:'AC0004',en:'Picker',                        ar:'بيكر'},
+    {c:'CDL0001',en:'MS Candle',                    ar:'شمعة'},
+  ]},
+  { group:'ASL — Perfumes 50ml · عطور ASL', items:[
+    {c:'AP001',en:'Black Vanilla 50ml',             ar:'بلاك فانيلا'},
+    {c:'AP002',en:'Secret Leather 50ml',            ar:'سيكريت ليذر'},
+    {c:'AP003',en:'White Bouquet 50ml',             ar:'وايت بوكيه'},
+    {c:'AP004',en:'Leather Intense 50ml',           ar:'ليذر إنتنس'},
+    {c:'AP005',en:'Rich Vanilla 50ml',              ar:'ريتش فانيلا'},
+    {c:'AP006',en:'Spicy Sandal 50ml',              ar:'سبايسي ساندال'},
+    {c:'AP007',en:'Velvet Amber 50ml',              ar:'فيلفيت أمبر'},
+    {c:'AP008',en:'Dark Musk 50ml',                 ar:'دارك ماسك'},
+    {c:'AP009',en:'Royal Tobacco 50ml',             ar:'رويال توباكو'},
+    {c:'AP010',en:'Patchouli Glow 50ml',            ar:'باتشولي غلو'},
+    {c:'AP011',en:'Dark Wood 50ml',                 ar:'دارك وود'},
+  ]},
+  { group:'ASL — Oils 6ml · زيوت ASL', items:[
+    {c:'AO001',en:'Black Vanilla Oil 6ml',          ar:'زيت بلاك فانيلا'},
+    {c:'AO002',en:'Secret Leather Oil 6ml',         ar:'زيت سيكريت ليذر'},
+    {c:'AO003',en:'White Bouquet Oil 6ml',          ar:'زيت وايت بوكيه'},
+    {c:'AO004',en:'Leather Intense Oil 6ml',        ar:'زيت ليذر إنتنس'},
+    {c:'AO005',en:'Rich Vanilla Oil 6ml',           ar:'زيت ريتش فانيلا'},
+    {c:'AO006',en:'Spicy Sandal Oil 6ml',           ar:'زيت سبايسي ساندال'},
+    {c:'AO007',en:'Velvet Amber Oil 6ml',           ar:'زيت فيلفيت أمبر'},
+    {c:'AO008',en:'Dark Musk Oil 6ml',              ar:'زيت دارك ماسك'},
+    {c:'AO009',en:'Royal Tobacco Oil 6ml',          ar:'زيت رويال توباكو'},
+    {c:'AO010',en:'Patchouli Glow Oil 6ml',         ar:'زيت باتشولي غلو'},
+    {c:'AO011',en:'Dark Wood Oil 6ml',              ar:'زيت دارك وود'},
+  ]},
+  { group:'ASL — Hair & Body Mist · بخاخ الشعر والجسم', items:[
+    {c:'AH003',en:'Velvet Amber Hair & Body Mist',  ar:'بخاخ فيلفيت أمبر'},
+    {c:'AH005',en:'Black Vanilla Hair & Body Mist', ar:'بخاخ بلاك فانيلا'},
+    {c:'AH006',en:'Secret Leather Hair & Body Mist',ar:'بخاخ سيكريت ليذر'},
+    {c:'AH008',en:'Dark Musk Hair & Body Mist',     ar:'بخاخ دارك ماسك'},
+    {c:'AH009',en:'Royal Tobacco Hair & Body Mist', ar:'بخاخ رويال توباكو'},
+  ]},
+  { group:'ASL — Body Lotion · لوشن الجسم', items:[
+    {c:'ABL001',en:'Royal Tobacco Body Lotion 200ml',ar:'لوشن رويال توباكو'},
+    {c:'ABL002',en:'Velvet Amber Body Lotion 200ml', ar:'لوشن فيلفيت أمبر'},
+    {c:'ABL003',en:'Secret Leather Body Lotion 200ml',ar:'لوشن سيكريت ليذر'},
+    {c:'ABL004',en:'Dark Musk Body Lotion 200ml',    ar:'لوشن دارك ماسك'},
+  ]},
+  { group:'ASL — Gift Sets · طقم هدايا ASL', items:[
+    {c:'AG001',en:'ASL Gift Set Box',               ar:'طقم هدية ASL'},
+    {c:'AG013',en:'ASL Bundle Foldable 2',          ar:'باندل ASL 2'},
+    {c:'AG014',en:'ASL 3 Gift Set',                 ar:'طقم هدية ASL 3'},
+    {c:'AG015',en:'ASL Bundle Foldable 1',          ar:'باندل ASL 1'},
+    {c:'AOG007',en:'Velvet Amber Oil Gift',         ar:'هدية زيت فيلفيت أمبر'},
+    {c:'AOG008',en:'Dark Musk Oil Gift',            ar:'هدية زيت دارك ماسك'},
+    {c:'AOG009',en:'Royal Tobacco Oil Gift',        ar:'هدية زيت رويال توباكو'},
+  ]},
+  { group:'ASL — Home Fragrance · عطور المنزل', items:[
+    {c:'ASLAF-001',en:'Cool Violet Air Freshener',  ar:'معطر جو كول فيوليت'},
+    {c:'ASLAF-007',en:'Velvet Amber Air Freshener', ar:'معطر جو فيلفيت أمبر'},
+    {c:'ASLRD-002',en:'Cool Violet Reed Diffuser',  ar:'ريد ديفيوزر كول فيوليت'},
+    {c:'ASLRD-007',en:'Velvet Amber Reed Diffuser', ar:'ريد ديفيوزر فيلفيت أمبر'},
+  ]},
+  { group:'Other · أخرى', items:[
+    {c:'OTHER',en:'Other Product',                  ar:'منتج آخر — يُذكر في الوصف'},
+  ]},
 ];
 
 // ══════════════════════════════════════════════════════════════════
@@ -643,11 +761,18 @@ let me=null, isMgr=false, pinBuf='';
     o.value=JSON.stringify({code:s.code,name:s.name});
     o.textContent=s.name+(s.city?' — '+s.city:''); cs.appendChild(o);
   });
-  // Populate product dropdown
+  // Populate product dropdown with grouped optgroups (EN + AR)
   const pd=document.getElementById('fProduct');
-  PRODUCTS.forEach(p=>{
-    const o=document.createElement('option');
-    o.value=JSON.stringify(p); o.textContent=p.c+' — '+p.n; pd.appendChild(o);
+  PRODUCT_GROUPS.forEach(g=>{
+    const grp=document.createElement('optgroup');
+    grp.label=g.group;
+    g.items.forEach(p=>{
+      const o=document.createElement('option');
+      o.value=JSON.stringify({c:p.c,en:p.en,ar:p.ar});
+      o.textContent=p.c+' — '+p.en+(p.ar?' · '+p.ar:'');
+      grp.appendChild(o);
+    });
+    pd.appendChild(grp);
   });
 })();
 
@@ -816,7 +941,10 @@ function closeNew(){document.getElementById('newPanel').style.display='none';pen
 function onProdChange(){
   const v=document.getElementById('fProduct').value;
   if(!v){document.getElementById('fSku').value='';return;}
-  try{document.getElementById('fSku').value=JSON.parse(v).c;}catch(e){}
+  try{
+    const p=JSON.parse(v);
+    document.getElementById('fSku').value=p.c;
+  }catch(e){}
 }
 
 // File handling
@@ -871,7 +999,7 @@ async function submitComplaint(){
   if(!staff){toast('⚠ Enter your name');return;}
 
   const storeObj=JSON.parse(storeVal);
-  const prod=JSON.parse(prodVal);
+  const prodObj=JSON.parse(prodVal);
   const ref=genRef();
   const now=new Date().toISOString();
   const btn=document.getElementById('submitBtn');
@@ -901,8 +1029,9 @@ async function submitComplaint(){
     customer_phone:custPhone,
     purchase_date:document.getElementById('fPurchDate').value||null,
     receipt_number:document.getElementById('fReceiptNo').value.trim()||null,
-    sku_code:prod.c,
-    product_name:prod.n,
+    sku_code:prodObj.c,
+    product_name:prodObj.en,
+    product_name_ar:prodObj.ar||'',
     complaint_type:ctype,
     complaint_description:desc,
     status:'pending',
