@@ -457,6 +457,61 @@ The S&OP portal is used by Emirates Pride management. Primary responsibilities:
 
 ---
 
+### Session — 1 June 2026 (Session 42 — May 2026 Eid Performance Executive Dashboard)
+**Files changed**: `sop-portal.html`
+**Commit**: Not yet pushed
+
+#### What was built:
+
+**Interactive executive Eid Al-Adha 2026 performance dashboard** — accessible via "⚡ May 2026 — Eid Performance" button in the Sales tab filter bar. Full-screen overlay panel, no page navigation required.
+
+**Button**: Gold gradient button added to Sales tab filter bar (right side, next to Export). Visible only on the Sales tab.
+
+**Dashboard Zones (all data computed client-side from loaded salesData):**
+
+**Zone 1 — Executive Hero Strip:**
+- Grand total May 2026 units (all 36 stores, all 4 regions)
+- 3 comparison cards: vs April 2026 (MoM%), vs May 2025 (YoY%), vs Jan–Apr 2026 avg (Eid Uplift%)
+- 4 region pills: EPP UAE / ASL UAE / Oman / KSA with their individual MoM
+
+**Zone 2 — Region Cards (4 cards):**
+- Each region: May 2026 total, store count, MoM / YoY / Eid Uplift tiles
+- Clickable "top store" chip → opens store drill-down
+
+**Zone 3 — All Store Leaderboard (36 stores):**
+- Full table: Rank · Store · Region badge · May 2026 · Apr 2026 · MoM · YoY · Eid Uplift · 6-month CSS sparkline
+- 4 sort buttons: May Units (default) · MoM · YoY · Eid Uplift — active button highlighted olive-gold
+- Click any row → opens store drill-down side panel
+
+**Zone 4 — Winners & Needs Attention (side by side):**
+- Left: Top 8 stores by MoM % growth with horizontal progress bars
+- Right: Stores with MoM decline (or green "All stores grew" if none)
+
+**Zone 5 — SKU Intelligence (side by side):**
+- Left: Top 10 SKUs by May 2026 volume with MoM indicator
+- Right: Top 10 SKUs by biggest MoM % uplift (Eid movers)
+
+**Store Drill-Down Side Panel (slides in from right):**
+- Store name, code, city header
+- 3 KPI tiles: May 2026 total · MoM% (colour-coded) · Eid Uplift%
+- YoY banner with May 2025 comparison
+- 8-month CSS bar chart (Oct 2025–May 2026) with exact unit counts
+- Top 10 SKUs for that specific store in May 2026 with individual MoM %
+- Dimmed overlay behind panel, click outside to close
+
+**Verified data (from live Supabase load):**
+- Total May 2026: 28,093 units across 36 stores
+- MoM: +20.7% vs April 2026
+- YoY: +150.8% vs May 2025
+- Eid Uplift: +40.0% vs Jan–Apr avg
+- Top store: Yas Mall Kiosk 3 (1,959 units)
+- Biggest MoM winner: Bawabat al Sharq Shop 2 (+181.2%)
+- Sorting, drill-down, region cards all verified functional
+
+**Note on KSA YoY**: YoY % is inflated because May 2025 only had EPP UAE data. KSA/Oman/ASL are all new additions in 2026, so grand YoY reflects business growth + new regions combined — executives should be briefed on this context.
+
+---
+
 ### Session — 1 June 2026 (Session 36 — Supplier Quality Control Portal)
 **Files changed**: `supplier-qc.html` (new), `supplier_qc_setup.sql` (new)
 **Commit**: `de96128` → pushed to main → GitHub Pages live
@@ -483,6 +538,152 @@ The S&OP portal is used by Emirates Pride management. Primary responsibilities:
 - `qc_actions` — credit notes and replacements per inspection
 
 **Password**: `Vinayak@1998` (same as S&OP portal)
+
+---
+
+### Session — 1 June 2026 (Session 41 — KSA Sales Full History Upload Jan 2025 – May 2026)
+**Files changed**: `upload_ksa_sales_full.py` (new)
+**Commit**: Not pushed (local script + SQL file)
+
+#### What was done:
+
+**Task**: First-ever KSA sales upload. Processed `order_2026-06-01_122745.csv` covering Jan 2025 – May 2026 (full history).
+
+**Parsing results**:
+- **59,825 units | 1,079 rows | 17 months | 17 stores**
+- Period: 2025-01 to 2026-05
+
+**NEW KSA Store Codes (first definition — 20 stores):**
+| Code | Store | City |
+|------|-------|------|
+| KSA_AHS001 | Al Ahsa Mall | Al Ahsa |
+| KSA_HAM001 | Al Hamra Mall | — |
+| KSA_KHL001 | Al Khaleej Mall | — |
+| KSA_MED001 | Al Rashid Madina Mall | Madinah |
+| KSA_ABH001 | Al Rashid Mall-Abha Kiosk | Abha |
+| KSA_JED001 | Andalus Mall Jeddah | Jeddah |
+| KSA_GRN001 | Granada Mall | — |
+| KSA_HAY001 | Hayat Mall | Riyadh |
+| KSA_HAY002 | Hayat Mall Shop | Riyadh |
+| KSA_JPM001 | Jeddah Park Mall | Jeddah |
+| KSA_MKH001 | Makah Mall | Makkah |
+| KSA_MOA001 | Mall Of Arabia Jeddah | Jeddah |
+| KSA_DAH001 | Mall Of Dhahran | Dhahran |
+| KSA_DAH002 | Mall Of Dhahran Kiosk | Dhahran |
+| KSA_RYD001 | Park Avenue Mall Riyadh | Riyadh |
+| KSA_RSM001 | Red Sea Mall | Jeddah |
+| KSA_RYD002 | Riyadh Park Mall | Riyadh |
+| KSA_SLM001 | Salaam Mall | — |
+| KSA_JED002 | Salam Mall Jeddah | Jeddah |
+| KSA_YSM001 | Yasmin Mall | — |
+
+**Top stores (all-time Jan 2025–May 2026)**:
+KSA_AHS001 11,120 · KSA_RYD002 6,186 · KSA_JED001 5,058 · KSA_MOA001 4,673 · KSA_DAH001 4,502
+
+**Note on Jan 2025 spike (40,791 units)**: Jan-Feb 2025 = 97% of all KSA sales. This likely reflects opening stock loading / initial inventory dispatch, not pure retail sales. Verify with Vinayak before using for benchmarks.
+
+**3 stores with zero mapped sales**: KSA_MED001, KSA_ABH001, KSA_JPM001 — their sales may be in unmapped bundle products.
+
+**Unmapped (15 products, skipped)**: Box 2/3 Bel bundles, Maroon/White Hair Mist (no SKU), MS_CANDLE, Saudi National Day Box, Seufi Special, Small ComboSet, VIP Combo Box, Hidden Set Box.
+
+**SQL file**: `C:\Users\AMALKANDATHIL\Downloads\ksa_sales_full_upload.sql`
+**Action required**: Run in Supabase SQL Editor: https://supabase.com/dashboard/project/ncszurcrkngjcjqsowln/sql
+
+---
+
+### Session — 1 June 2026 (Session 40 — Oman May 2026 Full Month Sales Upload)
+**Files changed**: `upload_may2026_oman_full.py` (new)
+**Commit**: Not pushed (local script + SQL file)
+
+#### What was done:
+
+**Task**: Process full May 1–31 2026 Oman sales from `order_2026-06-01_132104.csv` and upload to Supabase `sales_history`.
+
+**Parsing results**:
+- Source: `order_2026-06-01_132104.csv` (full month May 1–31 2026)
+- Parsed: **2,227 units** across **130 SKU-store combinations** | **3 stores**
+- CSV totals row: OM001=1,208 | OM002=660 | OM_ASL001=366 = 2,234 (7-unit gap = intentionally skipped products with no SKU)
+- Mixed EPP + ASL products in same file — handled with combined SKU mapping
+
+**Store breakdown (May 2026 Oman)**:
+| Store | Parsed | CSV Total |
+|-------|--------|-----------|
+| OM001 Mall Of Oman | 1,205 | 1,208 |
+| OM002 Muscat City Centre | 657 | 660 |
+| OM_ASL001 ASL Mall Of Oman | 365 | 366 |
+
+**Skipped products (no SKU assigned — 7 units)**:
+- ASL 3 Gift Set Box (1 unit) — no SKU code yet
+- Box 3 Perfumes and 3 Hair Mist — bundle, no code
+- Caballo Green, Caballo Rogue — no C-series codes assigned
+- VIP Set Box — no code
+- Seufi Khas 1/4 — special oud, no standard SKU
+
+**SQL file**: `C:\Users\AMALKANDATHIL\Downloads\may2026_oman_full_upload.sql`
+**Action required**: Run in Supabase SQL Editor along with the EPP and ASL files.
+
+---
+
+### Session — 1 June 2026 (Session 39 — ASL UAE May 2026 Full Month Sales Upload)
+**Files changed**: `upload_may2026_asl_full.py` (new)
+**Commit**: Not pushed (local script + SQL file)
+
+#### What was done:
+
+**Task**: Process full May 1–31 2026 ASL UAE sales from `order_2026-06-01_132312.csv` and upload to Supabase `sales_history`.
+
+**Parsing results**:
+- Source: `order_2026-06-01_132312.csv` (full month May 1–31 2026)
+- Parsed: **1,161 units** across **206 SKU-store combinations** | **5 stores**
+- Replaces any prior partial May ASL data — ON CONFLICT DO UPDATE
+
+**Store breakdown (May 2026 ASL)**:
+| Store | Units |
+|-------|-------|
+| YMK001 (Yas Mall) | 351 |
+| FJ0001 (Fujairah CC) | 220 |
+| BAW001 (Bawadi Mall) | 218 |
+| BAS001 (BAS Mall Kiosk) | 193 |
+| MAK001 (Makani Mall) | 179 |
+
+**Unmapped (1, qty skipped)**: "ASL 3 Gift Set Box" — no SKU code assigned yet.
+
+**Supabase upload status**: SQL file generated (API 401 expected — same project pause issue as EPP).
+**SQL file**: `C:\Users\AMALKANDATHIL\Downloads\may2026_asl_full_upload.sql`
+**Action required**: Run BOTH SQL files in Supabase SQL Editor after resuming project:
+1. `may2026_epp_full_upload.sql` (EPP — 24,691 units)
+2. `may2026_asl_full_upload.sql` (ASL — 1,161 units)
+
+---
+
+### Session — 1 June 2026 (Session 38 — EPP UAE May 2026 Full Month Sales Upload)
+**Files changed**: `upload_may2026_epp_full.py` (new)
+**Commit**: Not pushed (local script + SQL file)
+
+#### What was done:
+
+**Task**: Process full May 1–31 2026 EPP UAE sales from `order_2026-06-01_131450.csv` and upload to Supabase `sales_history`.
+
+**Parsing results**:
+- Source: `order_2026-06-01_131450.csv` (full month May 1–31 2026)
+- Parsed: **24,691 units** across **1,275 SKU-store combinations** | **23 stores**
+- Replaces previous partial upload (May 1–24, 18,647 units) — ON CONFLICT DO UPDATE
+
+**Top stores (May 2026)**:
+| Store | Units | | Store | Units |
+|-------|-------|-|-------|-------|
+| A0008 Yas Kiosk 3 | 1,959 | | PS_YAS | 1,205 |
+| DX001 Dubai Mall | 1,764 | | A0007 Yas Kiosk 2 | 1,185 |
+| AL004 Jimi Mall | 1,557 | | SH001 Zahia | 1,149 |
+| DX005 Mirdif | 1,495 | | RK001 Manar Shop | 1,140 |
+| AL006 Makani | 1,425 | | A0003 Dalma Shop | 1,099 |
+| A0010 BAS Shop 2 | 1,302 | | | |
+
+**Unmapped products (5, qty skipped)**: MS_CANDLE, No.4 Arabic text, Seufi Special, Small combo set, VIP Combo Box — same as previous uploads, not EPP core SKUs.
+
+**Supabase upload status**: ⚠️ API returned 401 — project may be paused on free tier.
+**SQL file generated**: `C:\Users\AMALKANDATHIL\Downloads\may2026_epp_full_upload.sql`
+**Action required**: Run SQL file in Supabase SQL Editor: https://supabase.com/dashboard/project/ncszurcrkngjcjqsowln/sql
 
 ---
 

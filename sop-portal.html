@@ -790,6 +790,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
         <option value="targets">View C — Targets vs Actuals</option>
       </select>
       <button class="filter-btn-ghost" onclick="openExportModal('sales')" style="margin-left:auto;">↓ Export</button>
+      <button onclick="openEidPerf()" style="margin-left:8px;background:linear-gradient(135deg,#6B5B35,#8A7440);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(107,91,53,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#5C4A1A,#6B5B35)'" onmouseout="this.style.background='linear-gradient(135deg,#6B5B35,#8A7440)'">⚡ May 2026 — Eid Performance</button>
     </div>
 
     <!-- DATA STATUS BAR — SALES -->
@@ -8216,6 +8217,529 @@ async function doExportDownload() {
 .exp-pill.active{background:var(--gold-bar);color:#fff;border-color:var(--gold-bar);}
 .exp-pill:disabled{opacity:.4;cursor:not-allowed;}
 </style>
+
+<!-- ═══════════════════════════════════════════════════════
+     EID PERFORMANCE PANEL
+════════════════════════════════════════════════════════ -->
+<div id="eidPerfPanel" style="display:none;position:fixed;inset:0;background:#F5F2EC;z-index:950;overflow-y:auto;font-family:'Montserrat',sans-serif;">
+  <!-- Top Bar -->
+  <div style="background:#6B5B35;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;box-shadow:0 2px 12px rgba(0,0,0,.25);">
+    <div style="display:flex;align-items:center;gap:20px;">
+      <button onclick="closeEidPerf()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">✕</button>
+      <div>
+        <div style="font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);font-weight:700;font-family:'Montserrat',sans-serif;">Emirates Pride · Sales Performance Report</div>
+        <div style="font-size:16px;font-weight:700;color:#fff;letter-spacing:.04em;font-family:'Montserrat',sans-serif;">MAY 2026 — EID AL-ADHA PERFORMANCE</div>
+      </div>
+    </div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:13px;color:rgba(255,255,255,.50);letter-spacing:.08em;text-align:right;">
+      <div>EID AL-ADHA 2026</div>
+      <div style="font-size:11px;">7 MAY – 7 JUNE</div>
+    </div>
+  </div>
+  <div id="eidPerfContent" style="max-width:1440px;margin:0 auto;padding:32px 24px;">
+    <div style="text-align:center;padding:80px 0;color:#8A8278;font-size:13px;letter-spacing:.08em;">Loading performance data…</div>
+  </div>
+</div>
+
+<!-- Store Drill-Down Side Panel -->
+<div id="eidStoreDrillPanel" style="display:none;position:fixed;right:0;top:0;bottom:0;width:520px;max-width:100vw;background:#fff;z-index:960;overflow-y:auto;box-shadow:-8px 0 40px rgba(0,0,0,.18);font-family:'Montserrat',sans-serif;">
+  <div id="eidDrillContent"></div>
+</div>
+<div id="eidDrillOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:955;" onclick="closeEidStoreDrill()"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// EID PERFORMANCE DASHBOARD
+// ══════════════════════════════════════════════════════════
+
+const EID_REGION_NAMES = { EPP:'EPP UAE', ASL:'ASL UAE', OMAN:'Oman', KSA:'KSA' };
+const EID_REGION_COLORS = { EPP:'#1a3a5c', ASL:'#5c1a5c', OMAN:'#1a5c3a', KSA:'#7a3a0a' };
+let _eidStoreMetrics = [], _eidRegionData = {}, _eidGrandData = {};
+let _eidTopSkus = [], _eidWinnerSkus = [], _eidSkuApr26 = {};
+let _eidCurrentSort = 'may26';
+
+function openEidPerf() {
+  document.getElementById('eidPerfPanel').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  renderEidPerf();
+}
+function closeEidPerf() {
+  document.getElementById('eidPerfPanel').style.display = 'none';
+  closeEidStoreDrill();
+  document.body.style.overflow = '';
+}
+function closeEidStoreDrill() {
+  document.getElementById('eidStoreDrillPanel').style.display = 'none';
+  document.getElementById('eidDrillOverlay').style.display = 'none';
+}
+
+function _eidSumStoreMonth(code, my) {
+  let s = 0;
+  for (const r of salesData) { if (r.store_code === code && r.month_year === my) s += (r.qty_sold||0); }
+  return s;
+}
+
+function _eidMiniTrend(code) {
+  const months = ['2025-12','2026-01','2026-02','2026-03','2026-04','2026-05'];
+  const vals = months.map(m => _eidSumStoreMonth(code, m));
+  const mx = Math.max(...vals, 1);
+  return vals.map((v, i) => {
+    const h = Math.max(3, Math.round((v / mx) * 38));
+    const isLast = i === 5;
+    const clr = isLast ? '#C9A84C' : '#C2B8A0';
+    return '<div style="width:7px;height:'+h+'px;background:'+clr+';border-radius:2px 2px 0 0;align-self:flex-end;" title="'+months[i]+': '+v+'"></div>';
+  }).join('');
+}
+
+function _eidLargeTrend(code) {
+  const months = ['2025-10','2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05'];
+  const labels = ['Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'];
+  const vals = months.map(m => _eidSumStoreMonth(code, m));
+  const mx = Math.max(...vals, 1);
+  return months.map((m, i) => {
+    const h = Math.max(4, Math.round((vals[i] / mx) * 80));
+    const isLast = i === 7;
+    const clr = isLast ? '#C9A84C' : '#D4C8A8';
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">'
+      + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:12px;color:#4A4540;">' + vals[i].toLocaleString() + '</div>'
+      + '<div style="width:100%;height:' + h + 'px;background:' + clr + ';border-radius:3px 3px 0 0;align-self:flex-end;margin-top:auto;"></div>'
+      + '<div style="font-size:8px;font-weight:700;letter-spacing:.06em;color:' + (isLast?'#6B5B35':'#8A8278') + ';text-transform:uppercase;">' + labels[i] + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function _eidPctTag(v, small) {
+  if (v === null || v === undefined) return '<span style="color:#aaa;font-size:'+(small?'10':'12')+'px;">N/A</span>';
+  const clr = v > 5 ? '#1A7A3C' : v < -5 ? '#C0392B' : '#7A6525';
+  const bg  = v > 5 ? '#E8F5ED' : v < -5 ? '#FEECEC' : '#FFF8E6';
+  const arr = v > 0 ? '▲' : v < 0 ? '▼' : '—';
+  const fs  = small ? 10 : 13;
+  return '<span style="background:'+bg+';color:'+clr+';font-size:'+fs+'px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;">'+arr+' '+Math.abs(v).toFixed(1)+'%</span>';
+}
+
+function renderEidPerf() {
+  if (!salesLoaded || !salesData.length) {
+    document.getElementById('eidPerfContent').innerHTML = '<div style="text-align:center;padding:80px;color:#C0392B;font-size:13px;">Sales data not yet loaded. Please close this panel, wait for the Sales tab to finish loading, then try again.</div>';
+    return;
+  }
+
+  const MAY26 = '2026-05', APR26 = '2026-04', MAY25 = '2025-05';
+  const BASE_MONTHS = ['2026-01','2026-02','2026-03','2026-04'];
+
+  // All stores with May 2026 data
+  const storesWithMay = [...new Set(salesData.filter(r => r.month_year === MAY26 && (r.qty_sold||0) > 0).map(r => r.store_code))];
+
+  _eidStoreMetrics = storesWithMay.map(code => {
+    const may26 = _eidSumStoreMonth(code, MAY26);
+    const apr26 = _eidSumStoreMonth(code, APR26);
+    const may25 = _eidSumStoreMonth(code, MAY25);
+    const baseSum = BASE_MONTHS.reduce((s,m) => s + _eidSumStoreMonth(code,m), 0);
+    const baseAvg = baseSum / BASE_MONTHS.length;
+    const si = getStore(code);
+    return {
+      code, name:si.name, region:si.region, city:si.city||'—',
+      may26, apr26, may25, baseAvg,
+      momPct: apr26 > 0 ? (may26-apr26)/apr26*100 : null,
+      yoyPct: may25 > 0 ? (may26-may25)/may25*100 : null,
+      upliftPct: baseAvg > 0 ? (may26-baseAvg)/baseAvg*100 : null
+    };
+  });
+  _eidStoreMetrics.sort((a,b) => b.may26 - a.may26);
+  _eidCurrentSort = 'may26';
+
+  // Regional totals
+  ['EPP','ASL','OMAN','KSA'].forEach(reg => {
+    const ss = _eidStoreMetrics.filter(s => s.region === reg);
+    const m26 = ss.reduce((s,x)=>s+x.may26,0);
+    const a26 = ss.reduce((s,x)=>s+x.apr26,0);
+    const m25 = ss.reduce((s,x)=>s+x.may25,0);
+    const ba  = ss.reduce((s,x)=>s+x.baseAvg,0);
+    _eidRegionData[reg] = { may26:m26, apr26:a26, may25:m25, baseAvg:ba,
+      momPct: a26>0?(m26-a26)/a26*100:null,
+      yoyPct: m25>0?(m26-m25)/m25*100:null,
+      upliftPct: ba>0?(m26-ba)/ba*100:null,
+      storeCount:ss.length };
+  });
+
+  // Grand totals
+  const gm26 = _eidStoreMetrics.reduce((s,x)=>s+x.may26,0);
+  const ga26 = _eidStoreMetrics.reduce((s,x)=>s+x.apr26,0);
+  const gm25 = _eidStoreMetrics.reduce((s,x)=>s+x.may25,0);
+  const gba  = _eidStoreMetrics.reduce((s,x)=>s+x.baseAvg,0);
+  _eidGrandData = { may26:gm26, apr26:ga26, may25:gm25, baseAvg:gba,
+    momPct: ga26>0?(gm26-ga26)/ga26*100:null,
+    yoyPct: gm25>0?(gm26-gm25)/gm25*100:null,
+    upliftPct: gba>0?(gm26-gba)/gba*100:null };
+
+  // SKU aggregates
+  const skuMay = {}, skuApr = {};
+  salesData.forEach(r => {
+    if (!(r.qty_sold>0)) return;
+    if (r.month_year===MAY26) skuMay[r.sku_code]=(skuMay[r.sku_code]||0)+r.qty_sold;
+    if (r.month_year===APR26) skuApr[r.sku_code]=(skuApr[r.sku_code]||0)+r.qty_sold;
+  });
+  _eidSkuApr26 = skuApr;
+  _eidTopSkus = Object.entries(skuMay).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  _eidWinnerSkus = Object.entries(skuMay)
+    .filter(([c])=>skuApr[c]>0)
+    .map(([c,q])=>({code:c,qty:q,momPct:(q-skuApr[c])/skuApr[c]*100}))
+    .sort((a,b)=>b.momPct-a.momPct).slice(0,10);
+
+  _eidRenderFull();
+}
+
+function _eidRenderFull() {
+  const g = _eidGrandData;
+  const storeMetrics = _eidStoreMetrics;
+
+  // Hero section
+  const momClr = (g.momPct||0)>0?'#7FD99B':'#F78C8C';
+  const yoyClr = (g.yoyPct||0)>0?'#7FD99B':'#F78C8C';
+  const uplClr = (g.upliftPct||0)>0?'#7FD99B':'#F78C8C';
+
+  let regionPills = ['EPP','ASL','OMAN','KSA'].map(reg => {
+    const d = _eidRegionData[reg];
+    const mc = (d.momPct||0)>0?'#7FD99B':'#F78C8C';
+    return '<div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.20);border-radius:10px;padding:12px 20px;display:flex;align-items:center;gap:14px;">'
+      +'<div><div style="font-size:9px;letter-spacing:.12em;color:rgba(255,255,255,.50);text-transform:uppercase;font-weight:700;">'+EID_REGION_NAMES[reg]+'</div>'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:600;line-height:1.1;color:#fff;">'+d.may26.toLocaleString()+'</div></div>'
+      +'<div style="font-size:11px;font-weight:700;color:'+mc+';">'+(d.momPct!==null?(d.momPct>0?'▲':'▼')+Math.abs(d.momPct).toFixed(0)+'%':'—')+'<div style="font-size:8px;font-weight:400;color:rgba(255,255,255,.40);letter-spacing:.06em;">MoM</div></div>'
+      +'</div>';
+  }).join('');
+
+  let regCards = ['EPP','ASL','OMAN','KSA'].map(reg => {
+    const d = _eidRegionData[reg];
+    const top = storeMetrics.filter(s=>s.region===reg).sort((a,b)=>b.may26-a.may26)[0];
+    return '<div style="background:#fff;border:1.5px solid #E5E0D8;border-radius:14px;padding:28px;box-shadow:0 2px 10px rgba(0,0,0,.04);">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;">'
+      +'<div><div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:'+EID_REGION_COLORS[reg]+';margin-bottom:2px;">'+EID_REGION_NAMES[reg]+'</div>'
+      +'<div style="font-size:11px;color:#8A8278;">'+d.storeCount+' stores</div></div>'
+      +'<div style="text-align:right;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:38px;font-weight:600;line-height:1;color:#1A1A1A;">'+d.may26.toLocaleString()+'</div>'
+      +'<div style="font-size:9px;color:#8A8278;letter-spacing:.08em;text-transform:uppercase;">units sold</div></div></div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px;">'
+      +['momPct','yoyPct','upliftPct'].map((k,i)=>{
+        const labels=['vs Apr','vs May \'25','Eid Uplift'];
+        const v = d[k];
+        const clr = v===null?'#aaa':v>5?'#1A7A3C':v<-5?'#C0392B':'#7A6525';
+        const bg  = v===null?'#F8F8F6':v>5?'#E8F5ED':v<-5?'#FEECEC':'#FFF8E6';
+        return '<div style="background:'+bg+';border-radius:8px;padding:10px 8px;text-align:center;">'
+          +'<div style="font-size:8px;color:#8A8278;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">'+labels[i]+'</div>'
+          +'<div style="font-size:14px;font-weight:700;color:'+clr+';">'+(v!==null?(v>0?'▲':'▼')+Math.abs(v).toFixed(1)+'%':'—')+'</div></div>';
+      }).join('')
+      +'</div>'
+      +(top?'<div style="font-size:11px;color:#4A4540;border-top:1px solid #F0EDE8;padding-top:12px;cursor:pointer;" onclick="openEidStoreDrill(\''+top.code+'\')">'
+        +'⭐ <strong>'+top.name+'</strong> — '+top.may26.toLocaleString()+' units <span style="color:#8A8278;font-size:10px;"> click to drill down →</span></div>':'')
+      +'</div>';
+  }).join('');
+
+  // Store table rows
+  let trows = _eidStoreRows();
+
+  // Top SKUs
+  let topSkuRows = _eidTopSkus.map(([code,qty],i) => {
+    const apr = _eidSkuApr26[code]||0;
+    const mp  = apr>0?(qty-apr)/apr*100:null;
+    const mxQ = _eidTopSkus[0][1];
+    const bw  = Math.round(qty/mxQ*100);
+    const mpClr = mp===null?'#aaa':mp>0?'#1A7A3C':'#C0392B';
+    return '<div style="margin-bottom:13px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#8A8278;width:18px;">'+String(i+1).padStart(2,'0')+'</span>'
+      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#7A6525;font-weight:600;">'+code+'</span>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;">'
+      +(mp!==null?'<span style="font-size:10px;font-weight:700;color:'+mpClr+';">'+(mp>0?'▲':'▼')+Math.abs(mp).toFixed(0)+'%</span>':'')
+      +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:17px;font-weight:600;color:#1A1A1A;">'+qty.toLocaleString()+'</span>'
+      +'</div></div>'
+      +'<div style="height:3px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
+      +'<div style="width:'+bw+'%;height:100%;background:linear-gradient(90deg,#C9A84C,#6B5B35);border-radius:2px;"></div></div>'
+      +'</div>';
+  }).join('');
+
+  let winnerSkuRows = _eidWinnerSkus.map((s,i) => {
+    const mxP = _eidWinnerSkus[0].momPct;
+    const bw  = Math.round(s.momPct/mxP*100);
+    return '<div style="margin-bottom:13px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#8A8278;width:18px;">'+String(i+1).padStart(2,'0')+'</span>'
+      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#7A6525;font-weight:600;">'+s.code+'</span>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;">'
+      +'<span style="font-size:10px;font-weight:700;color:#1A7A3C;">▲ '+s.momPct.toFixed(0)+'%</span>'
+      +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:17px;font-weight:600;color:#1A1A1A;">'+s.qty.toLocaleString()+'</span>'
+      +'</div></div>'
+      +'<div style="height:3px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
+      +'<div style="width:'+bw+'%;height:100%;background:linear-gradient(90deg,#7FD99B,#1A7A3C);border-radius:2px;"></div></div>'
+      +'</div>';
+  }).join('');
+
+  // Eid winners and underperformers
+  const winners = storeMetrics.filter(s=>s.momPct!==null).sort((a,b)=>b.momPct-a.momPct).slice(0,8);
+  const decliners = storeMetrics.filter(s=>s.momPct!==null&&s.momPct<0).sort((a,b)=>a.momPct-b.momPct);
+
+  let winnerRows = winners.map((s,i) => {
+    const bw = Math.round(Math.min(100,Math.max(4,(s.momPct+30)/180*100)));
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:11px;cursor:pointer;padding:6px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background=\'#FFF8E6\'" onmouseout="this.style.background=\'\'" onclick="openEidStoreDrill(\''+s.code+'\')">'
+      +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#8A8278;width:20px;text-align:right;flex-shrink:0;">'+String(i+1)+'</div>'
+      +'<div style="flex:1;min-width:0;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">'
+      +'<div style="font-size:11px;font-weight:600;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+s.name+'</div>'
+      +'<div style="font-size:12px;font-weight:700;color:#1A7A3C;margin-left:8px;flex-shrink:0;">▲ '+s.momPct.toFixed(1)+'%</div></div>'
+      +'<div style="height:4px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
+      +'<div style="width:'+bw+'%;height:100%;background:linear-gradient(90deg,#C9A84C,#6B5B35);border-radius:2px;"></div></div></div>'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:15px;font-weight:600;color:#1A1A1A;flex-shrink:0;min-width:52px;text-align:right;">'+s.may26.toLocaleString()+'</div>'
+      +'</div>';
+  }).join('');
+
+  let declinerRows = decliners.length
+    ? decliners.slice(0,8).map((s,i) => {
+        const bw = Math.round(Math.min(100,Math.abs(s.momPct)/60*100));
+        return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:11px;cursor:pointer;padding:6px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background=\'#FFF5F5\'" onmouseout="this.style.background=\'\'" onclick="openEidStoreDrill(\''+s.code+'\')">'
+          +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#8A8278;width:20px;text-align:right;flex-shrink:0;">'+String(i+1)+'</div>'
+          +'<div style="flex:1;min-width:0;">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">'
+          +'<div style="font-size:11px;font-weight:600;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+s.name+'</div>'
+          +'<div style="font-size:12px;font-weight:700;color:#C0392B;margin-left:8px;flex-shrink:0;">▼ '+Math.abs(s.momPct).toFixed(1)+'%</div></div>'
+          +'<div style="height:4px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
+          +'<div style="width:'+bw+'%;height:100%;background:#F28B82;border-radius:2px;"></div></div></div>'
+          +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:15px;font-weight:600;color:#1A1A1A;flex-shrink:0;min-width:52px;text-align:right;">'+s.may26.toLocaleString()+'</div>'
+          +'</div>';
+      }).join('')
+    : '<div style="padding:20px;text-align:center;font-size:12px;color:#1A7A3C;background:#E8F5ED;border-radius:8px;">✅ All stores grew vs April 2026</div>';
+
+  const sortBtnStyle = (k) => {
+    const active = _eidCurrentSort===k;
+    return 'font-family:\'Montserrat\',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;border:1.5px solid '+(active?'#6B5B35':'#E5E0D8')+';background:'+(active?'#6B5B35':'#fff')+';color:'+(active?'#fff':'#4A4540')+';border-radius:4px;cursor:pointer;transition:all .15s;';
+  };
+
+  document.getElementById('eidPerfContent').innerHTML =
+
+  // ── HERO ──
+  '<div style="background:linear-gradient(135deg,#6B5B35 0%,#8A7440 60%,#5C4A1A 100%);border-radius:18px;padding:44px;margin-bottom:28px;color:#fff;position:relative;overflow:hidden;">'
+  +'<div style="position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(201,168,76,.20) 0%,transparent 70%);pointer-events:none;"></div>'
+  +'<div style="position:absolute;bottom:-40px;left:40%;width:250px;height:250px;background:radial-gradient(circle,rgba(201,168,76,.10) 0%,transparent 70%);pointer-events:none;"></div>'
+  +'<div style="font-size:9px;letter-spacing:.22em;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.50);margin-bottom:10px;">All Regions Combined · Eid Al-Adha 2026</div>'
+  +'<div style="display:flex;align-items:flex-end;gap:48px;flex-wrap:wrap;margin-bottom:32px;">'
+  +'<div>'
+  +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:80px;font-weight:600;line-height:.95;letter-spacing:-.02em;">'+g.may26.toLocaleString()+'</div>'
+  +'<div style="font-size:11px;letter-spacing:.14em;color:rgba(255,255,255,.65);text-transform:uppercase;margin-top:6px;">Units Sold — May 2026</div>'
+  +'</div>'
+  +'<div style="display:flex;gap:16px;flex-wrap:wrap;padding-bottom:6px;">'
+  +'<div style="background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:18px 24px;min-width:140px;">'
+  +'<div style="font-size:8px;letter-spacing:.16em;color:rgba(255,255,255,.50);text-transform:uppercase;margin-bottom:6px;font-weight:700;">vs April 2026</div>'
+  +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:30px;font-weight:600;color:'+momClr+';">'+(g.momPct!==null?(g.momPct>0?'▲':'▼')+Math.abs(g.momPct).toFixed(1)+'%':'N/A')+'</div>'
+  +'<div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:3px;">'+(g.apr26>0?'Apr: '+g.apr26.toLocaleString()+' units':'No prior data')+'</div>'
+  +'</div>'
+  +'<div style="background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:18px 24px;min-width:140px;">'
+  +'<div style="font-size:8px;letter-spacing:.16em;color:rgba(255,255,255,.50);text-transform:uppercase;margin-bottom:6px;font-weight:700;">vs May 2025</div>'
+  +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:30px;font-weight:600;color:'+yoyClr+';">'+(g.yoyPct!==null?(g.yoyPct>0?'▲':'▼')+Math.abs(g.yoyPct).toFixed(1)+'%':'N/A')+'</div>'
+  +'<div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:3px;">'+(g.may25>0?'May \'25: '+g.may25.toLocaleString()+' units':'No LY data')+'</div>'
+  +'</div>'
+  +'<div style="background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:18px 24px;min-width:140px;">'
+  +'<div style="font-size:8px;letter-spacing:.16em;color:rgba(255,255,255,.50);text-transform:uppercase;margin-bottom:6px;font-weight:700;">Eid Uplift</div>'
+  +'<div style="font-size:8px;color:rgba(255,255,255,.40);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;">vs Jan–Apr 2026 avg</div>'
+  +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:30px;font-weight:600;color:'+uplClr+';">'+(g.upliftPct!==null?(g.upliftPct>0?'▲':'▼')+Math.abs(g.upliftPct).toFixed(1)+'%':'N/A')+'</div>'
+  +'<div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:3px;">Baseline avg: '+Math.round(g.baseAvg).toLocaleString()+' units/mo</div>'
+  +'</div>'
+  +'</div></div>'
+  +'<div style="display:flex;gap:12px;flex-wrap:wrap;">'+regionPills+'</div>'
+  +'</div>'
+
+  // ── REGION CARDS ──
+  +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px;margin-bottom:28px;">'
+  +regCards
+  +'</div>'
+
+  // ── STORE LEADERBOARD ──
+  +'<div style="background:#fff;border:1.5px solid #E5E0D8;border-radius:14px;margin-bottom:28px;">'
+  +'<div style="padding:22px 28px;border-bottom:1px solid #F0EDE8;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">'
+  +'<div><div style="font-size:14px;font-weight:700;color:#1A1A1A;letter-spacing:.02em;">All Store Performance — May 2026</div>'
+  +'<div style="font-size:11px;color:#8A8278;margin-top:3px;">'+storeMetrics.length+' stores · Click any row for SKU drill-down</div></div>'
+  +'<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+  +'<button onclick="sortEidTable(\'may26\')" id="eid-sort-may26" style="'+sortBtnStyle('may26')+'">↓ May Units</button>'
+  +'<button onclick="sortEidTable(\'momPct\')" id="eid-sort-momPct" style="'+sortBtnStyle('momPct')+'">▲ MoM</button>'
+  +'<button onclick="sortEidTable(\'yoyPct\')" id="eid-sort-yoyPct" style="'+sortBtnStyle('yoyPct')+'">▲ YoY</button>'
+  +'<button onclick="sortEidTable(\'upliftPct\')" id="eid-sort-upliftPct" style="'+sortBtnStyle('upliftPct')+'">⚡ Eid Uplift</button>'
+  +'</div></div>'
+  +'<div style="overflow-x:auto;">'
+  +'<table style="width:100%;border-collapse:collapse;" id="eidStoreTable">'
+  +'<thead><tr style="background:#F5F2EC;">'
+  +['#','Store','Region','May 2026','Apr 2026','vs Apr (MoM)','vs May \'25 (YoY)','Eid Uplift','6-Month Trend'].map(h =>
+    '<th style="padding:10px 16px;text-align:'+(h==='May 2026'||h==='Apr 2026'?'right':'left')+';font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A8278;border-bottom:1px solid #E5E0D8;white-space:nowrap;">'+h+'</th>'
+  ).join('')
+  +'</tr></thead>'
+  +'<tbody id="eidStoreTbody">'+trows+'</tbody>'
+  +'</table></div></div>'
+
+  // ── WINNERS & UNDERPERFORMERS ──
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">'
+  +'<div style="background:#fff;border:1.5px solid #E5E0D8;border-radius:14px;padding:28px;">'
+  +'<div style="font-size:13px;font-weight:700;color:#1A1A1A;margin-bottom:4px;">🏆 Eid Winners — Biggest MoM Surge</div>'
+  +'<div style="font-size:10px;color:#8A8278;margin-bottom:20px;">Stores with highest growth vs April 2026</div>'
+  +winnerRows
+  +'</div>'
+  +'<div style="background:#fff;border:1.5px solid #E5E0D8;border-radius:14px;padding:28px;">'
+  +'<div style="font-size:13px;font-weight:700;color:#1A1A1A;margin-bottom:4px;">⚠️ Needs Attention — MoM Decline</div>'
+  +'<div style="font-size:10px;color:#8A8278;margin-bottom:20px;">Stores that declined vs April 2026</div>'
+  +declinerRows
+  +'</div></div>'
+
+  // ── SKU INTELLIGENCE ──
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">'
+  +'<div style="background:#fff;border:1.5px solid #E5E0D8;border-radius:14px;padding:28px;">'
+  +'<div style="font-size:13px;font-weight:700;color:#1A1A1A;margin-bottom:4px;">📦 Top 10 SKUs — May 2026 Volume</div>'
+  +'<div style="font-size:10px;color:#8A8278;margin-bottom:20px;">Nationwide best sellers across all regions</div>'
+  +topSkuRows
+  +'</div>'
+  +'<div style="background:#fff;border:1.5px solid #E5E0D8;border-radius:14px;padding:28px;">'
+  +'<div style="font-size:13px;font-weight:700;color:#1A1A1A;margin-bottom:4px;">⚡ Eid SKU Movers — Biggest MoM Lift</div>'
+  +'<div style="font-size:10px;color:#8A8278;margin-bottom:20px;">SKUs that spiked the most vs April 2026</div>'
+  +winnerSkuRows
+  +'</div></div>'
+
+  // ── FOOTER ──
+  +'<div style="text-align:center;padding:28px;color:#8A8278;font-size:9px;letter-spacing:.12em;text-transform:uppercase;border-top:1px solid #E5E0D8;">'
+  +'Emirates Pride · Eid Al-Adha 2026 Performance Report · '
+  +'Generated '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}).toUpperCase()
+  +' · Data: Supabase Live'
+  +'</div>';
+}
+
+function _eidStoreRows() {
+  const regionNames = EID_REGION_NAMES;
+  const regionColors = EID_REGION_COLORS;
+  return _eidStoreMetrics.map((s, i) => {
+    const bg = i%2===0?'#fff':'#FAFAF8';
+    const mc = s.momPct===null?'#aaa':s.momPct>5?'#1A7A3C':s.momPct<-5?'#C0392B':'#7A6525';
+    const yc = s.yoyPct===null?'#aaa':s.yoyPct>5?'#1A7A3C':s.yoyPct<-5?'#C0392B':'#7A6525';
+    const uc = s.upliftPct===null?'#aaa':s.upliftPct>10?'#1A7A3C':s.upliftPct<0?'#C0392B':'#7A6525';
+    const ubg= s.upliftPct===null?'#F5F2EC':s.upliftPct>10?'#E8F5ED':s.upliftPct<0?'#FEECEC':'#FFF8E6';
+    const trend = _eidMiniTrend(s.code);
+    return '<tr style="background:'+bg+';cursor:pointer;transition:background .1s;" '
+      +'onmouseover="this.style.background=\'#FFF8E6\'" '
+      +'onmouseout="this.style.background=\''+bg+'\'" '
+      +'onclick="openEidStoreDrill(\''+s.code+'\')">'
+      +'<td style="padding:13px 16px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#8A8278;">'+String(i+1).padStart(2,'0')+'</td>'
+      +'<td style="padding:13px 16px;"><div style="font-size:12px;font-weight:600;color:#1A1A1A;">'+s.name+'</div>'
+      +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#7A6525;margin-top:1px;">'+s.code+'</div></td>'
+      +'<td style="padding:13px 16px;"><span style="background:'+(regionColors[s.region]||'#333')+';color:#fff;font-size:8px;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:3px;text-transform:uppercase;">'+(s.region==='OMAN'?'Oman':regionNames[s.region]||s.region)+'</span></td>'
+      +'<td style="padding:13px 16px;text-align:right;font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:600;color:#1A1A1A;">'+s.may26.toLocaleString()+'</td>'
+      +'<td style="padding:13px 16px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#8A8278;">'+(s.apr26>0?s.apr26.toLocaleString():'—')+'</td>'
+      +'<td style="padding:13px 16px;text-align:center;font-size:12px;font-weight:700;color:'+mc+';">'+(s.momPct!==null?(s.momPct>0?'▲':'▼')+Math.abs(s.momPct).toFixed(1)+'%':'—')+'</td>'
+      +'<td style="padding:13px 16px;text-align:center;font-size:12px;font-weight:700;color:'+yc+';">'+(s.yoyPct!==null?(s.yoyPct>0?'▲':'▼')+Math.abs(s.yoyPct).toFixed(1)+'%':'—')+'</td>'
+      +'<td style="padding:13px 16px;text-align:center;"><span style="background:'+ubg+';color:'+uc+';font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;">'+(s.upliftPct!==null?(s.upliftPct>0?'+':'')+s.upliftPct.toFixed(1)+'%':'—')+'</span></td>'
+      +'<td style="padding:13px 16px;"><div style="display:flex;align-items:flex-end;gap:2px;height:42px;">'+trend+'</div></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function sortEidTable(by) {
+  _eidCurrentSort = by;
+  _eidStoreMetrics.sort((a,b) => {
+    const av = a[by]===null?-Infinity:a[by];
+    const bv = b[by]===null?-Infinity:b[by];
+    return bv - av;
+  });
+  const tb = document.getElementById('eidStoreTbody');
+  if (tb) tb.innerHTML = _eidStoreRows();
+  // Update sort button styles
+  ['may26','momPct','yoyPct','upliftPct'].forEach(k => {
+    const btn = document.getElementById('eid-sort-'+k);
+    if (!btn) return;
+    const active = k===by;
+    btn.style.background = active?'#6B5B35':'#fff';
+    btn.style.color = active?'#fff':'#4A4540';
+    btn.style.borderColor = active?'#6B5B35':'#E5E0D8';
+  });
+}
+
+function openEidStoreDrill(code) {
+  const s = _eidStoreMetrics.find(x => x.code === code);
+  if (!s) return;
+
+  // Top 10 SKUs for this store in May 2026
+  const skuMay = {}, skuApr = {};
+  salesData.forEach(r => {
+    if (r.store_code !== code || !(r.qty_sold>0)) return;
+    if (r.month_year==='2026-05') skuMay[r.sku_code]=(skuMay[r.sku_code]||0)+r.qty_sold;
+    if (r.month_year==='2026-04') skuApr[r.sku_code]=(skuApr[r.sku_code]||0)+r.qty_sold;
+  });
+  const top10 = Object.entries(skuMay).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const mxQ   = top10.length?top10[0][1]:1;
+
+  const skuRows = top10.map(([c,q],i) => {
+    const a   = skuApr[c]||0;
+    const mp  = a>0?(q-a)/a*100:null;
+    const bw  = Math.round(q/mxQ*100);
+    const mc  = mp===null?'#8A8278':mp>0?'#1A7A3C':'#C0392B';
+    return '<div style="margin-bottom:14px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#8A8278;width:18px;">'+String(i+1).padStart(2,'0')+'</span>'
+      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#7A6525;font-weight:600;">'+c+'</span>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +(mp!==null?'<span style="font-size:10px;font-weight:700;color:'+mc+';">'+(mp>0?'▲':'▼')+Math.abs(mp).toFixed(0)+'%</span>':'')
+      +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-weight:600;color:#1A1A1A;">'+q.toLocaleString()+'</span>'
+      +'</div></div>'
+      +'<div style="height:4px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
+      +'<div style="width:'+bw+'%;height:100%;background:linear-gradient(90deg,#C9A84C,#6B5B35);border-radius:2px;"></div></div>'
+      +'</div>';
+  }).join('') || '<div style="color:#8A8278;font-size:12px;padding:20px 0;text-align:center;">No SKU data for this store in May 2026</div>';
+
+  const regionColors = EID_REGION_COLORS;
+  const momClr = s.momPct===null?'#8A8278':s.momPct>0?'#1A7A3C':'#C0392B';
+  const yoyClr = s.yoyPct===null?'#8A8278':s.yoyPct>0?'#1A7A3C':'#C0392B';
+  const uplClr = s.upliftPct===null?'#8A8278':s.upliftPct>0?'#1A7A3C':'#C0392B';
+
+  document.getElementById('eidDrillContent').innerHTML =
+    '<div style="background:#6B5B35;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">'
+    +'<div><div style="font-size:9px;letter-spacing:.16em;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:700;margin-bottom:3px;">Store Drill-Down · May 2026</div>'
+    +'<div style="font-size:15px;font-weight:700;color:#fff;">'+s.name+'</div>'
+    +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">'+s.code+' · '+s.city+'</div>'
+    +'</div>'
+    +'<button onclick="closeEidStoreDrill()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;">✕</button>'
+    +'</div>'
+    +'<div style="padding:24px;">'
+    // KPI tiles
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px;">'
+    +'<div style="background:#F5F2EC;border-radius:10px;padding:16px;text-align:center;">'
+    +'<div style="font-size:9px;letter-spacing:.12em;color:#8A8278;text-transform:uppercase;margin-bottom:6px;">May 2026</div>'
+    +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:32px;font-weight:600;color:#1A1A1A;">'+s.may26.toLocaleString()+'</div>'
+    +'<div style="font-size:9px;color:#8A8278;letter-spacing:.06em;text-transform:uppercase;">units</div>'
+    +'</div>'
+    +'<div style="background:'+(s.momPct!==null&&s.momPct>0?'#E8F5ED':s.momPct!==null&&s.momPct<0?'#FEECEC':'#F5F2EC')+';border-radius:10px;padding:16px;text-align:center;">'
+    +'<div style="font-size:9px;letter-spacing:.12em;color:#8A8278;text-transform:uppercase;margin-bottom:6px;">vs Apr (MoM)</div>'
+    +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:32px;font-weight:600;color:'+momClr+';">'+(s.momPct!==null?(s.momPct>0?'▲':'▼')+Math.abs(s.momPct).toFixed(1)+'%':'N/A')+'</div>'
+    +'<div style="font-size:9px;color:#8A8278;">Apr: '+s.apr26.toLocaleString()+'</div>'
+    +'</div>'
+    +'<div style="background:'+(s.upliftPct!==null&&s.upliftPct>0?'#FFF8E6':'#F5F2EC')+';border-radius:10px;padding:16px;text-align:center;">'
+    +'<div style="font-size:9px;letter-spacing:.12em;color:#8A8278;text-transform:uppercase;margin-bottom:6px;">Eid Uplift</div>'
+    +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:32px;font-weight:600;color:'+uplClr+';">'+(s.upliftPct!==null?(s.upliftPct>0?'▲':'▼')+Math.abs(s.upliftPct).toFixed(1)+'%':'N/A')+'</div>'
+    +'<div style="font-size:9px;color:#8A8278;">Baseline: '+Math.round(s.baseAvg)+'/mo</div>'
+    +'</div></div>'
+    // YoY chip
+    +(s.yoyPct!==null?'<div style="background:'+(s.yoyPct>0?'#E8F5ED':'#FEECEC')+';border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;">'
+      +'<span style="font-size:11px;font-weight:600;color:#4A4540;">Year-on-Year vs May 2025</span>'
+      +'<span style="font-size:13px;font-weight:700;color:'+yoyClr+';">'+(s.yoyPct>0?'▲':'▼')+Math.abs(s.yoyPct).toFixed(1)+'% &nbsp;·&nbsp; May \'25: '+s.may25.toLocaleString()+' units</span>'
+      +'</div>':'')
+    // Trend chart
+    +'<div style="margin-bottom:24px;">'
+    +'<div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#4A4540;margin-bottom:14px;">8-Month Sales Trend</div>'
+    +'<div style="display:flex;align-items:flex-end;gap:4px;height:110px;background:#F5F2EC;border-radius:10px;padding:16px;">'+_eidLargeTrend(s.code)+'</div>'
+    +'</div>'
+    // Top SKUs
+    +'<div>'
+    +'<div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#4A4540;margin-bottom:14px;">Top 10 SKUs — May 2026</div>'
+    +skuRows
+    +'</div></div>';
+
+  document.getElementById('eidStoreDrillPanel').style.display = 'block';
+  document.getElementById('eidDrillOverlay').style.display = 'block';
+}
+</script>
 
 </body>
 </html>
