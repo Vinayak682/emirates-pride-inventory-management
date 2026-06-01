@@ -2226,20 +2226,16 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         <table id="consGrid" style="width:100%;border-collapse:collapse;table-layout:fixed;">
           <thead>
             <tr style="background:#F5EDD8;border-bottom:2px solid var(--gold);">
-              <th style="width:220px;min-width:180px;padding:10px 14px;text-align:left;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:9px;color:var(--gold-dark);letter-spacing:1.5px;font-weight:800;">ITEM &nbsp;·&nbsp; <span style="font-family:var(--f-ar);font-weight:400;">الصنف</span></th>
-              <th style="width:90px;text-align:center;padding:8px 6px;border-right:1px solid #D8D4CC;font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:0.8px;background:#E8F4FB;color:#2471A3;border-bottom:2px solid #2471A3;">OPENING<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">الافتتاح</span></th>
+              <th style="padding:10px 14px;text-align:left;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:9px;color:var(--gold-dark);letter-spacing:1.5px;font-weight:800;">ITEM &nbsp;·&nbsp; <span style="font-family:var(--f-ar);font-weight:400;">الصنف</span></th>
               <th style="width:90px;text-align:center;padding:8px 6px;border-right:1px solid #D8D4CC;font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:0.8px;background:#EBF5EB;color:#1A6A40;border-bottom:2px solid #1A6A40;">RECEIVED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">وارد</span></th>
               <th style="width:90px;text-align:center;padding:8px 6px;border-right:1px solid #D8D4CC;font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:0.8px;background:#FEF9E7;color:#7D6608;border-bottom:2px solid #D4AC0D;">USED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">مستخدم</span></th>
               <th style="width:90px;text-align:center;padding:8px 6px;border-right:none;font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:0.8px;background:#F5EDD8;color:var(--gold-dark);border-bottom:2px solid var(--gold);">BALANCE<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">الرصيد</span></th>
             </tr>
           </thead>
-          <tbody id="consGridBody">
-            <!-- Rows injected by refreshConsTable() on login / day change -->
-          </tbody>
+          <tbody id="consGridBody"></tbody>
           <tfoot>
-            <tr id="consTotalsRow" style="background:#F5EDD8;border-top:2px solid var(--gold);">
+            <tr style="background:#F5EDD8;border-top:2px solid var(--gold);">
               <td style="padding:10px 14px;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:10px;font-weight:800;color:var(--gold-dark);letter-spacing:1px;">DAILY TOTALS</td>
-              <td id="cTotO" style="text-align:center;padding:10px 6px;background:#D6EAF8;font-family:var(--f-serif);font-size:18px;font-weight:700;color:#1A5276;">—</td>
               <td id="cTotR" style="text-align:center;padding:10px 6px;background:#D5F5E3;font-family:var(--f-serif);font-size:18px;font-weight:700;color:#1A6A40;">—</td>
               <td id="cTotU" style="text-align:center;padding:10px 6px;background:#FEF9C3;font-family:var(--f-serif);font-size:18px;font-weight:700;color:#7D6608;">—</td>
               <td id="cTotB" style="text-align:center;padding:10px 6px;background:#F5EDD8;font-family:var(--f-serif);font-size:18px;font-weight:700;color:var(--gold-dark);">—</td>
@@ -2285,15 +2281,14 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
   <!-- Instruction strip -->
   <div style="background:#F5F2EC;padding:8px 16px;border-bottom:1px solid #E5E0D8;font-family:var(--f-body);font-size:11px;color:#6B5B35;flex-shrink:0;">
-    Tap any cell to enter a value · Opening + Received − Used = Balance · Data saved per day
+    Tap Received or Used to enter · Balance = Received − Used (minimum 0)
   </div>
   <!-- Table -->
   <div style="flex:1;overflow-y:auto;padding:0;">
     <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
       <thead>
         <tr style="background:#F5EDD8;position:sticky;top:0;z-index:5;">
-          <th style="padding:12px 16px;text-align:left;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:9px;color:var(--gold-dark);letter-spacing:1.5px;font-weight:800;width:200px;">ITEM · <span style="font-family:var(--f-ar);font-weight:400;">الصنف</span></th>
-          <th style="padding:10px 8px;text-align:center;border-right:1px solid #D8D4CC;background:#D6EAF8;font-family:var(--f-body);font-size:10px;font-weight:700;color:#1A5276;letter-spacing:0.5px;">OPENING<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">افتتاح</span></th>
+          <th style="padding:12px 16px;text-align:left;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:9px;color:var(--gold-dark);letter-spacing:1.5px;font-weight:800;">ITEM · <span style="font-family:var(--f-ar);font-weight:400;">الصنف</span></th>
           <th style="padding:10px 8px;text-align:center;border-right:1px solid #D8D4CC;background:#D5F5E3;font-family:var(--f-body);font-size:10px;font-weight:700;color:#1A6A40;letter-spacing:0.5px;">RECEIVED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">وارد</span></th>
           <th style="padding:10px 8px;text-align:center;border-right:1px solid #D8D4CC;background:#FEF9C3;font-family:var(--f-body);font-size:10px;font-weight:700;color:#7D6608;letter-spacing:0.5px;">USED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">مستخدم</span></th>
           <th style="padding:10px 8px;text-align:center;background:#F5EDD8;font-family:var(--f-body);font-size:10px;font-weight:700;color:var(--gold-dark);letter-spacing:0.5px;">BALANCE<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">الرصيد</span></th>
@@ -2303,7 +2298,6 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <tfoot>
         <tr style="background:#F5EDD8;border-top:2px solid var(--gold);">
           <td style="padding:12px 16px;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:10px;font-weight:800;color:var(--gold-dark);letter-spacing:1px;">DAILY TOTALS</td>
-          <td id="spTotO" style="text-align:center;padding:12px 8px;background:#D6EAF8;font-family:var(--f-serif);font-size:22px;font-weight:700;color:#1A5276;">—</td>
           <td id="spTotR" style="text-align:center;padding:12px 8px;background:#D5F5E3;font-family:var(--f-serif);font-size:22px;font-weight:700;color:#1A6A40;">—</td>
           <td id="spTotU" style="text-align:center;padding:12px 8px;background:#FEF9C3;font-family:var(--f-serif);font-size:22px;font-weight:700;color:#7D6608;">—</td>
           <td id="spTotB" style="text-align:center;padding:12px 8px;background:#F5EDD8;font-family:var(--f-serif);font-size:22px;font-weight:700;color:var(--gold-dark);">—</td>
@@ -4801,21 +4795,18 @@ function renderSuppliesPanel() {
   // Supplies are always editable — bags/tissue are not sensitive inventory, never locked
   const canEdit = true;
 
-  let totO=0,totR=0,totU=0,totB=0,anyData=false,rows='';
+  let totR=0,totU=0,totB=0,anyData=false,rows='';
   CONSUMABLES.forEach((item,idx)=>{
-    const o   = suppGet(me.code,curDay,item.code,'open');
     const r   = suppGet(me.code,curDay,item.code,'recv');
     const u   = suppGet(me.code,curDay,item.code,'used');
-    const bal = suppBal(me.code,curDay,item.code);
-    const has = o!==''||r!==''||u!=='';
-    if(has){ anyData=true; totO+=parseInt(o)||0; totR+=parseInt(r)||0; totU+=parseInt(u)||0; totB+=bal; }
-    const balCol = bal<0?'#C0392B':bal<10?'#D68910':'#1A7A40';
+    const bal = Math.max(0, (parseInt(r)||0) - (parseInt(u)||0));
+    const has = r!==''||u!=='';
+    if(has){ anyData=true; totR+=parseInt(r)||0; totU+=parseInt(u)||0; totB+=bal; }
+    const balCol = bal===0&&has ? '#D68910' : bal<10&&has ? '#D68910' : '#1A7A40';
     const bg     = idx%2===0?'#FFFFFF':'#FAFAF8';
-    const cur2   = canEdit?'cursor:pointer;':'cursor:default;opacity:0.75;';
-    const tap    = canEdit?'<div style="font-size:8px;color:#bbb;margin-top:3px;font-family:var(--f-body);">TAP</div>':'';
-    const co = canEdit?`onclick="openSuppNP('${item.code}','open');_spActive=true;"` :'';
-    const cr = canEdit?`onclick="openSuppNP('${item.code}','recv');_spActive=true;"` :'';
-    const cu = canEdit?`onclick="openSuppNP('${item.code}','used');_spActive=true;"` :'';
+    const tap    = '<div style="font-size:8px;color:#bbb;margin-top:3px;font-family:var(--f-body);">TAP</div>';
+    const cr = `onclick="openSuppNP('${item.code}','recv');_spActive=true;"`;
+    const cu = `onclick="openSuppNP('${item.code}','used');_spActive=true;"`;
     rows+=`<tr style="background:${bg};border-bottom:1px solid #EDE8E0;">
       <td style="padding:14px 16px;border-right:2px solid var(--gold);">
         <div style="display:flex;align-items:center;gap:10px;">
@@ -4826,27 +4817,23 @@ function renderSuppliesPanel() {
           </div>
         </div>
       </td>
-      <td style="text-align:center;padding:14px 8px;border-right:1px solid #E8E4DC;background:#EBF5FB;${cur2}" ${co}>
-        <div style="font-family:var(--f-serif);font-size:26px;font-weight:600;color:#2471A3;">${o===''?'—':o}</div>${tap}
-      </td>
-      <td style="text-align:center;padding:14px 8px;border-right:1px solid #E8E4DC;background:#EBF5EB;${cur2}" ${cr}>
+      <td style="text-align:center;padding:14px 8px;border-right:1px solid #E8E4DC;background:#EBF5EB;cursor:pointer;" ${cr}>
         <div style="font-family:var(--f-serif);font-size:26px;font-weight:600;color:#1A6A40;">${r===''?'—':r}</div>${tap}
       </td>
-      <td style="text-align:center;padding:14px 8px;border-right:1px solid #E8E4DC;background:#FEFCE8;${cur2}" ${cu}>
+      <td style="text-align:center;padding:14px 8px;border-right:1px solid #E8E4DC;background:#FEFCE8;cursor:pointer;" ${cu}>
         <div style="font-family:var(--f-serif);font-size:26px;font-weight:600;color:#7D6608;">${u===''?'—':u}</div>${tap}
       </td>
       <td style="text-align:center;padding:14px 8px;background:#F5EDD8;cursor:default;">
-        <div style="font-family:var(--f-serif);font-size:28px;font-weight:700;color:${balCol};">${has?bal:'—'}</div>
+        <div style="font-family:var(--f-serif);font-size:28px;font-weight:700;color:${has?balCol:'var(--ink-light)'};">${has?bal:'—'}</div>
       </td>
     </tr>`;
   });
   tbody.innerHTML = rows;
 
-  const tO=document.getElementById('spTotO'),tR=document.getElementById('spTotR'),tU=document.getElementById('spTotU'),tB=document.getElementById('spTotB');
-  if(tO) tO.textContent=anyData?totO:'—';
+  const tR=document.getElementById('spTotR'),tU=document.getElementById('spTotU'),tB=document.getElementById('spTotB');
   if(tR) tR.textContent=anyData?totR:'—';
   if(tU) tU.textContent=anyData?totU:'—';
-  if(tB){ tB.textContent=anyData?totB:'—'; tB.style.color=totB<0?'#C0392B':totB<10?'#D68910':'var(--gold-dark)'; }
+  if(tB){ tB.textContent=anyData?totB:'—'; tB.style.color=totB===0&&anyData?'#D68910':'var(--gold-dark)'; }
 
   const badge=document.getElementById('suppliesAlertBadge');
   if(badge){ const low=CONSUMABLES.filter(item=>{ const b=suppBal(me.code,curDay,item.code); return suppGet(me.code,curDay,item.code,'open')!==''&&b<10; }).length; badge.style.display=low>0?'inline-block':'none'; badge.textContent=low+' LOW'; }
@@ -14196,21 +14183,16 @@ function refreshConsTable(){
   const canEdit = true;
   const tap     = '<div style="font-size:8px;color:#aaa;margin-top:2px;font-family:var(--f-body);">TAP</div>';
 
-  let totO=0, totR=0, totU=0, totB=0, rows='';
+  let totR=0, totU=0, totB=0, anyData=false, rows='';
 
   CONSUMABLES.forEach((item, idx)=>{
-    const o   = suppGet(me.code, curDay, item.code, 'open');
     const r   = suppGet(me.code, curDay, item.code, 'recv');
     const u   = suppGet(me.code, curDay, item.code, 'used');
-    const bal = suppBal(me.code, curDay, item.code);
-    const hasData = o!=='' || r!=='' || u!=='';
-    const balCol  = bal<0 ? '#C0392B' : bal<10 ? '#D68910' : '#1A7A40';
-    const bg      = idx%2===0 ? '#FFFFFF' : '#FAFAF8';
-    const cur     = canEdit ? 'cursor:pointer;' : 'cursor:default;opacity:0.7;';
-    const clickO  = canEdit ? `onclick="openSuppNP('${item.code}','open')"` : '';
-    const clickR  = canEdit ? `onclick="openSuppNP('${item.code}','recv')"` : '';
-    const clickU  = canEdit ? `onclick="openSuppNP('${item.code}','used')"` : '';
-    if(hasData){ totO+=parseInt(o)||0; totR+=parseInt(r)||0; totU+=parseInt(u)||0; totB+=bal; }
+    const bal = Math.max(0, (parseInt(r)||0) - (parseInt(u)||0));
+    const has = r!=='' || u!=='';
+    if(has){ anyData=true; totR+=parseInt(r)||0; totU+=parseInt(u)||0; totB+=bal; }
+    const balCol = bal===0&&has ? '#D68910' : bal<10&&has ? '#D68910' : '#1A7A40';
+    const bg = idx%2===0 ? '#FFFFFF' : '#FAFAF8';
     rows += `<tr style="background:${bg};border-bottom:1px solid #EDE8E0;">
       <td style="padding:10px 14px;border-right:2px solid var(--gold);">
         <div style="display:flex;align-items:center;gap:8px;">
@@ -14221,34 +14203,28 @@ function refreshConsTable(){
           </div>
         </div>
       </td>
-      <td style="text-align:center;padding:10px 6px;border-right:1px solid #E8E4DC;background:#EBF5FB;${cur}" ${clickO}>
-        <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#2471A3;">${o===''?'—':o}</div>${tap}
-      </td>
-      <td style="text-align:center;padding:10px 6px;border-right:1px solid #E8E4DC;background:#EBF5EB;${cur}" ${clickR}>
+      <td style="text-align:center;padding:10px 6px;border-right:1px solid #E8E4DC;background:#EBF5EB;cursor:pointer;" onclick="openSuppNP('${item.code}','recv')">
         <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#1A6A40;">${r===''?'—':r}</div>${tap}
       </td>
-      <td style="text-align:center;padding:10px 6px;border-right:1px solid #E8E4DC;background:#FEFCE8;${cur}" ${clickU}>
+      <td style="text-align:center;padding:10px 6px;border-right:1px solid #E8E4DC;background:#FEFCE8;cursor:pointer;" onclick="openSuppNP('${item.code}','used')">
         <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#7D6608;">${u===''?'—':u}</div>${tap}
       </td>
       <td style="text-align:center;padding:10px 6px;background:#F5EDD8;cursor:default;">
-        <div style="font-family:var(--f-serif);font-size:20px;font-weight:700;color:${balCol};">${hasData?bal:'—'}</div>
+        <div style="font-family:var(--f-serif);font-size:20px;font-weight:700;color:${has?balCol:'var(--ink-light)'};">${has?bal:'—'}</div>
       </td>
     </tr>`;
   });
 
   tbody.innerHTML = rows;
 
-  // Update totals footer
-  const anyData = CONSUMABLES.some(item => suppGet(me.code,curDay,item.code,'open')!==''||suppGet(me.code,curDay,item.code,'recv')!==''||suppGet(me.code,curDay,item.code,'used')!=='');
-  const tO=document.getElementById('cTotO'), tR=document.getElementById('cTotR'), tU=document.getElementById('cTotU'), tB=document.getElementById('cTotB');
-  if(tO) tO.textContent = anyData ? totO : '—';
+  const tR=document.getElementById('cTotR'), tU=document.getElementById('cTotU'), tB=document.getElementById('cTotB');
   if(tR) tR.textContent = anyData ? totR : '—';
   if(tU) tU.textContent = anyData ? totU : '—';
-  if(tB){ tB.textContent = anyData ? totB : '—'; tB.style.color = totB<0?'#C0392B':totB<10?'#D68910':'var(--gold-dark)'; }
+  if(tB){ tB.textContent = anyData ? totB : '—'; tB.style.color = totB===0&&anyData?'#D68910':'var(--gold-dark)'; }
 
   // Alert badge
   const badge = document.getElementById('consAlertBadge');
-  if(badge){ const low=CONSUMABLES.filter(item=>{ const b=suppBal(me.code,curDay,item.code); return suppGet(me.code,curDay,item.code,'open')!==''&&b<10; }).length; badge.style.display=low>0?'inline-block':'none'; badge.textContent=low+' LOW'; }
+  if(badge){ const low=CONSUMABLES.filter(item=>{ const b=Math.max(0,(parseInt(suppGet(me.code,curDay,item.code,'recv'))||0)-(parseInt(suppGet(me.code,curDay,item.code,'used'))||0)); return suppGet(me.code,curDay,item.code,'recv')!==''&&b<10; }).length; badge.style.display=low>0?'inline-block':'none'; badge.textContent=low+' LOW'; }
 
   if(_pendingScrollSupplies){ _pendingScrollSupplies=false; setTimeout(openSuppliesDirect,80); }
 }
