@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Emirates Pride — Customer Complaint Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -564,9 +567,12 @@ const sb = {
     return h;
   },
   async get(table,params=''){
-    const r=await fetch(`${SB_URL}/rest/v1/${table}${params}`,{headers:this._h('GET')});
+    const h=this._h('GET');
+    h['Accept']='application/json';
+    const r=await fetch(`${SB_URL}/rest/v1/${table}${params}`,{headers:h});
     if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||r.statusText);}
-    return r.json();
+    const d=await r.json();
+    return Array.isArray(d)?d:[];
   },
   async post(table,body){
     const r=await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:this._h('POST'),body:JSON.stringify(body)});
@@ -833,16 +839,23 @@ let allData=[];
 
 async function loadComplaints(){
   document.getElementById('listArea').innerHTML=
-    '<div style="text-align:center;padding:40px;color:var(--ink-light);font-family:var(--f-mono);font-size:12px;">Loading…</div>';
+    '<div style="text-align:center;padding:40px;color:var(--ink-light);font-family:var(--f-mono);font-size:12px;">Loading complaints…</div>';
   try{
-    let p='?order=submitted_at.desc&limit=500';
-    // Office staff and manager both see ALL complaints (staff submit on behalf of all stores)
-    allData=await sb.get('customer_complaints',p)||[];
+    const p='?order=submitted_at.desc&limit=500';
+    allData=await sb.get('customer_complaints',p);
+    if(!Array.isArray(allData)) allData=[];
     updateKPIs();
     applyFilters();
+    if(allData.length===0){
+      document.getElementById('listArea').innerHTML=
+        '<div class="empty-state"><div class="es-icon">📋</div><div class="es-title">No complaints yet</div><div class="es-sub">Submitted complaints will appear here</div></div>';
+    }
   }catch(e){
     document.getElementById('listArea').innerHTML=
-      `<div style="text-align:center;padding:40px;color:#C0392B;font-family:var(--f-mono);font-size:11px;">⚠ ${e.message}</div>`;
+      `<div style="text-align:center;padding:40px;color:#C0392B;font-family:var(--f-mono);font-size:11px;">
+        ⚠ Error loading complaints<br><br><b>${e.message}</b><br><br>
+        <button onclick="loadComplaints()" style="background:#6B5B35;border:none;color:#fff;padding:8px 20px;border-radius:6px;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;">↻ Retry</button>
+      </div>`;
   }
 }
 
