@@ -486,6 +486,65 @@ The S&OP portal is used by Emirates Pride management. Primary responsibilities:
 
 ---
 
+### Session — 1 June 2026 (Session 37 — Customer Complaint Tracker: Full Build + Fixes)
+**Files changed**: `complaint-tracker.html` (new), `complaint_tracker_setup.sql` (new), `stock-register.html` (modified)
+**Commits**: `1361521`, `5648d7e`, `baabfc0`, `a2b3e70`, `aab9cd1`, `916ce44`, `08d7aaf` → all pushed to main → GitHub Pages live
+**Live URL**: https://vinayak682.github.io/emirates-pride-inventory-management/complaint-tracker.html
+
+#### What was built:
+
+**Standalone Customer Complaint Tracker** — full lifecycle management for customer complaints
+
+**Login:**
+- PIN-only login (no store dropdown at login)
+- Office Staff PIN: 5555, Manager PIN: 9999 (hardcoded in JS constants)
+- No PIN hints displayed on screen (security)
+- Accessible from stock-register.html login screen via "📋 Customer Complaints" card
+
+**New Complaint Form (Office Staff):**
+- Store selector (which store the complaint came from) — first field in form
+- Customer: name, phone, purchase date, receipt/invoice number
+- Product dropdown: 97 products across 12 grouped categories (EPP + ASL), each with EN + AR name
+  - EPP: Bel (21), Caballo (10), Dakhoon (6), Oud (6), Heritage (2), Gift Sets (16), Accessories (5)
+  - ASL: Perfumes AP (11), Oils AO (11), Hair Mist AH (5), Body Lotion ABL (4), Gift Sets AG (7), Home Fragrance (4)
+- Complaint type: 7 options (pump, fragrance, leakage, broken cap, cosmetic, wrong product, other)
+- Description textarea
+- Evidence upload: photos/videos to Supabase Storage (`complaint-evidence` bucket, public)
+- Auto-generates reference: CC-YYYYMMDD-XXXX
+- product_name saved as "English · العربية" bilingual in one field
+
+**Manager View (PIN 9999):**
+- 6 KPI cards: Total, Pending, In Repair, Resolved 30d, Rejection Rate, Overdue 7d+
+- Filter by status / store / complaint type / search
+- All complaints from all stores
+- Full action buttons per status — 3 complete outcome flows:
+  - Replacement: Approved → Dispatched → Delivered → Closed
+  - Repair: Approved → Store sends to WH → WH receives → Under Repair / Factory → Dispatched → Delivered → Closed
+  - Rejection: Rejected → Closed
+- Timeline: every step timestamped with who + notes
+- SLA: amber after 4 days, red/overdue after 7 days
+- PDF print per complaint
+
+**Manager Dashboard in stock-register.html:**
+- Added "📋 Complaints" button in Manager Dashboard header
+- Opens complaintsPanel overlay with consolidated report:
+  - 6 KPI cards
+  - By-store breakdown table
+  - By-complaint-type bar chart
+  - Recent 20 complaints with SLA colour coding
+  - "Open full Complaint Tracker →" link
+
+**Supabase setup:**
+- `complaint_tracker_setup.sql` — creates `customer_complaints` table with all fields + JSONB timeline/attachments
+- Storage bucket: `complaint-evidence` (PUBLIC, user created 1 Jun 2026)
+- Storage policies added via SQL: allow_anon_upload + allow_anon_select on storage.objects
+
+**Bugs fixed during session:**
+- `product_name_ar` column error → removed separate AR column, combined as "EN · AR" in product_name
+- PIN hints visible on login → removed entirely from both stock-register.html and complaint-tracker.html
+
+---
+
 ### Session — 1 June 2026 (Session 35 — Benchmark Column + Hub Screen + Manager Instructions + Store Supplies)
 **Files changed**: `stock-register.html`
 **Commit**: `205b682` → pushed to main → GitHub Pages live
