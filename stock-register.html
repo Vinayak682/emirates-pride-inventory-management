@@ -2023,7 +2023,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
         <!-- Row 4: Store Supplies -->
         <div style="margin-bottom:10px;">
-          <button onclick="goToStockRegister();_pendingScrollSupplies=true;" style="width:100%;background:linear-gradient(135deg,#37474F,#546E7A);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 3px 10px rgba(55,71,79,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+          <button onclick="goToStockRegister();setTimeout(openSuppliesPanel,1800);" style="width:100%;background:linear-gradient(135deg,#37474F,#546E7A);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 3px 10px rgba(55,71,79,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <span style="font-size:18px;">🛍️</span>
             <div style="display:flex;flex-direction:column;align-items:flex-start;">
               <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Store Supplies</span>
@@ -2168,6 +2168,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <button class="top-btn" onclick="openDash()" style="border-color:rgba(201,164,78,0.3);color:var(--gold2);">📊 Dashboard</button>
     <button class="top-btn" onclick="openFinanceDirect()" style="border-color:rgba(100,180,255,0.35);color:#82CFFF;" title="Open Finance / DSR">💰 Finance</button>
     <button class="top-btn" onclick="openTestersDirect()" style="border-color:rgba(160,120,255,0.35);color:#C4A8FF;" title="Open Tester Bottles">🧴 Testers</button>
+    <button class="top-btn" onclick="openSuppliesPanel()" style="border-color:rgba(255,180,80,0.4);color:#FFB84D;" title="Store Supplies — Bags · Tissue">🛍️ Supplies</button>
     <button class="top-btn" onclick="openExport()" style="border-color:rgba(127,200,96,0.3);color:#7FC860;">📥 Export</button>
     <button class="top-btn stores-btn" id="allStoresBtn" onclick="openStores()">🏪 All Stores</button>
     <button class="top-btn logout" onclick="doLogout()">Logout</button>
@@ -2271,6 +2272,46 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
 </div>
 
+
+<!-- ═══════════════ STORE SUPPLIES PANEL ═══════════════ -->
+<div id="suppliesPanel" style="display:none;position:fixed;inset:0;z-index:820;background:#FFFFFF;flex-direction:column;overflow:hidden;">
+  <!-- Header -->
+  <div style="background:#6B5B35;padding:0 16px;display:flex;align-items:center;gap:12px;height:54px;flex-shrink:0;border-bottom:2px solid var(--gold);">
+    <button onclick="closeSuppliesPanel()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);color:#fff;font-family:var(--f-body);font-size:13px;padding:5px 12px;border-radius:6px;cursor:pointer;">← Back</button>
+    <span style="font-family:var(--f-mono);font-size:11px;font-weight:800;color:#fff;letter-spacing:2px;text-transform:uppercase;">🛍️ STORE SUPPLIES</span>
+    <span style="font-family:var(--f-ar);font-size:12px;color:rgba(201,168,76,0.9);">مستلزمات المتجر</span>
+    <span id="suppliesDayLabel" style="font-family:var(--f-mono);font-size:10px;color:rgba(255,255,255,0.6);margin-left:auto;"></span>
+    <span id="suppliesAlertBadge" style="display:none;background:#E53E3E;color:#fff;font-size:9px;font-weight:700;padding:3px 9px;border-radius:10px;"></span>
+  </div>
+  <!-- Instruction strip -->
+  <div style="background:#F5F2EC;padding:8px 16px;border-bottom:1px solid #E5E0D8;font-family:var(--f-body);font-size:11px;color:#6B5B35;flex-shrink:0;">
+    Tap any cell to enter a value · Opening + Received − Used = Balance · Data saved per day
+  </div>
+  <!-- Table -->
+  <div style="flex:1;overflow-y:auto;padding:0;">
+    <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+      <thead>
+        <tr style="background:#F5EDD8;position:sticky;top:0;z-index:5;">
+          <th style="padding:12px 16px;text-align:left;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:9px;color:var(--gold-dark);letter-spacing:1.5px;font-weight:800;width:200px;">ITEM · <span style="font-family:var(--f-ar);font-weight:400;">الصنف</span></th>
+          <th style="padding:10px 8px;text-align:center;border-right:1px solid #D8D4CC;background:#D6EAF8;font-family:var(--f-body);font-size:10px;font-weight:700;color:#1A5276;letter-spacing:0.5px;">OPENING<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">افتتاح</span></th>
+          <th style="padding:10px 8px;text-align:center;border-right:1px solid #D8D4CC;background:#D5F5E3;font-family:var(--f-body);font-size:10px;font-weight:700;color:#1A6A40;letter-spacing:0.5px;">RECEIVED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">وارد</span></th>
+          <th style="padding:10px 8px;text-align:center;border-right:1px solid #D8D4CC;background:#FEF9C3;font-family:var(--f-body);font-size:10px;font-weight:700;color:#7D6608;letter-spacing:0.5px;">USED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">مستخدم</span></th>
+          <th style="padding:10px 8px;text-align:center;background:#F5EDD8;font-family:var(--f-body);font-size:10px;font-weight:700;color:var(--gold-dark);letter-spacing:0.5px;">BALANCE<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">الرصيد</span></th>
+        </tr>
+      </thead>
+      <tbody id="suppliesPanelBody"></tbody>
+      <tfoot>
+        <tr style="background:#F5EDD8;border-top:2px solid var(--gold);">
+          <td style="padding:12px 16px;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:10px;font-weight:800;color:var(--gold-dark);letter-spacing:1px;">DAILY TOTALS</td>
+          <td id="spTotO" style="text-align:center;padding:12px 8px;background:#D6EAF8;font-family:var(--f-serif);font-size:22px;font-weight:700;color:#1A5276;">—</td>
+          <td id="spTotR" style="text-align:center;padding:12px 8px;background:#D5F5E3;font-family:var(--f-serif);font-size:22px;font-weight:700;color:#1A6A40;">—</td>
+          <td id="spTotU" style="text-align:center;padding:12px 8px;background:#FEF9C3;font-family:var(--f-serif);font-size:22px;font-weight:700;color:#7D6608;">—</td>
+          <td id="spTotB" style="text-align:center;padding:12px 8px;background:#F5EDD8;font-family:var(--f-serif);font-size:22px;font-weight:700;color:var(--gold-dark);">—</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
 
 <!-- ═══════════════ DASHBOARD PANEL ═══════════════ -->
 <div id="dashPanel">
@@ -4731,18 +4772,90 @@ function mgrSendInstruction() {
 // ── Hub helpers ────────────────────────────────────────────────────
 let _pendingScrollSupplies = false;
 function openSuppliesDirect() {
-  // Always ensure table rows are rendered before scrolling
-  refreshConsTable();
-  const sec = document.getElementById('consumableSection');
-  if (!sec) return;
-  const scrollArea = document.getElementById('scrollArea');
-  if (scrollArea) {
-    const top = sec.getBoundingClientRect().top - scrollArea.getBoundingClientRect().top + scrollArea.scrollTop;
-    scrollArea.scrollTo({ top: top, behavior: 'smooth' });
-  } else {
-    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+  openSuppliesPanel();
 }
+
+function openSuppliesPanel() {
+  if (!me) return;
+  const panel = document.getElementById('suppliesPanel');
+  if (!panel) return;
+  panel.style.display = 'flex';
+  // Day label
+  const lbl = document.getElementById('suppliesDayLabel');
+  if (lbl) {
+    const days = ['Mon 27/5','Tue 28/5','Wed 29/5','Thu 30/5','Fri 31/5','Sat 1/6','Sun 2/6','Mon 3/6','Tue 4/6','Wed 5/6','Thu 6/6','Fri 7/6','Sat 8/6','Sun 9/6','Mon 10/6'];
+    lbl.textContent = (days[curDay] || ('Day '+(curDay+1))) + ' · ' + (me.name || me.code);
+  }
+  renderSuppliesPanel();
+  _pendingScrollSupplies = false;
+}
+
+function closeSuppliesPanel() {
+  const panel = document.getElementById('suppliesPanel');
+  if (panel) panel.style.display = 'none';
+}
+
+function renderSuppliesPanel() {
+  const tbody = document.getElementById('suppliesPanelBody');
+  if (!tbody || !me) return;
+  const locked  = isLocked(me.code, curDay);
+  const mgrOk   = mgrOverrideActive && mgrOverrideDay===curDay && mgrOverrideStore===me.code;
+  const canEdit = !locked || mgrOk;
+
+  let totO=0,totR=0,totU=0,totB=0,anyData=false,rows='';
+  CONSUMABLES.forEach((item,idx)=>{
+    const o   = suppGet(me.code,curDay,item.code,'open');
+    const r   = suppGet(me.code,curDay,item.code,'recv');
+    const u   = suppGet(me.code,curDay,item.code,'used');
+    const bal = suppBal(me.code,curDay,item.code);
+    const has = o!==''||r!==''||u!=='';
+    if(has){ anyData=true; totO+=parseInt(o)||0; totR+=parseInt(r)||0; totU+=parseInt(u)||0; totB+=bal; }
+    const balCol = bal<0?'#C0392B':bal<10?'#D68910':'#1A7A40';
+    const bg     = idx%2===0?'#FFFFFF':'#FAFAF8';
+    const cur2   = canEdit?'cursor:pointer;':'cursor:default;opacity:0.75;';
+    const tap    = canEdit?'<div style="font-size:8px;color:#bbb;margin-top:3px;font-family:var(--f-body);">TAP</div>':'';
+    const co = canEdit?`onclick="openSuppNP('${item.code}','open');_spActive=true;"` :'';
+    const cr = canEdit?`onclick="openSuppNP('${item.code}','recv');_spActive=true;"` :'';
+    const cu = canEdit?`onclick="openSuppNP('${item.code}','used');_spActive=true;"` :'';
+    rows+=`<tr style="background:${bg};border-bottom:1px solid #EDE8E0;">
+      <td style="padding:14px 16px;border-right:2px solid var(--gold);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:22px;">${item.icon}</span>
+          <div>
+            <div style="font-family:var(--f-body);font-size:13px;font-weight:600;color:var(--ink);">${item.en}</div>
+            <div style="font-family:var(--f-ar);font-size:12px;color:var(--ink-mid);">${item.ar}</div>
+          </div>
+        </div>
+      </td>
+      <td style="text-align:center;padding:14px 8px;border-right:1px solid #E8E4DC;background:#EBF5FB;${cur2}" ${co}>
+        <div style="font-family:var(--f-serif);font-size:26px;font-weight:600;color:#2471A3;">${o===''?'—':o}</div>${tap}
+      </td>
+      <td style="text-align:center;padding:14px 8px;border-right:1px solid #E8E4DC;background:#EBF5EB;${cur2}" ${cr}>
+        <div style="font-family:var(--f-serif);font-size:26px;font-weight:600;color:#1A6A40;">${r===''?'—':r}</div>${tap}
+      </td>
+      <td style="text-align:center;padding:14px 8px;border-right:1px solid #E8E4DC;background:#FEFCE8;${cur2}" ${cu}>
+        <div style="font-family:var(--f-serif);font-size:26px;font-weight:600;color:#7D6608;">${u===''?'—':u}</div>${tap}
+      </td>
+      <td style="text-align:center;padding:14px 8px;background:#F5EDD8;cursor:default;">
+        <div style="font-family:var(--f-serif);font-size:28px;font-weight:700;color:${balCol};">${has?bal:'—'}</div>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML = rows;
+
+  const tO=document.getElementById('spTotO'),tR=document.getElementById('spTotR'),tU=document.getElementById('spTotU'),tB=document.getElementById('spTotB');
+  if(tO) tO.textContent=anyData?totO:'—';
+  if(tR) tR.textContent=anyData?totR:'—';
+  if(tU) tU.textContent=anyData?totU:'—';
+  if(tB){ tB.textContent=anyData?totB:'—'; tB.style.color=totB<0?'#C0392B':totB<10?'#D68910':'var(--gold-dark)'; }
+
+  const badge=document.getElementById('suppliesAlertBadge');
+  if(badge){ const low=CONSUMABLES.filter(item=>{ const b=suppBal(me.code,curDay,item.code); return suppGet(me.code,curDay,item.code,'open')!==''&&b<10; }).length; badge.style.display=low>0?'inline-block':'none'; badge.textContent=low+' LOW'; }
+}
+
+// Called after numpad saves a supplies value — re-render whichever panel is open
+let _spActive = false;
+
 
 function hubLogout() {
   document.getElementById('hubScreen').style.display = 'none';
@@ -6823,7 +6936,8 @@ function confirmNP(){
     const savedField = npCtx.field;
     suppSet(me.code, curDay, savedCode, savedField, val);
     closeNP();
-    renderConsSection();
+    renderSuppliesPanel();  // re-render the panel
+    refreshConsTable();     // also refresh the inline table
     const item = CONSUMABLES.find(x => x.code === savedCode);
     const bal  = suppBal(me.code, curDay, savedCode);
     if(bal < 0) toast('⛔ ' + (item?.en||savedCode) + ' balance is negative — check entries');
