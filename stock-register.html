@@ -4708,11 +4708,12 @@ function mgrSendInstruction() {
 // ── Hub helpers ────────────────────────────────────────────────────
 let _pendingScrollSupplies = false;
 function openSuppliesDirect() {
+  // Always ensure table is rendered before scrolling
+  if (me) renderConsSection();
   const sec = document.getElementById('consumableSection');
   if (!sec) return;
   const scrollArea = document.getElementById('scrollArea');
   if (scrollArea) {
-    // getBoundingClientRect gives position relative to viewport — adjust by scrollArea's own position + current scroll
     const top = sec.getBoundingClientRect().top - scrollArea.getBoundingClientRect().top + scrollArea.scrollTop;
     scrollArea.scrollTo({ top: top, behavior: 'smooth' });
   } else {
@@ -14048,6 +14049,7 @@ function suppBal(storeCode, dayIdx, itemCode){
 
 // ── Render supplies section as a daily-tracking table ─────────────
 function renderConsSection(){
+  try {
   if(!me) return;
   const section = document.getElementById('consumableSection');
   if(!section) return;
@@ -14146,6 +14148,7 @@ function renderConsSection(){
     _pendingScrollSupplies = false;
     setTimeout(openSuppliesDirect, 80);
   }
+  } catch(e) { console.error('renderConsSection error:', e); }
 }
 
 // ── Open numpad for a supplies field ──────────────────────────────
