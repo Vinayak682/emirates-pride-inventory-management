@@ -803,7 +803,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <div class="data-metrics">
         <span class="metric" id="sales-metric-records">Records: —</span>
         <span class="metric" id="sales-metric-range">Date Range: —</span>
-        <span class="metric" id="sales-metric-regions">Regions: EPP, ASL, Oman</span>
+        <span class="metric" id="sales-metric-regions">Regions: EPP, ASL, Oman, KSA</span>
       </div>
       <button class="refresh-btn" onclick="refreshSalesStatus()">↻ Refresh</button>
     </div>
@@ -1920,6 +1920,27 @@ const STORES = [
   {code:'ASL_FJ001',  name:'ASL Fujairah (Legacy)',          region:'ASL', city:'Fujairah',   type:'ASL'},
   {code:'PS_ZCC',     name:'Zahia CC Promotions',            region:'EPP', city:'Sharjah',    type:'EPP'},
   {code:'HO',         name:'Head Office',                    region:'EPP', city:'Abu Dhabi',  type:'EPP'},
+  /* ── KSA Stores (added 1 Jun 2026) ── */
+  {code:'KSA_AHS001', name:'Al Ahsa Mall',                   region:'KSA', city:'Al Ahsa',    type:'KSA'},
+  {code:'KSA_HAM001', name:'Al Hamra Mall',                  region:'KSA', city:'KSA',        type:'KSA'},
+  {code:'KSA_KHL001', name:'Al Khaleej Mall',                region:'KSA', city:'KSA',        type:'KSA'},
+  {code:'KSA_MED001', name:'Al Rashid Madina Mall',          region:'KSA', city:'Madinah',    type:'KSA'},
+  {code:'KSA_ABH001', name:'Al Rashid Mall Abha',            region:'KSA', city:'Abha',       type:'KSA'},
+  {code:'KSA_JED001', name:'Andalus Mall Jeddah',            region:'KSA', city:'Jeddah',     type:'KSA'},
+  {code:'KSA_GRN001', name:'Granada Mall',                   region:'KSA', city:'Riyadh',     type:'KSA'},
+  {code:'KSA_HAY001', name:'Hayat Mall',                     region:'KSA', city:'Riyadh',     type:'KSA'},
+  {code:'KSA_HAY002', name:'Hayat Mall Shop',                region:'KSA', city:'Riyadh',     type:'KSA'},
+  {code:'KSA_JPM001', name:'Jeddah Park Mall',               region:'KSA', city:'Jeddah',     type:'KSA'},
+  {code:'KSA_MKH001', name:'Makah Mall',                     region:'KSA', city:'Makkah',     type:'KSA'},
+  {code:'KSA_MOA001', name:'Mall Of Arabia Jeddah',          region:'KSA', city:'Jeddah',     type:'KSA'},
+  {code:'KSA_DAH001', name:'Mall Of Dhahran',                region:'KSA', city:'Dhahran',    type:'KSA'},
+  {code:'KSA_DAH002', name:'Mall Of Dhahran Kiosk',          region:'KSA', city:'Dhahran',    type:'KSA'},
+  {code:'KSA_RYD001', name:'Park Avenue Mall Riyadh',        region:'KSA', city:'Riyadh',     type:'KSA'},
+  {code:'KSA_RSM001', name:'Red Sea Mall',                   region:'KSA', city:'Jeddah',     type:'KSA'},
+  {code:'KSA_RYD002', name:'Riyadh Park Mall',               region:'KSA', city:'Riyadh',     type:'KSA'},
+  {code:'KSA_SLM001', name:'Salaam Mall',                    region:'KSA', city:'KSA',        type:'KSA'},
+  {code:'KSA_JED002', name:'Salam Mall Jeddah',              region:'KSA', city:'Jeddah',     type:'KSA'},
+  {code:'KSA_YSM001', name:'Yasmin Mall',                    region:'KSA', city:'KSA',        type:'KSA'},
 ];
 
 const SKU_NAMES = {
@@ -2192,7 +2213,14 @@ async function loadSalesData() {
 }
 
 function getStore(code) {
-  return STORES.find(s => s.code === code) || {code,name:code,region:'EPP',city:'—',type:'EPP'};
+  const found = STORES.find(s => s.code === code);
+  if (found) return found;
+  // Auto-detect region from code prefix for unknown stores
+  const r = code.startsWith('KSA_') ? 'KSA'
+           : code.startsWith('OM')  ? 'OMAN'
+           : code.startsWith('ASL_') || code.startsWith('YMK') || code.startsWith('BAW') || code.startsWith('MAK') || code.startsWith('BAS') ? 'ASL'
+           : 'EPP';
+  return {code, name:code, region:r, city:'—', type:r};
 }
 
 function onRegionChange() {
