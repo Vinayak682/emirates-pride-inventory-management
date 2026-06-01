@@ -8531,30 +8531,36 @@ function _eidRenderFull() {
 
   let winnerRows = winners.map((s,i) => {
     const bw = Math.round(Math.min(100,Math.max(4,(s.momPct+30)/180*100)));
-    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:11px;cursor:pointer;padding:6px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background=\'#FFF8E6\'" onmouseout="this.style.background=\'\'" onclick="openEidStoreDrill(\''+s.code+'\')">'
-      +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#8A8278;width:20px;text-align:right;flex-shrink:0;">'+String(i+1)+'</div>'
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:13px;cursor:pointer;padding:8px;border-radius:8px;transition:background .15s;" onmouseover="this.style.background=\'#FFF8E6\'" onmouseout="this.style.background=\'\'" onclick="openEidStoreDrill(\''+s.code+'\')">'
+      +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#C2B8A0;width:18px;text-align:right;flex-shrink:0;">'+String(i+1)+'</div>'
       +'<div style="flex:1;min-width:0;">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">'
-      +'<div style="font-size:11px;font-weight:600;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+s.name+'</div>'
-      +'<div style="font-size:12px;font-weight:700;color:#1A7A3C;margin-left:8px;flex-shrink:0;">▲ '+s.momPct.toFixed(1)+'%</div></div>'
-      +'<div style="height:4px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">'
+      +'<div style="min-width:0;">'
+      +'<div style="font-size:12px;font-weight:600;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+s.name+'</div>'
+      +(s.city&&s.city!=='—'?'<div style="font-size:9px;color:#8A8278;margin-top:1px;">'+s.city+'</div>':'')
+      +'</div>'
+      +'<div style="font-size:12px;font-weight:700;color:#1A7A3C;margin-left:8px;flex-shrink:0;background:#E8F5ED;padding:2px 8px;border-radius:10px;">▲ '+s.momPct.toFixed(1)+'%</div></div>'
+      +'<div style="height:3px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
       +'<div style="width:'+bw+'%;height:100%;background:linear-gradient(90deg,#C9A84C,#6B5B35);border-radius:2px;"></div></div></div>'
-      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:15px;font-weight:600;color:#1A1A1A;flex-shrink:0;min-width:52px;text-align:right;">'+s.may26.toLocaleString()+'</div>'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:16px;font-weight:600;color:#1A1A1A;flex-shrink:0;min-width:52px;text-align:right;">'+s.may26.toLocaleString()+'</div>'
       +'</div>';
   }).join('');
 
   let declinerRows = decliners.length
     ? decliners.slice(0,8).map((s,i) => {
         const bw = Math.round(Math.min(100,Math.abs(s.momPct)/60*100));
-        return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:11px;cursor:pointer;padding:6px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background=\'#FFF5F5\'" onmouseout="this.style.background=\'\'" onclick="openEidStoreDrill(\''+s.code+'\')">'
-          +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#8A8278;width:20px;text-align:right;flex-shrink:0;">'+String(i+1)+'</div>'
+        return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:13px;cursor:pointer;padding:8px;border-radius:8px;transition:background .15s;" onmouseover="this.style.background=\'#FFF5F5\'" onmouseout="this.style.background=\'\'" onclick="openEidStoreDrill(\''+s.code+'\')">'
+          +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#C2B8A0;width:18px;text-align:right;flex-shrink:0;">'+String(i+1)+'</div>'
           +'<div style="flex:1;min-width:0;">'
-          +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">'
-          +'<div style="font-size:11px;font-weight:600;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+s.name+'</div>'
-          +'<div style="font-size:12px;font-weight:700;color:#C0392B;margin-left:8px;flex-shrink:0;">▼ '+Math.abs(s.momPct).toFixed(1)+'%</div></div>'
-          +'<div style="height:4px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
+          +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">'
+          +'<div style="min-width:0;">'
+          +'<div style="font-size:12px;font-weight:600;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+s.name+'</div>'
+          +(s.city&&s.city!=='—'?'<div style="font-size:9px;color:#8A8278;margin-top:1px;">'+s.city+'</div>':'')
+          +'</div>'
+          +'<div style="font-size:12px;font-weight:700;color:#C0392B;margin-left:8px;flex-shrink:0;background:#FEECEC;padding:2px 8px;border-radius:10px;">▼ '+Math.abs(s.momPct).toFixed(1)+'%</div></div>'
+          +'<div style="height:3px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
           +'<div style="width:'+bw+'%;height:100%;background:#F28B82;border-radius:2px;"></div></div></div>'
-          +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:15px;font-weight:600;color:#1A1A1A;flex-shrink:0;min-width:52px;text-align:right;">'+s.may26.toLocaleString()+'</div>'
+          +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:16px;font-weight:600;color:#1A1A1A;flex-shrink:0;min-width:52px;text-align:right;">'+s.may26.toLocaleString()+'</div>'
           +'</div>';
       }).join('')
     : '<div style="padding:20px;text-align:center;font-size:12px;color:#1A7A3C;background:#E8F5ED;border-radius:8px;">✅ All stores grew vs April 2026</div>';
@@ -8671,9 +8677,9 @@ function _eidStoreRows() {
       +'onmouseover="this.style.background=\'#FFF8E6\'" '
       +'onmouseout="this.style.background=\''+bg+'\'" '
       +'onclick="openEidStoreDrill(\''+s.code+'\')">'
-      +'<td style="padding:13px 16px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#8A8278;">'+String(i+1).padStart(2,'0')+'</td>'
-      +'<td style="padding:13px 16px;"><div style="font-size:12px;font-weight:600;color:#1A1A1A;">'+s.name+'</div>'
-      +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#7A6525;margin-top:1px;">'+s.code+'</div></td>'
+      +'<td style="padding:13px 16px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#C2B8A0;">'+String(i+1).padStart(2,'0')+'</td>'
+      +'<td style="padding:13px 16px;"><div style="font-size:13px;font-weight:600;color:#1A1A1A;letter-spacing:.01em;">'+s.name+'</div>'
+      +(s.city&&s.city!=='—'?'<div style="font-size:10px;color:#8A8278;margin-top:2px;">'+s.city+'</div>':'')+'</td>'
       +'<td style="padding:13px 16px;"><span style="background:'+(regionColors[s.region]||'#333')+';color:#fff;font-size:8px;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:3px;text-transform:uppercase;">'+(s.region==='OMAN'?'Oman':regionNames[s.region]||s.region)+'</span></td>'
       +'<td style="padding:13px 16px;text-align:right;font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:600;color:#1A1A1A;">'+s.may26.toLocaleString()+'</td>'
       +'<td style="padding:13px 16px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#8A8278;">'+(s.apr26>0?s.apr26.toLocaleString():'—')+'</td>'
@@ -8748,11 +8754,16 @@ function openEidStoreDrill(code) {
   const yoyClr = s.yoyPct===null?'#8A8278':s.yoyPct>0?'#1A7A3C':'#C0392B';
   const uplClr = s.upliftPct===null?'#8A8278':s.upliftPct>0?'#1A7A3C':'#C0392B';
 
+  const storeTypeLabel = s.city && s.city !== '—' ? s.city : '';
+  const storeRegionLabel = EID_REGION_NAMES[s.region] || s.region;
   document.getElementById('eidDrillContent').innerHTML =
     '<div style="background:#6B5B35;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">'
-    +'<div><div style="font-size:9px;letter-spacing:.16em;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:700;margin-bottom:3px;">Store Drill-Down · May 2026</div>'
-    +'<div style="font-size:15px;font-weight:700;color:#fff;">'+s.name+'</div>'
-    +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">'+s.code+' · '+s.city+'</div>'
+    +'<div><div style="font-size:9px;letter-spacing:.16em;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:700;margin-bottom:3px;">Store Performance · May 2026</div>'
+    +'<div style="font-size:16px;font-weight:700;color:#fff;letter-spacing:.01em;">'+s.name+'</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.60);margin-top:4px;display:flex;align-items:center;gap:8px;">'
+    +(storeTypeLabel?'<span>'+storeTypeLabel+'</span><span style="opacity:.4;">·</span>':'')
+    +'<span>'+storeRegionLabel+'</span>'
+    +'</div>'
     +'</div>'
     +'<button onclick="closeEidStoreDrill()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;">✕</button>'
     +'</div>'
