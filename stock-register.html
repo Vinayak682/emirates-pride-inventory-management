@@ -2221,7 +2221,30 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
           <span id="consAlertBadge" style="display:none;background:#E53E3E;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px;"></span>
           <span style="font-family:var(--f-mono);font-size:9px;color:rgba(255,255,255,0.55);font-weight:500;margin-left:auto;">Tap a cell to enter · Opening + Received − Used = Balance</span>
         </div>
-        <div id="consGrid"></div>
+        <!-- Static table — always visible, JS only handles tapping & saving -->
+        <table id="consGrid" style="width:100%;border-collapse:collapse;table-layout:fixed;">
+          <thead>
+            <tr style="background:#F5EDD8;border-bottom:2px solid var(--gold);">
+              <th style="width:220px;min-width:180px;padding:10px 14px;text-align:left;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:9px;color:var(--gold-dark);letter-spacing:1.5px;font-weight:800;">ITEM &nbsp;·&nbsp; <span style="font-family:var(--f-ar);font-weight:400;">الصنف</span></th>
+              <th style="width:90px;text-align:center;padding:8px 6px;border-right:1px solid #D8D4CC;font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:0.8px;background:#E8F4FB;color:#2471A3;border-bottom:2px solid #2471A3;">OPENING<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">الافتتاح</span></th>
+              <th style="width:90px;text-align:center;padding:8px 6px;border-right:1px solid #D8D4CC;font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:0.8px;background:#EBF5EB;color:#1A6A40;border-bottom:2px solid #1A6A40;">RECEIVED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">وارد</span></th>
+              <th style="width:90px;text-align:center;padding:8px 6px;border-right:1px solid #D8D4CC;font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:0.8px;background:#FEF9E7;color:#7D6608;border-bottom:2px solid #D4AC0D;">USED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">مستخدم</span></th>
+              <th style="width:90px;text-align:center;padding:8px 6px;border-right:none;font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:0.8px;background:#F5EDD8;color:var(--gold-dark);border-bottom:2px solid var(--gold);">BALANCE<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">الرصيد</span></th>
+            </tr>
+          </thead>
+          <tbody id="consGridBody">
+            <!-- Rows injected by refreshConsTable() on login / day change -->
+          </tbody>
+          <tfoot>
+            <tr id="consTotalsRow" style="background:#F5EDD8;border-top:2px solid var(--gold);">
+              <td style="padding:10px 14px;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:10px;font-weight:800;color:var(--gold-dark);letter-spacing:1px;">DAILY TOTALS</td>
+              <td id="cTotO" style="text-align:center;padding:10px 6px;background:#D6EAF8;font-family:var(--f-serif);font-size:18px;font-weight:700;color:#1A5276;">—</td>
+              <td id="cTotR" style="text-align:center;padding:10px 6px;background:#D5F5E3;font-family:var(--f-serif);font-size:18px;font-weight:700;color:#1A6A40;">—</td>
+              <td id="cTotU" style="text-align:center;padding:10px 6px;background:#FEF9C3;font-family:var(--f-serif);font-size:18px;font-weight:700;color:#7D6608;">—</td>
+              <td id="cTotB" style="text-align:center;padding:10px 6px;background:#F5EDD8;font-family:var(--f-serif);font-size:18px;font-weight:700;color:var(--gold-dark);">—</td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
       <!-- ══ END STORE SUPPLIES SECTION ══ -->
 
@@ -4708,8 +4731,8 @@ function mgrSendInstruction() {
 // ── Hub helpers ────────────────────────────────────────────────────
 let _pendingScrollSupplies = false;
 function openSuppliesDirect() {
-  // Always ensure table is rendered before scrolling
-  if (me) renderConsSection();
+  // Always ensure table rows are rendered before scrolling
+  refreshConsTable();
   const sec = document.getElementById('consumableSection');
   if (!sec) return;
   const scrollArea = document.getElementById('scrollArea');
@@ -14047,64 +14070,36 @@ function suppBal(storeCode, dayIdx, itemCode){
   return o + r - u;
 }
 
-// ── Render supplies section as a daily-tracking table ─────────────
+// ── Refresh only the tbody rows + totals — table shell is static HTML ──
 function renderConsSection(){
-  try {
-  if(!me) return;
-  const section = document.getElementById('consumableSection');
-  if(!section) return;
-  section.style.display = 'block';
+  refreshConsTable();
+}
+function refreshConsTable(){
+  const tbody = document.getElementById('consGridBody');
+  if(!tbody) return;
+  if(!me){ tbody.innerHTML='<tr><td colspan="5" style="padding:18px;text-align:center;color:#aaa;font-family:var(--f-body);font-size:12px;">Please log in to view supplies</td></tr>'; return; }
 
-  const locked   = isLocked(me.code, curDay);
-  const mgrOk    = mgrOverrideActive && mgrOverrideDay===curDay && mgrOverrideStore===me.code;
-  const canEdit  = !locked || mgrOk;
+  const locked  = isLocked(me.code, curDay);
+  const mgrOk   = mgrOverrideActive && mgrOverrideDay===curDay && mgrOverrideStore===me.code;
+  const canEdit = !locked || mgrOk;
+  const tap     = canEdit ? '<div style="font-size:8px;color:#aaa;margin-top:2px;font-family:var(--f-body);">TAP</div>' : '';
 
-  // Totals row
-  let totO=0, totR=0, totU=0, totB=0;
-  CONSUMABLES.forEach(item => {
-    totO += parseInt(suppGet(me.code,curDay,item.code,'open'))||0;
-    totR += parseInt(suppGet(me.code,curDay,item.code,'recv'))||0;
-    totU += parseInt(suppGet(me.code,curDay,item.code,'used'))||0;
-    totB += suppBal(me.code,curDay,item.code);
-  });
+  let totO=0, totR=0, totU=0, totB=0, rows='';
 
-  // Alert badge
-  const badge = document.getElementById('consAlertBadge');
-  const lowCount = CONSUMABLES.filter(item => {
-    const b = suppBal(me.code,curDay,item.code);
-    return b >= 0 && b < 10;
-  }).length;
-  if(badge){
-    badge.style.display  = lowCount > 0 ? 'inline-block' : 'none';
-    badge.textContent    = lowCount + ' LOW';
-  }
-
-  const COL = 'width:90px;min-width:80px;text-align:center;padding:10px 6px;border-right:1px solid #E8E4DC;';
-  const HCOL= 'width:90px;min-width:80px;text-align:center;padding:8px 6px;border-right:1px solid #D8D4CC;font-size:9px;font-weight:700;letter-spacing:0.8px;';
-
-  let html = `
-  <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
-    <thead>
-      <tr style="background:#F5EDD8;border-bottom:2px solid var(--gold);">
-        <th style="width:220px;min-width:180px;padding:10px 14px;text-align:left;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:9px;color:var(--gold-dark);letter-spacing:1.5px;font-weight:800;">ITEM &nbsp;·&nbsp; <span style="font-family:var(--f-ar);font-weight:400;">الصنف</span></th>
-        <th style="${HCOL}background:#E8F4FB;color:#2471A3;border-bottom:2px solid #2471A3;">OPENING<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">الافتتاح</span></th>
-        <th style="${HCOL}background:#EBF5EB;color:#1A6A40;border-bottom:2px solid #1A6A40;">RECEIVED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">وارد</span></th>
-        <th style="${HCOL}background:#FEF9E7;color:#7D6608;border-bottom:2px solid #D4AC0D;">USED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">مستخدم</span></th>
-        <th style="${HCOL}background:#F5EDD8;color:var(--gold-dark);border-bottom:2px solid var(--gold);border-right:none;">BALANCE<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">الرصيد</span></th>
-      </tr>
-    </thead>
-    <tbody>`;
-
-  CONSUMABLES.forEach((item, idx) => {
-    const o = suppGet(me.code,curDay,item.code,'open');
-    const r = suppGet(me.code,curDay,item.code,'recv');
-    const u = suppGet(me.code,curDay,item.code,'used');
-    const bal = suppBal(me.code,curDay,item.code);
-    const balColor = bal < 0 ? '#C0392B' : bal < 10 ? '#D68910' : '#1A7A40';
-    const rowBg = idx%2===0 ? '#FFFFFF' : '#FAFAF8';
-    const editStyle = canEdit ? 'cursor:pointer;' : 'cursor:default;opacity:0.7;';
-
-    html += `<tr style="background:${rowBg};border-bottom:1px solid #EDE8E0;">
+  CONSUMABLES.forEach((item, idx)=>{
+    const o   = suppGet(me.code, curDay, item.code, 'open');
+    const r   = suppGet(me.code, curDay, item.code, 'recv');
+    const u   = suppGet(me.code, curDay, item.code, 'used');
+    const bal = suppBal(me.code, curDay, item.code);
+    const hasData = o!=='' || r!=='' || u!=='';
+    const balCol  = bal<0 ? '#C0392B' : bal<10 ? '#D68910' : '#1A7A40';
+    const bg      = idx%2===0 ? '#FFFFFF' : '#FAFAF8';
+    const cur     = canEdit ? 'cursor:pointer;' : 'cursor:default;opacity:0.7;';
+    const clickO  = canEdit ? `onclick="openSuppNP('${item.code}','open')"` : '';
+    const clickR  = canEdit ? `onclick="openSuppNP('${item.code}','recv')"` : '';
+    const clickU  = canEdit ? `onclick="openSuppNP('${item.code}','used')"` : '';
+    if(hasData){ totO+=parseInt(o)||0; totR+=parseInt(r)||0; totU+=parseInt(u)||0; totB+=bal; }
+    rows += `<tr style="background:${bg};border-bottom:1px solid #EDE8E0;">
       <td style="padding:10px 14px;border-right:2px solid var(--gold);">
         <div style="display:flex;align-items:center;gap:8px;">
           <span style="font-size:18px;">${item.icon}</span>
@@ -14114,41 +14109,36 @@ function renderConsSection(){
           </div>
         </div>
       </td>
-      <td style="${COL}background:#EBF5FB;${editStyle}" onclick="${canEdit?`openSuppNP('${item.code}','open')`:''}">
-        <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#2471A3;">${o===''?'—':o}</div>
-        ${canEdit?'<div style="font-size:8px;color:#888;margin-top:2px;">TAP</div>':''}
+      <td style="text-align:center;padding:10px 6px;border-right:1px solid #E8E4DC;background:#EBF5FB;${cur}" ${clickO}>
+        <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#2471A3;">${o===''?'—':o}</div>${tap}
       </td>
-      <td style="${COL}background:#EBF5EB;${editStyle}" onclick="${canEdit?`openSuppNP('${item.code}','recv')`:''}">
-        <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#1A6A40;">${r===''?'—':r}</div>
-        ${canEdit?'<div style="font-size:8px;color:#888;margin-top:2px;">TAP</div>':''}
+      <td style="text-align:center;padding:10px 6px;border-right:1px solid #E8E4DC;background:#EBF5EB;${cur}" ${clickR}>
+        <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#1A6A40;">${r===''?'—':r}</div>${tap}
       </td>
-      <td style="${COL}background:#FEFCE8;${editStyle}" onclick="${canEdit?`openSuppNP('${item.code}','used')`:''}">
-        <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#7D6608;">${u===''?'—':u}</div>
-        ${canEdit?'<div style="font-size:8px;color:#888;margin-top:2px;">TAP</div>':''}
+      <td style="text-align:center;padding:10px 6px;border-right:1px solid #E8E4DC;background:#FEFCE8;${cur}" ${clickU}>
+        <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#7D6608;">${u===''?'—':u}</div>${tap}
       </td>
-      <td style="${COL}background:#F5EDD8;border-right:none;cursor:default;">
-        <div style="font-family:var(--f-serif);font-size:20px;font-weight:700;color:${balColor};">${(o===''&&r===''&&u==='')?'—':bal}</div>
+      <td style="text-align:center;padding:10px 6px;background:#F5EDD8;cursor:default;">
+        <div style="font-family:var(--f-serif);font-size:20px;font-weight:700;color:${balCol};">${hasData?bal:'—'}</div>
       </td>
     </tr>`;
   });
 
-  // Totals row
-  html += `<tr style="background:#F5EDD8;border-top:2px solid var(--gold);">
-    <td style="padding:10px 14px;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:10px;font-weight:800;color:var(--gold-dark);letter-spacing:1px;">DAILY TOTALS</td>
-    <td style="${COL}background:#D6EAF8;"><div style="font-family:var(--f-serif);font-size:18px;font-weight:700;color:#1A5276;">${totO||'—'}</div></td>
-    <td style="${COL}background:#D5F5E3;"><div style="font-family:var(--f-serif);font-size:18px;font-weight:700;color:#1A6A40;">${totR||'—'}</div></td>
-    <td style="${COL}background:#FEF9C3;"><div style="font-family:var(--f-serif);font-size:18px;font-weight:700;color:#7D6608;">${totU||'—'}</div></td>
-    <td style="${COL}background:#F5EDD8;border-right:none;"><div style="font-family:var(--f-serif);font-size:18px;font-weight:700;color:var(--gold-dark);">${totB||'—'}</div></td>
-  </tr>`;
+  tbody.innerHTML = rows;
 
-  html += `</tbody></table>`;
-  document.getElementById('consGrid').innerHTML = html;
-  // If launched from Hub "Store Supplies" button, scroll into view now that grid is rendered
-  if (_pendingScrollSupplies) {
-    _pendingScrollSupplies = false;
-    setTimeout(openSuppliesDirect, 80);
-  }
-  } catch(e) { console.error('renderConsSection error:', e); }
+  // Update totals footer
+  const anyData = CONSUMABLES.some(item => suppGet(me.code,curDay,item.code,'open')!==''||suppGet(me.code,curDay,item.code,'recv')!==''||suppGet(me.code,curDay,item.code,'used')!=='');
+  const tO=document.getElementById('cTotO'), tR=document.getElementById('cTotR'), tU=document.getElementById('cTotU'), tB=document.getElementById('cTotB');
+  if(tO) tO.textContent = anyData ? totO : '—';
+  if(tR) tR.textContent = anyData ? totR : '—';
+  if(tU) tU.textContent = anyData ? totU : '—';
+  if(tB){ tB.textContent = anyData ? totB : '—'; tB.style.color = totB<0?'#C0392B':totB<10?'#D68910':'var(--gold-dark)'; }
+
+  // Alert badge
+  const badge = document.getElementById('consAlertBadge');
+  if(badge){ const low=CONSUMABLES.filter(item=>{ const b=suppBal(me.code,curDay,item.code); return suppGet(me.code,curDay,item.code,'open')!==''&&b<10; }).length; badge.style.display=low>0?'inline-block':'none'; badge.textContent=low+' LOW'; }
+
+  if(_pendingScrollSupplies){ _pendingScrollSupplies=false; setTimeout(openSuppliesDirect,80); }
 }
 
 // ── Open numpad for a supplies field ──────────────────────────────
