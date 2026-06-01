@@ -4798,9 +4798,8 @@ function closeSuppliesPanel() {
 function renderSuppliesPanel() {
   const tbody = document.getElementById('suppliesPanelBody');
   if (!tbody || !me) return;
-  const locked  = isLocked(me.code, curDay);
-  const mgrOk   = mgrOverrideActive && mgrOverrideDay===curDay && mgrOverrideStore===me.code;
-  const canEdit = !locked || mgrOk;
+  // Supplies are always editable — bags/tissue are not sensitive inventory, never locked
+  const canEdit = true;
 
   let totO=0,totR=0,totU=0,totB=0,anyData=false,rows='';
   CONSUMABLES.forEach((item,idx)=>{
@@ -14193,10 +14192,9 @@ function refreshConsTable(){
   if(!tbody) return;
   if(!me){ tbody.innerHTML='<tr><td colspan="5" style="padding:18px;text-align:center;color:#aaa;font-family:var(--f-body);font-size:12px;">Please log in to view supplies</td></tr>'; return; }
 
-  const locked  = isLocked(me.code, curDay);
-  const mgrOk   = mgrOverrideActive && mgrOverrideDay===curDay && mgrOverrideStore===me.code;
-  const canEdit = !locked || mgrOk;
-  const tap     = canEdit ? '<div style="font-size:8px;color:#aaa;margin-top:2px;font-family:var(--f-body);">TAP</div>' : '';
+  // Supplies always editable — not subject to day lock
+  const canEdit = true;
+  const tap     = '<div style="font-size:8px;color:#aaa;margin-top:2px;font-family:var(--f-body);">TAP</div>';
 
   let totO=0, totR=0, totU=0, totB=0, rows='';
 
