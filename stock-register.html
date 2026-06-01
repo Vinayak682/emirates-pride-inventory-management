@@ -2010,17 +2010,14 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
           </button>
         </div>
 
-        <!-- Row 3: Export + Request Tester -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-          <button onclick="goToStockRegister();setTimeout(openExport,1600);" style="background:linear-gradient(135deg,#1B5E20,#2E7D32);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 10px rgba(27,94,32,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+        <!-- Row 3: Export (full width) -->
+        <div style="margin-bottom:10px;">
+          <button onclick="goToStockRegister();setTimeout(openExport,1600);" style="width:100%;background:linear-gradient(135deg,#1B5E20,#2E7D32);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 3px 10px rgba(27,94,32,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <span style="font-size:18px;">📥</span>
-            <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Export Report</span>
-            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">تصدير التقرير</span>
-          </button>
-          <button onclick="goToStockRegister();setTimeout(openFGRequest,1600);" style="background:linear-gradient(135deg,#E65100,#F57C00);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 10px rgba(230,81,0,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-            <span style="font-size:18px;">📦</span>
-            <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Request Tester</span>
-            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">طلب تجربة</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-start;">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Export Report</span>
+              <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">تصدير التقرير</span>
+            </div>
           </button>
         </div>
 
@@ -2161,7 +2158,6 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <button class="top-btn" onclick="openFinanceDirect()" style="border-color:rgba(100,180,255,0.35);color:#82CFFF;" title="Open Finance / DSR">💰 Finance</button>
     <button class="top-btn" onclick="openTestersDirect()" style="border-color:rgba(160,120,255,0.35);color:#C4A8FF;" title="Open Tester Bottles">🧴 Testers</button>
     <button class="top-btn" onclick="openExport()" style="border-color:rgba(127,200,96,0.3);color:#7FC860;">📥 Export</button>
-    <button class="top-btn" onclick="openFGRequest()" style="border-color:rgba(255,150,50,0.3);color:#FF9632;">📦 Request Tester</button>
     <button class="top-btn stores-btn" id="allStoresBtn" onclick="openStores()">🏪 All Stores</button>
     <button class="top-btn logout" onclick="doLogout()">Logout</button>
     <button class="top-btn fullscreen-btn" id="fsBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
@@ -2195,7 +2191,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         <!-- Section header -->
         <div style="background:#6B5B35;padding:8px 14px;display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--gold);flex-shrink:0;">
           <span style="font-family:var(--f-mono);font-size:10px;font-weight:800;color:#FFFFFF;letter-spacing:2px;text-transform:uppercase;">🧴 TESTER BOTTLES</span>
-          <span style="font-family:var(--f-mono);font-size:9px;color:rgba(255,255,255,0.65);font-weight:500;">Tap Opening or Received to enter · Tap Status to update bottle condition</span>
+          <span style="font-family:var(--f-mono);font-size:9px;color:rgba(255,255,255,0.65);font-weight:500;">Tap Opening or Received to enter</span>
         </div>
         <!-- Tester grid -->
         <div id="tstrTotalsBar" style="position:sticky;top:0;z-index:10;"></div>
@@ -4701,7 +4697,14 @@ function mgrSendInstruction() {
 // ── Hub helpers ────────────────────────────────────────────────────
 function openSuppliesDirect() {
   const sec = document.getElementById('consumableSection');
-  if (sec) { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  if (!sec) return;
+  // consumableSection is inside #scrollArea — scroll that container, not window
+  const scrollArea = document.getElementById('scrollArea');
+  if (scrollArea) {
+    scrollArea.scrollTo({ top: sec.offsetTop, behavior: 'smooth' });
+  } else {
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 function hubLogout() {
@@ -13549,20 +13552,15 @@ function buildTesterGrid(){
     +'<div class="hdr-ar" style="color:#A04040;">قيد الاستخدام</div>'
     +'<div class="hdr-sub-lbl">(C)</div>'
     +'</th>'
-    +'<th rowspan="2" style="background:#F5EDD8;border-bottom:2px solid var(--gold);min-width:260px;">'
-    +'<div class="hdr-en" style="color:var(--gold-dark);">STATUS — ALL BOTTLES</div>'
-    +'<div class="hdr-ar" style="color:var(--ink-mid);">حالة كل التيسترات</div>'
-    +'<div class="hdr-sub-lbl" style="color:var(--ink-light);">(D) — Tap bar to cycle: Full &rarr; Half &rarr; Empty</div>'
-    +'</th>'
     +'<th rowspan="2" style="background:#FEF5E7;border-bottom:2px solid #9A7B4F;min-width:70px;width:70px;">'
     +'<div class="hdr-en" style="color:#9A7B4F;">RTW</div>'
     +'<div class="hdr-ar" style="color:#8A6A30;">مرتجع المستودع</div>'
-    +'<div class="hdr-sub-lbl">(E)</div>'
+    +'<div class="hdr-sub-lbl">(D)</div>'
     +'</th>'
     +'<th rowspan="2" style="background:#F5EDD8;border-bottom:2px solid var(--border);min-width:70px;width:70px;">'
     +'<div class="hdr-en" style="color:var(--gold-dark);">CLOSING</div>'
     +'<div class="hdr-ar" style="color:var(--ink-mid);">رصيد الإغلاق</div>'
-    +'<div class="hdr-sub-lbl" style="color:var(--ink-light);">(F)</div>'
+    +'<div class="hdr-sub-lbl" style="color:var(--ink-light);">(E)</div>'
     +'</th>'
     +'</tr>';
 
@@ -13576,7 +13574,7 @@ function buildTesterGrid(){
     cr.className='cat-sep';
     var _tcm2={'Caballo Collection':['🐎','كولكشن كابالو'],'Bel Collection':['🌹','كولكشن بيل'],'Sets & Specials':['✨','مجموعات مميزة'],'Oud':['🪵','عود'],'Dakhoon':['🌿','دخون'],'Oils & Gifts':['💎','زيوت وهدايا'],'Accessories':['🎁','إكسسوارات'],'Gift Boxes':['📦','صناديق هدايا'],'Heritage Collection':['🏛️','كولكشن التراث'],'Bel Paper Box (Gift Sets)':['🎀','بيل']};
     var _te=_tcm2[cat.cat]||['◈',''];
-    cr.innerHTML='<td colspan="7"><div class="tstr-cat-inner"><div class="tstr-cat-icon">'+_te[0]+'</div><div class="tstr-cat-name">'+cat.cat+' — TESTERS</div></div></td>';
+    cr.innerHTML='<td colspan="6"><div class="tstr-cat-inner"><div class="tstr-cat-icon">'+_te[0]+'</div><div class="tstr-cat-name">'+cat.cat+' — TESTERS</div></div></td>';
     tbody.appendChild(cr);
 
     tProds.forEach(function(p, ri){
@@ -13629,9 +13627,6 @@ function buildTesterGrid(){
 
         +'<td class="dcell" style="text-align:center;cursor:default;">'
         +'<span class="dcell-val'+(tuse===0?' empty':'')+'">'+( tuse||'&mdash;')+'</span></td>'
-
-        +'<td class="dcell" style="padding:6px 8px;text-align:center;cursor:default;">'
-        +_tbStatusBars(p.code,canEdit)+sealedHtml+'</td>'
 
         +(canEdit
           ? '<td class="dcell" style="text-align:center;cursor:pointer;border:1px dashed #F2994A;background:#FFFBF5;" onclick="openTstrRTW(\'' + p.code + '\')" title="Tap to enter Return to Warehouse">'
