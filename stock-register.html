@@ -1897,13 +1897,244 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
+<!-- ══════════ OPERATIONS HUB (intermediate screen after login) ══════════ -->
+<div id="hubScreen" style="display:none;position:fixed;inset:0;background:#FAFAF8;z-index:600;overflow-y:auto;font-family:'Montserrat',sans-serif;">
+
+  <!-- Hub Topbar -->
+  <div style="background:#6B5B35;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 2px 12px rgba(107,91,53,0.3);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#fff;letter-spacing:2px;line-height:1.1;">EMIRATES PRIDE</div>
+        <div style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:11px;color:rgba(201,168,76,0.85);line-height:1.2;">فخـر الإمارات</div>
+      </div>
+      <div style="background:rgba(201,168,76,0.25);border:1px solid rgba(201,168,76,0.5);color:#C9A84C;font-size:9px;font-weight:700;letter-spacing:1.2px;padding:3px 10px;border-radius:20px;display:flex;flex-direction:column;align-items:center;line-height:1.4;">
+        <span>OPERATIONS HUB</span>
+        <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:9px;letter-spacing:0;">مركز العمليات</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="hubStoreName" style="color:rgba(255,255,255,0.85);font-size:12px;font-weight:500;text-align:right;"></span>
+      <button onclick="hubLogout()" style="background:rgba(200,60,60,0.25);border:1px solid rgba(200,60,60,0.5);color:#fff;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.5px;padding:7px 16px;border-radius:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.4;">
+        <span>LOGOUT</span>
+        <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;letter-spacing:0;">تسجيل الخروج</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hub Body -->
+  <div style="max-width:1200px;margin:0 auto;padding:28px 24px;display:grid;grid-template-columns:1fr 390px;gap:24px;align-items:start;">
+
+    <!-- LEFT: Store Card + Action Buttons -->
+    <div>
+      <!-- Greeting -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#8A8278;text-transform:uppercase;margin-bottom:4px;display:flex;gap:8px;">
+          <span>Quick Access</span><span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:400;letter-spacing:0;text-transform:none;">وصول سريع</span>
+        </div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#1A1A1A;" id="hubGreeting">Good morning</div>
+        <div style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:14px;color:#4A4540;margin-top:2px;" id="hubGreetingAr">صباح الخير</div>
+      </div>
+
+      <!-- Store Card -->
+      <div id="hubStoreCard" style="background:#fff;border:1px solid #E5E0D8;border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(107,91,53,0.07);">
+
+        <!-- Store identity -->
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #F0EDE8;">
+          <div style="width:54px;height:54px;background:linear-gradient(135deg,#6B5B35,#8A7444);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;box-shadow:0 3px 10px rgba(107,91,53,0.3);">🏪</div>
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#1A1A1A;line-height:1.2;" id="hubCardStoreName">—</div>
+            <div style="font-size:11px;color:#8A8278;font-weight:500;margin-top:3px;display:flex;gap:6px;align-items:center;">
+              <span id="hubCardStoreCity">—</span>
+              <span style="color:#D0C8B8;">·</span>
+              <span style="font-family:'IBM Plex Mono',monospace;color:#C9A84C;font-size:10px;font-weight:600;" id="hubCardStoreCode">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section label -->
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#8A8278;text-transform:uppercase;">Quick Actions</span>
+          <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:11px;color:#B0A898;">الإجراءات السريعة</span>
+        </div>
+
+        <!-- Row 1: Stock Register + Dashboard -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <button onclick="goToStockRegister()" style="background:linear-gradient(135deg,#6B5B35,#7A6830);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:16px 12px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 4px 14px rgba(107,91,53,0.3);transition:transform 0.15s,box-shadow 0.15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(107,91,53,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(107,91,53,0.3)'">
+            <span style="font-size:22px;">📋</span>
+            <span style="font-size:12px;font-weight:700;letter-spacing:0.5px;">Stock Register</span>
+            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:11px;font-weight:400;opacity:0.85;">سجل المخزون</span>
+          </button>
+          <button onclick="goToDashboard()" style="background:linear-gradient(135deg,#1a2744,#243258);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:16px 12px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 4px 14px rgba(26,39,68,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <span style="font-size:22px;">📊</span>
+            <span style="font-size:12px;font-weight:700;letter-spacing:0.5px;">Dashboard</span>
+            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:11px;font-weight:400;opacity:0.85;">لوحة التحكم</span>
+          </button>
+        </div>
+
+        <!-- Row 2: Finance + Testers -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <button onclick="goToStockRegister();setTimeout(openFinanceDirect,1600);" style="background:linear-gradient(135deg,#0D47A1,#1565C0);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:14px 12px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 10px rgba(13,71,161,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <span style="font-size:20px;">💰</span>
+            <span style="font-size:12px;font-weight:700;letter-spacing:0.3px;">Finance / DSR</span>
+            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:11px;font-weight:400;opacity:0.85;">المالية / التقرير اليومي</span>
+          </button>
+          <button onclick="goToStockRegister();setTimeout(openTestersDirect,1600);" style="background:linear-gradient(135deg,#4A148C,#6A1B9A);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:14px 12px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 10px rgba(74,20,140,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <span style="font-size:20px;">🧴</span>
+            <span style="font-size:12px;font-weight:700;letter-spacing:0.3px;">Tester Bottles</span>
+            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:11px;font-weight:400;opacity:0.85;">زجاجات التجربة</span>
+          </button>
+        </div>
+
+        <!-- Row 3: Export + Request Tester -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <button onclick="goToStockRegister();setTimeout(openExport,1600);" style="background:linear-gradient(135deg,#1B5E20,#2E7D32);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 10px rgba(27,94,32,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <span style="font-size:18px;">📥</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Export Report</span>
+            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">تصدير التقرير</span>
+          </button>
+          <button onclick="goToStockRegister();setTimeout(openFGRequest,1600);" style="background:linear-gradient(135deg,#E65100,#F57C00);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 10px rgba(230,81,0,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <span style="font-size:18px;">📦</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Request Tester</span>
+            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">طلب تجربة</span>
+          </button>
+        </div>
+
+        <!-- Row 4: Store Supplies -->
+        <div>
+          <button onclick="goToStockRegister();setTimeout(openSuppliesDirect,1600);" style="width:100%;background:linear-gradient(135deg,#37474F,#546E7A);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 3px 10px rgba(55,71,79,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <span style="font-size:18px;">🛍️</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-start;">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Store Supplies</span>
+              <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">مستلزمات المتجر — Bags · Tissue</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- MGR: All Stores Grid -->
+      <div id="hubMgrStores" style="display:none;">
+        <div style="display:flex;gap:8px;align-items:baseline;margin-bottom:14px;">
+          <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#8A8278;text-transform:uppercase;">All Stores</span>
+          <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:11px;color:#B0A898;">جميع المتاجر</span>
+        </div>
+        <div id="hubStoresGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Notification Board -->
+    <div style="position:sticky;top:80px;">
+      <div style="background:#fff;border:1px solid #E5E0D8;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(107,91,53,0.07);">
+
+        <!-- Notif Header -->
+        <div style="background:#6B5B35;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="color:#fff;font-weight:700;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;">🔔</span>
+            <div style="display:flex;flex-direction:column;line-height:1.3;">
+              <span style="font-size:12px;letter-spacing:0.5px;">Notification Board</span>
+              <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:11px;font-weight:400;opacity:0.8;">لوحة الإشعارات</span>
+            </div>
+            <span id="hubUnreadBadge" style="display:none;background:#E53E3E;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:4px;"></span>
+          </div>
+          <button id="hubComposeBtn" onclick="hubToggleCompose()" style="display:none;background:rgba(201,168,76,0.25);border:1px solid rgba(201,168,76,0.5);color:#C9A84C;font-size:10px;font-weight:700;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Montserrat',sans-serif;display:flex;flex-direction:column;align-items:center;line-height:1.4;">
+            <span>+ NEW</span>
+            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;">+ جديد</span>
+          </button>
+        </div>
+
+        <!-- Compose Area (MGR only) -->
+        <div id="hubComposeArea" style="display:none;padding:16px 18px;border-bottom:1px solid #E5E0D8;background:#FAFAF8;">
+          <div style="margin-bottom:10px;">
+            <label style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8A8278;text-transform:uppercase;display:flex;gap:6px;margin-bottom:5px;">
+              <span>To · </span><span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:400;text-transform:none;letter-spacing:0;">إلى</span>
+            </label>
+            <select id="hubNotifTarget" style="width:100%;border:1px solid #D0C8B8;border-radius:6px;padding:8px 10px;font-family:'Montserrat',sans-serif;font-size:12px;background:#fff;color:#1A1A1A;">
+              <option value="ALL">📢 All Stores — جميع المتاجر</option>
+            </select>
+          </div>
+          <div style="margin-bottom:10px;">
+            <label style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8A8278;text-transform:uppercase;display:flex;gap:6px;margin-bottom:5px;">
+              <span>Priority · </span><span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:400;text-transform:none;letter-spacing:0;">الأولوية</span>
+            </label>
+            <div style="display:flex;gap:14px;">
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                <input type="radio" name="hubPrio" value="normal" checked>
+                <span>Normal</span> <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:11px;color:#8A8278;">عادي</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+                <input type="radio" name="hubPrio" value="urgent">
+                <span>🔴 Urgent</span> <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:11px;color:#8A8278;">عاجل</span>
+              </label>
+            </div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <label style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8A8278;text-transform:uppercase;display:flex;gap:6px;margin-bottom:5px;">
+              <span>Message · </span><span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:400;text-transform:none;letter-spacing:0;">الرسالة</span>
+            </label>
+            <textarea id="hubNotifMsg" placeholder="Type your notification… / اكتب إشعارك هنا" style="width:100%;border:1px solid #D0C8B8;border-radius:6px;padding:8px 10px;font-family:'Montserrat',sans-serif;font-size:12px;min-height:70px;resize:vertical;box-sizing:border-box;"></textarea>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="hubSendNotif()" style="flex:1;background:#6B5B35;border:none;color:#fff;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;padding:10px;border-radius:7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.4;">
+              <span>Send</span><span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:400;font-size:11px;">إرسال</span>
+            </button>
+            <button onclick="hubToggleCompose()" style="background:#F5F2EC;border:1px solid #D0C8B8;color:#4A4540;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;padding:10px 14px;border-radius:7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.4;">
+              <span>Cancel</span><span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:400;font-size:11px;">إلغاء</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div id="hubNotifList" style="max-height:500px;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;">
+          <div style="text-align:center;padding:28px 0;">
+            <div style="color:#B0A898;font-size:12px;">No notifications yet</div>
+            <div style="font-family:'IBM Plex Sans Arabic',sans-serif;color:#C8C0B8;font-size:12px;margin-top:3px;">لا توجد إشعارات بعد</div>
+          </div>
+        </div>
+
+        <!-- MGR: Clear All -->
+        <div id="hubClearAllWrap" style="display:none;padding:10px 18px;border-top:1px solid #E5E0D8;display:flex;justify-content:flex-end;">
+          <button onclick="hubClearAll()" style="background:none;border:none;color:#C0392B;font-size:11px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;display:flex;flex-direction:column;align-items:flex-end;line-height:1.4;">
+            <span>🗑 Clear All</span>
+            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:400;font-size:10px;">مسح الكل</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+</div><!-- /hubScreen -->
+
 <!-- ══════════ APP ══════════ -->
 <div id="appShell">
   <!-- Top bar -->
   <div class="app-topbar">
     <span class="top-store" id="topStore">—</span>
     <div class="top-spacer"></div>
+
+    <!-- Notification Bell -->
+    <div style="position:relative;display:inline-block;">
+      <button class="top-btn" id="notifBellBtn" onclick="toggleNotifDropdown()" style="border-color:rgba(255,200,60,0.4);color:#FFD54F;padding:6px 10px;font-size:15px;position:relative;" title="Notifications">
+        🔔
+        <span id="topNotifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#E53E3E;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;line-height:1;padding:0 3px;font-family:'Montserrat',sans-serif;"></span>
+      </button>
+      <!-- Notification Dropdown -->
+      <div id="notifDropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:320px;background:#fff;border:1px solid #E5E0D8;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.18);z-index:2000;overflow:hidden;font-family:'Montserrat',sans-serif;">
+        <div style="background:#6B5B35;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="color:#fff;font-size:12px;font-weight:700;letter-spacing:0.5px;">🔔 Notifications</span>
+          <button onclick="topMarkAllRead();event.stopPropagation();" style="background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:10px;font-weight:600;padding:3px 10px;border-radius:5px;cursor:pointer;font-family:'Montserrat',sans-serif;">Mark all read</button>
+        </div>
+        <div id="notifDropdownList" style="max-height:340px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;">
+          <div style="text-align:center;color:#B0A898;font-size:12px;padding:16px 0;">No notifications</div>
+        </div>
+      </div>
+    </div>
+
+    <button id="hubBackBtn" onclick="returnToHub()" style="display:none;background:rgba(201,168,76,0.18);border:1px solid rgba(201,168,76,0.5);color:#C9A84C;font-family:var(--f-body);font-size:10px;font-weight:700;letter-spacing:0.5px;padding:6px 13px;border-radius:6px;cursor:pointer;flex-direction:column;align-items:center;line-height:1.35;white-space:nowrap;">
+      <span>← Quick Access</span>
+      <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;letter-spacing:0;">الوصول السريع</span>
+    </button>
     <button class="top-btn" onclick="openDash()" style="border-color:rgba(201,164,78,0.3);color:var(--gold2);">📊 Dashboard</button>
+    <button class="top-btn" onclick="openFinanceDirect()" style="border-color:rgba(100,180,255,0.35);color:#82CFFF;" title="Open Finance / DSR">💰 Finance</button>
+    <button class="top-btn" onclick="openTestersDirect()" style="border-color:rgba(160,120,255,0.35);color:#C4A8FF;" title="Open Tester Bottles">🧴 Testers</button>
     <button class="top-btn" onclick="openExport()" style="border-color:rgba(127,200,96,0.3);color:#7FC860;">📥 Export</button>
     <button class="top-btn" onclick="openFGRequest()" style="border-color:rgba(255,150,50,0.3);color:#FF9632;">📦 Request Tester</button>
     <button class="top-btn stores-btn" id="allStoresBtn" onclick="openStores()">🏪 All Stores</button>
@@ -1950,16 +2181,17 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       </div>
       <!-- ══ END TESTER SECTION ══ -->
 
-      <!-- ══ CONSUMABLES SECTION ══ -->
-      <div id="consumableSection" style="display:none;">
-        <div class="cons-hdr">
-          <span style="font-family:var(--f-mono);font-size:10px;font-weight:800;color:#FFFFFF;letter-spacing:2px;text-transform:uppercase;">🛍️ CONSUMABLES &amp; PACKING</span>
-          <span id="consAlertBadge" class="cons-alert-badge" style="display:none;">0 LOW</span>
-          <span style="font-family:var(--f-mono);font-size:9px;color:#AAA;font-weight:500;margin-left:auto;">Tap any row to update stock count</span>
+      <!-- ══ STORE SUPPLIES SECTION ══ -->
+      <div id="consumableSection" style="margin-top:0;border-top:3px solid var(--gold);">
+        <div style="background:#6B5B35;padding:8px 14px;display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--gold);flex-shrink:0;">
+          <span style="font-family:var(--f-mono);font-size:10px;font-weight:800;color:#FFFFFF;letter-spacing:2px;text-transform:uppercase;">🛍️ STORE SUPPLIES</span>
+          <span style="font-family:var(--f-ar);font-size:11px;color:rgba(201,168,76,0.85);">مستلزمات المتجر</span>
+          <span id="consAlertBadge" style="display:none;background:#E53E3E;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px;"></span>
+          <span style="font-family:var(--f-mono);font-size:9px;color:rgba(255,255,255,0.55);font-weight:500;margin-left:auto;">Tap a cell to enter · Opening + Received − Used = Balance</span>
         </div>
         <div id="consGrid"></div>
       </div>
-      <!-- ══ END CONSUMABLES SECTION ══ -->
+      <!-- ══ END STORE SUPPLIES SECTION ══ -->
 
     </div>
   </div>
@@ -2665,13 +2897,49 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <button id="mgrDashTrainingBtn" onclick="openTrainingGuide()" style="background:linear-gradient(135deg,#6B5B35,#9A7B4F);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(107,91,53,0.25);">📖 Training Guide</button>
       <button onclick="openFGApproval()" style="background:linear-gradient(135deg,#FF6B35,#F7931E);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(255,107,53,0.25);">📦 FG Tester Requests</button>
       <button id="mgrDashDPBtn" onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.25);">📈 Demand Planning</button>
-      <button onclick="openAMMinMaxPanel()" style="background:linear-gradient(135deg,#065F46,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.25);">📊 Stock Guide / Min-Max</button>
+      <button onclick="openAMMinMaxPanel()" style="background:linear-gradient(135deg,#065F46,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.25);">📊 Stock Guide</button>
       <button onclick="openSecurityDashboard()" style="background:linear-gradient(135deg,#922B21,#C0392B);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(192,57,43,0.25);">🔐 Security Log</button>
       <button onclick="openAMHub()" style="background:linear-gradient(135deg,#1a6b4a,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.25);">👥 AM Feedback</button>
       <button onclick="renderMgrDashboard()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;color:var(--ink-mid);font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:0.5px;">⇅ Refresh</button>
       <button onclick="closeMgrDashboard()" style="background:var(--gold-dark);border:none;border-radius:6px;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
     </div>
   </div>
+  <!-- ── Quick Instruction Strip ── -->
+  <div style="background:#FFFDF9;border-bottom:1px solid #E5E0D8;flex-shrink:0;">
+    <div onclick="toggleMgrInstructPanel()" id="mgrInstructToggle" style="cursor:pointer;padding:9px 16px;display:flex;align-items:center;justify-content:space-between;user-select:none;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:14px;">📢</span>
+        <span style="font-family:var(--f-body);font-size:11px;font-weight:700;color:#6B5B35;letter-spacing:0.5px;text-transform:uppercase;">Send Store Instruction</span>
+        <span style="font-family:var(--f-ar);font-size:11px;color:#8A8278;">إرسال تعليمة للمتجر</span>
+      </div>
+      <span id="mgrInstructArrow" style="font-family:var(--f-body);font-size:10px;color:#8A8278;font-weight:600;">▼ EXPAND</span>
+    </div>
+    <div id="mgrInstructCompose" style="display:none;padding:12px 16px 14px;border-top:1px solid #EDE8E0;background:#FAFAF8;">
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="flex:0 0 200px;min-width:160px;">
+          <label style="font-size:9px;font-weight:700;letter-spacing:1px;color:#8A8278;text-transform:uppercase;display:block;margin-bottom:5px;">To · إلى</label>
+          <select id="mgrInstructTarget" style="width:100%;border:1px solid #D0C8B8;border-radius:6px;padding:8px 10px;font-family:var(--f-body);font-size:11px;background:#fff;color:#1A1A1A;"></select>
+        </div>
+        <div style="flex:0 0 160px;">
+          <label style="font-size:9px;font-weight:700;letter-spacing:1px;color:#8A8278;text-transform:uppercase;display:block;margin-bottom:8px;">Priority · الأولوية</label>
+          <div style="display:flex;gap:12px;">
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-family:var(--f-body);">
+              <input type="radio" name="mgrInstructPrio" value="normal" checked> Normal
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-family:var(--f-body);">
+              <input type="radio" name="mgrInstructPrio" value="urgent"> 🔴 Urgent
+            </label>
+          </div>
+        </div>
+        <div style="flex:1;min-width:200px;">
+          <label style="font-size:9px;font-weight:700;letter-spacing:1px;color:#8A8278;text-transform:uppercase;display:block;margin-bottom:5px;">Message · الرسالة</label>
+          <input type="text" id="mgrInstructMsg" placeholder="e.g. Do not offer any discounts today / لا تقدموا أي خصومات اليوم" style="width:100%;border:1px solid #D0C8B8;border-radius:6px;padding:8px 10px;font-family:var(--f-body);font-size:12px;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter')mgrSendInstruction()">
+        </div>
+        <button onclick="mgrSendInstruction()" style="background:#6B5B35;border:none;color:#fff;font-family:var(--f-body);font-size:11px;font-weight:700;padding:10px 22px;border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;letter-spacing:0.5px;">📢 SEND</button>
+      </div>
+    </div>
+  </div>
+
   <div id="mgrDashBody" style="flex:1;overflow-y:auto;background:#FAFAF8;"></div>
 </div>
 
@@ -2919,8 +3187,8 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   <!-- Header -->
   <div id="amPrintHide" style="background:#FFFFFF;border-bottom:3px solid var(--gold);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px;box-shadow:0 2px 8px rgba(201,168,76,0.08);">
     <div>
-      <div style="font-family:var(--f-serif);font-size:17px;font-weight:600;color:var(--gold-dark);">📊 Stock Guide — Min/Max Settings</div>
-      <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);margin-top:2px;letter-spacing:0.5px;">Area Manager fills target stock levels per SKU — auto-calculates from demand planning</div>
+      <div style="font-family:var(--f-serif);font-size:17px;font-weight:600;color:var(--gold-dark);">📊 Stock Guide — Benchmark Levels</div>
+      <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);margin-top:2px;letter-spacing:0.5px;">Set the target stock (benchmark) per SKU per store — auto-calculated from demand planning</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
       <div style="display:flex;align-items:center;gap:6px;">
@@ -2963,7 +3231,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
   <!-- Print header (hidden in screen) -->
   <div id="amPrintHeader" style="display:none;padding:16px 20px;border-bottom:2px solid #1A1A1A;">
-    <div style="font-family:var(--f-mono);font-size:16px;font-weight:800;">EMIRATES PRIDE PERFUMES — STOCK GUIDE (MIN/MAX LEVELS)</div>
+    <div style="font-family:var(--f-mono);font-size:16px;font-weight:800;">EMIRATES PRIDE PERFUMES — STOCK GUIDE (BENCHMARK LEVELS)</div>
     <div style="font-family:var(--f-mono);font-size:11px;color:#555;margin-top:4px;" id="amPrintMeta"></div>
   </div>
 </div>
@@ -3800,73 +4068,531 @@ async function doLogin(){
   _failedLoginCount[code]=0;
   err.textContent='';
   try{ localStorage.setItem('ep_last_store_v7',code); }catch(e){}
-  me=store;
-  curDay=DAY_PAST;
   const _loginType = code==='MGR'?'mgr': code==='WH001'?'wh': code.startsWith('AM_')?'am':'store';
   _secCreateSession(code, _loginType);
 
-  // ── WAREHOUSE LOGIN → show warehouse panel instead of stock grid
+  // ── WAREHOUSE LOGIN → show warehouse panel directly (no hub)
   if(store.code==='WH001'){
+    me=store; curDay=DAY_PAST;
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('whPanel').style.display='flex';
     whInit();
     return;
   }
-  
-  document.getElementById('loginScreen').style.display='none';
-  const app=document.getElementById('appShell');
-  app.style.display='flex';
-  document.getElementById('topStore').textContent=store.name;
-  buildSpSkuSel();
 
-  // ── AREA MANAGER LOGIN → same as MGR but filtered to AM's stores
-  if(store.code.startsWith('AM_')){
-    isAmSession=true; isMgrSession=true;
-    amManagedStores=store.amStores||[];
-    startSync(store.code);
-    setTimeout(()=>{
-      const tb=document.querySelector('.app-topbar');
-      if(tb&&!document.getElementById('amDashBtn')){
-        const btn=document.createElement('button');
-        btn.id='amDashBtn';
-        btn.textContent='📊 My Stores Dashboard';
-        btn.style.cssText='background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.28);color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:600;letter-spacing:0.5px;';
-        btn.onclick=openMgrDashboard;
-        const logoutBtn=tb.querySelector('.top-btn.logout');
-        if(logoutBtn) tb.insertBefore(btn,logoutBtn);
-      }
-      openMgrDashboard();
-    },1000);
+  // ── MGR / AM LOGINS → bypass hub, go straight to app (original flow)
+  if(store.code==='MGR' || store.code.startsWith('AM_')){
+    me=store; curDay=DAY_PAST;
+    document.getElementById('loginScreen').style.display='none';
+    const app=document.getElementById('appShell');
+    app.style.display='flex';
+    document.getElementById('topStore').textContent=store.name;
+    buildSpSkuSel();
+    if(store.code.startsWith('AM_')){
+      isAmSession=true; isMgrSession=true; amManagedStores=store.amStores||[];
+      startSync(store.code);
+      setTimeout(()=>{
+        const tb=document.querySelector('.app-topbar');
+        if(tb&&!document.getElementById('amDashBtn')){
+          const btn=document.createElement('button');
+          btn.id='amDashBtn'; btn.textContent='📊 My Stores Dashboard';
+          btn.style.cssText='background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.28);color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:600;letter-spacing:0.5px;';
+          btn.onclick=openMgrDashboard;
+          const logoutBtn=tb.querySelector('.top-btn.logout');
+          if(logoutBtn) tb.insertBefore(btn,logoutBtn);
+        }
+        openMgrDashboard();
+      },1000);
+    } else {
+      isMgrSession=true;
+      startSync(store.code);
+      setTimeout(()=>{
+        const tb=document.querySelector('.app-topbar');
+        if(tb&&!document.getElementById('mgrDashBtn')){
+          const btn=document.createElement('button');
+          btn.id='mgrDashBtn'; btn.textContent='📊 All Stores Dashboard';
+          btn.style.cssText='background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.28);color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;';
+          btn.onclick=openMgrDashboard;
+          const logoutBtn=tb.querySelector('.top-btn.logout');
+          if(logoutBtn) tb.insertBefore(btn,logoutBtn);
+          const dpBtn=document.createElement('button');
+          dpBtn.id='dpDashBtn'; dpBtn.textContent='📈 Demand Planning';
+          dpBtn.style.cssText='background:linear-gradient(135deg,#6B21A8,#7C3AED);border:1px solid #A78BFA;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:6px 14px;border-radius:6px;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.3);';
+          dpBtn.onclick=()=>{openDPPanel();};
+          if(logoutBtn) tb.insertBefore(dpBtn,logoutBtn);
+        }
+        openMgrDashboard();
+      },1500);
+    }
     return;
   }
 
-  // startSync shows loading overlay, loads server data, then rebuilds grid
-  startSync(store.code);
-  // If MGR login — show manager dashboard button in top bar
-  if(store.code==='MGR'){ isMgrSession=true;
-    setTimeout(()=>{
-      const tb=document.querySelector('.app-topbar');
-      if(tb&&!document.getElementById('mgrDashBtn')){
-        const btn=document.createElement('button');
-        btn.id='mgrDashBtn';
-        btn.textContent='📊 All Stores Dashboard';
-        btn.style.cssText='background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.28);color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;';
-        btn.onclick=openMgrDashboard;
-        const logoutBtn=tb.querySelector('.top-btn.logout');
-        if(logoutBtn) tb.insertBefore(btn,logoutBtn);
-        
-        // Add Demand Planning Dashboard button
-        const dpBtn=document.createElement('button');
-        dpBtn.id='dpDashBtn';
-        dpBtn.textContent='📈 Demand Planning';
-        dpBtn.style.cssText='background:linear-gradient(135deg,#6B21A8,#7C3AED);border:1px solid #A78BFA;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:6px 14px;border-radius:6px;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.3);';
-        dpBtn.onclick=()=>{openDPPanel();};
-        if(logoutBtn) tb.insertBefore(dpBtn,logoutBtn);
+  // ── STORE STAFF → go through Operations Hub
+  openHubScreen(store);
+}
+// ══════════════════════════════════════════════════════════════
+//  OPERATIONS HUB — intermediate screen after login
+// ══════════════════════════════════════════════════════════════
+let _hubStore = null;
+
+function _hubSeedDummyNotifs() {
+  const existing = _hubGetNotifs();
+  if (existing.length > 0) return; // don't overwrite real data
+  const now = Date.now();
+  const min = 60000;
+  const dummy = [
+    {
+      id: now - 5 * min,
+      from: 'Manager — Head Office',
+      target: 'ALL',
+      message: '🔴 URGENT: Ramadan promotion starts tomorrow. Make sure all Bel Collection testers are active and replenished before opening. Check B00008, B00015, B00021 stock levels.',
+      priority: 'urgent',
+      timestamp: new Date(now - 5 * min).toISOString()
+    },
+    {
+      id: now - 42 * min,
+      from: 'Manager — Head Office',
+      target: 'ALL',
+      message: 'Reminder: All stores must submit their Daily Sales Report (DSR) before 10 PM tonight. Use the Finance tab inside the Stock Register to fill and lock.',
+      priority: 'normal',
+      timestamp: new Date(now - 42 * min).toISOString()
+    },
+    {
+      id: now - 3 * 60 * min,
+      from: 'Warehouse — JAFZA',
+      target: 'ALL',
+      message: '📦 Warehouse dispatch confirmed for today. Shipment includes: White 100ml (C00002) ×100, Midnight Glow (B00008) ×60, Hidden Leather (B00015) ×40. Please update Opening Stock once received.',
+      priority: 'normal',
+      timestamp: new Date(now - 3 * 60 * min).toISOString()
+    },
+    {
+      id: now - 24 * 60 * min,
+      from: 'Manager — Head Office',
+      target: 'ALL',
+      message: 'Stock count week ends this Friday. All stores must complete a full physical count and submit via the Dashboard by end of day Friday. Contact your AM if you need assistance.',
+      priority: 'normal',
+      timestamp: new Date(now - 24 * 60 * min).toISOString()
+    },
+    {
+      id: now - 48 * 60 * min,
+      from: 'Manager — Head Office',
+      target: 'ALL',
+      message: '⚠️ New tester policy effective immediately: Testers must be replaced every 90 days OR when fill level drops below 20%. Log all replacements in the Tester Bottles section.',
+      priority: 'urgent',
+      timestamp: new Date(now - 48 * 60 * min).toISOString()
+    }
+  ];
+  _hubSaveNotifs(dummy);
+}
+
+function openHubScreen(store) {
+  _hubStore = store;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('hubScreen').style.display = 'block';
+
+  // Seed demo notifications on first load
+  _hubSeedDummyNotifs();
+
+  // Greeting — EN + AR
+  const hr = new Date().getHours();
+  const greet    = hr < 12 ? 'Good morning'   : hr < 17 ? 'Good afternoon'   : 'Good evening';
+  const greetAr  = hr < 12 ? 'صباح الخير'     : hr < 17 ? 'مساء الخير'       : 'مساء النور';
+  document.getElementById('hubGreeting').textContent   = greet + ', ' + (store.name.split('—')[1] || store.name).trim();
+  document.getElementById('hubGreetingAr').textContent = greetAr;
+  document.getElementById('hubStoreName').textContent  = store.name;
+  document.getElementById('hubCardStoreName').textContent = store.name;
+  document.getElementById('hubCardStoreCity').textContent = store.city || '';
+  const codeEl = document.getElementById('hubCardStoreCode');
+  if (codeEl) codeEl.textContent = store.code;
+
+  const isMgr = store.code === 'MGR' || store.code.startsWith('AM_');
+
+  // Show compose btn + clear btn for MGR
+  if (isMgr) {
+    document.getElementById('hubComposeBtn').style.display = 'block';
+    document.getElementById('hubClearAllWrap').style.display = 'block';
+    // Populate target dropdown
+    const sel = document.getElementById('hubNotifTarget');
+    sel.innerHTML = '<option value="ALL">📢 All Stores</option>';
+    STORES.filter(s => !s.code.startsWith('AM_') && s.code !== 'MGR' && s.code !== 'WH001').forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.code;
+      opt.textContent = s.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  // For MGR: show all stores grid, hide single store card
+  if (store.code === 'MGR') {
+    document.getElementById('hubStoreCard').style.display = 'none';
+    document.getElementById('hubMgrStores').style.display = 'block';
+    _hubRenderStoresGrid();
+  } else if (store.code.startsWith('AM_')) {
+    document.getElementById('hubStoreCard').style.display = 'none';
+    document.getElementById('hubMgrStores').style.display = 'block';
+    _hubRenderStoresGrid(store.amStores);
+  }
+
+  _hubRenderNotifs();
+}
+
+function _hubRenderStoresGrid(filterCodes) {
+  const grid = document.getElementById('hubStoresGrid');
+  const storeList = filterCodes
+    ? STORES.filter(s => filterCodes.includes(s.code))
+    : STORES.filter(s => !s.code.startsWith('AM_') && s.code !== 'MGR' && s.code !== 'WH001');
+
+  grid.innerHTML = storeList.map(s => `
+    <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(107,91,53,0.05);">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#C9A84C;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">${s.code}</div>
+      <div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:2px;">${s.name}</div>
+      <div style="font-size:11px;color:#8A8278;margin-bottom:12px;">${s.city}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">
+        <button onclick="hubGoStore('${s.code}','register')" style="background:#6B5B35;border:none;color:#fff;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;">📋 Register</button>
+        <button onclick="hubGoStore('${s.code}','dashboard')" style="background:#1a2744;border:none;color:#fff;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;">📊 Dashboard</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function goToStockRegister() {
+  document.getElementById('hubScreen').style.display = 'none';
+  _hubLaunchApp(_hubStore, 'register');
+}
+
+function goToDashboard() {
+  document.getElementById('hubScreen').style.display = 'none';
+  _hubLaunchApp(_hubStore, 'dashboard');
+}
+
+function hubGoStore(code, mode) {
+  const store = STORES.find(s => s.code === code);
+  if (!store) return;
+  document.getElementById('hubScreen').style.display = 'none';
+  _hubLaunchApp(store, mode);
+}
+
+function _hubLaunchApp(store, mode) {
+  me = store;
+  curDay = DAY_PAST;
+  document.getElementById('appShell').style.display = 'flex';
+  document.getElementById('topStore').textContent = store.name;
+  buildSpSkuSel();
+  // Show "← Quick Access" button for store-level sessions only
+  const backBtn = document.getElementById('hubBackBtn');
+  if (backBtn) backBtn.style.display = 'flex';
+
+  if (store.code === 'MGR' || store.code.startsWith('AM_')) {
+    if (store.code.startsWith('AM_')) { isAmSession = true; isMgrSession = true; amManagedStores = store.amStores || []; }
+    else { isMgrSession = true; }
+    startSync(store.code);
+    setTimeout(() => {
+      const tb = document.querySelector('.app-topbar');
+      if (tb && !document.getElementById('mgrDashBtn')) {
+        const btn = document.createElement('button');
+        btn.id = 'mgrDashBtn';
+        btn.textContent = store.code.startsWith('AM_') ? '📊 My Stores Dashboard' : '📊 All Stores Dashboard';
+        btn.style.cssText = 'background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.28);color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;';
+        btn.onclick = openMgrDashboard;
+        const logoutBtn = tb.querySelector('.top-btn.logout');
+        if (logoutBtn) tb.insertBefore(btn, logoutBtn);
+        if (store.code === 'MGR') {
+          const dpBtn = document.createElement('button');
+          dpBtn.id = 'dpDashBtn';
+          dpBtn.textContent = '📈 Demand Planning';
+          dpBtn.style.cssText = 'background:linear-gradient(135deg,#6B21A8,#7C3AED);border:1px solid #A78BFA;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:6px 14px;border-radius:6px;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.3);';
+          dpBtn.onclick = () => { openDPPanel(); };
+          if (logoutBtn) tb.insertBefore(dpBtn, logoutBtn);
+        }
       }
-      openMgrDashboard();
-    },1500);
+      if (mode === 'dashboard') openMgrDashboard();
+    }, 1000);
+  } else {
+    startSync(store.code);
+    if (mode === 'dashboard') setTimeout(() => openDash(), 1500);
   }
 }
+
+// ── Direct Finance button ──────────────────────────────────
+function openFinanceDirect() {
+  // Open the dashboard panel and switch straight to Finance tab
+  const dp = document.getElementById('dashPanel');
+  if (dp) dp.style.display = 'flex';
+  if (typeof switchDashTab === 'function') switchDashTab('finance');
+}
+
+// ── Direct Testers button ──────────────────────────────────
+function openTestersDirect() {
+  // Scroll the main grid scroll-container to the tester section
+  const tstr = document.getElementById('testerSection');
+  if (!tstr) return;
+  const scroller = document.getElementById('gridScroll') || document.querySelector('.grid-scroll') || tstr.closest('[style*="overflow"]');
+  if (scroller) {
+    scroller.scrollTo({ top: tstr.offsetTop - 60, behavior: 'smooth' });
+  } else {
+    tstr.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  // Flash highlight so it's obvious
+  tstr.style.transition = 'outline 0.2s';
+  tstr.style.outline = '3px solid #C9A84C';
+  setTimeout(() => { tstr.style.outline = ''; }, 1800);
+}
+
+// ── Topbar Notification Bell ───────────────────────────────
+const TOP_NOTIF_READ_KEY = 'ep_notif_read_ids';
+
+function _topGetReadIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(TOP_NOTIF_READ_KEY) || '[]')); } catch(e) { return new Set(); }
+}
+function _topSaveReadIds(set) {
+  try { localStorage.setItem(TOP_NOTIF_READ_KEY, JSON.stringify([...set])); } catch(e) {}
+}
+
+function refreshTopNotifBadge() {
+  const badge = document.getElementById('topNotifBadge');
+  if (!badge || !me) return;
+  const storeCode = me.code;
+  const isMgr = storeCode === 'MGR' || storeCode.startsWith('AM_');
+  let notifs = _hubGetNotifs();
+  if (!isMgr) notifs = notifs.filter(n => n.target === 'ALL' || n.target === storeCode);
+  const read = _topGetReadIds();
+  const unread = notifs.filter(n => !read.has(n.id)).length;
+  if (unread > 0) {
+    badge.textContent = unread > 9 ? '9+' : unread;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function toggleNotifDropdown() {
+  const dd = document.getElementById('notifDropdown');
+  if (!dd) return;
+  const isOpen = dd.style.display !== 'none';
+  if (isOpen) { dd.style.display = 'none'; return; }
+  dd.style.display = 'block';
+  _renderTopNotifDropdown();
+  // Close on outside click
+  setTimeout(() => {
+    document.addEventListener('click', function _close(e) {
+      if (!document.getElementById('notifDropdown')?.contains(e.target) &&
+          e.target.id !== 'notifBellBtn' && !document.getElementById('notifBellBtn')?.contains(e.target)) {
+        document.getElementById('notifDropdown').style.display = 'none';
+        document.removeEventListener('click', _close);
+      }
+    });
+  }, 10);
+}
+
+function _renderTopNotifDropdown() {
+  const list = document.getElementById('notifDropdownList');
+  if (!list || !me) return;
+  const storeCode = me.code;
+  const isMgr = storeCode === 'MGR' || storeCode.startsWith('AM_');
+  let notifs = _hubGetNotifs();
+  if (!isMgr) notifs = notifs.filter(n => n.target === 'ALL' || n.target === storeCode);
+  const read = _topGetReadIds();
+
+  if (notifs.length === 0) {
+    list.innerHTML = '<div style="text-align:center;color:#B0A898;font-size:12px;padding:16px 0;">No notifications</div>';
+    return;
+  }
+
+  list.innerHTML = notifs.map(n => {
+    const isUnread = !read.has(n.id);
+    const isUrgent = n.priority === 'urgent';
+    const dt = new Date(n.timestamp);
+    const timeStr = dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + ' ' + dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const targetLabel = n.target === 'ALL' ? 'All Stores' : (STORES.find(s=>s.code===n.target)?.name || n.target);
+    return `<div style="background:${isUrgent ? '#FFF5F5' : (isUnread ? '#FDFBF6' : '#FAFAF8')};border:1px solid ${isUrgent ? '#FEB2B2' : '#E5E0D8'};border-left:4px solid ${isUrgent ? '#E53E3E' : (isUnread ? '#C9A84C' : '#D0C8B8')};border-radius:8px;padding:10px 12px;${isUnread ? 'box-shadow:0 1px 4px rgba(201,168,76,0.15);' : ''}">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;">
+        ${isUrgent ? '<span style="background:#E53E3E;color:#fff;font-size:9px;font-weight:700;letter-spacing:1px;padding:1px 6px;border-radius:8px;">URGENT</span>' : ''}
+        ${isUnread ? '<span style="background:#C9A84C;color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;">NEW</span>' : ''}
+        <span style="font-size:9px;color:#8A8278;font-family:'IBM Plex Mono',monospace;">${timeStr}</span>
+        <span style="font-size:9px;color:#C9A84C;font-weight:600;">→ ${targetLabel}</span>
+      </div>
+      <div style="font-size:12px;color:#1A1A1A;line-height:1.5;">${n.message.replace(/</g,'&lt;')}</div>
+      <div style="font-size:10px;color:#B0A898;margin-top:4px;">From: ${n.from}</div>
+    </div>`;
+  }).join('');
+}
+
+function topMarkAllRead() {
+  if (!me) return;
+  const storeCode = me.code;
+  const isMgr = storeCode === 'MGR' || storeCode.startsWith('AM_');
+  let notifs = _hubGetNotifs();
+  if (!isMgr) notifs = notifs.filter(n => n.target === 'ALL' || n.target === storeCode);
+  const read = _topGetReadIds();
+  notifs.forEach(n => read.add(n.id));
+  _topSaveReadIds(read);
+  refreshTopNotifBadge();
+  _renderTopNotifDropdown();
+}
+
+function returnToHub() {
+  if (!_hubStore) return;
+  // Hide the main app + any open panels
+  document.getElementById('appShell').style.display = 'none';
+  const panels = ['dashPanel','spPanel','amHubPanel','dpPanel','whPanel'];
+  panels.forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
+  // Re-open hub
+  document.getElementById('hubScreen').style.display = 'block';
+  _hubRenderNotifs();
+}
+
+// ── Manager Dashboard — Quick Instruction ─────────────────────────
+function toggleMgrInstructPanel() {
+  const area  = document.getElementById('mgrInstructCompose');
+  const arrow = document.getElementById('mgrInstructArrow');
+  const isOpen = area.style.display !== 'none';
+  area.style.display = isOpen ? 'none' : 'flex';
+  area.style.flexDirection = 'column';
+  arrow.textContent = isOpen ? '▼ EXPAND' : '▲ COLLAPSE';
+  if (!isOpen) {
+    const sel = document.getElementById('mgrInstructTarget');
+    if (sel && sel.options.length === 0) {
+      sel.innerHTML = '<option value="ALL">📢 All Stores — جميع المتاجر</option>';
+      STORES.filter(s => !s.code.startsWith('AM_') && s.code !== 'MGR' && s.code !== 'WH001').forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.code;
+        opt.textContent = s.name + ' (' + s.code + ')';
+        sel.appendChild(opt);
+      });
+    }
+    setTimeout(() => { const m = document.getElementById('mgrInstructMsg'); if(m) m.focus(); }, 100);
+  }
+}
+
+function mgrSendInstruction() {
+  const msg = (document.getElementById('mgrInstructMsg').value || '').trim();
+  if (!msg) { toast('⚠ Type a message first'); return; }
+  const target = document.getElementById('mgrInstructTarget').value;
+  const prio   = document.querySelector('input[name="mgrInstructPrio"]:checked')?.value || 'normal';
+  const notif  = {
+    id: Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    msg, target, prio,
+    at: new Date().toISOString(),
+    by: 'Manager'
+  };
+  const arr = _hubGetNotifs();
+  arr.unshift(notif);
+  _hubSaveNotifs(arr);
+  document.getElementById('mgrInstructMsg').value = '';
+  refreshTopNotifBadge();
+  const dest = target === 'ALL' ? 'all stores' : (STORES.find(s=>s.code===target)?.name || target);
+  toast('✓ Instruction sent to ' + dest);
+}
+
+// ── Hub helpers ────────────────────────────────────────────────────
+function openSuppliesDirect() {
+  const sec = document.getElementById('consumableSection');
+  if (sec) { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+}
+
+function hubLogout() {
+  document.getElementById('hubScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  _hubStore = null;
+  pinBuf = '';
+  pc();
+}
+
+// ── Notifications (localStorage) ───────────────────────────
+const HUB_NOTIF_KEY = 'ep_hub_notifications';
+
+function _hubGetNotifs() {
+  try { return JSON.parse(localStorage.getItem(HUB_NOTIF_KEY) || '[]'); } catch(e) { return []; }
+}
+function _hubSaveNotifs(arr) {
+  try { localStorage.setItem(HUB_NOTIF_KEY, JSON.stringify(arr)); } catch(e) {}
+}
+
+function hubToggleCompose() {
+  const el = document.getElementById('hubComposeArea');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  if (el.style.display === 'block') document.getElementById('hubNotifMsg').focus();
+}
+
+function hubSendNotif() {
+  const msg = (document.getElementById('hubNotifMsg').value || '').trim();
+  if (!msg) { alert('Please type a message.'); return; }
+  const target = document.getElementById('hubNotifTarget').value;
+  const prio = document.querySelector('input[name="hubPrio"]:checked')?.value || 'normal';
+  const notif = {
+    id: Date.now(),
+    from: _hubStore ? _hubStore.name : 'Manager',
+    target,
+    message: msg,
+    priority: prio,
+    timestamp: new Date().toISOString()
+  };
+  const arr = _hubGetNotifs();
+  arr.unshift(notif);
+  _hubSaveNotifs(arr);
+  document.getElementById('hubNotifMsg').value = '';
+  document.querySelector('input[name="hubPrio"][value="normal"]').checked = true;
+  hubToggleCompose();
+  _hubRenderNotifs();
+}
+
+function hubDeleteNotif(id) {
+  const arr = _hubGetNotifs().filter(n => n.id !== id);
+  _hubSaveNotifs(arr);
+  _hubRenderNotifs();
+}
+
+function hubClearAll() {
+  if (!confirm('Clear all notifications?')) return;
+  _hubSaveNotifs([]);
+  _hubRenderNotifs();
+}
+
+function _hubRenderNotifs() {
+  const list = document.getElementById('hubNotifList');
+  const badge = document.getElementById('hubUnreadBadge');
+  if (!list) return;
+
+  const storeCode = _hubStore ? _hubStore.code : null;
+  const isMgr = storeCode === 'MGR' || (storeCode && storeCode.startsWith('AM_'));
+  let notifs = _hubGetNotifs();
+
+  // Filter for non-MGR: show ALL + own store
+  if (!isMgr && storeCode) {
+    notifs = notifs.filter(n => n.target === 'ALL' || n.target === storeCode);
+  }
+
+  if (notifs.length === 0) {
+    list.innerHTML = '<div style="text-align:center;color:#B0A898;font-size:12px;padding:24px 0;">No notifications yet</div>';
+    badge.style.display = 'none';
+    return;
+  }
+
+  badge.textContent = notifs.length;
+  badge.style.display = 'inline-block';
+
+  const isMgrView = storeCode === 'MGR' || (storeCode && storeCode.startsWith('AM_'));
+
+  list.innerHTML = notifs.map(n => {
+    const dt = new Date(n.timestamp);
+    const timeStr = dt.toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) + ' ' + dt.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+    const isUrgent = n.priority === 'urgent';
+    const targetLabel = n.target === 'ALL' ? '📢 All Stores' : (STORES.find(s => s.code === n.target)?.name || n.target);
+    return `
+      <div style="background:${isUrgent ? '#FFF5F5' : '#FAFAF8'};border:1px solid ${isUrgent ? '#FEB2B2' : '#E5E0D8'};border-left:4px solid ${isUrgent ? '#E53E3E' : '#C9A84C'};border-radius:8px;padding:12px 14px;position:relative;">
+        ${isMgrView ? `<button onclick="hubDeleteNotif(${n.id})" style="position:absolute;top:8px;right:10px;background:none;border:none;color:#B0A898;font-size:13px;cursor:pointer;padding:2px 4px;" title="Delete">✕</button>` : ''}
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
+          ${isUrgent ? '<span style="background:#E53E3E;color:#fff;font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:10px;">URGENT</span>' : ''}
+          <span style="font-size:10px;color:#8A8278;font-family:\'IBM Plex Mono\',monospace;">${timeStr}</span>
+          <span style="font-size:10px;color:#C9A84C;font-weight:600;">→ ${targetLabel}</span>
+        </div>
+        <div style="font-size:13px;color:#1A1A1A;line-height:1.5;margin-bottom:4px;">${n.message.replace(/</g,'&lt;')}</div>
+        <div style="font-size:10px;color:#B0A898;">From: ${n.from}</div>
+      </div>
+    `;
+  }).join('');
+}
+
 function toggleFullscreen(){
   const btn  = document.getElementById('fsBtn');
   const shell = document.getElementById('appShell');
@@ -3922,6 +4648,8 @@ function doLogout(){
   document.getElementById('appShell').style.display='none';
   document.getElementById('dashPanel').style.display='none';
   document.getElementById('whPanel').style.display='none';
+  document.getElementById('hubScreen').style.display='none';
+  _hubStore=null;
   // Hide role-specific dashboard buttons
   const mgrDashBtn=document.getElementById('mgrDashBtn');
   if(mgrDashBtn) mgrDashBtn.remove();
@@ -3943,7 +4671,7 @@ function buildDayTabs(){
     t.className='dtab'+(i===curDay?' active':'')+(hasData&&i!==curDay?' has-data':'')+(i<DAY_PAST&&!hasData?' past-empty':'');
     t.onclick=()=>{
       if(mgrOverrideActive&&mgrOverrideDay!==i){mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;}
-      curDay=i;buildDayTabs();buildGrid();buildFooter();
+      curDay=i;buildDayTabs();buildGrid();buildFooter();renderConsSection();
       t.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
     };
     t.innerHTML=
@@ -3991,7 +4719,7 @@ function buildGrid(){
         </div>
       </th>
       <th class="gh-open"><div class="hdr-en">OPENING STOCK</div><div class="hdr-ar">مخزون الافتتاح</div><div class="hdr-sub-lbl">(A)</div></th>
-      <th class="gh-guide"><div class="hdr-en">STOCK GUIDE</div><div class="hdr-ar">دليل المخزون</div><div class="hdr-sub-lbl">Min | Max</div></th>
+      <th class="gh-guide"><div class="hdr-en">BENCHMARK</div><div class="hdr-ar">المستوى المستهدف</div><div class="hdr-sub-lbl">Target Stock</div></th>
       <th class="gh-wh"><div class="hdr-en">TRANSFER FROM WAREHOUSE</div><div class="hdr-ar">نقل من المستودع</div><div class="hdr-sub-lbl">(B)</div></th>
       <th class="gh-in"><div class="hdr-en">TRANSFER FROM STORE</div><div class="hdr-ar">نقل من المتجر</div><div class="hdr-sub-lbl">(C)</div></th>
       <th class="gh-sold"><div class="hdr-en">SALES</div><div class="hdr-ar">المبيعات</div><div class="hdr-sub-lbl">(D)</div></th>
@@ -4069,51 +4797,47 @@ function buildGrid(){
         let statusIcon = '';
         let minColor, maxColor;
         
+        let benchColor, statusLabel;
         if (b < min) {
-          guideBg = '#FDECEA'; // understocked - red tint
-          minColor = '#EB5757';
-          maxColor = '#EB5757';
-          statusIcon = '<span style="color:#EB5757;font-size:14px;margin-left:4px;">⚠</span>';
+          guideBg   = '#FDECEA';
+          benchColor = '#C0392B';
+          statusLabel = '⚠ REORDER';
         } else if (b > max) {
-          guideBg = '#FFF4E6'; // overstocked - orange tint
-          minColor = '#F2C94C';
-          maxColor = '#F2C94C';
-          statusIcon = '<span style="color:#F2C94C;font-size:14px;margin-left:4px;">⬆</span>';
+          guideBg   = '#FFF4E6';
+          benchColor = '#D68910';
+          statusLabel = '⬆ TOO MUCH';
         } else {
-          guideBg = '#EBF5EB'; // healthy - green tint
-          minColor = '#6FCF97';
-          maxColor = '#6FCF97';
-          statusIcon = '<span style="color:#6FCF97;font-size:14px;margin-left:4px;">✓</span>';
+          guideBg   = '#EBF5EB';
+          benchColor = '#1A7A40';
+          statusLabel = '✓ GOOD';
         }
-        
+
         let actionButton = '';
-        
         if (source === 'auto_calc') {
-          actionButton = `<button onclick="showMinMaxInfo('${p.code}','auto_calc')" 
-                                  style="background:none;border:none;color:#F2C94C;cursor:pointer;font-size:11px;padding:0 3px;margin-left:2px;" 
+          actionButton = `<button onclick="showMinMaxInfo('${p.code}','auto_calc')"
+                                  style="background:none;border:none;color:#B0A898;cursor:pointer;font-size:10px;padding:0 2px;"
                                   title="Auto-calculated from sales">ⓘ</button>`;
         } else if (source === 'new_sku') {
-          actionButton = `<button onclick="openMinMaxEditor('${p.code}','new_sku')" 
-                                  style="background:#2A5A2A;border:1px solid #3A7A3A;border-radius:3px;color:#6FCF97;
-                                         font-size:9px;padding:1px 5px;cursor:pointer;margin-left:3px;">SET</button>`;
+          actionButton = `<button onclick="openMinMaxEditor('${p.code}','new_sku')"
+                                  style="background:#E8F5E9;border:1px solid #A5D6A7;border-radius:3px;color:#2E7D32;
+                                         font-size:9px;padding:1px 6px;cursor:pointer;margin-left:3px;font-weight:700;">SET</button>`;
         } else if (source === 'dead_stock') {
-          actionButton = `<button onclick="showDeadStockOptions('${p.code}')" 
-                                  style="background:#3A1A1A;border:1px solid #5A2A2A;border-radius:3px;color:#EB5757;
+          actionButton = `<button onclick="showDeadStockOptions('${p.code}')"
+                                  style="background:#FDECEA;border:1px solid #EF9A9A;border-radius:3px;color:#C0392B;
                                          font-size:9px;padding:1px 5px;cursor:pointer;margin-left:3px;">⚠</button>`;
         } else if (source === 'override') {
-          actionButton = `<button onclick="openMinMaxEditor('${p.code}','override')" 
-                                  style="background:none;border:none;color:#888;cursor:pointer;font-size:11px;padding:0 3px;margin-left:2px;" 
-                                  title="Manual override">✎</button>`;
+          actionButton = `<button onclick="openMinMaxEditor('${p.code}','override')"
+                                  style="background:none;border:none;color:#B0A898;cursor:pointer;font-size:11px;padding:0 2px;"
+                                  title="Edit benchmark">✎</button>`;
         }
-        
-        guideHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:4px;font-family:var(--f-mono);font-size:11px;line-height:1.4;color:#333;white-space:nowrap;">
-          <span style="color:${minColor};font-weight:700;">${min}</span>
-          <span style="color:#999;">|</span>
-          <span style="color:${maxColor};font-weight:700;">${max}</span>
-          ${statusIcon}
-          ${actionButton}
-        </div>
-        <div style="font-family:var(--f-mono);font-size:8px;color:#999;letter-spacing:0.5px;margin-top:1px;">MIN &nbsp; MAX</div>`;
+
+        guideHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;">
+          <div style="display:flex;align-items:center;gap:2px;">
+            <span style="font-family:var(--f-serif);font-size:19px;font-weight:600;color:${benchColor};line-height:1;">${max}</span>
+            ${actionButton}
+          </div>
+          <div style="font-family:var(--f-body);font-size:8px;font-weight:700;color:${benchColor};letter-spacing:0.5px;text-transform:uppercase;">${statusLabel}</div>
+        </div>`;
       } else {
         // Truly no data available - show manual entry button
         guideHTML = `<button onclick="openMinMaxEditor('${p.code}','unknown')" 
@@ -5838,18 +6562,22 @@ function finTapCC(i){
 
 // ── UNIFIED confirmNP (stock + finance) ─────────────
 function confirmNP(){
-  // Consumable numpad
-  if(npCtx && npCtx.type === 'consumable'){
+  // Supplies numpad
+  if(npCtx && npCtx.type === 'supplies'){
     const val = parseInt(npBuf) || 0;
-    consSet(me.code, npCtx.code, val);
+    suppSet(me.code, curDay, npCtx.itemCode, npCtx.field, val);
     closeNP();
     renderConsSection();
-    syncConsToSupabase(npCtx.code, val);
-    const item = CONSUMABLES.find(x => x.code === npCtx.code);
-    const status = consStatus(val, item?.threshold || 0);
-    if(status === 'empty') toast('⛔ ' + (item?.en||npCtx.code) + ' — EMPTY! Request replenishment.');
-    else if(status === 'low') toast('⚠ ' + (item?.en||npCtx.code) + ' is LOW — order soon.');
-    else toast('✓ ' + (item?.en||npCtx.code) + ' updated');
+    const item = CONSUMABLES.find(x => x.code === npCtx.itemCode);
+    const bal  = suppBal(me.code, curDay, npCtx.itemCode);
+    if(bal < 0) toast('⛔ ' + (item?.en||npCtx.itemCode) + ' balance is negative — check entries');
+    else if(bal < 10) toast('⚠ ' + (item?.en||npCtx.itemCode) + ' balance is low (' + bal + ')');
+    else toast('✓ ' + (item?.en||npCtx.itemCode) + ' updated — Balance: ' + bal);
+    return;
+  }
+  // Legacy consumable numpad (stub)
+  if(npCtx && npCtx.type === 'consumable'){
+    closeNP();
     return;
   }
   // Finance numpad
@@ -12246,6 +12974,11 @@ async function startSync(store) {
   } finally {
     // Overlay ALWAYS hides — no matter what
     setTimeout(hideOverlay, 400);
+    // Refresh notification badge now + every 30s
+    setTimeout(refreshTopNotifBadge, 600);
+    if (!window._notifInterval) {
+      window._notifInterval = setInterval(refreshTopNotifBadge, 30000);
+    }
   }
 
   // Realtime subscription (non-blocking)
@@ -13059,165 +13792,158 @@ function generateFGApprovalPDF(rec){
 // ══════════════════════════════════════════════════════════════════
 
 const CONSUMABLES = [
-  // Shopping Bags
-  {cat:'Bags',       code:'bag-xs',    en:'Shopping Bag — X-Small', ar:'كيس تسوق صغير جداً', icon:'🛍️', unit:'pcs',   threshold:30},
-  {cat:'Bags',       code:'bag-sm',    en:'Shopping Bag — Small',   ar:'كيس تسوق صغير',      icon:'🛍️', unit:'pcs',   threshold:25},
-  {cat:'Bags',       code:'bag-md',    en:'Shopping Bag — Medium',  ar:'كيس تسوق وسط',       icon:'🛍️', unit:'pcs',   threshold:20},
-  {cat:'Bags',       code:'bag-lg',    en:'Shopping Bag — Large',   ar:'كيس تسوق كبير',      icon:'🛍️', unit:'pcs',   threshold:15},
-  {cat:'Bags',       code:'bag-gift',  en:'Gift Bag',                ar:'كيس هدية',            icon:'🎁', unit:'pcs',   threshold:10},
-  // Packing Material
-  {cat:'Packing',    code:'tissue',    en:'Tissue / Wrapping Paper', ar:'ورق تغليف',           icon:'📄', unit:'sheets',threshold:50},
-  {cat:'Packing',    code:'bubblewrap',en:'Bubble Wrap Roll',        ar:'ورق فقاعي',           icon:'📦', unit:'rolls', threshold:2},
-  {cat:'Packing',    code:'tape',      en:'Packing Tape',            ar:'شريط لاصق',           icon:'🖊️', unit:'rolls', threshold:3},
-  {cat:'Packing',    code:'gbox-sm',   en:'Gift Box — Small',        ar:'علبة هدية صغيرة',    icon:'🎀', unit:'pcs',   threshold:10},
-  {cat:'Packing',    code:'gbox-md',   en:'Gift Box — Medium',       ar:'علبة هدية وسط',      icon:'🎀', unit:'pcs',   threshold:8},
-  {cat:'Packing',    code:'gbox-lg',   en:'Gift Box — Large',        ar:'علبة هدية كبيرة',    icon:'🎀', unit:'pcs',   threshold:5},
-  // Promotional
-  {cat:'Promotional',code:'brochure',  en:'Product Brochure / Catalogue', ar:'كتالوج المنتجات', icon:'📋', unit:'pcs',  threshold:20},
-  {cat:'Promotional',code:'sample',    en:'Sample Sachets',          ar:'عينات',               icon:'💊', unit:'pcs',   threshold:15},
-  {cat:'Promotional',code:'promo-card',en:'Promotional Card / Flyer', ar:'بطاقة ترويجية',     icon:'🗂️', unit:'pcs',   threshold:20},
-  // Operations
-  {cat:'Operations', code:'pos-roll',  en:'POS Receipt Roll',        ar:'رول إيصال POS',      icon:'🧾', unit:'rolls', threshold:2},
-  {cat:'Operations', code:'pen',       en:'Pen / Stationery',        ar:'قلم / قرطاسية',      icon:'✏️', unit:'pcs',   threshold:5},
+  {code:'bag-sm',  en:'Shopping Bag — Small',   ar:'كيس تسوق صغير',  icon:'🛍️'},
+  {code:'bag-md',  en:'Shopping Bag — Medium',  ar:'كيس تسوق وسط',   icon:'🛍️'},
+  {code:'bag-lg',  en:'Shopping Bag — Large',   ar:'كيس تسوق كبير',  icon:'🛍️'},
+  {code:'bag-xl',  en:'Shopping Bag — XL',      ar:'كيس تسوق XL',    icon:'🛍️'},
+  {code:'tissue',  en:'Tissue Paper Roll',       ar:'رول ورق مناديل',  icon:'🧻'},
+  {code:'bag-gift',en:'Gift Bag',                ar:'كيس هدية',        icon:'🎁'},
 ];
 
-const CONS_CAT_ORDER = ['Bags','Packing','Promotional','Operations'];
+// ══════════════════════════════════════════════════════════════════
+// STORE SUPPLIES — Daily tracking (Opening / Received / Used / Balance)
+// ══════════════════════════════════════════════════════════════════
 
-// ── Storage helpers ────────────────────────────────────────────────
-function consKey(storeCode, itemCode){ return `cons_${storeCode}_${itemCode}`; }
-function consGet(storeCode, itemCode){ return parseInt(localStorage.getItem(consKey(storeCode,itemCode)) || '-1'); }
-function consSet(storeCode, itemCode, qty){
-  localStorage.setItem(consKey(storeCode,itemCode), qty);
-  localStorage.setItem(`cons_updated_${storeCode}`, new Date().toISOString());
+// Storage: per store, per day, per item, per field
+function suppKey(storeCode, dayIdx, itemCode, field){
+  return `supp_${storeCode}_d${dayIdx}_${itemCode}_${field}`;
 }
-function consLastUpdated(storeCode){
-  const ts = localStorage.getItem(`cons_updated_${storeCode}`);
-  if(!ts) return 'Never updated';
-  const d = new Date(ts);
-  return 'Updated ' + d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) +
-    ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+function suppGet(storeCode, dayIdx, itemCode, field){
+  const v = localStorage.getItem(suppKey(storeCode, dayIdx, itemCode, field));
+  return v === null ? '' : v;
 }
-
-// ── Status helpers ─────────────────────────────────────────────────
-function consStatus(qty, threshold){
-  if(qty < 0) return 'not-set';
-  if(qty === 0) return 'empty';
-  if(qty <= threshold) return 'low';
-  return 'ok';
+function suppSet(storeCode, dayIdx, itemCode, field, val){
+  localStorage.setItem(suppKey(storeCode, dayIdx, itemCode, field), val);
+}
+function suppBal(storeCode, dayIdx, itemCode){
+  const o = parseInt(suppGet(storeCode, dayIdx, itemCode, 'open')) || 0;
+  const r = parseInt(suppGet(storeCode, dayIdx, itemCode, 'recv')) || 0;
+  const u = parseInt(suppGet(storeCode, dayIdx, itemCode, 'used')) || 0;
+  return o + r - u;
 }
 
-// ── Render consumables grid ────────────────────────────────────────
+// ── Render supplies section as a daily-tracking table ─────────────
 function renderConsSection(){
   if(!me) return;
   const section = document.getElementById('consumableSection');
   if(!section) return;
   section.style.display = 'block';
 
-  let alertCount = 0;
-  const byCategory = {};
-  CONS_CAT_ORDER.forEach(cat => { byCategory[cat] = []; });
+  const locked   = isLocked(me.code, curDay);
+  const mgrOk    = mgrOverrideActive && mgrOverrideDay===curDay && mgrOverrideStore===me.code;
+  const canEdit  = !locked || mgrOk;
+
+  // Totals row
+  let totO=0, totR=0, totU=0, totB=0;
   CONSUMABLES.forEach(item => {
-    const qty    = consGet(me.code, item.code);
-    const status = consStatus(qty, item.threshold);
-    if(status === 'low' || status === 'empty') alertCount++;
-    (byCategory[item.cat] = byCategory[item.cat] || []).push({...item, qty, status});
+    totO += parseInt(suppGet(me.code,curDay,item.code,'open'))||0;
+    totR += parseInt(suppGet(me.code,curDay,item.code,'recv'))||0;
+    totU += parseInt(suppGet(me.code,curDay,item.code,'used'))||0;
+    totB += suppBal(me.code,curDay,item.code);
   });
 
-  // Update alert badge
+  // Alert badge
   const badge = document.getElementById('consAlertBadge');
-  if(alertCount > 0){
-    badge.style.display = 'inline-block';
-    badge.textContent   = alertCount + (alertCount===1?' LOW':' LOW');
-  } else {
-    badge.style.display = 'none';
-  }
-
-  let html = '';
-  CONS_CAT_ORDER.forEach(cat => {
-    const items = byCategory[cat] || [];
-    if(!items.length) return;
-    html += `<div class="cons-cat-row">${cat}</div>`;
-    items.forEach(item => {
-      const rowCls   = item.status==='empty' ? 'empty' : item.status==='low' ? 'low' : '';
-      const qtyCls   = item.status==='empty' ? 'empty' : item.status==='low' ? 'low' : 'ok';
-      const stsCls   = qtyCls;
-      const stsLabel = item.status==='empty' ? '⛔ EMPTY — REQUEST NOW'
-                     : item.status==='low'   ? '⚠ LOW — ORDER SOON'
-                     : item.status==='not-set' ? '— tap to set count'
-                     : '✓ OK';
-      const qtyDisplay = item.qty < 0 ? '—' : item.qty;
-      html += `<div class="cons-row ${rowCls}" onclick="openConsNP('${item.code}')">
-        <div class="cons-icon">${item.icon}</div>
-        <div class="cons-info">
-          <div class="cons-name">${item.en}</div>
-          <div class="cons-name-ar">${item.ar}</div>
-          <div class="cons-unit">${item.unit} · alert below ${item.threshold}</div>
-        </div>
-        <div class="cons-qty-wrap">
-          <div class="cons-qty ${qtyCls}">${qtyDisplay}</div>
-          <div class="cons-status ${stsCls}">${stsLabel}</div>
-          <div class="cons-tap">TAP TO UPDATE</div>
-        </div>
-      </div>`;
-    });
-  });
-
-  html += `<div style="padding:8px 14px;font-family:var(--f-mono);font-size:9px;color:#444;text-align:right;">${consLastUpdated(me.code)}</div>`;
-  document.getElementById('consGrid').innerHTML = html;
-  checkConsAlerts();
-}
-
-// ── Alert badge on section header (also updates footer if needed) ──
-function checkConsAlerts(){
-  if(!me) return;
-  let alertCount = 0;
-  CONSUMABLES.forEach(item => {
-    const qty = consGet(me.code, item.code);
-    if(qty >= 0 && qty <= item.threshold) alertCount++;
-  });
-  const badge = document.getElementById('consAlertBadge');
+  const lowCount = CONSUMABLES.filter(item => {
+    const b = suppBal(me.code,curDay,item.code);
+    return b >= 0 && b < 10;
+  }).length;
   if(badge){
-    badge.style.display  = alertCount > 0 ? 'inline-block' : 'none';
-    badge.textContent    = alertCount + ' LOW';
+    badge.style.display  = lowCount > 0 ? 'inline-block' : 'none';
+    badge.textContent    = lowCount + ' LOW';
   }
+
+  const COL = 'width:90px;min-width:80px;text-align:center;padding:10px 6px;border-right:1px solid #E8E4DC;';
+  const HCOL= 'width:90px;min-width:80px;text-align:center;padding:8px 6px;border-right:1px solid #D8D4CC;font-size:9px;font-weight:700;letter-spacing:0.8px;';
+
+  let html = `
+  <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+    <thead>
+      <tr style="background:#F5EDD8;border-bottom:2px solid var(--gold);">
+        <th style="width:220px;min-width:180px;padding:10px 14px;text-align:left;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:9px;color:var(--gold-dark);letter-spacing:1.5px;font-weight:800;">ITEM &nbsp;·&nbsp; <span style="font-family:var(--f-ar);font-weight:400;">الصنف</span></th>
+        <th style="${HCOL}background:#E8F4FB;color:#2471A3;border-bottom:2px solid #2471A3;">OPENING<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">الافتتاح</span></th>
+        <th style="${HCOL}background:#EBF5EB;color:#1A6A40;border-bottom:2px solid #1A6A40;">RECEIVED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">وارد</span></th>
+        <th style="${HCOL}background:#FEF9E7;color:#7D6608;border-bottom:2px solid #D4AC0D;">USED<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">مستخدم</span></th>
+        <th style="${HCOL}background:#F5EDD8;color:var(--gold-dark);border-bottom:2px solid var(--gold);border-right:none;">BALANCE<br><span style="font-family:var(--f-ar);font-weight:400;font-size:9px;">الرصيد</span></th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  CONSUMABLES.forEach((item, idx) => {
+    const o = suppGet(me.code,curDay,item.code,'open');
+    const r = suppGet(me.code,curDay,item.code,'recv');
+    const u = suppGet(me.code,curDay,item.code,'used');
+    const bal = suppBal(me.code,curDay,item.code);
+    const balColor = bal < 0 ? '#C0392B' : bal < 10 ? '#D68910' : '#1A7A40';
+    const rowBg = idx%2===0 ? '#FFFFFF' : '#FAFAF8';
+    const editStyle = canEdit ? 'cursor:pointer;' : 'cursor:default;opacity:0.7;';
+
+    html += `<tr style="background:${rowBg};border-bottom:1px solid #EDE8E0;">
+      <td style="padding:10px 14px;border-right:2px solid var(--gold);">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:18px;">${item.icon}</span>
+          <div>
+            <div style="font-family:var(--f-body);font-size:12px;font-weight:600;color:var(--ink);">${item.en}</div>
+            <div style="font-family:var(--f-ar);font-size:11px;color:var(--ink-mid);">${item.ar}</div>
+          </div>
+        </div>
+      </td>
+      <td style="${COL}background:#EBF5FB;${editStyle}" onclick="${canEdit?`openSuppNP('${item.code}','open')`:''}">
+        <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#2471A3;">${o===''?'—':o}</div>
+        ${canEdit?'<div style="font-size:8px;color:#888;margin-top:2px;">TAP</div>':''}
+      </td>
+      <td style="${COL}background:#EBF5EB;${editStyle}" onclick="${canEdit?`openSuppNP('${item.code}','recv')`:''}">
+        <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#1A6A40;">${r===''?'—':r}</div>
+        ${canEdit?'<div style="font-size:8px;color:#888;margin-top:2px;">TAP</div>':''}
+      </td>
+      <td style="${COL}background:#FEFCE8;${editStyle}" onclick="${canEdit?`openSuppNP('${item.code}','used')`:''}">
+        <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;color:#7D6608;">${u===''?'—':u}</div>
+        ${canEdit?'<div style="font-size:8px;color:#888;margin-top:2px;">TAP</div>':''}
+      </td>
+      <td style="${COL}background:#F5EDD8;border-right:none;cursor:default;">
+        <div style="font-family:var(--f-serif);font-size:20px;font-weight:700;color:${balColor};">${(o===''&&r===''&&u==='')?'—':bal}</div>
+      </td>
+    </tr>`;
+  });
+
+  // Totals row
+  html += `<tr style="background:#F5EDD8;border-top:2px solid var(--gold);">
+    <td style="padding:10px 14px;border-right:2px solid var(--gold);font-family:var(--f-mono);font-size:10px;font-weight:800;color:var(--gold-dark);letter-spacing:1px;">DAILY TOTALS</td>
+    <td style="${COL}background:#D6EAF8;"><div style="font-family:var(--f-serif);font-size:18px;font-weight:700;color:#1A5276;">${totO||'—'}</div></td>
+    <td style="${COL}background:#D5F5E3;"><div style="font-family:var(--f-serif);font-size:18px;font-weight:700;color:#1A6A40;">${totR||'—'}</div></td>
+    <td style="${COL}background:#FEF9C3;"><div style="font-family:var(--f-serif);font-size:18px;font-weight:700;color:#7D6608;">${totU||'—'}</div></td>
+    <td style="${COL}background:#F5EDD8;border-right:none;"><div style="font-family:var(--f-serif);font-size:18px;font-weight:700;color:var(--gold-dark);">${totB||'—'}</div></td>
+  </tr>`;
+
+  html += `</tbody></table>`;
+  document.getElementById('consGrid').innerHTML = html;
 }
 
-// ── Open numpad for consumable ─────────────────────────────────────
-function openConsNP(code){
+// ── Open numpad for a supplies field ──────────────────────────────
+function openSuppNP(itemCode, field){
   if(!me) return;
-  const item = CONSUMABLES.find(x => x.code === code);
+  const item = CONSUMABLES.find(x => x.code === itemCode);
   if(!item) return;
-  const cur = consGet(me.code, code);
-  npCtx  = { type:'consumable', code };
-  npBuf  = cur >= 0 ? String(cur) : '';
-  document.getElementById('npProduct').textContent = item.en;
+  const cur = suppGet(me.code, curDay, itemCode, field);
+  npCtx = { type:'supplies', itemCode, field };
+  npBuf = cur !== '' ? String(cur) : '';
+  document.getElementById('npProduct').textContent = item.icon + ' ' + item.en;
   const fEl = document.getElementById('npField');
-  fEl.textContent  = '🛍️ Current Stock Count — ' + item.unit;
-  fEl.className    = 'np-field';
-  fEl.style.background = '#1A2A3A';
-  fEl.style.color      = '#7EC8E3';
+  const labels = { open:'Opening Stock · الافتتاح', recv:'Received from WH · وارد من المستودع', used:'Used / Issued · مستخدم' };
+  fEl.textContent = labels[field] || field;
+  fEl.className   = 'np-field';
+  fEl.style.background = field==='open' ? '#1A3A5A' : field==='recv' ? '#1A3A2A' : '#3A2A00';
+  fEl.style.color      = field==='open' ? '#7EC8E3' : field==='recv' ? '#7EE3A3' : '#E3C87E';
   document.getElementById('npVal').textContent = npBuf || '0';
-  document.getElementById('npNote').textContent =
-    `Threshold: alert when ≤ ${item.threshold} ${item.unit}. Enter actual count now.`;
-  // Hide store selector (not needed for consumables)
+  document.getElementById('npNote').textContent = 'Balance = Opening + Received − Used';
   const storeRow = document.getElementById('npStoreRow');
   if(storeRow) storeRow.style.display = 'none';
   document.getElementById('numpad').classList.add('show');
 }
 
-// ── Sync one consumable update to Supabase (fire-and-forget) ──────
-async function syncConsToSupabase(code, qty){
-  if(!sb || !me) return;
-  try {
-    await sb.from('consumable_stock').upsert({
-      store_code:    me.code,
-      item_code:     code,
-      qty_on_hand:   qty,
-      snapshot_date: new Date().toISOString().slice(0,10),
-      updated_at:    new Date().toISOString()
-    }, { onConflict: 'store_code,item_code' });
-  } catch(e){ /* silent — localStorage is the source of truth for stock register */ }
-}
+// Legacy stub — no longer used but keep so old references don't error
+function openConsNP(code){ openSuppNP(code, 'open'); }
+function checkConsAlerts(){ renderConsSection && me && renderConsSection(); }
 
 // ══════════════════════════════════════════════════════════════════
 // AM FEEDBACK HUB
