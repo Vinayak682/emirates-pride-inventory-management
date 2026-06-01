@@ -836,7 +836,7 @@ async function loadComplaints(){
     '<div style="text-align:center;padding:40px;color:var(--ink-light);font-family:var(--f-mono);font-size:12px;">Loading…</div>';
   try{
     let p='?order=submitted_at.desc&limit=500';
-    if(!isMgr) p+=`&store_code=eq.${me.code}`;
+    // Office staff and manager both see ALL complaints (staff submit on behalf of all stores)
     allData=await sb.get('customer_complaints',p)||[];
     updateKPIs();
     applyFilters();
