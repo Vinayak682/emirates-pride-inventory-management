@@ -2010,14 +2010,17 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
           </button>
         </div>
 
-        <!-- Row 3: Export (full width) -->
-        <div style="margin-bottom:10px;">
-          <button onclick="goToStockRegister();setTimeout(openExport,1600);" style="width:100%;background:linear-gradient(135deg,#1B5E20,#2E7D32);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 3px 10px rgba(27,94,32,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+        <!-- Row 3: Export + Request Tester from FG Stock -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <button onclick="goToStockRegister();setTimeout(openExport,1600);" style="background:linear-gradient(135deg,#1B5E20,#2E7D32);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 10px rgba(27,94,32,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <span style="font-size:18px;">📥</span>
-            <div style="display:flex;flex-direction:column;align-items:flex-start;">
-              <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Export Report</span>
-              <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">تصدير التقرير</span>
-            </div>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Export Report</span>
+            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">تصدير التقرير</span>
+          </button>
+          <button onclick="goToStockRegister();setTimeout(openFGRequest,1600);" style="background:linear-gradient(135deg,#6B5B35,#8A7340);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 10px rgba(107,91,53,0.35);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <span style="font-size:18px;">📦</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">FG Tester Request</span>
+            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">طلب تيستر من FG</span>
           </button>
         </div>
 
@@ -2170,6 +2173,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <button class="top-btn" onclick="openTestersDirect()" style="border-color:rgba(160,120,255,0.35);color:#C4A8FF;" title="Open Tester Bottles">🧴 Testers</button>
     <button class="top-btn" onclick="openSuppliesPanel()" style="border-color:rgba(255,180,80,0.4);color:#FFB84D;" title="Store Supplies — Bags · Tissue">🛍️ Supplies</button>
     <button class="top-btn" onclick="openExport()" style="border-color:rgba(127,200,96,0.3);color:#7FC860;">📥 Export</button>
+    <button class="top-btn" onclick="openFGRequest()" style="border-color:rgba(201,168,76,0.4);color:#C9A84C;">📦 FG Tester Request</button>
     <button class="top-btn stores-btn" id="allStoresBtn" onclick="openStores()">🏪 All Stores</button>
     <button class="top-btn logout" onclick="doLogout()">Logout</button>
     <button class="top-btn fullscreen-btn" id="fsBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
@@ -4432,12 +4436,12 @@ function openFinanceDirect() {
 
 // ── Direct Testers button ──────────────────────────────────
 function openTestersDirect() {
-  // Scroll the main grid scroll-container to the tester section
+  // testerSection lives inside #scrollArea — scroll that container directly
   const tstr = document.getElementById('testerSection');
   if (!tstr) return;
-  const scroller = document.getElementById('gridScroll') || document.querySelector('.grid-scroll') || tstr.closest('[style*="overflow"]');
-  if (scroller) {
-    scroller.scrollTo({ top: tstr.offsetTop - 60, behavior: 'smooth' });
+  const scrollArea = document.getElementById('scrollArea');
+  if (scrollArea) {
+    scrollArea.scrollTo({ top: tstr.offsetTop, behavior: 'smooth' });
   } else {
     tstr.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
