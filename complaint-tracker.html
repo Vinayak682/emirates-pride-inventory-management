@@ -185,7 +185,11 @@
   .act-strip{background:#fff;border-top:2px solid var(--gold);padding:14px 20px;flex-shrink:0;}
   .act-label{font-family:var(--f-mono);font-size:9px;font-weight:700;color:var(--ink-light);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
   .act-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-  .abt{border:none;font-family:var(--f-body);font-size:11px;font-weight:700;padding:10px 18px;border-radius:7px;cursor:pointer;letter-spacing:0.3px;transition:opacity 0.15s;}
+  .abt{border:none;font-family:var(--f-body);font-size:11px;font-weight:700;padding:10px 18px;border-radius:7px;cursor:pointer;letter-spacing:0.3px;transition:all 0.15s;}
+  .abt:hover{opacity:0.88;transform:translateY(-1px);}
+  .abt:active{opacity:1;transform:scale(0.97);}
+  .mgr-dec-btn{transition:all .15s;border:2px solid transparent!important;}
+  .mgr-dec-btn:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.18);}
   .abt:hover{opacity:0.88;}
   .abt-rep{background:linear-gradient(135deg,#6B5B35,#8A7444);color:#fff;}
   .abt-fix{background:linear-gradient(135deg,#6C3483,#8E44AD);color:#fff;}
@@ -898,19 +902,69 @@ function renderList(list){
     return;
   }
   const now=Date.now();
-  el.innerHTML=list.map(c=>{
+
+  // Manager: show pending-decision banner at the top
+  let mgrBanner='';
+  if(isMgr){
+    const pendingCount=allData.filter(c=>c.status==='pending'||c.status==='under_review').length;
+    const repCount=allData.filter(c=>['accepted_repair','item_sent_to_wh','item_received_wh','under_repair','repaired_dispatching'].includes(c.status)).length;
+    const overdue=allData.filter(c=>!['delivered','closed','rejected'].includes(c.status)&&(now-new Date(c.submitted_at).getTime())>7*86400000).length;
+    if(pendingCount>0||repCount>0||overdue>0){
+      mgrBanner=`<div style="background:#FFF8E6;border:1.5px solid #C9A84C;border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+        <div style="font-size:11px;font-weight:700;color:#7A6525;letter-spacing:.05em;flex-shrink:0;">⚖️ MANAGER ATTENTION REQUIRED</div>
+        ${pendingCount>0?`<div style="background:#FF9500;color:#fff;font-size:10px;font-weight:700;padding:5px 14px;border-radius:20px;cursor:pointer;" onclick="document.getElementById('fStatus').value='pending';applyFilters()">🔴 ${pendingCount} Awaiting Your Decision</div>`:''}
+        ${repCount>0?`<div style="background:#2980B9;color:#fff;font-size:10px;font-weight:700;padding:5px 14px;border-radius:20px;cursor:pointer;" onclick="document.getElementById('fStatus').value='item_received_wh';applyFilters()">🔧 ${repCount} In Repair Pipeline</div>`:''}
+        ${overdue>0?`<div style="background:#C0392B;color:#fff;font-size:10px;font-weight:700;padding:5px 14px;border-radius:20px;cursor:pointer;" onclick="applyFilters()">⏱ ${overdue} Overdue (7+ days)</div>`:''}
+      </div>`;
+    }
+  }
+
+  el.innerHTML = mgrBanner + list.map(c=>{
     const sm=STATUS_META[c.status]||{label:c.status,cls:'sb-pending'};
     const ct=CTYPE_LABELS[c.complaint_type]||c.complaint_type;
     const dt=c.submitted_at?new Date(c.submitted_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}):'—';
     const daysOpen=c.submitted_at?Math.ceil((now-new Date(c.submitted_at).getTime())/86400000):0;
     const slaOverdue=!['delivered','closed','rejected'].includes(c.status)&&daysOpen>7;
     const ats=(c.attachments||[]);
-    return `<div class="cc s-${c.status}" onclick="openDetail('${c.id}')">
+    const needsDecision=isMgr&&(c.status==='pending'||c.status==='under_review');
+
+    // Quick-decision buttons for manager on pending cards
+    const quickActions=needsDecision?`
+      <div style="border-top:1px solid #F0EDE8;margin-top:10px;padding-top:10px;display:flex;gap:8px;flex-wrap:wrap;" onclick="event.stopPropagation()">
+        <div style="font-size:9px;font-weight:700;color:#7A6525;letter-spacing:.5px;width:100%;margin-bottom:4px;">⚖️ QUICK DECISION:</div>
+        <button onclick="event.stopPropagation();quickDecide('${c.id}','accepted_replacement','replacement','Complaint Accepted — Replacement Approved')"
+          style="background:#1A7A3C;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;">
+          ✅ Replacement
+        </button>
+        <button onclick="event.stopPropagation();quickDecide('${c.id}','accepted_repair','repair','Complaint Accepted — Repair Required')"
+          style="background:#2980B9;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;">
+          🔧 Repair
+        </button>
+        <button onclick="event.stopPropagation();quickDecide('${c.id}','rejected','rejection','Complaint Rejected')"
+          style="background:#C0392B;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;">
+          ✕ Reject
+        </button>
+        <button onclick="event.stopPropagation();openDetail('${c.id}')"
+          style="background:var(--gold-pale);color:var(--gold-dark);border:1px solid var(--gold);border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;">
+          👁 Full Review
+        </button>
+      </div>`:'';
+
+    // Outcome badge for actioned complaints
+    const outcomeBadge = c.outcome ? `<div style="font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-top:4px;padding:2px 8px;border-radius:10px;display:inline-block;${
+      c.outcome==='replacement'?'background:#E8F5ED;color:#1A7A3C;':
+      c.outcome==='repair'?'background:#EBF5FF;color:#2980B9;':
+      'background:#FEECEC;color:#C0392B;'
+    }">${c.outcome==='replacement'?'✅ Replacement':c.outcome==='repair'?'🔧 Repair':'✕ Rejected'}</div>` : '';
+
+    return `<div class="cc s-${c.status}"${!needsDecision?` onclick="openDetail('${c.id}')"`:''}
+      style="${needsDecision?'border:1.5px solid #FF9500;background:#FFFDF5;cursor:default;':'cursor:pointer;'}">
       <div class="cc-hdr">
-        <div>
+        <div style="flex:1;min-width:0;">
           <div class="cc-ref">${c.complaint_ref||'—'}</div>
           <div class="cc-prod">${c.product_name||'—'}</div>
           <div class="cc-ctype">${ct}</div>
+          ${outcomeBadge}
         </div>
         <div style="text-align:right;flex-shrink:0;">
           <span class="sb ${sm.cls}">${sm.label}</span>
@@ -918,15 +972,30 @@ function renderList(list){
           ${ats.length?`<div style="font-size:9px;color:var(--ink-light);margin-top:4px;">📎 ${ats.length} file${ats.length>1?'s':''}</div>`:''}
         </div>
       </div>
-      <div class="cc-meta">
+      <div class="cc-meta" ${needsDecision?'onclick="openDetail(\''+c.id+'\')" style="cursor:pointer;"':''}>
         <span>👤 ${c.customer_name||'—'}</span>
         <span>📱 ${c.customer_phone||'—'}</span>
         ${isMgr?`<span>🏪 ${c.store_name||c.store_code}</span>`:''}
         <span>📅 ${dt}</span>
         ${c.submitted_by?`<span>Staff: ${c.submitted_by}</span>`:''}
       </div>
+      ${quickActions}
     </div>`;
   }).join('');
+}
+
+// Quick decision from card (no notes, direct action)
+async function quickDecide(id, nextStatus, outcome, tlLabel){
+  const c = allData.find(x=>x.id===id);
+  if(!c) return;
+  const now=new Date().toISOString();
+  const tlEntry={status:nextStatus,label:tlLabel,at:now,by:'Manager (Quick Decision)',notes:null};
+  const update={status:nextStatus,outcome,timeline:[...(c.timeline||[]),tlEntry],updated_at:now,actioned_at:now,actioned_by:'Manager'};
+  try{
+    await sb.patch('customer_complaints',update,`?id=eq.${id}`);
+    toast('✓ '+tlLabel);
+    await loadComplaints();
+  }catch(e){ toast('Error: '+e.message); }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1172,7 +1241,6 @@ function renderActions(c){
   document.getElementById('actNote').value='';
 
   const canActMgr=isMgr;
-  // Store staff can mark "item sent to WH" for repair flow
   const canSendWH=!isMgr&&c.store_code===me.code&&c.status==='accepted_repair';
 
   let actions=[];
@@ -1181,42 +1249,75 @@ function renderActions(c){
     const s=c.status;
     if(s==='pending'||s==='under_review'){
       actions=[
-        {label:'✓ Accept — Replacement',cls:'abt-rep',next:'accepted_replacement',tl:'Complaint Accepted — Replacement Approved',outcome:'replacement'},
-        {label:'🔧 Accept — Repair (WH/Factory)',cls:'abt-fix',next:'accepted_repair',tl:'Complaint Accepted — Repair Required',outcome:'repair'},
-        {label:'✕ Reject',cls:'abt-rej',next:'rejected',tl:'Complaint Rejected',outcome:'rejection'},
+        {label:'✓ APPROVE — REPLACEMENT',sublabel:'Customer receives a new product',cls:'abt-rep',next:'accepted_replacement',tl:'Complaint Accepted — Replacement Approved',outcome:'replacement'},
+        {label:'🔧 APPROVE — REPAIR',sublabel:'Send item to Warehouse / Factory',cls:'abt-fix',next:'accepted_repair',tl:'Complaint Accepted — Repair Required',outcome:'repair'},
+        {label:'✕ REJECT COMPLAINT',sublabel:'Not eligible — explain reason below',cls:'abt-rej',next:'rejected',tl:'Complaint Rejected',outcome:'rejection'},
       ];
     } else if(s==='accepted_replacement'){
-      actions=[{label:'📦 Mark Replacement Dispatched',cls:'abt-adv',next:'replacement_dispatched',tl:'Replacement Product Dispatched to Customer'}];
+      actions=[{label:'📦 Mark Replacement Dispatched',sublabel:'Product has been sent to customer',cls:'abt-adv',next:'replacement_dispatched',tl:'Replacement Product Dispatched to Customer'}];
     } else if(s==='replacement_dispatched'){
-      actions=[{label:'✓ Delivered to Customer',cls:'abt-adv',next:'delivered',tl:'Replacement Delivered — Case Resolved'}];
+      actions=[{label:'✅ Confirm Delivered to Customer',sublabel:'Customer has received the replacement',cls:'abt-adv',next:'delivered',tl:'Replacement Delivered — Case Resolved'}];
     } else if(s==='accepted_repair'){
-      actions=[{label:'📬 Item Sent to WH (Store confirmed)',cls:'abt-wh',next:'item_sent_to_wh',tl:'Item Sent to Warehouse for Repair'}];
+      actions=[{label:'📬 Confirm Item Sent to Warehouse',sublabel:'Store has dispatched the item',cls:'abt-wh',next:'item_sent_to_wh',tl:'Item Sent to Warehouse for Repair'}];
     } else if(s==='item_sent_to_wh'){
-      actions=[{label:'✓ Item Received at Warehouse',cls:'abt-adv',next:'item_received_wh',tl:'Item Received at Warehouse'}];
+      actions=[{label:'✅ Item Received at Warehouse',sublabel:'WH team has the item in hand',cls:'abt-adv',next:'item_received_wh',tl:'Item Received at Warehouse'}];
     } else if(s==='item_received_wh'){
       actions=[
-        {label:'🔧 Under Repair at WH',cls:'abt-fix',next:'under_repair',tl:'Item Under Repair at Warehouse'},
-        {label:'🏭 Sent to Factory',cls:'abt-wh',next:'under_repair',tl:'Item Sent to Factory for Repair'},
+        {label:'🔧 Under Repair at Warehouse',sublabel:'Repair work has started',cls:'abt-fix',next:'under_repair',tl:'Item Under Repair at Warehouse'},
+        {label:'🏭 Escalated to Factory',sublabel:'Item sent to factory for deeper repair',cls:'abt-wh',next:'under_repair',tl:'Item Sent to Factory for Repair'},
       ];
     } else if(s==='under_repair'){
-      actions=[{label:'📦 Repaired — Dispatching to Customer',cls:'abt-adv',next:'repaired_dispatching',tl:'Item Repaired and Being Dispatched'}];
+      actions=[{label:'📦 Repaired — Dispatching Back',sublabel:'Item fixed and being returned to customer',cls:'abt-adv',next:'repaired_dispatching',tl:'Item Repaired and Being Dispatched'}];
     } else if(s==='repaired_dispatching'){
-      actions=[{label:'✓ Delivered to Customer',cls:'abt-adv',next:'delivered',tl:'Repaired Item Delivered — Case Resolved'}];
+      actions=[{label:'✅ Delivered to Customer',sublabel:'Customer has received repaired item',cls:'abt-adv',next:'delivered',tl:'Repaired Item Delivered — Case Resolved'}];
     } else if(s==='delivered'||s==='rejected'){
-      actions=[{label:'✓ Close Case',cls:'abt-adv',next:'closed',tl:'Case Closed'}];
+      actions=[{label:'✓ Close Case',sublabel:'Archive this complaint',cls:'abt-adv',next:'closed',tl:'Case Closed'}];
     }
   }
 
-  // Store staff repair action
   if(canSendWH){
-    actions=[{label:'📬 I Have Sent the Item to Warehouse',cls:'abt-wh',next:'item_sent_to_wh',tl:'Item Sent to Warehouse for Repair (confirmed by store)'}];
+    actions=[{label:'📬 I Have Sent the Item to Warehouse',sublabel:'Confirm dispatch of item to WH',cls:'abt-wh',next:'item_sent_to_wh',tl:'Item Sent to Warehouse for Repair (confirmed by store)'}];
   }
 
   if(!actions.length){strip.style.display='none';return;}
   strip.style.display='block';
-  btns.innerHTML=actions.map((a,i)=>
-    `<button class="abt ${a.cls}" onclick="takeAction(${i})">${a.label}</button>`
-  ).join('')+`<button class="abt abt-note" onclick="toggleNote()">✎ Add Note</button>`;
+
+  // For pending/under_review show the 3 big outcome cards prominently
+  const isPendingDecision=(c.status==='pending'||c.status==='under_review')&&isMgr;
+
+  if(isPendingDecision){
+    btns.innerHTML=`
+      <div style="background:#FFF8E6;border:1.5px solid #C9A84C;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7A6525;margin-bottom:10px;">⚖️ Manager Decision Required</div>
+        <div style="font-size:11px;color:#4A4540;margin-bottom:12px;">Review the complaint above and select one of the 3 outcomes:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <button class="abt abt-rep mgr-dec-btn" onclick="takeAction(0)" style="display:flex;flex-direction:column;align-items:center;padding:16px 10px;border-radius:10px;gap:6px;min-height:90px;">
+            <span style="font-size:22px;">✅</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:.05em;">REPLACEMENT</span>
+            <span style="font-size:9px;opacity:.75;font-weight:400;line-height:1.3;">New product issued to customer</span>
+          </button>
+          <button class="abt abt-fix mgr-dec-btn" onclick="takeAction(1)" style="display:flex;flex-direction:column;align-items:center;padding:16px 10px;border-radius:10px;gap:6px;min-height:90px;">
+            <span style="font-size:22px;">🔧</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:.05em;">REPAIR</span>
+            <span style="font-size:9px;opacity:.75;font-weight:400;line-height:1.3;">Item sent to WH / Factory</span>
+          </button>
+          <button class="abt abt-rej mgr-dec-btn" onclick="takeAction(2)" style="display:flex;flex-direction:column;align-items:center;padding:16px 10px;border-radius:10px;gap:6px;min-height:90px;">
+            <span style="font-size:22px;">✕</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:.05em;">REJECT</span>
+            <span style="font-size:9px;opacity:.75;font-weight:400;line-height:1.3;">Not eligible — add reason</span>
+          </button>
+        </div>
+      </div>
+      <button class="abt abt-note" onclick="toggleNote()" style="width:100%;">✎ Add Notes / Reason (Recommended before deciding)</button>
+    `;
+  } else {
+    btns.innerHTML=actions.map((a,i)=>
+      `<button class="abt ${a.cls}" onclick="takeAction(${i})" style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:11px 14px;">
+        <span style="font-weight:700;">${a.label}</span>
+        ${a.sublabel?`<span style="font-size:9px;opacity:.70;font-weight:400;">${a.sublabel}</span>`:''}
+      </button>`
+    ).join('')+`<button class="abt abt-note" onclick="toggleNote()">✎ Add Note</button>`;
+  }
   btns._actions=actions;
 }
 
