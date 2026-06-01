@@ -8374,8 +8374,8 @@ function renderEidPerf() {
   const MAY26 = '2026-05', APR26 = '2026-04', MAY25 = '2025-05';
   const BASE_MONTHS = ['2026-01','2026-02','2026-03','2026-04'];
 
-  // All stores with May 2026 data
-  const storesWithMay = [...new Set(salesData.filter(r => r.month_year === MAY26 && (r.qty_sold||0) > 0).map(r => r.store_code))];
+  // All stores with May 2026 data — KSA excluded (data under review)
+  const storesWithMay = [...new Set(salesData.filter(r => r.month_year === MAY26 && (r.qty_sold||0) > 0 && !r.store_code.startsWith('KSA_')).map(r => r.store_code))];
 
   _eidStoreMetrics = storesWithMay.map(code => {
     const may26 = _eidSumStoreMonth(code, MAY26);
@@ -8395,8 +8395,8 @@ function renderEidPerf() {
   _eidStoreMetrics.sort((a,b) => b.may26 - a.may26);
   _eidCurrentSort = 'may26';
 
-  // Regional totals
-  ['EPP','ASL','OMAN','KSA'].forEach(reg => {
+  // Regional totals — KSA excluded
+  ['EPP','ASL','OMAN'].forEach(reg => {
     const ss = _eidStoreMetrics.filter(s => s.region === reg);
     const m26 = ss.reduce((s,x)=>s+x.may26,0);
     const a26 = ss.reduce((s,x)=>s+x.apr26,0);
@@ -8419,10 +8419,10 @@ function renderEidPerf() {
     yoyPct: gm25>0?(gm26-gm25)/gm25*100:null,
     upliftPct: gba>0?(gm26-gba)/gba*100:null };
 
-  // SKU aggregates
+  // SKU aggregates — KSA excluded
   const skuMay = {}, skuApr = {};
   salesData.forEach(r => {
-    if (!(r.qty_sold>0)) return;
+    if (!(r.qty_sold>0) || r.store_code.startsWith('KSA_')) return;
     if (r.month_year===MAY26) skuMay[r.sku_code]=(skuMay[r.sku_code]||0)+r.qty_sold;
     if (r.month_year===APR26) skuApr[r.sku_code]=(skuApr[r.sku_code]||0)+r.qty_sold;
   });
@@ -8445,7 +8445,7 @@ function _eidRenderFull() {
   const yoyClr = (g.yoyPct||0)>0?'#7FD99B':'#F78C8C';
   const uplClr = (g.upliftPct||0)>0?'#7FD99B':'#F78C8C';
 
-  let regionPills = ['EPP','ASL','OMAN','KSA'].map(reg => {
+  let regionPills = ['EPP','ASL','OMAN'].map(reg => {
     const d = _eidRegionData[reg];
     const mc = (d.momPct||0)>0?'#7FD99B':'#F78C8C';
     return '<div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.20);border-radius:10px;padding:12px 20px;display:flex;align-items:center;gap:14px;">'
@@ -8455,7 +8455,7 @@ function _eidRenderFull() {
       +'</div>';
   }).join('');
 
-  let regCards = ['EPP','ASL','OMAN','KSA'].map(reg => {
+  let regCards = ['EPP','ASL','OMAN'].map(reg => {
     const d = _eidRegionData[reg];
     const top = storeMetrics.filter(s=>s.region===reg).sort((a,b)=>b.may26-a.may26)[0];
     return '<div style="background:#fff;border:1.5px solid #E5E0D8;border-radius:14px;padding:28px;box-shadow:0 2px 10px rgba(0,0,0,.04);">'
