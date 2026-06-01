@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Supplier Quality Control — Emirates Pride</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#C9A84C; --gold-dark:#7A6525; --gold-bar:#6B5B35; --gold-deeper:#5C4A1A;
+  --gold-pale:#F5F2EC; --gold-light:#D4B86A;
+  --border:#E5E0D8; --border-dark:#D0C8B8;
+  --ink:#1A1A1A; --ink-mid:#4A4540; --ink-light:#8A8278;
+  --page:#FFFFFF; --sheet:#FAFAF8; --row-alt:#F5F2EC;
+  --pass:#1A6A40; --pass-bg:#EAF7F0; --pass-border:#B3DFC8;
+  --fail:#B91C1C; --fail-bg:#FEF2F2; --fail-border:#FECACA;
+  --partial:#92400E; --partial-bg:#FFFBEB; --partial-border:#FDE68A;
+  --pending-bg:#EFF6FF; --pending-border:#BFDBFE; --pending-color:#1D4ED8;
+  --progress-bg:#F0FDF4; --progress-border:#BBF7D0; --progress-color:#15803D;
+  --resolved-bg:#F0FDF4; --resolved-color:#166534;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Montserrat',sans-serif;background:var(--page);color:var(--ink);min-height:100vh}
+
+/* ── LOGIN ── */
+#loginOverlay{position:fixed;inset:0;background:var(--page);z-index:9999;display:flex;align-items:center;justify-content:center}
+.login-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:48px 40px;width:360px;text-align:center;box-shadow:0 8px 40px rgba(107,91,53,0.12)}
+.login-logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;letter-spacing:6px;color:var(--gold-bar);margin-bottom:4px}
+.login-sub{font-size:9px;letter-spacing:2px;color:var(--ink-light);text-transform:uppercase;margin-bottom:8px}
+.login-divider{width:40px;height:2px;background:var(--gold);margin:16px auto}
+.login-title{font-size:13px;font-weight:600;color:var(--ink-mid);letter-spacing:1px;text-transform:uppercase;margin-bottom:24px}
+.login-card input{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:6px;font-family:'Montserrat',sans-serif;font-size:14px;color:var(--ink);background:var(--sheet);outline:none;margin-bottom:12px;transition:border .2s}
+.login-card input:focus{border-color:var(--gold)}
+.login-btn{width:100%;padding:13px;background:var(--gold-bar);color:#fff;border:none;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.login-btn:hover{background:var(--gold-deeper)}
+.login-err{color:var(--fail);font-size:12px;margin-top:8px;display:none}
+
+/* ── APP SHELL ── */
+#app{display:none}
+.topbar{background:var(--gold-bar);padding:0 24px;height:56px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.topbar-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#fff;letter-spacing:1px}
+.topbar-sub{font-size:10px;color:rgba(255,255,255,.65);letter-spacing:1.5px;text-transform:uppercase;margin-left:2px}
+.topbar-spacer{flex:1}
+.topbar-logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 14px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+.topbar-logout:hover{background:rgba(255,255,255,.2)}
+
+/* ── TABS ── */
+.tabs{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 24px;gap:0}
+.tab-btn{padding:14px 20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab-btn:hover{color:var(--gold-dark)}
+.tab-btn.active{color:var(--gold-bar);border-bottom-color:var(--gold)}
+.tab-pane{display:none;padding:24px}
+.tab-pane.active{display:block}
+
+/* ── KPI CARDS ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:24px}
+.kpi-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px 18px}
+.kpi-label{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-light);margin-bottom:8px}
+.kpi-val{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;line-height:1;color:var(--ink)}
+.kpi-sub{font-size:11px;color:var(--ink-light);margin-top:4px}
+.kpi-card.pass{border-left:3px solid #22c55e}.kpi-card.fail{border-left:3px solid #ef4444}
+.kpi-card.partial{border-left:3px solid #f59e0b}.kpi-card.pending{border-left:3px solid #3b82f6}
+.kpi-card.gold{border-left:3px solid var(--gold)}
+
+/* ── SECTION HEADERS ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec-title{font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-mid)}
+.sec-action{background:var(--gold-bar);color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+.sec-action:hover{background:var(--gold-deeper)}
+.sec-action.outline{background:#fff;color:var(--gold-bar);border:1.5px solid var(--gold-bar)}
+.sec-action.outline:hover{background:var(--gold-pale)}
+
+/* ── TABLES ── */
+.tbl-wrap{background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--gold-bar);color:#fff;padding:10px 14px;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;text-align:left}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--gold-pale)}
+tbody td{padding:10px 14px;font-size:12px;color:var(--ink-mid);vertical-align:middle}
+.mono{font-family:'IBM Plex Mono',monospace;color:var(--gold-dark);font-size:11px}
+
+/* ── PILLS / BADGES ── */
+.pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.pill.pass{background:var(--pass-bg);color:var(--pass);border:1px solid var(--pass-border)}
+.pill.fail{background:var(--fail-bg);color:var(--fail);border:1px solid var(--fail-border)}
+.pill.partial{background:var(--partial-bg);color:var(--partial);border:1px solid var(--partial-border)}
+.pill.pending{background:var(--pending-bg);color:var(--pending-color);border:1px solid var(--pending-border)}
+.pill.inprogress{background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA}
+.pill.received,.pill.resolved{background:var(--resolved-bg);color:var(--resolved-color);border:1px solid var(--pass-border)}
+.pill.cancelled{background:#F5F5F5;color:#6B7280;border:1px solid #D1D5DB}
+.pill.credit{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE}
+.pill.replacement{background:#FAF5FF;color:#7C3AED;border:1px solid #E9D5FF}
+.pill.active{background:var(--pass-bg);color:var(--pass);border:1px solid var(--pass-border)}
+.pill.inactive{background:#F5F5F5;color:#6B7280;border:1px solid #D1D5DB}
+.pill.blacklisted{background:var(--fail-bg);color:var(--fail);border:1px solid var(--fail-border)}
+.mat-tag{display:inline-block;background:var(--gold-pale);color:var(--gold-dark);border:1px solid var(--border-dark);padding:2px 7px;border-radius:4px;font-size:10px;margin:1px}
+
+/* ── ACTION BTNS in table ── */
+.tbl-btn{background:none;border:1px solid var(--border-dark);color:var(--ink-mid);padding:4px 10px;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif}
+.tbl-btn:hover{background:var(--gold-pale)}
+.tbl-btn.danger{border-color:#FECACA;color:var(--fail)}
+.tbl-btn.primary{background:var(--gold-bar);color:#fff;border-color:var(--gold-bar)}
+.tbl-btn.primary:hover{background:var(--gold-deeper)}
+
+/* ── SCORE BAR ── */
+.score-bar-wrap{display:flex;align-items:center;gap:8px}
+.score-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+.score-num{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;min-width:32px;text-align:right}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:10px;width:100%;max-width:700px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-hdr{background:var(--gold-bar);padding:18px 24px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-hdr-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.7);font-size:22px;cursor:pointer;line-height:1}
+.modal-close:hover{color:#fff}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0}
+
+/* ── FORM FIELDS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light)}
+.form-control{padding:9px 12px;border:1px solid var(--border);border-radius:5px;font-family:'Montserrat',sans-serif;font-size:13px;color:var(--ink);background:var(--sheet);outline:none;transition:border .2s}
+.form-control:focus{border-color:var(--gold);background:#fff}
+select.form-control{cursor:pointer}
+textarea.form-control{resize:vertical;min-height:70px}
+.form-section-hdr{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-dark);padding:8px 0 4px;border-bottom:1px solid var(--border);margin-bottom:4px}
+
+/* ── LINE ITEMS TABLE IN MODAL ── */
+.li-table{width:100%;border-collapse:collapse;margin-top:8px}
+.li-table th{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);padding:6px 8px;background:var(--gold-pale);border:1px solid var(--border);text-align:left}
+.li-table td{padding:4px 6px;border:1px solid var(--border)}
+.li-table input,.li-table select{width:100%;padding:5px 6px;border:1px solid var(--border);border-radius:3px;font-size:12px;font-family:'Montserrat',sans-serif;background:#fff;outline:none}
+.li-table input:focus,.li-table select:focus{border-color:var(--gold)}
+.li-add-btn{background:none;border:1px dashed var(--border-dark);color:var(--ink-light);padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;margin-top:8px;width:100%;font-family:'Montserrat',sans-serif}
+.li-add-btn:hover{border-color:var(--gold);color:var(--gold-dark)}
+
+/* ── SUPPLIER CARD ── */
+.sup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:24px}
+.sup-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px}
+.sup-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.sup-code{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold-dark)}
+.sup-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.sup-country{font-size:11px;color:var(--ink-light)}
+.sup-score-big{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600}
+.sup-score-lbl{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light)}
+.sup-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.sup-stat-val{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--ink)}
+.sup-stat-lbl{font-size:9px;color:var(--ink-light)}
+
+/* ── DETAIL VIEW ── */
+.detail-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:16px}
+.detail-row{display:flex;gap:24px;flex-wrap:wrap}
+.detail-field{flex:1;min-width:160px}
+.detail-field-label{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-light);margin-bottom:4px}
+.detail-field-val{font-size:13px;color:var(--ink-mid);font-weight:500}
+.result-banner{padding:14px 20px;border-radius:6px;display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.result-banner.pass{background:var(--pass-bg);border:1px solid var(--pass-border)}
+.result-banner.fail{background:var(--fail-bg);border:1px solid var(--fail-border)}
+.result-banner.partial{background:var(--partial-bg);border:1px solid var(--partial-border)}
+.result-banner-icon{font-size:24px}
+.result-banner-text{font-weight:700;font-size:14px}
+.result-banner.pass .result-banner-text{color:var(--pass)}
+.result-banner.fail .result-banner-text{color:var(--fail)}
+.result-banner.partial .result-banner-text{color:var(--partial)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gold-bar);color:#fff;padding:12px 24px;border-radius:6px;font-size:12px;font-weight:600;letter-spacing:.5px;z-index:9990;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.show{opacity:1}
+
+/* ── FILTERS ── */
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:14px 16px;background:var(--gold-pale);border:1px solid var(--border);border-radius:6px}
+.filter-bar select,.filter-bar input{padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:'Montserrat',sans-serif;background:#fff;outline:none;min-width:150px}
+.filter-bar select:focus,.filter-bar input:focus{border-color:var(--gold)}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 24px;color:var(--ink-light)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-title{font-size:13px;font-weight:600;color:var(--ink-mid);margin-bottom:6px}
+.empty-sub{font-size:12px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .form-grid{grid-template-columns:1fr}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .tabs{overflow-x:auto}
+  .tab-btn{white-space:nowrap}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">EMIRATES PRIDE</div>
+    <div class="login-sub">فخـر الإمارات</div>
+    <div class="login-divider"></div>
+    <div class="login-title">Supplier Quality Control</div>
+    <input type="password" id="loginPwd" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Access Portal</button>
+    <div class="login-err" id="loginErr">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Supplier Quality Control</div>
+      <div class="topbar-sub">Inspection & Scorecard Portal</div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <button class="topbar-logout" onclick="doLogout()">Logout</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('dashboard')">Dashboard</button>
+    <button class="tab-btn" onclick="showTab('inspections')">Inspections</button>
+    <button class="tab-btn" onclick="showTab('actions')">Actions Tracker</button>
+    <button class="tab-btn" onclick="showTab('suppliers')">Suppliers</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="tab-dashboard" class="tab-pane active">
+    <div class="kpi-row" id="dashKpis">
+      <div class="kpi-card gold"><div class="kpi-label">Total Inspections</div><div class="kpi-val" id="kpiTotal">—</div><div class="kpi-sub">All time</div></div>
+      <div class="kpi-card pass"><div class="kpi-label">Pass Rate</div><div class="kpi-val" id="kpiPassRate">—</div><div class="kpi-sub">% of total</div></div>
+      <div class="kpi-card fail"><div class="kpi-label">Failed Shipments</div><div class="kpi-val" id="kpiFail">—</div><div class="kpi-sub">Rejected</div></div>
+      <div class="kpi-card partial"><div class="kpi-label">Partial Pass</div><div class="kpi-val" id="kpiPartial">—</div><div class="kpi-sub">Action required</div></div>
+      <div class="kpi-card pending"><div class="kpi-label">Open Actions</div><div class="kpi-val" id="kpiOpenActions">—</div><div class="kpi-sub">CN + Replacements</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div class="sec-hdr"><div class="sec-title">Supplier Scorecards</div></div>
+        <div class="tbl-wrap"><table id="dashScoreTable">
+          <thead><tr><th>Supplier</th><th>Inspections</th><th>Score</th><th>Status</th></tr></thead>
+          <tbody id="dashScoreBody"><tr><td colspan="4" class="empty" style="text-align:center;padding:24px;color:var(--ink-light)">Loading…</td></tr></tbody>
+        </table></div>
+      </div>
+      <div>
+        <div class="sec-hdr"><div class="sec-title">Recent Inspections</div></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Ref</th><th>Supplier</th><th>Material</th><th>Result</th></tr></thead>
+          <tbody id="dashRecentBody"><tr><td colspan="4" style="text-align:center;padding:24px;color:var(--ink-light)">Loading…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-hdr"><div class="sec-title">Pending Actions</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Inspection</th><th>Supplier</th><th>Type</th><th>Ref</th><th>Date Raised</th><th>Expected</th><th>Status</th></tr></thead>
+        <tbody id="dashActionsBody"><tr><td colspan="7" style="text-align:center;padding:24px;color:var(--ink-light)">Loading…</td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- INSPECTIONS -->
+  <div id="tab-inspections" class="tab-pane">
+    <div class="sec-hdr">
+      <div class="sec-title">Inspection Reports</div>
+      <button class="sec-action" onclick="openNewInspection()">+ New Inspection</button>
+    </div>
+    <div class="filter-bar">
+      <select id="fltSupplier" onchange="loadInspections()"><option value="">All Suppliers</option></select>
+      <select id="fltResult" onchange="loadInspections()">
+        <option value="">All Results</option>
+        <option value="Pass">Pass</option>
+        <option value="Fail">Fail</option>
+        <option value="Partial Pass">Partial Pass</option>
+      </select>
+      <select id="fltMaterial" onchange="loadInspections()">
+        <option value="">All Materials</option>
+        <option>Fragrance Oil</option><option>Oud Oil</option><option>Aroma Chemicals</option>
+        <option>Alcohol</option><option>Packaging</option><option>Bakhoor Base</option><option>Other</option>
+      </select>
+      <input type="text" id="fltSearch" placeholder="Search ref / batch…" oninput="loadInspections()">
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ref</th><th>Date</th><th>Supplier</th><th>Material</th><th>Batch</th><th>Qty</th><th>Inspector</th><th>Result</th><th>Action</th><th></th></tr></thead>
+        <tbody id="inspBody"><tr><td colspan="10" style="text-align:center;padding:32px;color:var(--ink-light)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ACTIONS TRACKER -->
+  <div id="tab-actions" class="tab-pane">
+    <div class="sec-hdr">
+      <div class="sec-title">Credit Notes &amp; Replacements</div>
+      <button class="sec-action outline" onclick="loadActions()">Refresh</button>
+    </div>
+    <div class="filter-bar">
+      <select id="fltActionType" onchange="loadActions()">
+        <option value="">All Types</option>
+        <option value="Credit Note">Credit Notes</option>
+        <option value="Replacement">Replacements</option>
+      </select>
+      <select id="fltActionStatus" onchange="loadActions()">
+        <option value="">All Statuses</option>
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Received">Received</option>
+        <option value="Resolved">Resolved</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="actionKpiRow">
+      <div class="kpi-card pending"><div class="kpi-label">Open Credit Notes</div><div class="kpi-val" id="kpiOpenCN">—</div><div class="kpi-sub">Pending / In Progress</div></div>
+      <div class="kpi-card fail"><div class="kpi-label">Open Replacements</div><div class="kpi-val" id="kpiOpenRep">—</div><div class="kpi-sub">Pending / In Progress</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Inspection Ref</th><th>Supplier</th><th>Type</th><th>Reference No</th><th>Amount / Qty</th><th>Date Raised</th><th>Expected</th><th>Status</th><th></th></tr></thead>
+        <tbody id="actionsBody"><tr><td colspan="9" style="text-align:center;padding:32px;color:var(--ink-light)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SUPPLIERS -->
+  <div id="tab-suppliers" class="tab-pane">
+    <div class="sec-hdr">
+      <div class="sec-title">Supplier Directory</div>
+      <button class="sec-action" onclick="openNewSupplier()">+ Add Supplier</button>
+    </div>
+    <div id="supGrid" class="sup-grid">
+      <div style="text-align:center;padding:48px;color:var(--ink-light)">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODALS ══ -->
+
+<!-- New Inspection Modal -->
+<div class="modal-bg" id="modalInspection">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-hdr-title" id="modalInspTitle">New Inspection Report</div>
+      <button class="modal-close" onclick="closeModal('modalInspection')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Inspection Ref *</label>
+          <input class="form-control" id="iRef" placeholder="QC-2026-0001" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Inspection Date *</label>
+          <input type="date" class="form-control" id="iDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Supplier *</label>
+          <select class="form-control" id="iSupplier" onchange="onSupplierChange()">
+            <option value="">Select supplier…</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Shipment / PO Ref</label>
+          <input class="form-control" id="iShipmentRef" placeholder="PO-2026-001 / GRN-001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Material Type *</label>
+          <select class="form-control" id="iMaterialType">
+            <option value="">Select…</option>
+            <option>Fragrance Oil</option><option>Oud Oil</option><option>Aroma Chemicals</option>
+            <option>Alcohol</option><option>Packaging</option><option>Bakhoor Base</option><option>Natural Extracts</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Material / Product Name</label>
+          <input class="form-control" id="iMaterialName" placeholder="e.g. Rose Absolute">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Batch Number</label>
+          <input class="form-control" id="iBatchNo" placeholder="BAT-2026-001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity Received</label>
+          <div style="display:flex;gap:6px">
+            <input class="form-control" id="iQty" type="number" placeholder="0" style="flex:1">
+            <select class="form-control" id="iQtyUnit" style="width:80px">
+              <option value="kg">kg</option><option value="L">L</option><option value="units">units</option><option value="pcs">pcs</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Inspector Name *</label>
+          <input class="form-control" id="iInspector" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Overall Result *</label>
+          <select class="form-control" id="iResult" onchange="onResultChange()">
+            <option value="">Select…</option>
+            <option value="Pass">Pass</option>
+            <option value="Fail">Fail</option>
+            <option value="Partial Pass">Partial Pass</option>
+          </select>
+        </div>
+        <div class="form-group form-full" id="iFailReasonGroup" style="display:none">
+          <label class="form-label">Reason for Fail / Non-Conformance *</label>
+          <textarea class="form-control" id="iFailReason" placeholder="Describe the non-conformance…"></textarea>
+        </div>
+        <div class="form-group" id="iActionGroup" style="display:none">
+          <label class="form-label">Action Required from Supplier</label>
+          <select class="form-control" id="iActionRequired">
+            <option value="Credit Note">Credit Note</option>
+            <option value="Replacement">Replacement</option>
+            <option value="Both">Both (Credit Note + Replacement)</option>
+            <option value="None">None / Accept with Concession</option>
+          </select>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" id="iNotes" placeholder="Additional observations…"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section-hdr" style="margin-top:20px">QC Test Parameters</div>
+      <table class="li-table" id="liTable">
+        <thead><tr><th style="width:28%">Parameter</th><th style="width:25%">Specification / Standard</th><th style="width:25%">Actual Result</th><th style="width:15%">Pass/Fail</th><th style="width:7%"></th></tr></thead>
+        <tbody id="liBody"></tbody>
+      </table>
+      <button class="li-add-btn" onclick="addLineItem()">+ Add Test Parameter</button>
+    </div>
+    <div class="modal-footer">
+      <button class="sec-action outline" onclick="closeModal('modalInspection')">Cancel</button>
+      <button class="sec-action" onclick="saveInspection()">Save Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- Action Modal (Credit Note / Replacement) -->
+<div class="modal-bg" id="modalAction">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hdr">
+      <div class="modal-hdr-title" id="modalActionTitle">Add Action</div>
+      <button class="modal-close" onclick="closeModal('modalAction')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label class="form-label">Action Type</label>
+          <select class="form-control" id="aType" onchange="onActionTypeChange()">
+            <option value="Credit Note">Credit Note</option>
+            <option value="Replacement">Replacement</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reference Number</label>
+          <input class="form-control" id="aRef" placeholder="CN-2026-001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-control" id="aStatus">
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Received">Received</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+        </div>
+        <div class="form-group" id="aAmountGroup">
+          <label class="form-label">Amount (AED)</label>
+          <input class="form-control" id="aAmount" type="number" placeholder="0.00">
+        </div>
+        <div class="form-group" id="aQtyGroup" style="display:none">
+          <label class="form-label">Qty to Replace</label>
+          <div style="display:flex;gap:6px">
+            <input class="form-control" id="aQty" type="number" placeholder="0" style="flex:1">
+            <select class="form-control" id="aQtyUnit" style="width:80px">
+              <option>kg</option><option>L</option><option>units</option><option>pcs</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date Raised</label>
+          <input type="date" class="form-control" id="aDateRaised">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expected Resolution Date</label>
+          <input type="date" class="form-control" id="aDateExpected">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" id="aNotes" placeholder="Any additional details…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="sec-action outline" onclick="closeModal('modalAction')">Cancel</button>
+      <button class="sec-action" onclick="saveAction()">Save Action</button>
+    </div>
+  </div>
+</div>
+
+<!-- Inspection Detail Modal -->
+<div class="modal-bg" id="modalDetail">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-hdr">
+      <div class="modal-hdr-title" id="modalDetailTitle">Inspection Detail</div>
+      <button class="modal-close" onclick="closeModal('modalDetail')">&times;</button>
+    </div>
+    <div class="modal-body" id="modalDetailBody"></div>
+    <div class="modal-footer">
+      <button class="sec-action outline" onclick="closeModal('modalDetail')">Close</button>
+      <button class="sec-action" id="detailAddActionBtn" onclick="openActionFromDetail()">+ Add Action</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Supplier Modal -->
+<div class="modal-bg" id="modalSupplier">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-hdr">
+      <div class="modal-hdr-title">Add Supplier</div>
+      <button class="modal-close" onclick="closeModal('modalSupplier')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Supplier Code *</label>
+          <input class="form-control" id="sCode" placeholder="SUP009">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-control" id="sStatus">
+            <option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Blacklisted">Blacklisted</option>
+          </select>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Supplier Name *</label>
+          <input class="form-control" id="sName" placeholder="Company name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Country</label>
+          <input class="form-control" id="sCountry" placeholder="UAE">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Name</label>
+          <input class="form-control" id="sContact" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Email</label>
+          <input class="form-control" id="sEmail" type="email" placeholder="email@supplier.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Phone</label>
+          <input class="form-control" id="sPhone" placeholder="+971 …">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Material Types (comma-separated)</label>
+          <input class="form-control" id="sMaterials" placeholder="Fragrance Oil, Aroma Chemicals">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" id="sNotes"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="sec-action outline" onclick="closeModal('modalSupplier')">Cancel</button>
+      <button class="sec-action" onclick="saveSupplier()">Save Supplier</button>
+    </div>
+  </div>
+</div>
+
+<!-- Update Action Status Modal -->
+<div class="modal-bg" id="modalUpdateAction">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hdr">
+      <div class="modal-hdr-title">Update Action Status</div>
+      <button class="modal-close" onclick="closeModal('modalUpdateAction')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">New Status</label>
+        <select class="form-control" id="uaStatus">
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Received">Received</option>
+          <option value="Resolved">Resolved</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Date Resolved (if applicable)</label>
+        <input type="date" class="form-control" id="uaDateResolved">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-control" id="uaNotes"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="sec-action outline" onclick="closeModal('modalUpdateAction')">Cancel</button>
+      <button class="sec-action" onclick="doUpdateAction()">Update</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── CONFIG ────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://ncszurcrkngjcjqsowln.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
+const PASSWORD = 'Vinayak@1998';
+
+const _h = {'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
+
+// ─── AUTH ──────────────────────────────────────────────────────────────────
+function doLogin(){
+  if(document.getElementById('loginPwd').value===PASSWORD){
+    document.getElementById('loginOverlay').style.display='none';
+    document.getElementById('app').style.display='block';
+    initApp();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+}
+function doLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginOverlay').style.display='flex';
+  document.getElementById('loginPwd').value='';
+  document.getElementById('loginErr').style.display='none';
+}
+document.getElementById('loginPwd').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+let _suppliers=[], _inspections=[], _actions=[], _currentInspId=null, _updateActionId=null;
+
+async function initApp(){
+  await loadSuppliers();
+  await Promise.all([loadDashboard(), loadInspections(), loadActions()]);
+  populateSupplierFilter();
+}
+
+// ─── API HELPERS ───────────────────────────────────────────────────────────
+async function _get(table, params=''){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}&limit=1000`,{headers:{..._h,'Prefer':'return=representation'}});
+  return r.json();
+}
+async function _post(table, data){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}`,{method:'POST',headers:{..._h,'Prefer':'return=representation'},body:JSON.stringify(data)});
+  return r.json();
+}
+async function _patch(table, id, data){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`,{method:'PATCH',headers:{..._h,'Prefer':'return=representation'},body:JSON.stringify(data)});
+  return r.json();
+}
+
+// ─── TABS ──────────────────────────────────────────────────────────────────
+function showTab(name){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>{if(b.textContent.toLowerCase().includes(name.split('-')[0]))b.classList.add('active')});
+  if(name==='inspections')loadInspections();
+  if(name==='actions')loadActions();
+  if(name==='suppliers')renderSupplierCards();
+  if(name==='dashboard')loadDashboard();
+}
+// fix tab click detection
+document.querySelectorAll('.tab-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+  });
+});
+
+// ─── SUPPLIERS ─────────────────────────────────────────────────────────────
+async function loadSuppliers(){
+  _suppliers = await _get('suppliers','order=name.asc');
+  if(!Array.isArray(_suppliers))_suppliers=[];
+}
+
+function populateSupplierFilter(){
+  const sel=document.getElementById('iSupplier');
+  const flt=document.getElementById('fltSupplier');
+  _suppliers.forEach(s=>{
+    const o1=document.createElement('option');o1.value=s.id;o1.textContent=s.name;sel.appendChild(o1);
+    const o2=document.createElement('option');o2.value=s.id;o2.textContent=s.name;flt.appendChild(o2);
+  });
+}
+
+function onSupplierChange(){
+  const sid=document.getElementById('iSupplier').value;
+  const sup=_suppliers.find(s=>s.id==sid);
+  // auto-select material type if supplier has only one type
+  if(sup&&sup.material_types&&sup.material_types.length===1){
+    const sel=document.getElementById('iMaterialType');
+    for(let o of sel.options){if(o.value===sup.material_types[0]){sel.value=o.value;break;}}
+  }
+}
+
+function renderSupplierCards(){
+  const grid=document.getElementById('supGrid');
+  if(!_suppliers.length){grid.innerHTML='<div class="empty"><div class="empty-icon">🏭</div><div class="empty-title">No suppliers yet</div><div class="empty-sub">Add your first supplier using the button above</div></div>';return;}
+  grid.innerHTML=_suppliers.map(s=>{
+    const ins=_inspections.filter(i=>i.supplier_id==s.id);
+    const total=ins.length, passes=ins.filter(i=>i.overall_result==='Pass').length;
+    const score=total?Math.round((passes/total)*100):null;
+    const scoreColor=score===null?'var(--ink-light)':score>=90?'var(--pass)':score>=70?'var(--partial)':'var(--fail)';
+    const pending=_actions.filter(a=>a.supplier_name===s.name&&['Pending','In Progress'].includes(a.status)).length;
+    const mats=(s.material_types||[]).map(m=>`<span class="mat-tag">${m}</span>`).join('');
+    return `<div class="sup-card">
+      <div class="sup-card-top">
+        <div>
+          <div class="sup-code">${s.supplier_code}</div>
+          <div class="sup-name">${s.name}</div>
+          <div class="sup-country">${s.country||''} ${mats}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="sup-score-big" style="color:${scoreColor}">${score!==null?score+'%':'—'}</div>
+          <div class="sup-score-lbl">Quality Score</div>
+        </div>
+      </div>
+      <div class="sup-stats">
+        <div style="text-align:center"><div class="sup-stat-val">${total}</div><div class="sup-stat-lbl">Inspections</div></div>
+        <div style="text-align:center"><div class="sup-stat-val">${passes}</div><div class="sup-stat-lbl">Passed</div></div>
+        <div style="text-align:center"><div class="sup-stat-val" style="color:${pending>0?'var(--fail)':'var(--pass)'}">${pending}</div><div class="sup-stat-lbl">Open Actions</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span class="pill ${s.status.toLowerCase()}">${s.status}</span>
+        ${s.contact_name?`<span style="font-size:11px;color:var(--ink-light)">${s.contact_name}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function saveSupplier(){
+  const code=document.getElementById('sCode').value.trim();
+  const name=document.getElementById('sName').value.trim();
+  if(!code||!name){toast('Supplier Code and Name are required');return;}
+  const mats=document.getElementById('sMaterials').value.split(',').map(m=>m.trim()).filter(Boolean);
+  const payload={supplier_code:code,name,country:document.getElementById('sCountry').value.trim(),
+    contact_name:document.getElementById('sContact').value.trim(),
+    contact_email:document.getElementById('sEmail').value.trim(),
+    contact_phone:document.getElementById('sPhone').value.trim(),
+    material_types:mats,status:document.getElementById('sStatus').value,
+    notes:document.getElementById('sNotes').value.trim()};
+  await _post('suppliers',payload);
+  toast('Supplier saved');
+  closeModal('modalSupplier');
+  await loadSuppliers();
+  renderSupplierCards();
+  // repopulate filter
+  const sel=document.getElementById('iSupplier');
+  const flt=document.getElementById('fltSupplier');
+  while(sel.options.length>1)sel.remove(1);
+  while(flt.options.length>1)flt.remove(1);
+  populateSupplierFilter();
+}
+
+function openNewSupplier(){
+  ['sCode','sName','sCountry','sContact','sEmail','sPhone','sMaterials','sNotes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sStatus').value='Active';
+  openModal('modalSupplier');
+}
+
+// ─── INSPECTIONS ───────────────────────────────────────────────────────────
+async function loadInspections(){
+  let params='order=inspection_date.desc,created_at.desc';
+  const sup=document.getElementById('fltSupplier')?.value;
+  const res=document.getElementById('fltResult')?.value;
+  const mat=document.getElementById('fltMaterial')?.value;
+  const srch=document.getElementById('fltSearch')?.value.trim();
+  if(sup)params+=`&supplier_id=eq.${sup}`;
+  if(res)params+=`&overall_result=eq.${encodeURIComponent(res)}`;
+  if(mat)params+=`&material_type=eq.${encodeURIComponent(mat)}`;
+  if(srch)params+=`&or=(inspection_ref.ilike.*${encodeURIComponent(srch)}*,batch_no.ilike.*${encodeURIComponent(srch)}*,material_name.ilike.*${encodeURIComponent(srch)}*)`;
+  _inspections = await _get('qc_inspections',params);
+  if(!Array.isArray(_inspections))_inspections=[];
+  renderInspTable();
+}
+
+function renderInspTable(){
+  const tbody=document.getElementById('inspBody');
+  if(!_inspections.length){
+    tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="empty-icon">🔬</div><div class="empty-title">No inspections found</div><div class="empty-sub">Create your first inspection report using the button above</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML=_inspections.map(i=>{
+    const resCls=i.overall_result==='Pass'?'pass':i.overall_result==='Fail'?'fail':'partial';
+    const actCls=i.action_status==='Resolved'?'resolved':i.action_status==='In Progress'?'inprogress':i.action_status==='Pending'?'pending':'';
+    return `<tr>
+      <td><span class="mono">${i.inspection_ref}</span></td>
+      <td style="font-size:11px">${fmtDate(i.inspection_date)}</td>
+      <td style="font-weight:500">${i.supplier_name}</td>
+      <td style="font-size:11px">${i.material_type}${i.material_name?` — <span style="color:var(--ink-light)">${i.material_name}</span>`:''}</td>
+      <td><span class="mono">${i.batch_no||'—'}</span></td>
+      <td style="font-size:11px">${i.qty_received?i.qty_received+' '+i.qty_unit:'—'}</td>
+      <td style="font-size:11px">${i.inspector_name}</td>
+      <td><span class="pill ${resCls}">${i.overall_result}</span></td>
+      <td>${i.action_required&&i.action_required!=='None'?`<span class="pill ${i.action_required==='Credit Note'?'credit':'replacement'}" style="font-size:9px">${i.action_required}</span><br><span class="pill ${actCls}" style="font-size:9px">${i.action_status}</span>`:'<span style="color:var(--ink-light);font-size:11px">None</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="tbl-btn" onclick="viewInspection(${i.id})">View</button>
+        ${i.action_required&&i.action_required!=='None'&&i.action_status!=='Resolved'?`<button class="tbl-btn primary" style="margin-left:4px" onclick="openActionModal(${i.id},'${i.inspection_ref}','${i.supplier_name.replace(/'/g,"\\'")}')">+ Action</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function viewInspection(id){
+  const insp=_inspections.find(i=>i.id===id);
+  if(!insp)return;
+  _currentInspId=id;
+  document.getElementById('modalDetailTitle').textContent=insp.inspection_ref;
+  const lineItems=await _get('qc_line_items',`inspection_id=eq.${id}`);
+  const actions=await _get('qc_actions',`inspection_id=eq.${id}`);
+  const resCls=insp.overall_result==='Pass'?'pass':insp.overall_result==='Fail'?'fail':'partial';
+  const icon=insp.overall_result==='Pass'?'✓':insp.overall_result==='Fail'?'✕':'⚠';
+  let html=`<div class="result-banner ${resCls}"><div class="result-banner-icon">${icon}</div><div><div class="result-banner-text">${insp.overall_result.toUpperCase()}</div><div style="font-size:12px;margin-top:2px">${insp.overall_result==='Pass'?'Shipment accepted — meets all quality standards':insp.overall_result==='Fail'?'Shipment rejected — does not meet quality standards':'Shipment partially accepted — action required'}</div></div></div>`;
+  html+=`<div class="detail-card">
+    <div class="detail-row" style="gap:16px;flex-wrap:wrap">
+      <div class="detail-field"><div class="detail-field-label">Inspection Ref</div><div class="detail-field-val mono">${insp.inspection_ref}</div></div>
+      <div class="detail-field"><div class="detail-field-label">Date</div><div class="detail-field-val">${fmtDate(insp.inspection_date)}</div></div>
+      <div class="detail-field"><div class="detail-field-label">Inspector</div><div class="detail-field-val">${insp.inspector_name}</div></div>
+      <div class="detail-field"><div class="detail-field-label">Supplier</div><div class="detail-field-val" style="font-weight:600">${insp.supplier_name}</div></div>
+      <div class="detail-field"><div class="detail-field-label">Shipment Ref</div><div class="detail-field-val mono">${insp.shipment_ref||'—'}</div></div>
+      <div class="detail-field"><div class="detail-field-label">Material Type</div><div class="detail-field-val">${insp.material_type}</div></div>
+      <div class="detail-field"><div class="detail-field-label">Material Name</div><div class="detail-field-val">${insp.material_name||'—'}</div></div>
+      <div class="detail-field"><div class="detail-field-label">Batch No</div><div class="detail-field-val mono">${insp.batch_no||'—'}</div></div>
+      <div class="detail-field"><div class="detail-field-label">Qty Received</div><div class="detail-field-val">${insp.qty_received?insp.qty_received+' '+insp.qty_unit:'—'}</div></div>
+      ${insp.action_required&&insp.action_required!=='None'?`<div class="detail-field"><div class="detail-field-label">Action Required</div><div class="detail-field-val"><span class="pill ${insp.action_required==='Credit Note'?'credit':'replacement'}">${insp.action_required}</span></div></div>`:''}
+    </div>
+    ${insp.fail_reason?`<div style="margin-top:16px"><div class="detail-field-label">Non-Conformance / Reason</div><div style="background:var(--fail-bg);border:1px solid var(--fail-border);border-radius:4px;padding:10px 12px;margin-top:4px;font-size:12px;color:var(--fail)">${insp.fail_reason}</div></div>`:''}
+    ${insp.notes?`<div style="margin-top:12px"><div class="detail-field-label">Notes</div><div style="font-size:12px;color:var(--ink-mid);margin-top:4px">${insp.notes}</div></div>`:''}
+  </div>`;
+
+  if(Array.isArray(lineItems)&&lineItems.length){
+    html+=`<div class="sec-title" style="margin-bottom:10px">QC Test Parameters</div>
+    <div class="tbl-wrap"><table><thead><tr><th>Parameter</th><th>Specification</th><th>Actual Result</th><th>Result</th><th>Notes</th></tr></thead><tbody>
+    ${lineItems.map(li=>{const cls=li.result==='Pass'?'pass':li.result==='Fail'?'fail':'';return`<tr><td style="font-weight:500">${li.parameter}</td><td style="font-size:11px;color:var(--ink-light)">${li.standard||'—'}</td><td style="font-size:12px">${li.actual||'—'}</td><td><span class="pill ${cls}">${li.result}</span></td><td style="font-size:11px;color:var(--ink-light)">${li.notes||''}</td></tr>`}).join('')}
+    </tbody></table></div>`;
+  }
+
+  if(Array.isArray(actions)&&actions.length){
+    html+=`<div class="sec-title" style="margin:16px 0 10px">Actions Raised</div>`;
+    actions.forEach(a=>{
+      const cls=a.status==='Resolved'||a.status==='Received'?'resolved':a.status==='In Progress'?'inprogress':a.status==='Pending'?'pending':'cancelled';
+      html+=`<div style="border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span class="pill ${a.action_type==='Credit Note'?'credit':'replacement'}">${a.action_type}</span>
+          <span class="pill ${cls}">${a.status}</span>
+          ${a.reference_no?`<span class="mono">${a.reference_no}</span>`:''}
+        </div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--ink-mid)">
+          ${a.amount?`<span><b>Amount:</b> AED ${a.amount}</span>`:''}
+          ${a.qty_replaced?`<span><b>Qty:</b> ${a.qty_replaced} ${a.qty_unit||''}</span>`:''}
+          ${a.date_raised?`<span><b>Raised:</b> ${fmtDate(a.date_raised)}</span>`:''}
+          ${a.date_expected?`<span><b>Expected:</b> ${fmtDate(a.date_expected)}</span>`:''}
+          ${a.date_resolved?`<span><b>Resolved:</b> ${fmtDate(a.date_resolved)}</span>`:''}
+        </div>
+        ${a.notes?`<div style="font-size:11px;color:var(--ink-light);margin-top:6px">${a.notes}</div>`:''}
+        ${['Pending','In Progress'].includes(a.status)?`<button class="tbl-btn" style="margin-top:8px" onclick="openUpdateAction(${a.id},'${a.status}')">Update Status</button>`:''}
+      </div>`;
+    });
+  }
+
+  document.getElementById('modalDetailBody').innerHTML=html;
+  document.getElementById('detailAddActionBtn').style.display=
+    (insp.action_required&&insp.action_required!=='None')?'block':'none';
+  openModal('modalDetail');
+}
+
+// ─── NEW INSPECTION ─────────────────────────────────────────────────────────
+function openNewInspection(){
+  document.getElementById('modalInspTitle').textContent='New Inspection Report';
+  const today=new Date().toISOString().split('T')[0];
+  const ref='QC-'+today.replace(/-/g,'').slice(0,8)+'-'+String((_inspections.length+1)).padStart(4,'0');
+  document.getElementById('iRef').value=ref;
+  document.getElementById('iDate').value=today;
+  document.getElementById('iInspector').value='';
+  document.getElementById('iShipmentRef').value='';
+  document.getElementById('iMaterialType').value='';
+  document.getElementById('iMaterialName').value='';
+  document.getElementById('iBatchNo').value='';
+  document.getElementById('iQty').value='';
+  document.getElementById('iQtyUnit').value='kg';
+  document.getElementById('iResult').value='';
+  document.getElementById('iFailReason').value='';
+  document.getElementById('iNotes').value='';
+  document.getElementById('iSupplier').value='';
+  document.getElementById('iActionGroup').style.display='none';
+  document.getElementById('iFailReasonGroup').style.display='none';
+  document.getElementById('liBody').innerHTML='';
+  // add default parameters
+  const defaults=[
+    ['Odour / Fragrance Profile','Matches reference standard',''],
+    ['Colour / Appearance','Clear to slightly hazy',''],
+    ['Specific Gravity','As per CoA spec',''],
+    ['Flash Point','As per CoA spec',''],
+    ['IFRA Compliance','Certificate provided',''],
+    ['CoA / Documentation','CoA, SDS, MSDS received',''],
+  ];
+  defaults.forEach(d=>addLineItem(d[0],d[1],d[2]));
+  openModal('modalInspection');
+}
+
+function onResultChange(){
+  const v=document.getElementById('iResult').value;
+  document.getElementById('iFailReasonGroup').style.display=(v==='Fail'||v==='Partial Pass')?'flex':'none';
+  document.getElementById('iActionGroup').style.display=(v==='Fail'||v==='Partial Pass')?'grid':'none';
+}
+
+let _liCount=0;
+function addLineItem(param='',std='',actual=''){
+  _liCount++;
+  const id=_liCount;
+  const tr=document.createElement('tr');
+  tr.id='li-row-'+id;
+  tr.innerHTML=`<td><input value="${param}" placeholder="e.g. Odour"></td>
+    <td><input value="${std}" placeholder="Spec / standard"></td>
+    <td><input value="${actual}" placeholder="Measured value"></td>
+    <td><select><option value="Pass">Pass</option><option value="Fail">Fail</option><option value="N/A">N/A</option></select></td>
+    <td style="text-align:center"><button onclick="document.getElementById('li-row-${id}').remove()" style="background:none;border:none;color:var(--fail);cursor:pointer;font-size:16px">&times;</button></td>`;
+  document.getElementById('liBody').appendChild(tr);
+}
+
+function getLineItems(){
+  const rows=document.querySelectorAll('#liBody tr');
+  return Array.from(rows).map(tr=>{
+    const inputs=tr.querySelectorAll('input,select');
+    return{parameter:inputs[0].value.trim(),standard:inputs[1].value.trim(),actual:inputs[2].value.trim(),result:inputs[3].value,notes:''};
+  }).filter(li=>li.parameter);
+}
+
+async function saveInspection(){
+  const sup=document.getElementById('iSupplier').value;
+  const supName=sup?_suppliers.find(s=>s.id==sup)?.name||'':'';
+  const result=document.getElementById('iResult').value;
+  const inspector=document.getElementById('iInspector').value.trim();
+  const mat=document.getElementById('iMaterialType').value;
+  if(!sup||!result||!inspector||!mat){toast('Please fill: Supplier, Material Type, Inspector, Result');return;}
+  const actionReq=document.getElementById('iActionGroup').style.display!=='none'?document.getElementById('iActionRequired').value:'None';
+  const payload={
+    inspection_ref:document.getElementById('iRef').value,
+    supplier_id:parseInt(sup),supplier_name:supName,
+    shipment_ref:document.getElementById('iShipmentRef').value.trim()||null,
+    inspection_date:document.getElementById('iDate').value,
+    inspector_name:inspector,
+    material_type:mat,material_name:document.getElementById('iMaterialName').value.trim()||null,
+    batch_no:document.getElementById('iBatchNo').value.trim()||null,
+    qty_received:parseFloat(document.getElementById('iQty').value)||null,
+    qty_unit:document.getElementById('iQtyUnit').value,
+    overall_result:result,
+    fail_reason:document.getElementById('iFailReason').value.trim()||null,
+    action_required:actionReq,
+    action_status:actionReq!=='None'?'Pending':'N/A',
+    notes:document.getElementById('iNotes').value.trim()||null
+  };
+  const saved=await _post('qc_inspections',payload);
+  if(!Array.isArray(saved)||!saved[0]){toast('Error saving inspection');return;}
+  const inspId=saved[0].id;
+  const lineItems=getLineItems();
+  if(lineItems.length){
+    await _post('qc_line_items',lineItems.map(li=>({...li,inspection_id:inspId})));
+  }
+  toast('Inspection saved: '+payload.inspection_ref);
+  closeModal('modalInspection');
+  await loadInspections();
+  await loadDashboard();
+  renderSupplierCards();
+}
+
+// ─── ACTIONS ───────────────────────────────────────────────────────────────
+async function loadActions(){
+  let params='order=created_at.desc';
+  const type=document.getElementById('fltActionType')?.value;
+  const status=document.getElementById('fltActionStatus')?.value;
+  if(type)params+=`&action_type=eq.${encodeURIComponent(type)}`;
+  if(status)params+=`&status=eq.${encodeURIComponent(status)}`;
+  _actions=await _get('qc_actions',params);
+  if(!Array.isArray(_actions))_actions=[];
+  renderActionsTable();
+  const openCN=_actions.filter(a=>a.action_type==='Credit Note'&&['Pending','In Progress'].includes(a.status)).length;
+  const openRep=_actions.filter(a=>a.action_type==='Replacement'&&['Pending','In Progress'].includes(a.status)).length;
+  document.getElementById('kpiOpenCN').textContent=openCN;
+  document.getElementById('kpiOpenRep').textContent=openRep;
+}
+
+function renderActionsTable(){
+  const tbody=document.getElementById('actionsBody');
+  if(!_actions.length){
+    tbody.innerHTML='<tr><td colspan="9"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No actions yet</div><div class="empty-sub">Actions are raised from inspection reports</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML=_actions.map(a=>{
+    const stCls=a.status==='Resolved'||a.status==='Received'?'resolved':a.status==='In Progress'?'inprogress':a.status==='Pending'?'pending':'cancelled';
+    return `<tr>
+      <td><span class="mono">${a.inspection_ref}</span></td>
+      <td style="font-weight:500;font-size:12px">${a.supplier_name}</td>
+      <td><span class="pill ${a.action_type==='Credit Note'?'credit':'replacement'}">${a.action_type}</span></td>
+      <td><span class="mono">${a.reference_no||'—'}</span></td>
+      <td style="font-size:12px">${a.amount?'AED '+a.amount:a.qty_replaced?a.qty_replaced+' '+(a.qty_unit||''):'—'}</td>
+      <td style="font-size:11px">${a.date_raised?fmtDate(a.date_raised):'—'}</td>
+      <td style="font-size:11px">${a.date_expected?fmtDate(a.date_expected):'—'}</td>
+      <td><span class="pill ${stCls}">${a.status}</span></td>
+      <td>${['Pending','In Progress'].includes(a.status)?`<button class="tbl-btn primary" onclick="openUpdateAction(${a.id},'${a.status}')">Update</button>`:'<span style="color:var(--ink-light);font-size:11px">Done</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function openActionModal(inspId, inspRef, supName){
+  _currentInspId=inspId;
+  document.getElementById('modalActionTitle').textContent=`Add Action — ${inspRef}`;
+  document.getElementById('aType').value='Credit Note';
+  document.getElementById('aRef').value='';
+  document.getElementById('aStatus').value='Pending';
+  document.getElementById('aAmount').value='';
+  document.getElementById('aQty').value='';
+  document.getElementById('aNotes').value='';
+  document.getElementById('aDateRaised').value=new Date().toISOString().split('T')[0];
+  document.getElementById('aDateExpected').value='';
+  onActionTypeChange();
+  openModal('modalAction');
+}
+
+function openActionFromDetail(){
+  if(!_currentInspId)return;
+  const insp=_inspections.find(i=>i.id===_currentInspId);
+  if(!insp)return;
+  openActionModal(_currentInspId,insp.inspection_ref,insp.supplier_name);
+}
+
+function onActionTypeChange(){
+  const t=document.getElementById('aType').value;
+  document.getElementById('aAmountGroup').style.display=t==='Credit Note'?'block':'none';
+  document.getElementById('aQtyGroup').style.display=t==='Replacement'?'block':'none';
+}
+
+async function saveAction(){
+  if(!_currentInspId){toast('No inspection selected');return;}
+  const insp=_inspections.find(i=>i.id===_currentInspId)||{inspection_ref:'',supplier_name:''};
+  const payload={
+    inspection_id:_currentInspId,
+    inspection_ref:insp.inspection_ref,
+    supplier_name:insp.supplier_name,
+    action_type:document.getElementById('aType').value,
+    reference_no:document.getElementById('aRef').value.trim()||null,
+    status:document.getElementById('aStatus').value,
+    amount:parseFloat(document.getElementById('aAmount').value)||null,
+    qty_replaced:parseFloat(document.getElementById('aQty').value)||null,
+    qty_unit:document.getElementById('aQtyUnit').value,
+    date_raised:document.getElementById('aDateRaised').value||null,
+    date_expected:document.getElementById('aDateExpected').value||null,
+    notes:document.getElementById('aNotes').value.trim()||null
+  };
+  await _post('qc_actions',payload);
+  // update inspection action_status
+  await _patch('qc_inspections',_currentInspId,{action_status:'In Progress',updated_at:new Date().toISOString()});
+  toast('Action saved');
+  closeModal('modalAction');
+  await loadActions();
+  await loadInspections();
+  await loadDashboard();
+}
+
+function openUpdateAction(actionId, currentStatus){
+  _updateActionId=actionId;
+  document.getElementById('uaStatus').value=currentStatus;
+  document.getElementById('uaDateResolved').value='';
+  document.getElementById('uaNotes').value='';
+  openModal('modalUpdateAction');
+}
+
+async function doUpdateAction(){
+  if(!_updateActionId)return;
+  const status=document.getElementById('uaStatus').value;
+  const resolved=document.getElementById('uaDateResolved').value;
+  const notes=document.getElementById('uaNotes').value.trim();
+  const patch={status,updated_at:new Date().toISOString()};
+  if(resolved)patch.date_resolved=resolved;
+  if(notes){const existing=_actions.find(a=>a.id===_updateActionId);patch.notes=(existing?.notes?existing.notes+'\n':'')+notes;}
+  await _patch('qc_actions',_updateActionId,patch);
+  // if all actions for the inspection are resolved, update inspection
+  const insp_id=_actions.find(a=>a.id===_updateActionId)?.inspection_id;
+  if(insp_id&&['Resolved','Received','Cancelled'].includes(status)){
+    const remaining=_actions.filter(a=>a.inspection_id===insp_id&&a.id!==_updateActionId&&['Pending','In Progress'].includes(a.status));
+    if(remaining.length===0){
+      await _patch('qc_inspections',insp_id,{action_status:'Resolved',updated_at:new Date().toISOString()});
+    }
+  }
+  toast('Status updated to: '+status);
+  closeModal('modalUpdateAction');
+  closeModal('modalDetail');
+  await loadActions();
+  await loadInspections();
+  await loadDashboard();
+}
+
+// ─── DASHBOARD ─────────────────────────────────────────────────────────────
+async function loadDashboard(){
+  const all=await _get('qc_inspections','order=inspection_date.desc,created_at.desc');
+  if(Array.isArray(all))_inspections=all;
+  const allActs=await _get('qc_actions','order=created_at.desc');
+  if(Array.isArray(allActs))_actions=allActs;
+
+  const total=_inspections.length;
+  const passes=_inspections.filter(i=>i.overall_result==='Pass').length;
+  const fails=_inspections.filter(i=>i.overall_result==='Fail').length;
+  const partial=_inspections.filter(i=>i.overall_result==='Partial Pass').length;
+  const openActs=_actions.filter(a=>['Pending','In Progress'].includes(a.status)).length;
+
+  document.getElementById('kpiTotal').textContent=total;
+  document.getElementById('kpiPassRate').textContent=total?Math.round((passes/total)*100)+'%':'—';
+  document.getElementById('kpiFail').textContent=fails;
+  document.getElementById('kpiPartial').textContent=partial;
+  document.getElementById('kpiOpenActions').textContent=openActs;
+
+  // Supplier scorecard table
+  const scores={};
+  _suppliers.forEach(s=>{scores[s.id]={name:s.name,total:0,passes:0,code:s.supplier_code};});
+  _inspections.forEach(i=>{
+    if(scores[i.supplier_id]){scores[i.supplier_id].total++;if(i.overall_result==='Pass')scores[i.supplier_id].passes++;}
+    else{const k='u_'+i.supplier_name;if(!scores[k])scores[k]={name:i.supplier_name,total:0,passes:0,code:''};scores[k].total++;if(i.overall_result==='Pass')scores[k].passes++;}
+  });
+  const sorted=Object.values(scores).filter(s=>s.total>0).sort((a,b)=>(b.passes/b.total)-(a.passes/a.total));
+  const sb=document.getElementById('dashScoreBody');
+  if(!sorted.length){sb.innerHTML='<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--ink-light)">No inspections yet</td></tr>';return;}
+  sb.innerHTML=sorted.map(s=>{
+    const score=Math.round((s.passes/s.total)*100);
+    const scoreColor=score>=90?'var(--pass)':score>=70?'var(--partial)':'var(--fail)';
+    const fillColor=score>=90?'#22c55e':score>=70?'#f59e0b':'#ef4444';
+    return `<tr>
+      <td><div style="font-weight:600;font-size:12px">${s.name}</div>${s.code?`<div class="mono" style="font-size:10px">${s.code}</div>`:''}</td>
+      <td style="font-size:12px">${s.total}</td>
+      <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:${score}%;background:${fillColor}"></div></div><div class="score-num" style="color:${scoreColor}">${score}%</div></div></td>
+      <td><span class="pill ${score>=90?'pass':score>=70?'partial':'fail'}">${score>=90?'Excellent':score>=70?'Monitor':'Review'}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Recent inspections
+  const rb=document.getElementById('dashRecentBody');
+  const recent=_inspections.slice(0,8);
+  if(!recent.length){rb.innerHTML='<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--ink-light)">No inspections yet</td></tr>';return;}
+  rb.innerHTML=recent.map(i=>{
+    const cls=i.overall_result==='Pass'?'pass':i.overall_result==='Fail'?'fail':'partial';
+    return `<tr><td><span class="mono">${i.inspection_ref}</span></td><td style="font-size:11px;font-weight:500">${i.supplier_name}</td><td style="font-size:11px">${i.material_type}</td><td><span class="pill ${cls}">${i.overall_result}</span></td></tr>`;
+  }).join('');
+
+  // Pending actions
+  const ab=document.getElementById('dashActionsBody');
+  const pending=_actions.filter(a=>['Pending','In Progress'].includes(a.status)).slice(0,10);
+  if(!pending.length){ab.innerHTML='<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--pass);font-size:12px">No open actions — all clear</td></tr>';return;}
+  ab.innerHTML=pending.map(a=>{
+    const stCls=a.status==='In Progress'?'inprogress':'pending';
+    return `<tr>
+      <td><span class="mono">${a.inspection_ref}</span></td>
+      <td style="font-size:12px;font-weight:500">${a.supplier_name}</td>
+      <td><span class="pill ${a.action_type==='Credit Note'?'credit':'replacement'}">${a.action_type}</span></td>
+      <td><span class="mono">${a.reference_no||'—'}</span></td>
+      <td style="font-size:11px">${a.date_raised?fmtDate(a.date_raised):'—'}</td>
+      <td style="font-size:11px">${a.date_expected?fmtDate(a.date_expected):'—'}</td>
+      <td><span class="pill ${stCls}">${a.status}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── MODAL HELPERS ─────────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-bg').forEach(bg=>{
+  bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open')});
+});
+
+// ─── UTILITIES ─────────────────────────────────────────────────────────────
+function fmtDate(d){
+  if(!d)return'—';
+  const dt=new Date(d+'T00:00:00');
+  return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
