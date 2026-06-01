@@ -8297,16 +8297,19 @@ function _eidLargeTrend(code) {
   const vals = months.map(m => _eidSumStoreMonth(code, m));
   const mx = Math.max(...vals, 1);
   const bars = months.map((m, i) => {
-    const h = Math.max(6, Math.round((vals[i] / mx) * 90));
+    const h = Math.max(6, Math.round((vals[i] / mx) * 80));
     const isLast = i === 7;
     const clr = isLast ? 'linear-gradient(180deg,#E8C84C 0%,#C9A84C 60%,#A8882C 100%)' : 'linear-gradient(180deg,#D8CEBC 0%,#C2B8A0 100%)';
-    const shadow = isLast ? '0 0 12px rgba(201,168,76,.45)' : 'none';
-    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;cursor:pointer;position:relative;" '
+    const shadow = isLast ? '0 0 14px rgba(201,168,76,.50)' : 'none';
+    const numClr = isLast ? '#6B5B35' : '#4A4540';
+    const numSize = isLast ? '11' : '9';
+    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;cursor:pointer;" '
       + 'onclick="_eidBarClick(this,\''+labels[i]+'\','+vals[i]+','+isLast+')" '
       + 'onmouseover="_eidBarHover(this,true,'+isLast+')" '
       + 'onmouseout="_eidBarHover(this,false,'+isLast+')">'
-      + '<div class="eid-bar-fill" style="width:72%;height:'+h+'px;background:'+clr+';border-radius:4px 4px 0 0;align-self:flex-end;margin-top:auto;box-shadow:'+shadow+';transition:all .2s;"></div>'
-      + '<div style="font-size:'+(isLast?'9':'8')+'px;font-weight:700;letter-spacing:.08em;color:'+(isLast?'#6B5B35':'#8A8278')+';text-transform:uppercase;margin-top:5px;padding-bottom:2px;">'+ labels[i]+'</div>'
+      + (vals[i]>0 ? '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:'+numSize+'px;font-weight:700;color:'+numClr+';margin-bottom:3px;letter-spacing:-.02em;">'+vals[i].toLocaleString()+'</div>' : '<div style="height:'+(+numSize+3)+'px;"></div>')
+      + '<div class="eid-bar-fill" style="width:70%;height:'+h+'px;background:'+clr+';border-radius:4px 4px 0 0;align-self:flex-end;box-shadow:'+shadow+';transition:all .2s;"></div>'
+      + '<div style="font-size:'+(isLast?'9':'8')+'px;font-weight:700;letter-spacing:.08em;color:'+(isLast?'#6B5B35':'#8A8278')+';text-transform:uppercase;margin-top:5px;">'+ labels[i]+'</div>'
       + '</div>';
   }).join('');
   return bars;
@@ -8342,10 +8345,12 @@ function _eidBarClick(el, label, val, isMay) {
   callout.style.transform = 'translateY(6px)';
   setTimeout(() => {
     callout.innerHTML =
-      '<span style="font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:'+(isMay?'#6B5B35':'#4A4540')+';margin-right:10px;">'+label+'</span>'
-      +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:600;color:#1A1A1A;line-height:1;">'+val.toLocaleString()+'</span>'
-      +'<span style="font-size:10px;color:#8A8278;margin-left:6px;">units</span>'
-      +(isMay?'<span style="margin-left:12px;font-size:9px;font-weight:700;background:#FFF3CC;color:#7A5200;padding:3px 10px;border-radius:12px;letter-spacing:.08em;">EID MONTH ✦</span>':'');
+      '<div style="display:flex;align-items:center;gap:12px;width:100%;">'
+      +'<div style="background:'+(isMay?'#6B5B35':'#4A4540')+';color:#fff;font-size:8px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:4px;flex-shrink:0;">'+label+'</div>'
+      +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:32px;font-weight:700;color:#1A1A1A;letter-spacing:-.03em;line-height:1;">'+val.toLocaleString()+'</div>'
+      +'<div style="font-size:11px;font-weight:600;color:#8A8278;letter-spacing:.06em;text-transform:uppercase;">UNITS</div>'
+      +(isMay?'<div style="margin-left:auto;font-size:8px;font-weight:700;background:#FFF3CC;color:#7A5200;padding:4px 12px;border-radius:12px;letter-spacing:.1em;text-transform:uppercase;border:1px solid #E8C080;">EID MONTH ✦</div>':'')
+      +'</div>';
     callout.style.opacity = '1';
     callout.style.transform = 'translateY(0)';
   }, 80);
@@ -8796,8 +8801,8 @@ function openEidStoreDrill(code) {
     +'<div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#4A4540;">8-Month Sales Trend</div>'
     +'<div style="font-size:9px;color:#8A8278;font-style:italic;">tap any bar</div>'
     +'</div>'
-    +'<div class="eid-bar-callout" style="height:36px;display:flex;align-items:center;background:#F5F2EC;border-radius:8px;padding:0 16px;margin-bottom:10px;transition:opacity .2s,transform .2s;opacity:0;">&nbsp;</div>'
-    +'<div style="display:flex;align-items:flex-end;gap:3px;height:120px;background:#F5F2EC;border-radius:10px;padding:14px 14px 0;">'+_eidLargeTrend(s.code)+'</div>'
+    +'<div class="eid-bar-callout" style="min-height:48px;display:flex;align-items:center;background:#fff;border:1.5px solid #E5E0D8;border-radius:10px;padding:0 18px;margin-bottom:10px;transition:opacity .25s,transform .25s;opacity:0;box-shadow:0 2px 8px rgba(0,0,0,.06);">&nbsp;</div>'
+    +'<div style="display:flex;align-items:flex-end;gap:3px;height:140px;background:#F5F2EC;border-radius:10px;padding:10px 10px 0;">'+_eidLargeTrend(s.code)+'</div>'
     +'</div>'
     // Top SKUs
     +'<div>'
