@@ -8485,17 +8485,21 @@ function _eidRenderFull() {
     const mxQ = _eidTopSkus[0][1];
     const bw  = Math.round(qty/mxQ*100);
     const mpClr = mp===null?'#aaa':mp>0?'#1A7A3C':'#C0392B';
-    return '<div style="margin-bottom:13px;">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
-      +'<div style="display:flex;align-items:center;gap:8px;">'
-      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#8A8278;width:18px;">'+String(i+1).padStart(2,'0')+'</span>'
-      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#7A6525;font-weight:600;">'+code+'</span>'
-      +'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;">'
-      +(mp!==null?'<span style="font-size:10px;font-weight:700;color:'+mpClr+';">'+(mp>0?'▲':'▼')+Math.abs(mp).toFixed(0)+'%</span>':'')
-      +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:17px;font-weight:600;color:#1A1A1A;">'+qty.toLocaleString()+'</span>'
+    const mpBg  = mp===null?'transparent':mp>0?'#E8F5ED':'#FEECEC';
+    const name  = (typeof SKU_NAMES!=='undefined'&&SKU_NAMES[code])||code;
+    return '<div style="margin-bottom:14px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
+      +'<div style="display:flex;align-items:center;gap:10px;min-width:0;">'
+      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#C2B8A0;flex-shrink:0;width:18px;">'+String(i+1).padStart(2,'0')+'</span>'
+      +'<div style="min-width:0;">'
+      +'<div style="font-size:12px;font-weight:600;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+name+'</div>'
+      +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#C9A84C;margin-top:1px;">'+code+'</div>'
       +'</div></div>'
-      +'<div style="height:3px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px;">'
+      +(mp!==null?'<span style="font-size:9px;font-weight:700;color:'+mpClr+';background:'+mpBg+';padding:2px 7px;border-radius:10px;">'+(mp>0?'▲':'▼')+Math.abs(mp).toFixed(0)+'%</span>':'')
+      +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:19px;font-weight:600;color:#1A1A1A;">'+qty.toLocaleString()+'</span>'
+      +'</div></div>'
+      +'<div style="height:3px;background:#F0EDE8;border-radius:2px;overflow:hidden;margin-left:28px;">'
       +'<div style="width:'+bw+'%;height:100%;background:linear-gradient(90deg,#C9A84C,#6B5B35);border-radius:2px;"></div></div>'
       +'</div>';
   }).join('');
@@ -8503,17 +8507,20 @@ function _eidRenderFull() {
   let winnerSkuRows = _eidWinnerSkus.map((s,i) => {
     const mxP = _eidWinnerSkus[0].momPct;
     const bw  = Math.round(s.momPct/mxP*100);
-    return '<div style="margin-bottom:13px;">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
-      +'<div style="display:flex;align-items:center;gap:8px;">'
-      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#8A8278;width:18px;">'+String(i+1).padStart(2,'0')+'</span>'
-      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#7A6525;font-weight:600;">'+s.code+'</span>'
-      +'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;">'
-      +'<span style="font-size:10px;font-weight:700;color:#1A7A3C;">▲ '+s.momPct.toFixed(0)+'%</span>'
-      +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:17px;font-weight:600;color:#1A1A1A;">'+s.qty.toLocaleString()+'</span>'
+    const name = (typeof SKU_NAMES!=='undefined'&&SKU_NAMES[s.code])||s.code;
+    return '<div style="margin-bottom:14px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
+      +'<div style="display:flex;align-items:center;gap:10px;min-width:0;">'
+      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#C2B8A0;flex-shrink:0;width:18px;">'+String(i+1).padStart(2,'0')+'</span>'
+      +'<div style="min-width:0;">'
+      +'<div style="font-size:12px;font-weight:600;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+name+'</div>'
+      +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#C9A84C;margin-top:1px;">'+s.code+'</div>'
       +'</div></div>'
-      +'<div style="height:3px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px;">'
+      +'<span style="font-size:9px;font-weight:700;color:#1A7A3C;background:#E8F5ED;padding:2px 7px;border-radius:10px;">▲ '+s.momPct.toFixed(0)+'%</span>'
+      +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:19px;font-weight:600;color:#1A1A1A;">'+s.qty.toLocaleString()+'</span>'
+      +'</div></div>'
+      +'<div style="height:3px;background:#F0EDE8;border-radius:2px;overflow:hidden;margin-left:28px;">'
       +'<div style="width:'+bw+'%;height:100%;background:linear-gradient(90deg,#7FD99B,#1A7A3C);border-radius:2px;"></div></div>'
       +'</div>';
   }).join('');
@@ -8713,22 +8720,26 @@ function openEidStoreDrill(code) {
   const mxQ   = top10.length?top10[0][1]:1;
 
   const skuRows = top10.map(([c,q],i) => {
-    const a   = skuApr[c]||0;
-    const mp  = a>0?(q-a)/a*100:null;
-    const bw  = Math.round(q/mxQ*100);
-    const mc  = mp===null?'#8A8278':mp>0?'#1A7A3C':'#C0392B';
-    return '<div style="margin-bottom:14px;">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
-      +'<div style="display:flex;align-items:center;gap:8px;">'
-      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#8A8278;width:18px;">'+String(i+1).padStart(2,'0')+'</span>'
-      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#7A6525;font-weight:600;">'+c+'</span>'
-      +'</div>'
-      +'<div style="display:flex;align-items:center;gap:8px;">'
-      +(mp!==null?'<span style="font-size:10px;font-weight:700;color:'+mc+';">'+(mp>0?'▲':'▼')+Math.abs(mp).toFixed(0)+'%</span>':'')
-      +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-weight:600;color:#1A1A1A;">'+q.toLocaleString()+'</span>'
+    const a    = skuApr[c]||0;
+    const mp   = a>0?(q-a)/a*100:null;
+    const bw   = Math.round(q/mxQ*100);
+    const mc   = mp===null?'#8A8278':mp>0?'#1A7A3C':'#C0392B';
+    const mbg  = mp===null?'transparent':mp>0?'#E8F5ED':'#FEECEC';
+    const name = (typeof SKU_NAMES!=='undefined'&&SKU_NAMES[c])||c;
+    return '<div style="margin-bottom:15px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">'
+      +'<div style="display:flex;align-items:center;gap:10px;min-width:0;">'
+      +'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#C2B8A0;flex-shrink:0;width:18px;">'+String(i+1).padStart(2,'0')+'</span>'
+      +'<div style="min-width:0;">'
+      +'<div style="font-size:12px;font-weight:600;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+name+'</div>'
+      +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#C9A84C;margin-top:1px;">'+c+'</div>'
       +'</div></div>'
-      +'<div style="height:4px;background:#F0EDE8;border-radius:2px;overflow:hidden;">'
-      +'<div style="width:'+bw+'%;height:100%;background:linear-gradient(90deg,#C9A84C,#6B5B35);border-radius:2px;"></div></div>'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px;">'
+      +(mp!==null?'<span style="font-size:9px;font-weight:700;color:'+mc+';background:'+mbg+';padding:2px 7px;border-radius:10px;">'+(mp>0?'▲':'▼')+Math.abs(mp).toFixed(0)+'%</span>':'')
+      +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:600;color:#1A1A1A;">'+q.toLocaleString()+'</span>'
+      +'</div></div>'
+      +'<div style="height:4px;background:#F0EDE8;border-radius:2px;overflow:hidden;margin-left:28px;">'
+      +'<div style="width:'+bw+'%;height:100%;background:linear-gradient(90deg,#C9A84C,#6B5B35);border-radius:2px;transition:width .4s;"></div></div>'
       +'</div>';
   }).join('') || '<div style="color:#8A8278;font-size:12px;padding:20px 0;text-align:center;">No SKU data for this store in May 2026</div>';
 
