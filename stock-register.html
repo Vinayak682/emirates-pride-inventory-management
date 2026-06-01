@@ -2023,7 +2023,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
         <!-- Row 4: Store Supplies -->
         <div>
-          <button onclick="goToStockRegister();setTimeout(openSuppliesDirect,1600);" style="width:100%;background:linear-gradient(135deg,#37474F,#546E7A);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 3px 10px rgba(55,71,79,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+          <button onclick="goToStockRegister();_pendingScrollSupplies=true;" style="width:100%;background:linear-gradient(135deg,#37474F,#546E7A);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 3px 10px rgba(55,71,79,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <span style="font-size:18px;">🛍️</span>
             <div style="display:flex;flex-direction:column;align-items:flex-start;">
               <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Store Supplies</span>
@@ -4695,13 +4695,15 @@ function mgrSendInstruction() {
 }
 
 // ── Hub helpers ────────────────────────────────────────────────────
+let _pendingScrollSupplies = false;
 function openSuppliesDirect() {
   const sec = document.getElementById('consumableSection');
   if (!sec) return;
-  // consumableSection is inside #scrollArea — scroll that container, not window
   const scrollArea = document.getElementById('scrollArea');
   if (scrollArea) {
-    scrollArea.scrollTo({ top: sec.offsetTop, behavior: 'smooth' });
+    // getBoundingClientRect gives position relative to viewport — adjust by scrollArea's own position + current scroll
+    const top = sec.getBoundingClientRect().top - scrollArea.getBoundingClientRect().top + scrollArea.scrollTop;
+    scrollArea.scrollTo({ top: top, behavior: 'smooth' });
   } else {
     sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -6782,14 +6784,16 @@ function confirmNP(){
   // Supplies numpad
   if(npCtx && npCtx.type === 'supplies'){
     const val = parseInt(npBuf) || 0;
-    suppSet(me.code, curDay, npCtx.itemCode, npCtx.field, val);
+    const savedCode = npCtx.itemCode;
+    const savedField = npCtx.field;
+    suppSet(me.code, curDay, savedCode, savedField, val);
     closeNP();
     renderConsSection();
-    const item = CONSUMABLES.find(x => x.code === npCtx.itemCode);
-    const bal  = suppBal(me.code, curDay, npCtx.itemCode);
-    if(bal < 0) toast('⛔ ' + (item?.en||npCtx.itemCode) + ' balance is negative — check entries');
-    else if(bal < 10) toast('⚠ ' + (item?.en||npCtx.itemCode) + ' balance is low (' + bal + ')');
-    else toast('✓ ' + (item?.en||npCtx.itemCode) + ' updated — Balance: ' + bal);
+    const item = CONSUMABLES.find(x => x.code === savedCode);
+    const bal  = suppBal(me.code, curDay, savedCode);
+    if(bal < 0) toast('⛔ ' + (item?.en||savedCode) + ' balance is negative — check entries');
+    else if(bal < 10) toast('⚠ ' + (item?.en||savedCode) + ' balance is low (' + bal + ')');
+    else toast('✓ ' + (item?.en||savedCode) + ' updated — Balance: ' + bal);
     return;
   }
   // Legacy consumable numpad (stub)
@@ -14126,6 +14130,11 @@ function renderConsSection(){
 
   html += `</tbody></table>`;
   document.getElementById('consGrid').innerHTML = html;
+  // If launched from Hub "Store Supplies" button, scroll into view now that grid is rendered
+  if (_pendingScrollSupplies) {
+    _pendingScrollSupplies = false;
+    setTimeout(openSuppliesDirect, 80);
+  }
 }
 
 // ── Open numpad for a supplies field ──────────────────────────────
