@@ -8722,459 +8722,155 @@ function sortEidTable(by) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// EID PERFORMANCE — EXCEL EXPORT
+// EID PERFORMANCE — EXCEL EXPORT  (SheetJS community-safe — no styles API)
 // ══════════════════════════════════════════════════════════════════════
 function exportEidPerf() {
   if (!_eidStoreMetrics || !_eidStoreMetrics.length) {
-    alert('Sales data not loaded. Please load the Sales tab first, then try again.');
+    alert('Sales data not loaded.\n\nPlease:\n1. Close this panel\n2. Wait for the Sales tab to fully load\n3. Re-open Eid Performance and try again.');
     return;
   }
-  toast('Building Excel report…');
+  try {
+    toast('⏳ Building Excel… please wait');
+    var g = _eidGrandData;
+    var today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+    var TREND_MONTHS = ['2025-10','2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05'];
+    var TREND_LABELS = ['Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26'];
+    var reg = EID_REGION_NAMES;
 
-  const g    = _eidGrandData;
-  const today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}).toUpperCase();
-  const MAY26='2026-05', APR26='2026-04', MAY25='2025-05';
-  const TREND_MONTHS = ['2025-10','2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05'];
-  const TREND_LABELS = ['Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26'];
+    function xpct(v) { return (v!==null&&v!==undefined) ? (v>0?'+':'')+v.toFixed(1)+'%' : '--'; }
+    function xsku(c) { return (typeof SKU_NAMES!=='undefined'&&SKU_NAMES[c])||c; }
+    function xsum(code,my){ return salesData.filter(function(r){return r.store_code===code&&r.month_year===my&&(r.qty_sold||0)>0;}).reduce(function(s,r){return s+(r.qty_sold||0);},0); }
 
-  function pct(v)      { return v!==null && v!==undefined ? (v>0?'+':'')+v.toFixed(1)+'%' : '—'; }
-  function skuN(c)     { return (typeof SKU_NAMES!=='undefined'&&SKU_NAMES[c])||c; }
-  function sumSM(code,my){ return salesData.filter(r=>r.store_code===code&&r.month_year===my&&r.qty_sold>0).reduce((s,r)=>s+(r.qty_sold||0),0); }
+    // ===== SHEET 1: EXECUTIVE SUMMARY =====
+    var s1=[];
+    s1.push(['EMIRATES PRIDE PERFUMES - EID AL-ADHA 2026 EXECUTIVE PERFORMANCE REPORT']);
+    s1.push(['All Regions: EPP UAE + ASL UAE + Oman  |  KSA Excluded  |  Generated: '+today]);
+    s1.push([]);
+    s1.push(['KEY PERFORMANCE INDICATORS']);
+    s1.push(['METRIC','VALUE','COMPARISON','DETAIL']);
+    s1.push(['Total Units Sold - May 2026', g.may26||0, '', 'All stores combined']);
+    s1.push(['vs April 2026 (MoM)', xpct(g.momPct), 'Apr 2026: '+(g.apr26||0), g.momPct!==null?(g.momPct>0?'GROWTH':'DECLINE'):'']);
+    s1.push(['vs May 2025 (YoY)',   xpct(g.yoyPct), 'May 2025: '+(g.may25||0), g.yoyPct!==null?(g.yoyPct>0?'GROWTH':'DECLINE'):'']);
+    s1.push(['Eid Uplift vs Jan-Apr Avg', xpct(g.upliftPct), 'Baseline: '+Math.round(g.baseAvg||0)+' units/mo', 'Eid Al-Adha seasonal boost']);
+    s1.push([]);
+    s1.push(['REGIONAL PERFORMANCE']);
+    s1.push(['REGION','STORES','MAY 2026','APR 2026','MoM %','YoY %','EID UPLIFT %','BASELINE Avg/Mo']);
+    ['EPP','ASL','OMAN'].forEach(function(rg){
+      var d=_eidRegionData[rg]||{};
+      s1.push([reg[rg]||rg, d.storeCount||0, d.may26||0, d.apr26||0, xpct(d.momPct), xpct(d.yoyPct), xpct(d.upliftPct), Math.round(d.baseAvg||0)]);
+    });
+    s1.push([]);
+    s1.push(['TOP 10 STORES BY MAY 2026 VOLUME']);
+    s1.push(['RANK','STORE CODE','STORE NAME','CITY','REGION','MAY 2026','APR 2026','MoM %','YoY %','EID UPLIFT %']);
+    [].concat(_eidStoreMetrics).sort(function(a,b){return b.may26-a.may26;}).slice(0,10).forEach(function(s,i){
+      s1.push([i+1,s.code,s.name,s.city||'--',reg[s.region]||s.region,s.may26,s.apr26||0,xpct(s.momPct),xpct(s.yoyPct),xpct(s.upliftPct)]);
+    });
+    s1.push([]);
+    s1.push(['BOTTOM 5 - NEEDS ATTENTION']);
+    s1.push(['RANK','STORE CODE','STORE NAME','REGION','MAY 2026','APR 2026','MoM %']);
+    [].concat(_eidStoreMetrics).sort(function(a,b){return a.may26-b.may26;}).slice(0,5).forEach(function(s,i){
+      s1.push([i+1,s.code,s.name,reg[s.region]||s.region,s.may26,s.apr26||0,xpct(s.momPct)]);
+    });
+    s1.push([]);
+    s1.push(['TOP 5 EID WINNERS - BIGGEST MoM SURGE']);
+    s1.push(['RANK','STORE CODE','STORE NAME','REGION','MAY 2026','APR 2026','MoM %']);
+    [].concat(_eidStoreMetrics).filter(function(s){return s.momPct!==null;}).sort(function(a,b){return b.momPct-a.momPct;}).slice(0,5).forEach(function(s,i){
+      s1.push([i+1,s.code,s.name,reg[s.region]||s.region,s.may26,s.apr26||0,xpct(s.momPct)]);
+    });
+    s1.push([]);
+    s1.push(['TOP 10 SKUs - MAY 2026 VOLUME']);
+    s1.push(['RANK','SKU CODE','PRODUCT NAME','MAY 2026','APR 2026','MoM %','% SHARE']);
+    var totMay=_eidTopSkus.reduce(function(s,kv){return s+kv[1];},0)||1;
+    _eidTopSkus.forEach(function(kv,i){
+      var code=kv[0],qty=kv[1],apr=_eidSkuApr26[code]||0,mp=apr>0?(qty-apr)/apr*100:null;
+      s1.push([i+1,code,xsku(code),qty,apr,xpct(mp),(qty/totMay*100).toFixed(1)+'%']);
+    });
+    s1.push([]);
+    s1.push(['TOP 10 EID SKU MOVERS - BIGGEST MoM UPLIFT']);
+    s1.push(['RANK','SKU CODE','PRODUCT NAME','MAY 2026','APR 2026','MoM %']);
+    _eidWinnerSkus.forEach(function(s,i){
+      s1.push([i+1,s.code,xsku(s.code),s.qty,_eidSkuApr26[s.code]||0,xpct(s.momPct)]);
+    });
+    s1.push([]);
+    s1.push(['Emirates Pride Perfumes Trading  |  Eid Al-Adha 2026 Performance Report  |  CONFIDENTIAL  |  '+today]);
+    var ws1=XLSX.utils.aoa_to_sheet(s1);
+    ws1['!cols']=[{wch:36},{wch:14},{wch:22},{wch:28},{wch:12},{wch:14},{wch:13},{wch:13},{wch:13},{wch:14}];
 
-  // ── STYLE PALETTE ──────────────────────────────────────────────────
-  const GOLD_BG   = {fgColor:{rgb:'6B5B35'}};
-  const GOLD2_BG  = {fgColor:{rgb:'5C4A1A'}};
-  const GOLD3_BG  = {fgColor:{rgb:'C9A84C'}};
-  const PALE_BG   = {fgColor:{rgb:'F5F2EC'}};
-  const WHITE_BG  = {fgColor:{rgb:'FFFFFF'}};
-  const ALT_BG    = {fgColor:{rgb:'FAFAF8'}};
-  const GREEN_BG  = {fgColor:{rgb:'E8F5ED'}};
-  const RED_BG    = {fgColor:{rgb:'FEECEC'}};
-  const AMBER_BG  = {fgColor:{rgb:'FFF8E6'}};
-  const NAVY_BG   = {fgColor:{rgb:'1a3a5c'}};
-  const PURP_BG   = {fgColor:{rgb:'5c1a5c'}};
-  const TEAL_BG   = {fgColor:{rgb:'1a5c3a'}};
+    // ===== SHEET 2: ALL STORE PERFORMANCE =====
+    var s2=[];
+    s2.push(['EMIRATES PRIDE - ALL STORE PERFORMANCE - MAY 2026']);
+    s2.push(['Generated: '+today+'  |  '+_eidStoreMetrics.length+' stores  |  Sorted by May 2026 units']);
+    s2.push([]);
+    s2.push(['RANK','STORE CODE','STORE NAME','CITY','REGION','MAY 2026','APR 2026','MoM %','YoY %','EID UPLIFT %','JAN-APR AVG']);
+    [].concat(_eidStoreMetrics).sort(function(a,b){return b.may26-a.may26;}).forEach(function(s,i){
+      s2.push([i+1,s.code,s.name,s.city||'--',reg[s.region]||s.region,s.may26,s.apr26||0,xpct(s.momPct),xpct(s.yoyPct),xpct(s.upliftPct),Math.round(s.baseAvg||0)]);
+    });
+    var ws2=XLSX.utils.aoa_to_sheet(s2);
+    ws2['!cols']=[{wch:5},{wch:13},{wch:32},{wch:14},{wch:10},{wch:12},{wch:12},{wch:10},{wch:10},{wch:12},{wch:12}];
+    ws2['!views']=[{state:'frozen',xSplit:0,ySplit:4}];
 
-  const thin = {style:'thin',color:{rgb:'E5E0D8'}};
-  const medG = {style:'medium',color:{rgb:'C9A84C'}};
-  const allBorder = {top:thin,bottom:thin,left:thin,right:thin};
-  const btmGold   = {bottom:medG};
+    // ===== SHEET 3: 8-MONTH TREND =====
+    var s3=[];
+    s3.push(['EMIRATES PRIDE - 8-MONTH SALES TREND - OCT 2025 TO MAY 2026']);
+    s3.push(['TIP: Select rows 4+ then Insert > Chart > Column in Excel to create a trend chart']);
+    s3.push([]);
+    s3.push(['STORE / REGION'].concat(TREND_LABELS));
+    ['EPP','ASL','OMAN'].forEach(function(rg){
+      var ss=_eidStoreMetrics.filter(function(s){return s.region===rg;});
+      var row=[(reg[rg]||rg)+' TOTAL'];
+      TREND_MONTHS.forEach(function(m){row.push(ss.reduce(function(sum,s){return sum+xsum(s.code,m);},0));});
+      s3.push(row);
+    });
+    var gtRow=['ALL REGIONS TOTAL'];
+    TREND_MONTHS.forEach(function(m){gtRow.push(_eidStoreMetrics.reduce(function(sum,s){return sum+xsum(s.code,m);},0));});
+    s3.push(gtRow);
+    s3.push([]);
+    _eidStoreMetrics.forEach(function(s){
+      var row=[s.name+' ('+s.code+')'];
+      TREND_MONTHS.forEach(function(m){row.push(xsum(s.code,m));});
+      s3.push(row);
+    });
+    var ws3=XLSX.utils.aoa_to_sheet(s3);
+    var w3c=[{wch:38}]; TREND_MONTHS.forEach(function(){w3c.push({wch:11});}); ws3['!cols']=w3c;
+    ws3['!views']=[{state:'frozen',xSplit:1,ySplit:4}];
 
-  const S = {
-    title:   {font:{bold:true,sz:18,color:{rgb:'FFFFFF'},name:'Cormorant Garamond'},  fill:GOLD_BG, alignment:{horizontal:'center',vertical:'center',wrapText:true}},
-    sub:     {font:{bold:true,sz:9, color:{rgb:'F5ECB0'}}, fill:GOLD2_BG, alignment:{horizontal:'center',vertical:'center'}},
-    dateLn:  {font:{sz:8,  color:{rgb:'8A8278'},italic:true}, fill:WHITE_BG, alignment:{horizontal:'center'}},
-    secHdr:  {font:{bold:true,sz:9, color:{rgb:'6B5B35'}}, fill:PALE_BG, border:btmGold, alignment:{horizontal:'left',vertical:'center'}},
-    colHdr:  {font:{bold:true,sz:8, color:{rgb:'FFFFFF'}}, fill:GOLD_BG, alignment:{horizontal:'center',vertical:'center',wrapText:true}, border:allBorder},
-    colHdrL: {font:{bold:true,sz:8, color:{rgb:'FFFFFF'}}, fill:GOLD_BG, alignment:{horizontal:'left',  vertical:'center',wrapText:true}, border:allBorder},
-    kpiLbl:  {font:{bold:true,sz:8, color:{rgb:'8A8278'}}, fill:PALE_BG, alignment:{horizontal:'center',vertical:'center'}},
-    kpiVal:  {font:{bold:true,sz:20,color:{rgb:'1A1A1A'},name:'Cormorant Garamond'}, fill:WHITE_BG, alignment:{horizontal:'center',vertical:'center'}},
-    rank:    {font:{sz:9,  color:{rgb:'B0A898'},name:'Courier New'}, fill:WHITE_BG, alignment:{horizontal:'center',vertical:'center'}},
-    rankA:   {font:{sz:9,  color:{rgb:'B0A898'},name:'Courier New'}, fill:ALT_BG,   alignment:{horizontal:'center',vertical:'center'}},
-    stName:  {font:{bold:true,sz:10,color:{rgb:'1A1A1A'}}, fill:WHITE_BG, alignment:{horizontal:'left',  vertical:'center'}},
-    stNameA: {font:{bold:true,sz:10,color:{rgb:'1A1A1A'}}, fill:ALT_BG,   alignment:{horizontal:'left',  vertical:'center'}},
-    stCode:  {font:{sz:8,  color:{rgb:'C9A84C'},name:'Courier New'}, fill:WHITE_BG, alignment:{horizontal:'left',  vertical:'center'}},
-    stCodeA: {font:{sz:8,  color:{rgb:'C9A84C'},name:'Courier New'}, fill:ALT_BG,   alignment:{horizontal:'left',  vertical:'center'}},
-    num:     {font:{bold:true,sz:11,color:{rgb:'1A1A1A'}}, fill:WHITE_BG, alignment:{horizontal:'right', vertical:'center'}, numFmt:'#,##0'},
-    numA:    {font:{bold:true,sz:11,color:{rgb:'1A1A1A'}}, fill:ALT_BG,   alignment:{horizontal:'right', vertical:'center'}, numFmt:'#,##0'},
-    numSm:   {font:{sz:9,  color:{rgb:'4A4540'}}, fill:WHITE_BG, alignment:{horizontal:'right', vertical:'center'}, numFmt:'#,##0'},
-    numSmA:  {font:{sz:9,  color:{rgb:'4A4540'}}, fill:ALT_BG,   alignment:{horizontal:'right', vertical:'center'}, numFmt:'#,##0'},
-    pGood:   {font:{bold:true,sz:10,color:{rgb:'1A7A3C'}}, fill:GREEN_BG, alignment:{horizontal:'center',vertical:'center'}, border:allBorder},
-    pBad:    {font:{bold:true,sz:10,color:{rgb:'C0392B'}}, fill:RED_BG,   alignment:{horizontal:'center',vertical:'center'}, border:allBorder},
-    pAmb:    {font:{bold:true,sz:10,color:{rgb:'7A6525'}}, fill:AMBER_BG, alignment:{horizontal:'center',vertical:'center'}, border:allBorder},
-    pNull:   {font:{sz:9,  color:{rgb:'AAAAAA'}}, fill:WHITE_BG, alignment:{horizontal:'center',vertical:'center'}},
-    pNullA:  {font:{sz:9,  color:{rgb:'AAAAAA'}}, fill:ALT_BG,   alignment:{horizontal:'center',vertical:'center'}},
-    regEPP:  {font:{bold:true,sz:10,color:{rgb:'FFFFFF'}}, fill:NAVY_BG,  alignment:{horizontal:'left',  vertical:'center'}, border:allBorder},
-    regASL:  {font:{bold:true,sz:10,color:{rgb:'FFFFFF'}}, fill:PURP_BG,  alignment:{horizontal:'left',  vertical:'center'}, border:allBorder},
-    regOM:   {font:{bold:true,sz:10,color:{rgb:'FFFFFF'}}, fill:TEAL_BG,  alignment:{horizontal:'left',  vertical:'center'}, border:allBorder},
-    trendHdr:{font:{bold:true,sz:8, color:{rgb:'FFFFFF'}}, fill:GOLD2_BG, alignment:{horizontal:'center',vertical:'center'}},
-    trendLow:{font:{sz:9,  color:{rgb:'4A4540'}}, fill:{fgColor:{rgb:'F0EDE8'}}, alignment:{horizontal:'right', vertical:'center'}, numFmt:'#,##0'},
-    trendHi: {font:{bold:true,sz:9, color:{rgb:'6B5B35'}}, fill:{fgColor:{rgb:'FFF8E6'}}, alignment:{horizontal:'right', vertical:'center'}, numFmt:'#,##0'},
-    trendPk: {font:{bold:true,sz:10,color:{rgb:'FFFFFF'}}, fill:GOLD_BG,   alignment:{horizontal:'right', vertical:'center'}, numFmt:'#,##0'},
-    footer:  {font:{sz:8,  color:{rgb:'8A8278'},italic:true}, fill:PALE_BG, alignment:{horizontal:'center'}},
-    blank:   {fill:WHITE_BG},
-    blankP:  {fill:PALE_BG},
-  };
+    // ===== SHEET 4: SKU INTELLIGENCE =====
+    var s4=[];
+    s4.push(['EMIRATES PRIDE - SKU INTELLIGENCE - EID AL-ADHA 2026']);
+    s4.push(['Generated: '+today]);
+    s4.push([]);
+    s4.push(['TOP 10 SKUs BY VOLUME - MAY 2026']);
+    s4.push(['RANK','SKU CODE','PRODUCT NAME','MAY 2026','APR 2026','MoM %','% SHARE']);
+    _eidTopSkus.forEach(function(kv,i){
+      var code=kv[0],qty=kv[1],apr=_eidSkuApr26[code]||0,mp=apr>0?(qty-apr)/apr*100:null;
+      s4.push([i+1,code,xsku(code),qty,apr,xpct(mp),(qty/totMay*100).toFixed(1)+'%']);
+    });
+    s4.push([]);
+    s4.push(['TOP 10 EID SKU MOVERS - BIGGEST MoM UPLIFT']);
+    s4.push(['RANK','SKU CODE','PRODUCT NAME','MAY 2026','APR 2026','MoM %','VERDICT']);
+    _eidWinnerSkus.forEach(function(s,i){
+      s4.push([i+1,s.code,xsku(s.code),s.qty,_eidSkuApr26[s.code]||0,xpct(s.momPct),s.momPct>50?'STRONG EID MOVER':s.momPct>20?'EID BOOST':'MODERATE']);
+    });
+    s4.push([]);
+    s4.push(['Emirates Pride Perfumes Trading  |  Eid Al-Adha 2026  |  CONFIDENTIAL  |  '+today]);
+    var ws4=XLSX.utils.aoa_to_sheet(s4);
+    ws4['!cols']=[{wch:5},{wch:13},{wch:36},{wch:14},{wch:14},{wch:13},{wch:20}];
 
-  function pS(v) { // percent style picker
-    if(v===null||v===undefined) return S.pNull;
-    if(v>5)  return S.pGood;
-    if(v<-5) return S.pBad;
-    return S.pAmb;
+    // BUILD & DOWNLOAD
+    var wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws1,'Executive Summary');
+    XLSX.utils.book_append_sheet(wb,ws2,'Store Performance');
+    XLSX.utils.book_append_sheet(wb,ws3,'8-Month Trend');
+    XLSX.utils.book_append_sheet(wb,ws4,'SKU Intelligence');
+    var fname='Emirates_Pride_Eid_2026_Performance_'+new Date().toISOString().slice(0,10)+'.xlsx';
+    XLSX.writeFile(wb, fname);
+    toast('✓ Excel downloaded: '+fname+' -- check your Downloads folder');
+
+  } catch(err) {
+    console.error('Export error:', err);
+    alert('Export failed: '+err.message+'\n\nOpen F12 > Console to see the full error.');
   }
-  function pSA(v) {
-    if(v===null||v===undefined) return S.pNullA;
-    return pS(v);
-  }
-
-  // Core cell builder
-  function cc(R,C,v,style,sheet) {
-    const addr=XLSX.utils.encode_cell({r:R,c:C});
-    const t = (v===null||v===undefined||v==='') ? 's' : (typeof v==='number'?'n':'s');
-    sheet[addr]={v:(v===null||v===undefined)?'':v, t, s:style||S.blank};
-  }
-
-  // ══════════════════════════════════════════════════════════════
-  // SHEET 1 — EXECUTIVE SUMMARY
-  // ══════════════════════════════════════════════════════════════
-  const ws1 = {};
-  let R = 0;
-  const merges1 = [];
-
-  // Merge helper
-  function mg(r1,c1,r2,c2){ merges1.push({s:{r:r1,c:c1},e:{r:r2,c:c2}}); }
-
-  // ── Banner rows ──
-  cc(R,0,'EMIRATES PRIDE PERFUMES',S.title,ws1);
-  for(let c=1;c<=7;c++) cc(R,c,'',S.title,ws1);
-  mg(R,0,R,7);
-  R++;
-
-  cc(R,0,'EID AL-ADHA 2026 — MAY 2026 EXECUTIVE PERFORMANCE REPORT',S.sub,ws1);
-  for(let c=1;c<=7;c++) cc(R,c,'',S.sub,ws1);
-  mg(R,0,R,7);
-  R++;
-
-  cc(R,0,'ALL REGIONS COMBINED (EPP UAE + ASL UAE + OMAN) · KSA EXCLUDED — DATA UNDER REVIEW · GENERATED '+today,S.dateLn,ws1);
-  for(let c=1;c<=7;c++) cc(R,c,'',S.dateLn,ws1);
-  mg(R,0,R,7);
-  R+=2;
-
-  // ── Grand KPIs ──
-  cc(R,0,'■  OVERALL PERFORMANCE SUMMARY',S.secHdr,ws1);
-  for(let c=1;c<=7;c++) cc(R,c,'',S.secHdr,ws1);
-  mg(R,0,R,7);
-  R++;
-
-  const kpiL=['TOTAL UNITS SOLD','vs APRIL 2026\n(Month-on-Month)','vs MAY 2025\n(Year-on-Year)','EID UPLIFT\nvs Jan–Apr 2026 Avg','APR 2026\nBaseline','MAY 2025\nLast Year','JAN–APR 2026\nAvg Monthly'];
-  kpiL.forEach((l,i)=>cc(R,i,l,S.kpiLbl,ws1));
-  R++;
-  const kpiV=[
-    {v:g.may26, s:{...S.kpiVal,numFmt:'#,##0'}},
-    {v:g.momPct!==null?pct(g.momPct):'N/A', s:pS(g.momPct)},
-    {v:g.yoyPct!==null?pct(g.yoyPct):'N/A', s:pS(g.yoyPct)},
-    {v:g.upliftPct!==null?pct(g.upliftPct):'N/A', s:pS(g.upliftPct)},
-    {v:g.apr26||0, s:{...S.numSm,numFmt:'#,##0'}},
-    {v:g.may25||0, s:{...S.numSm,numFmt:'#,##0'}},
-    {v:Math.round(g.baseAvg)||0, s:{...S.numSm,numFmt:'#,##0'}},
-  ];
-  kpiV.forEach((kv,i)=>{
-    const addr=XLSX.utils.encode_cell({r:R,c:i});
-    ws1[addr]={v:kv.v,t:typeof kv.v==='number'?'n':'s',s:kv.s};
-  });
-  R+=2;
-
-  // ── Region Breakdown ──
-  cc(R,0,'■  REGIONAL PERFORMANCE BREAKDOWN',S.secHdr,ws1);
-  for(let c=1;c<=7;c++) cc(R,c,'',S.secHdr,ws1);
-  mg(R,0,R,7);
-  R++;
-  ['REGION','STORES','MAY 2026 UNITS','APR 2026 UNITS','MoM %','YoY %','EID UPLIFT %','BASELINE Avg/Mo'].forEach((h,i)=>cc(R,i,h,S.colHdr,ws1));
-  R++;
-  const regStyles={EPP:S.regEPP,ASL:S.regASL,OMAN:S.regOM};
-  ['EPP','ASL','OMAN'].forEach(reg=>{
-    const d=_eidRegionData[reg]||{};
-    const rs=regStyles[reg]||S.regEPP;
-    [
-      {v:EID_REGION_NAMES[reg]||reg, s:rs},
-      {v:d.storeCount||0,   s:{...S.num,numFmt:'0'}},
-      {v:d.may26||0,         s:S.num},
-      {v:d.apr26||0,         s:S.numSm},
-      {v:d.momPct!==null?pct(d.momPct):'—', s:pS(d.momPct)},
-      {v:d.yoyPct!==null?pct(d.yoyPct):'—', s:pS(d.yoyPct)},
-      {v:d.upliftPct!==null?pct(d.upliftPct):'—', s:pS(d.upliftPct)},
-      {v:Math.round(d.baseAvg||0), s:{...S.numSm,numFmt:'#,##0'}},
-    ].forEach((vd,i)=>{
-      const addr=XLSX.utils.encode_cell({r:R,c:i});
-      ws1[addr]={v:vd.v,t:typeof vd.v==='number'?'n':'s',s:vd.s};
-    });
-    R++;
-  });
-  R++;
-
-  // ── Top 10 stores by volume ──
-  cc(R,0,'■  TOP 10 STORES BY MAY 2026 VOLUME',S.secHdr,ws1);
-  for(let c=1;c<=7;c++) cc(R,c,'',S.secHdr,ws1);
-  mg(R,0,R,7);
-  R++;
-  ['#','STORE CODE','STORE NAME','CITY','REGION','MAY 2026','APR 2026','MoM %'].forEach((h,i)=>cc(R,i,h,S.colHdr,ws1));
-  R++;
-  [..._eidStoreMetrics].sort((a,b)=>b.may26-a.may26).slice(0,10).forEach((s,i)=>{
-    const odd=i%2!==0;
-    [
-      {v:i+1,        s:odd?S.rankA:S.rank},
-      {v:s.code,     s:odd?S.stCodeA:S.stCode},
-      {v:s.name,     s:odd?S.stNameA:S.stName},
-      {v:s.city||'—',s:odd?S.stNameA:S.stName},
-      {v:EID_REGION_NAMES[s.region]||s.region, s:{font:{sz:9,color:{rgb:'FFFFFF'}},fill:regStyles[s.region]?regStyles[s.region].fill:GOLD_BG,alignment:{horizontal:'center',vertical:'center'}}},
-      {v:s.may26,    s:odd?S.numA:S.num},
-      {v:s.apr26||0, s:odd?S.numSmA:S.numSm},
-      {v:s.momPct!==null?pct(s.momPct):'—', s:pS(s.momPct)},
-    ].forEach((vd,ci)=>{
-      const addr=XLSX.utils.encode_cell({r:R,c:ci});
-      ws1[addr]={v:vd.v,t:typeof vd.v==='number'?'n':'s',s:vd.s};
-    });
-    R++;
-  });
-  R++;
-
-  // ── Top 5 Eid Winners ──
-  cc(R,0,'■  TOP 5 EID WINNERS — BIGGEST MoM SURGE vs APRIL 2026',S.secHdr,ws1);
-  for(let c=1;c<=7;c++) cc(R,c,'',S.secHdr,ws1);
-  mg(R,0,R,7);
-  R++;
-  ['#','STORE CODE','STORE NAME','REGION','MAY 2026','APR 2026','MoM % GROWTH',''].forEach((h,i)=>cc(R,i,h,S.colHdr,ws1));
-  R++;
-  [..._eidStoreMetrics].filter(s=>s.momPct!==null).sort((a,b)=>b.momPct-a.momPct).slice(0,5).forEach((s,i)=>{
-    const odd=i%2!==0;
-    [
-      {v:i+1,s:odd?S.rankA:S.rank},
-      {v:s.code,s:odd?S.stCodeA:S.stCode},
-      {v:s.name,s:odd?S.stNameA:S.stName},
-      {v:EID_REGION_NAMES[s.region]||s.region,s:{font:{sz:9,color:{rgb:'FFFFFF'}},fill:regStyles[s.region]?regStyles[s.region].fill:GOLD_BG,alignment:{horizontal:'center',vertical:'center'}}},
-      {v:s.may26,s:odd?S.numA:S.num},
-      {v:s.apr26||0,s:odd?S.numSmA:S.numSm},
-      {v:pct(s.momPct),s:S.pGood},
-      {v:'',s:odd?S.rankA:S.rank},
-    ].forEach((vd,ci)=>{
-      const addr=XLSX.utils.encode_cell({r:R,c:ci});
-      ws1[addr]={v:vd.v,t:typeof vd.v==='number'?'n':'s',s:vd.s};
-    });
-    R++;
-  });
-  R++;
-
-  // ── Top 10 SKUs ──
-  cc(R,0,'■  TOP 10 SKUs — NATIONWIDE MAY 2026 VOLUME',S.secHdr,ws1);
-  for(let c=1;c<=7;c++) cc(R,c,'',S.secHdr,ws1);
-  mg(R,0,R,7);
-  R++;
-  ['#','SKU CODE','PRODUCT NAME','MAY 2026 UNITS','APR 2026 UNITS','MoM CHANGE','',''].forEach((h,i)=>cc(R,i,h,S.colHdr,ws1));
-  R++;
-  _eidTopSkus.forEach(([code,qty],i)=>{
-    const apr=_eidSkuApr26[code]||0;
-    const mp=apr>0?(qty-apr)/apr*100:null;
-    const odd=i%2!==0;
-    [
-      {v:i+1,s:odd?S.rankA:S.rank},
-      {v:code,s:odd?S.stCodeA:S.stCode},
-      {v:skuN(code),s:odd?S.stNameA:S.stName},
-      {v:qty,s:odd?S.numA:S.num},
-      {v:apr,s:odd?S.numSmA:S.numSm},
-      {v:mp!==null?pct(mp):'—',s:pS(mp)},
-      {v:'',s:odd?S.rankA:S.rank},
-      {v:'',s:odd?S.rankA:S.rank},
-    ].forEach((vd,ci)=>{
-      const addr=XLSX.utils.encode_cell({r:R,c:ci});
-      ws1[addr]={v:vd.v,t:typeof vd.v==='number'?'n':'s',s:vd.s};
-    });
-    R++;
-  });
-  R++;
-  cc(R,0,'EMIRATES PRIDE PERFUMES TRADING  ·  EID AL-ADHA 2026 PERFORMANCE REPORT  ·  CONFIDENTIAL  ·  '+today,S.footer,ws1);
-  for(let c=1;c<=7;c++) cc(R,c,'',S.footer,ws1);
-  mg(R,0,R,7);
-
-  ws1['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:R,c:7}});
-  ws1['!merges']=merges1;
-  ws1['!cols']=[{wch:4},{wch:13},{wch:32},{wch:14},{wch:12},{wch:14},{wch:13},{wch:14}];
-  ws1['!rows']=[{hpt:44},{hpt:26},{hpt:16}];
-
-  // ══════════════════════════════════════════════════════════════
-  // SHEET 2 — ALL STORE PERFORMANCE TABLE
-  // ══════════════════════════════════════════════════════════════
-  const ws2={};
-  const merges2=[];
-  let R2=0;
-
-  cc(R2,0,'EMIRATES PRIDE  ·  ALL STORE PERFORMANCE — MAY 2026  ·  EID AL-ADHA 2026',S.title,ws2);
-  for(let c=1;c<=9;c++) cc(R2,c,'',S.title,ws2);
-  merges2.push({s:{r:0,c:0},e:{r:0,c:9}});
-  R2+=2;
-
-  ['RANK','STORE CODE','STORE NAME','CITY','REGION','MAY 2026','APR 2026','MoM %','YoY %','EID UPLIFT %'].forEach((h,i)=>cc(R2,i,h,S.colHdr,ws2));
-  R2++;
-
-  _eidStoreMetrics.forEach((s,i)=>{
-    const odd=i%2!==0;
-    const regStyle={font:{sz:8,bold:true,color:{rgb:'FFFFFF'}},fill:regStyles[s.region]?regStyles[s.region].fill:GOLD_BG,alignment:{horizontal:'center',vertical:'center'}};
-    [
-      {v:i+1,            s:odd?S.rankA:S.rank},
-      {v:s.code,         s:odd?S.stCodeA:S.stCode},
-      {v:s.name,         s:odd?S.stNameA:S.stName},
-      {v:s.city||'—',    s:odd?S.stNameA:S.stName},
-      {v:EID_REGION_NAMES[s.region]||s.region, s:regStyle},
-      {v:s.may26,        s:odd?S.numA:S.num},
-      {v:s.apr26||0,     s:odd?S.numSmA:S.numSm},
-      {v:s.momPct!==null?pct(s.momPct):'—',    s:pS(s.momPct)},
-      {v:s.yoyPct!==null?pct(s.yoyPct):'—',    s:pS(s.yoyPct)},
-      {v:s.upliftPct!==null?pct(s.upliftPct):'—', s:pS(s.upliftPct)},
-    ].forEach((vd,ci)=>{
-      const addr=XLSX.utils.encode_cell({r:R2,c:ci});
-      ws2[addr]={v:vd.v,t:typeof vd.v==='number'?'n':'s',s:vd.s};
-    });
-    R2++;
-  });
-  R2++;
-  cc(R2,0,'SORTED BY MAY 2026 UNITS (HIGHEST FIRST)  ·  GENERATED '+today,S.footer,ws2);
-  for(let c=1;c<=9;c++) cc(R2,c,'',S.footer,ws2);
-  merges2.push({s:{r:R2,c:0},e:{r:R2,c:9}});
-
-  ws2['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:R2,c:9}});
-  ws2['!merges']=merges2;
-  ws2['!cols']=[{wch:5},{wch:13},{wch:32},{wch:14},{wch:12},{wch:14},{wch:13},{wch:11},{wch:11},{wch:13}];
-  ws2['!rows']=[{hpt:36}];
-  ws2['!freeze']={xSplit:0,ySplit:3,topLeftCell:'A4',activePane:'bottomLeft'};
-
-  // ══════════════════════════════════════════════════════════════
-  // SHEET 3 — 6-MONTH TREND (chart-ready data)
-  // ══════════════════════════════════════════════════════════════
-  const ws3={};
-  const merges3=[];
-  let R3=0;
-
-  cc(R3,0,'EMIRATES PRIDE  ·  8-MONTH SALES TREND BY STORE  ·  OCT 2025 – MAY 2026',S.title,ws3);
-  for(let c=1;c<=TREND_MONTHS.length;c++) cc(R3,c,'',S.title,ws3);
-  merges3.push({s:{r:0,c:0},e:{r:0,c:TREND_MONTHS.length}});
-  R3++;
-
-  cc(R3,0,'NOTE: This sheet is optimised for charting. Select all data below and use Insert → Chart → Bar/Column chart.',{font:{sz:9,italic:true,color:{rgb:'6B5B35'}},fill:PALE_BG,alignment:{horizontal:'left',vertical:'center'}},ws3);
-  for(let c=1;c<=TREND_MONTHS.length;c++) cc(R3,c,'',{fill:PALE_BG},ws3);
-  merges3.push({s:{r:1,c:0},e:{r:1,c:TREND_MONTHS.length}});
-  R3++;
-
-  // Headers
-  cc(R3,0,'STORE',S.colHdrL,ws3);
-  TREND_LABELS.forEach((lbl,i)=>{
-    const isMay=i===TREND_LABELS.length-1;
-    cc(R3,i+1,lbl, isMay?{...S.trendHdr,fill:GOLD_BG}:S.trendHdr, ws3);
-  });
-  R3++;
-
-  // Region subtotals first
-  ['EPP','ASL','OMAN'].forEach(reg=>{
-    const ss=_eidStoreMetrics.filter(s=>s.region===reg);
-    const regS=regStyles[reg]||S.regEPP;
-    cc(R3,0,EID_REGION_NAMES[reg]||reg,{...regS,font:{...regS.font,sz:9}},ws3);
-    TREND_MONTHS.forEach((m,i)=>{
-      const tot=ss.reduce((sum,s)=>sum+sumSM(s.code,m),0);
-      const isMay=i===TREND_MONTHS.length-1;
-      const addr=XLSX.utils.encode_cell({r:R3,c:i+1});
-      ws3[addr]={v:tot,t:'n',s:isMay?S.trendPk:{...S.numSm,fill:regS.fill,font:{sz:9,bold:true,color:{rgb:'FFFFFF'}}}};
-    });
-    R3++;
-  });
-
-  // All stores
-  _eidStoreMetrics.forEach((s,si)=>{
-    const odd=si%2!==0;
-    cc(R3,0,s.name+(s.code?' ('+s.code+')':''),odd?S.stNameA:S.stName,ws3);
-    let maxV=0;
-    const vals=TREND_MONTHS.map(m=>sumSM(s.code,m));
-    maxV=Math.max(...vals,1);
-    vals.forEach((v,i)=>{
-      const isMay=i===TREND_MONTHS.length-1;
-      const isHigh=v===maxV&&v>0;
-      const addr=XLSX.utils.encode_cell({r:R3,c:i+1});
-      let st=odd?(isMay?S.trendPk:(isHigh?S.trendHi:S.trendLow)):(isMay?S.trendPk:(isHigh?S.trendHi:{...S.trendLow,fill:WHITE_BG}));
-      ws3[addr]={v:v||0,t:'n',s:st};
-    });
-    R3++;
-  });
-
-  ws3['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:R3,c:TREND_MONTHS.length}});
-  ws3['!merges']=merges3;
-  const w3cols=[{wch:34}];
-  TREND_MONTHS.forEach(()=>w3cols.push({wch:10}));
-  ws3['!cols']=w3cols;
-  ws3['!rows']=[{hpt:36},{hpt:20}];
-  ws3['!freeze']={xSplit:1,ySplit:3,topLeftCell:'B4',activePane:'bottomRight'};
-
-  // ══════════════════════════════════════════════════════════════
-  // SHEET 4 — SKU INTELLIGENCE
-  // ══════════════════════════════════════════════════════════════
-  const ws4={};
-  const merges4=[];
-  let R4=0;
-
-  cc(R4,0,'EMIRATES PRIDE  ·  SKU INTELLIGENCE — EID AL-ADHA 2026  ·  MAY 2026',S.title,ws4);
-  for(let c=1;c<=6;c++) cc(R4,c,'',S.title,ws4);
-  merges4.push({s:{r:0,c:0},e:{r:0,c:6}});
-  R4+=2;
-
-  // Top 10 by volume
-  cc(R4,0,'TOP 10 SKUs BY NATIONWIDE VOLUME — MAY 2026',S.secHdr,ws4);
-  for(let c=1;c<=6;c++) cc(R4,c,'',S.secHdr,ws4);
-  merges4.push({s:{r:R4,c:0},e:{r:R4,c:6}});
-  R4++;
-  ['#','SKU CODE','PRODUCT NAME','MAY 2026 UNITS','APR 2026 UNITS','MoM CHANGE','% SHARE'].forEach((h,i)=>cc(R4,i,h,S.colHdr,ws4));
-  R4++;
-  const totalMay=_eidTopSkus.reduce((s,[,q])=>s+q,0)||1;
-  _eidTopSkus.forEach(([code,qty],i)=>{
-    const apr=_eidSkuApr26[code]||0;
-    const mp=apr>0?(qty-apr)/apr*100:null;
-    const odd=i%2!==0;
-    [
-      {v:i+1,s:odd?S.rankA:S.rank},
-      {v:code,s:odd?S.stCodeA:S.stCode},
-      {v:skuN(code),s:odd?S.stNameA:S.stName},
-      {v:qty,s:odd?S.numA:S.num},
-      {v:apr,s:odd?S.numSmA:S.numSm},
-      {v:mp!==null?pct(mp):'—',s:pS(mp)},
-      {v:(qty/totalMay*100).toFixed(1)+'%',s:odd?S.pNullA:S.pNull},
-    ].forEach((vd,ci)=>{
-      const addr=XLSX.utils.encode_cell({r:R4,c:ci});
-      ws4[addr]={v:vd.v,t:typeof vd.v==='number'?'n':'s',s:vd.s};
-    });
-    R4++;
-  });
-  R4++;
-
-  // Top 10 Eid Movers
-  cc(R4,0,'TOP 10 EID SKU MOVERS — BIGGEST MoM UPLIFT (EID EFFECT)',S.secHdr,ws4);
-  for(let c=1;c<=6;c++) cc(R4,c,'',S.secHdr,ws4);
-  merges4.push({s:{r:R4,c:0},e:{r:R4,c:6}});
-  R4++;
-  ['#','SKU CODE','PRODUCT NAME','MAY 2026 UNITS','APR 2026 UNITS','MoM GROWTH %',''].forEach((h,i)=>cc(R4,i,h,S.colHdr,ws4));
-  R4++;
-  _eidWinnerSkus.forEach((s,i)=>{
-    const odd=i%2!==0;
-    [
-      {v:i+1,s:odd?S.rankA:S.rank},
-      {v:s.code,s:odd?S.stCodeA:S.stCode},
-      {v:skuN(s.code),s:odd?S.stNameA:S.stName},
-      {v:s.qty,s:odd?S.numA:S.num},
-      {v:_eidSkuApr26[s.code]||0,s:odd?S.numSmA:S.numSm},
-      {v:pct(s.momPct),s:S.pGood},
-      {v:'',s:odd?S.rankA:S.rank},
-    ].forEach((vd,ci)=>{
-      const addr=XLSX.utils.encode_cell({r:R4,c:ci});
-      ws4[addr]={v:vd.v,t:typeof vd.v==='number'?'n':'s',s:vd.s};
-    });
-    R4++;
-  });
-  R4++;
-  cc(R4,0,'EMIRATES PRIDE PERFUMES TRADING  ·  SKU INTELLIGENCE  ·  EID AL-ADHA 2026  ·  CONFIDENTIAL',S.footer,ws4);
-  for(let c=1;c<=6;c++) cc(R4,c,'',S.footer,ws4);
-  merges4.push({s:{r:R4,c:0},e:{r:R4,c:6}});
-
-  ws4['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:R4,c:6}});
-  ws4['!merges']=merges4;
-  ws4['!cols']=[{wch:4},{wch:13},{wch:36},{wch:14},{wch:14},{wch:14},{wch:8}];
-  ws4['!rows']=[{hpt:36}];
-
-  // ── BUILD & DOWNLOAD ──
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws1,'📊 Executive Summary');
-  XLSX.utils.book_append_sheet(wb,ws2,'🏪 Store Performance');
-  XLSX.utils.book_append_sheet(wb,ws3,'📈 8-Month Trend');
-  XLSX.utils.book_append_sheet(wb,ws4,'🛍 SKU Intelligence');
-
-  const fname='Emirates_Pride_Eid_AlAdha_2026_Performance_'+new Date().toISOString().slice(0,10)+'.xlsx';
-  XLSX.writeFile(wb, fname, {bookSST:false, type:'binary', cellStyles:true});
-  toast('✓ Excel exported: '+fname);
 }
-
 function openEidStoreDrill(code) {
   const s = _eidStoreMetrics.find(x => x.code === code);
   if (!s) return;
