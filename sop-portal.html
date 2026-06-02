@@ -864,6 +864,8 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
         <div class="spinner" style="margin:0 auto 16px;"></div>
         <div style="font-size:12px;color:var(--ink-light);letter-spacing:0.08em;text-transform:uppercase;">Loading Sales Data</div>
       </div>
+      <!-- Data quality warning — shown conditionally by JS -->
+      <div id="sales-data-warning" style="display:none;margin:0 0 0 0;padding:10px 18px;background:#FFF8E1;border-left:4px solid #C9A84C;font-size:11px;color:#5C4A1A;line-height:1.6;font-family:'Montserrat',sans-serif;"></div>
       <div class="tbl-wrap" id="sales-tbl-wrap" style="display:none;">
         <table>
           <thead id="sales-thead"></thead>
@@ -1066,6 +1068,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <input type="text" class="tbl-search" id="t-search" placeholder="Search product…" oninput="applyTesterFilters()" style="width:180px;">
       <button class="filter-btn-ghost" onclick="exportTesterCsv()" style="margin-left:auto;">↓ Export CSV</button>
       <button onclick="openTesterIntel()" style="background:linear-gradient(135deg,#1a3a5c,#2563a8);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(26,58,92,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#122840,#1a3a5c)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a5c,#2563a8)'">🧪 Tester Intelligence Report</button>
+      <button onclick="openAMTesterCheck()" style="background:linear-gradient(135deg,#5C4A1A,#8B6914);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(92,74,26,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#3D3010,#5C4A1A)'" onmouseout="this.style.background='linear-gradient(135deg,#5C4A1A,#8B6914)'">🔍 AM Tester Check</button>
     </div>
 
     <!-- KPI Row -->
@@ -2084,6 +2087,15 @@ const SKU_NAMES = {
   'SET_2X10MS':'2x10 Masters & Signature','G_PLIF10ML':'Peaceful Life 10ml','SPG_DAKH':'Dakhoon Sampler',
 };
 
+/* SKU launch dates — for SKUs that launched mid-history so zero early months are NOT missing data */
+const SKU_LAUNCHED = {
+  'B00020': '2025-10', /* Master Signature — launched Oct 2025 */
+  'B00021': '2025-11', /* Midnight Bloom 100ml — launched Nov 2025 */
+  'RM2001': '2026-05', 'RM2003': '2026-05', 'RM2004': '2026-05', 'RM2005': '2026-05',
+  'RADA-006': '2026-05', 'AP012': '2025-12',
+};
+const MONTH_SHORT = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
 const MONTHS = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
 const QUARTERS = {1:[1,2,3],2:[4,5,6],3:[7,8,9],4:[10,11,12]};
 
@@ -2261,6 +2273,31 @@ function applySalesFilters() {
     return true;
   });
 
+  // Data quality warnings
+  const warn = document.getElementById('sales-data-warning');
+  const warnings = [];
+  const showsASL = region === 'ALL' || region === 'ASL';
+  const showsApr2026 = (year === 'ALL' || year === '2026') &&
+    (ptype !== 'monthly' || month === 'ALL' || month === '04') &&
+    (ptype !== 'quarterly' || qtr === '2');
+  const showsEarly2026 = (year === 'ALL' || year === '2026') &&
+    (ptype !== 'monthly' || ['01','02','03'].includes(month) || month === 'ALL') &&
+    (ptype !== 'quarterly' || ['1'].includes(qtr) || ptype === 'annual');
+  if (showsASL && showsApr2026) {
+    warnings.push('⚠️ <strong>ASL April 2026 — possible double-count:</strong> Data exists under both old codes (ASL_A009, ASL_AL007) and new codes (ASL_YAS001, ASL_BAW001 etc.) for the same stores. Total may be overstated by ~160 units. Confirm store code mapping with Amal before presenting to management.');
+  }
+  if (showsASL && showsEarly2026) {
+    warnings.push('ℹ️ <strong>ASL Jan–Mar 2026:</strong> Data uses legacy store codes (ASL_A009, ASL_A011, ASL_AL004, ASL_AL007, ASL_FJ001) whose exact store mapping has not been confirmed. Store names shown as estimates only.');
+  }
+  if (warn) {
+    if (warnings.length) {
+      warn.style.display = 'block';
+      warn.innerHTML = warnings.join('<br>');
+    } else {
+      warn.style.display = 'none';
+    }
+  }
+
   updateStats(); renderSalesTable(); renderMoM(); renderRankings();
 }
 
@@ -2351,7 +2388,7 @@ function renderSkuView(search) {
     bySku[r.sku_code].stores.add(r.store_code);
   });
   const rows = Object.entries(bySku)
-    .map(([s,d]) => ({s,q:d.q,stores:d.stores.size,name:SKU_NAMES[s]||s}))
+    .map(([s,d]) => ({s,q:d.q,stores:d.stores.size,name:SKU_NAMES[s]||s,launched:SKU_LAUNCHED[s]||null}))
     .filter(r => !search || r.s.toLowerCase().includes(search) || r.name.toLowerCase().includes(search))
     .sort((a,b)=>b.q-a.q);
   const max = rows[0]?.q || 1;
@@ -2359,10 +2396,14 @@ function renderSkuView(search) {
   document.getElementById('sales-thead').innerHTML = `<tr>
     <th>#</th><th>SKU Code</th><th>Product Name</th>
     <th style="text-align:right;">Units Sold</th><th style="text-align:right;">Stores</th><th>Share</th></tr>`;
-  document.getElementById('sales-tbody').innerHTML = rows.map((r,i) => `<tr>
+  document.getElementById('sales-tbody').innerHTML = rows.map((r,i) => {
+    const launchBadge = r.launched
+      ? `<span title="Launched ${r.launched} — earlier months show zero, not missing data" style="margin-left:7px;font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:20px;background:#FFF8E1;color:#8B6914;border:1px solid #C9A84C;vertical-align:middle;cursor:default;">⚡ New ${MONTH_SHORT[+r.launched.split('-')[1]]} ${r.launched.split('-')[0]}</span>`
+      : '';
+    return `<tr>
     <td style="color:var(--ink-light);font-size:11px;">${i+1}</td>
     <td class="sku">${r.s}</td>
-    <td style="font-weight:600;">${r.name}</td>
+    <td style="font-weight:600;">${r.name}${launchBadge}</td>
     <td class="num">${r.q.toLocaleString()}</td>
     <td class="num" style="color:var(--ink-light);">${r.stores}</td>
     <td style="min-width:120px;">
@@ -2370,7 +2411,8 @@ function renderSkuView(search) {
         <div class="bar-track"><div class="bar-fill" style="width:${Math.round(r.q/max*100)}%"></div></div>
         <span style="font-size:10px;color:var(--ink-light);min-width:28px;">${Math.round(r.q/max*100)}%</span>
       </div>
-    </td></tr>`).join('') ||
+    </td></tr>`;
+  }).join('') ||
     `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-light);">No matching SKUs</td></tr>`;
 
   document.getElementById('sales-table-title').textContent = 'SKU Performance — '+getPeriodLabel();
@@ -9617,7 +9659,279 @@ function openEidStoreDrill(code) {
   document.getElementById('eidStoreDrillPanel').style.display = 'block';
   document.getElementById('eidDrillOverlay').style.display = 'block';
 }
+
+/* ── AM TESTER CHECK TOOL ─────────────────────────────────────────────────── */
+function openAMTesterCheck() {
+  if (!testerLoaded) {
+    alert('Tester data not loaded yet. Please open the Testers tab first and wait for data to load.');
+    return;
+  }
+  const panel = document.getElementById('amTesterCheckPanel');
+  panel.style.display = 'flex';
+  _populateAMStoreDropdown();
+  _populateAMSkuDropdown(null);
+  document.getElementById('am-tc-result').innerHTML = '<div style="text-align:center;padding:48px;color:var(--ink-light);font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Select a store and SKU above to see tester history and sales</div>';
+}
+function closeAMTesterCheck() {
+  document.getElementById('amTesterCheckPanel').style.display = 'none';
+}
+
+function _populateAMStoreDropdown() {
+  const sel = document.getElementById('am-tc-store');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Select Store —</option>';
+  const seen = new Map();
+  // Build from testerRawRows (only stores that have actual tester data)
+  testerRawRows.forEach(r => {
+    if (!seen.has(r.store_code)) {
+      const info = STORES.find(s => s.code === r.store_code);
+      seen.set(r.store_code, info ? info.name : r.store_name || r.store_code);
+    }
+  });
+  [...seen.entries()].sort((a,b) => a[1].localeCompare(b[1])).forEach(([code, name]) => {
+    const o = document.createElement('option');
+    o.value = code; o.textContent = name;
+    if (code === current) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+function _populateAMSkuDropdown(filterStore) {
+  const sel = document.getElementById('am-tc-sku');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Select SKU —</option>';
+  // Collect SKUs from testerRawRows (★ = has prior tester history) AND salesData (all active SKUs)
+  const hasTester = new Set();
+  testerRawRows.forEach(r => {
+    if (!filterStore || r.store_code === filterStore) hasTester.add(r.sku_code);
+  });
+  const seen = new Map();
+  // From salesData — only SKUs active at this store (has any sales)
+  salesData.forEach(r => {
+    if (filterStore && r.store_code !== filterStore) return;
+    if (!seen.has(r.sku_code)) {
+      seen.set(r.sku_code, SKU_NAMES[r.sku_code] || r.sku_code);
+    }
+  });
+  // Sort: testers-with-history first (marked ★), then rest alphabetically
+  const withHistory = [], noHistory = [];
+  [...seen.entries()].sort((a,b) => a[1].localeCompare(b[1])).forEach(entry => {
+    (hasTester.has(entry[0]) ? withHistory : noHistory).push(entry);
+  });
+  if (withHistory.length) {
+    const g = document.createElement('optgroup');
+    g.label = '★ Has Prior Tester History';
+    withHistory.forEach(([code, name]) => {
+      const o = document.createElement('option');
+      o.value = code; o.textContent = `${code} — ${name}`;
+      if (code === current) o.selected = true;
+      g.appendChild(o);
+    });
+    sel.appendChild(g);
+  }
+  if (noHistory.length) {
+    const g = document.createElement('optgroup');
+    g.label = 'No Prior Testers — Sales Only';
+    noHistory.forEach(([code, name]) => {
+      const o = document.createElement('option');
+      o.value = code; o.textContent = `${code} — ${name}`;
+      if (code === current) o.selected = true;
+      g.appendChild(o);
+    });
+    sel.appendChild(g);
+  }
+}
+
+function onAMStoreChange() {
+  const store = document.getElementById('am-tc-store').value;
+  _populateAMSkuDropdown(store || null);
+  runAMTesterLookup();
+}
+
+function runAMTesterLookup() {
+  const storeCode = document.getElementById('am-tc-store').value;
+  const skuCode   = document.getElementById('am-tc-sku').value;
+  const resultDiv = document.getElementById('am-tc-result');
+
+  if (!storeCode || !skuCode) {
+    resultDiv.innerHTML = '<div style="text-align:center;padding:48px;color:var(--ink-light);font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Select a store and SKU above</div>';
+    return;
+  }
+
+  const storeName = (STORES.find(s => s.code === storeCode) || {}).name || storeCode;
+  const skuName   = SKU_NAMES[skuCode] || skuCode;
+
+  // Get all months with tester data for this store+SKU (sorted newest first)
+  const tRows = testerRawRows
+    .filter(r => r.store_code === storeCode && r.sku_code === skuCode && (r.testers_dispatched||0) > 0)
+    .sort((a,b) => b.month_year.localeCompare(a.month_year));
+
+  // Get all months with sales data for this store+SKU (from salesData)
+  const salesByMonth = {};
+  salesData.forEach(r => {
+    if (r.store_code === storeCode && r.sku_code === skuCode) {
+      salesByMonth[r.month_year] = (salesByMonth[r.month_year]||0) + (r.qty_sold||0);
+    }
+  });
+
+  // Build a unified month list: all months where testers OR sales > 0, last 6 months
+  const allMonths = [...new Set([
+    ...tRows.map(r => r.month_year),
+    ...Object.keys(salesByMonth)
+  ])].sort().reverse().slice(0, 6);
+
+  if (allMonths.length === 0) {
+    resultDiv.innerHTML = `<div style="text-align:center;padding:48px;color:var(--ink-light);">No tester or sales data found for <strong>${skuName}</strong> at <strong>${storeName}</strong></div>`;
+    return;
+  }
+
+  // Build rows
+  let totalTesters = 0, totalSales = 0;
+  const MONTH_NAMES = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const rows = allMonths.map(my => {
+    const [yr, mo] = my.split('-');
+    const label = MONTH_NAMES[+mo] + ' ' + yr;
+    const t = (tRows.find(r => r.month_year === my) || {}).testers_dispatched || 0;
+    const s = salesByMonth[my] || 0;
+    const contrib = s > 0 ? (t / s * 100) : null;
+    totalTesters += t; totalSales += s;
+    let badge = '', badgeStyle = '';
+    if (t === 0 && s > 0) {
+      badge = 'No Testers'; badgeStyle = 'background:#F5F2EC;color:#8A8278;';
+    } else if (contrib === null) {
+      badge = 'No Sales'; badgeStyle = 'background:#FFF8F0;color:#C0392B;';
+    } else if (contrib <= 5) {
+      badge = '✓ Efficient'; badgeStyle = 'background:#E8F5EE;color:#0B7A45;';
+    } else if (contrib <= 15) {
+      badge = '◉ Monitor'; badgeStyle = 'background:#FFF8E1;color:#8B6914;';
+    } else {
+      badge = '▲ High Use'; badgeStyle = 'background:#FFF0F0;color:#C0392B;';
+    }
+    return `<tr>
+      <td style="font-weight:600;color:var(--ink);">${label}</td>
+      <td style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;">${t > 0 ? t : '<span style="color:var(--ink-light);">—</span>'}</td>
+      <td style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;">${s > 0 ? s.toLocaleString() : '<span style="color:var(--ink-light);">—</span>'}</td>
+      <td style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;">${contrib !== null && t > 0 ? contrib.toFixed(1)+'%' : '<span style="color:var(--ink-light);">—</span>'}</td>
+      <td><span style="font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 9px;border-radius:20px;${badgeStyle}">${badge}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Overall recommendation
+  const avgContrib = totalSales > 0 && totalTesters > 0 ? (totalTesters / totalSales * 100) : null;
+  let recColor = '#8A8278', recIcon = '—', recText = 'Insufficient data to make a recommendation.';
+  if (avgContrib !== null) {
+    if (avgContrib <= 5) {
+      recColor = '#0B7A45'; recIcon = '✓ APPROVE';
+      recText = `Tester efficiency is strong (avg ${avgContrib.toFixed(1)}% contribution over ${allMonths.length} months). Each tester is generating meaningful sales. Safe to dispatch.`;
+    } else if (avgContrib <= 12) {
+      recColor = '#8B6914'; recIcon = '◉ MONITOR';
+      recText = `Contribution rate is ${avgContrib.toFixed(1)}% — within acceptable range but worth watching. Check if sales trend is growing. Dispatch with caution.`;
+    } else {
+      recColor = '#C0392B'; recIcon = '▲ HOLD / REDUCE';
+      recText = `High tester consumption (avg ${avgContrib.toFixed(1)}% of sales). This store is using many testers relative to sales achieved. Consider reducing quantity or reviewing display placement before dispatching more.`;
+    }
+  }
+
+  // Last tester date
+  const lastTesterMonth = tRows[0] ? tRows[0].month_year : null;
+  const lastTesterLabel = lastTesterMonth ? (() => { const [yr,mo]=lastTesterMonth.split('-'); return MONTH_NAMES[+mo]+' '+yr; })() : 'Never';
+
+  resultDiv.innerHTML = `
+    <!-- Header -->
+    <div style="background:#6B5B35;border-radius:10px 10px 0 0;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff;">${skuName}</div>
+        <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.65);margin-top:2px;">${skuCode} · ${storeName}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;color:rgba(255,255,255,.55);letter-spacing:.08em;text-transform:uppercase;">Last Tester Sent</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#C9A84C;font-weight:600;">${lastTesterLabel}</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div style="background:#fff;border:1px solid var(--border);border-top:none;">
+      <table style="width:100%;border-collapse:collapse;font-family:'Montserrat',sans-serif;font-size:12px;">
+        <thead>
+          <tr style="background:#F5F2EC;">
+            <th style="padding:10px 14px;text-align:left;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);font-weight:700;border-bottom:1px solid var(--border);">Month</th>
+            <th style="padding:10px 14px;text-align:right;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);font-weight:700;border-bottom:1px solid var(--border);">Testers Given</th>
+            <th style="padding:10px 14px;text-align:right;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);font-weight:700;border-bottom:1px solid var(--border);">SKU Sales</th>
+            <th style="padding:10px 14px;text-align:right;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);font-weight:700;border-bottom:1px solid var(--border);">Contrib %</th>
+            <th style="padding:10px 14px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);font-weight:700;border-bottom:1px solid var(--border);">Status</th>
+          </tr>
+        </thead>
+        <tbody style="font-size:12px;">
+          ${rows}
+        </tbody>
+        <tfoot>
+          <tr style="background:#F5F2EC;border-top:2px solid var(--border);">
+            <td style="padding:10px 14px;font-weight:700;color:var(--ink);">Total / Avg</td>
+            <td style="padding:10px 14px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;">${totalTesters}</td>
+            <td style="padding:10px 14px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;">${totalSales.toLocaleString()}</td>
+            <td style="padding:10px 14px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;">${avgContrib !== null ? avgContrib.toFixed(1)+'%' : '—'}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Recommendation -->
+    <div style="background:#fff;border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:18px 24px;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-light);margin-bottom:10px;">Decision Recommendation</div>
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="font-size:13px;font-weight:800;letter-spacing:.08em;color:${recColor};white-space:nowrap;padding:8px 14px;border:2px solid ${recColor};border-radius:6px;">${recIcon}</div>
+        <div style="font-size:11px;color:var(--ink-mid);line-height:1.6;">${recText}</div>
+      </div>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:10px;color:var(--ink-light);line-height:1.7;">
+        <strong style="color:var(--ink);">Contrib % formula:</strong> Testers dispatched ÷ Units sold × 100.
+        Lower % = each tester driving more sales. Benchmark: ≤5% = Efficient · 5–15% = Monitor · >15% = High Use / Review.
+      </div>
+    </div>`;
+}
 </script>
+
+<!-- AM Tester Check Panel -->
+<div id="amTesterCheckPanel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:960;align-items:flex-start;justify-content:center;padding-top:60px;">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:720px;box-shadow:0 20px 60px rgba(0,0,0,.3);font-family:'Montserrat',sans-serif;overflow:hidden;max-height:calc(100vh - 80px);display:flex;flex-direction:column;">
+    <!-- Header -->
+    <div style="background:#6B5B35;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#fff;">🔍 AM Tester Check</div>
+        <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:3px;">Before dispatching testers — check history & contribution</div>
+      </div>
+      <button onclick="closeAMTesterCheck()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <!-- Selector Row -->
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);background:#F5F2EC;flex-shrink:0;">
+      <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <label style="font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);display:block;margin-bottom:6px;">Store</label>
+          <select id="am-tc-store" onchange="onAMStoreChange()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;background:#fff;color:var(--ink);cursor:pointer;">
+            <option value="">— Select Store —</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:240px;">
+          <label style="font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);display:block;margin-bottom:6px;">SKU / Product</label>
+          <select id="am-tc-sku" onchange="runAMTesterLookup()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;background:#fff;color:var(--ink);cursor:pointer;">
+            <option value="">— Select SKU —</option>
+          </select>
+        </div>
+        <div style="padding-bottom:1px;">
+          <button onclick="runAMTesterLookup()" style="background:#6B5B35;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;cursor:pointer;white-space:nowrap;">Check →</button>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--ink-light);line-height:1.5;">
+        ℹ️  Shows last 6 months of tester dispatches and actual SKU sales for the selected store. Contribution % = testers ÷ sales. Use this before approving any AM tester request.
+      </div>
+    </div>
+    <!-- Result Area -->
+    <div id="am-tc-result" style="overflow-y:auto;padding:20px 24px;flex:1;min-height:200px;">
+      <div style="text-align:center;padding:48px;color:var(--ink-light);font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Select a store and SKU above to see tester history and sales</div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
