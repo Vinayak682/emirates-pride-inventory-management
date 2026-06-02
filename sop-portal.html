@@ -2935,6 +2935,7 @@ function cancelTargetsEdit() {
 // TESTERS
 // ══════════════════════════════════════════════
 let testerData = [], filteredTesters = [], testerLoaded = false;
+let testerRawRows = [], filteredTesterSkus = [];
 
 async function loadTesterData() {
   if (testerLoaded) { applyTesterFilters(); return; }
@@ -2997,6 +2998,14 @@ async function loadTesterData() {
         const k = r.store_code + '|' + r.month_year;
         if (!salesMap[k]) salesMap[k] = { qty: 0 };
         salesMap[k].qty += (r.qty_sold||0);
+      });
+    }
+
+    // Keep raw individual SKU rows for search and SKU table
+    testerRawRows = [];
+    for (const { data } of tResults) {
+      (data||[]).forEach(r => {
+        if (_isBottleTester(r.sku_code)) testerRawRows.push({ ...r });
       });
     }
 
@@ -3067,15 +3076,30 @@ function applyTesterFilters() {
   const store = document.getElementById('t-store-filter').value;
   const q     = (document.getElementById('t-search').value || '').toLowerCase().trim();
 
-  filteredTesters = testerData.filter(r => {
-    if (div   !== 'ALL' && r.division    !== div)   return false;
-    if (store !== 'ALL' && r.store_code  !== store) return false;
+  const _baseMatch = r => {
+    if (div   !== 'ALL' && r.division   !== div)   return false;
+    if (store !== 'ALL' && r.store_code !== store) return false;
     const [ry, rm] = (r.month_year || '').split('-');
     if (yr !== 'ALL' && ry !== yr) return false;
     if (mo !== 'ALL' && rm !== mo) return false;
+    return true;
+  };
+
+  // Filter individual SKU rows (for SKU table + search)
+  filteredTesterSkus = testerRawRows.filter(r => {
+    if (!_baseMatch(r)) return false;
     if (q && !r.product_name.toLowerCase().includes(q)) return false;
     return true;
   });
+
+  // Filter store+month rows (for KPIs + store table)
+  // If search active, restrict to store+months that have matching SKU rows
+  if (q) {
+    const matchedKeys = new Set(filteredTesterSkus.map(r => r.store_code + '|' + r.month_year));
+    filteredTesters = testerData.filter(r => matchedKeys.has(r.store_code + '|' + r.month_year));
+  } else {
+    filteredTesters = testerData.filter(_baseMatch);
+  }
 
   renderTesterKPIs();
   renderTesterStoreTable();
@@ -3194,7 +3218,7 @@ function renderTesterTrend() {
 
 function renderTesterSkuTable() {
   const bySku = {};
-  filteredTesters.forEach(r => {
+  filteredTesterSkus.forEach(r => {
     const key = r.product_name;
     if (!bySku[key]) bySku[key] = { div: r.division, disp: 0, sales: 0 };
     bySku[key].disp  += r.testers_dispatched || 0;
