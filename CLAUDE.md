@@ -457,6 +457,75 @@ The S&OP portal is used by Emirates Pride management. Primary responsibilities:
 
 ---
 
+### Session — 2 June 2026 (Session 43 — Tester Intelligence Dashboard + May/Mar/Apr Tester Data Upload)
+**Files changed**: `sop-portal.html`, `stock-register.html`
+**Commits**: `bd80b2b` (paper filter), `43015ae` (Tester Intelligence dashboard) → both pushed to main → GitHub Pages live
+**Scripts created**: `upload_tester_may2026.py`, `upload_asl_tester_may2026.py`, `upload_epp_tester_mar_apr.py` (all in Downloads)
+
+#### Data Uploaded to Supabase `tester_history`:
+
+**EPP UAE — May 2026** (source: `RptItemWiseStockTransfer (6).xlsx`)
+- 707 store+SKU rows · 22 stores · 71 SKU types · **1,677 bottle testers** (19,296 raw — papers included in DB, filtered by JS)
+- Top stores: A0007 Yas Kiosk 2 (2,089 raw) · A0008 Yas Kiosk 3 (1,681) · DX005 Mirdif (1,614)
+- Includes EPT/EPTP tester papers and AC accessories in DB (for records) but excluded from analysis
+
+**ASL UAE — May 2026** (source: `RptItemWiseStockTransfer (7).xlsx`)
+- 115 rows · 5 stores · 41 SKU types · **2,814 units** (all bottle testers, no papers in this report)
+- BAS001=584 · FJ0001=609 · BAW001=529 · MAK001=537 · YMK001=555
+- Note: Most transfers were "Created" status (not Completed) — all included since these are real dispatches
+
+**EPP UAE — March + April 2026** (source: `RptItemWiseStockTransfer (10).xlsx`, replaced old data)
+- March 2026: 25 stores · 59 SKUs · **2,090 units** (was 1,754 — +19%)
+- April 2026: 24 stores · 56 SKUs · **1,387 units** (was 766 — +81% improvement)
+- Papers/cards/accessories excluded at upload level (clean data in DB)
+
+#### Current `tester_history` EPP state (verified):
+| Month | Stores | SKUs | Bottle Testers |
+|-------|--------|------|----------------|
+| 2026-03 | 25 | 59 | 2,090 |
+| 2026-04 | 24 | 56 | 1,387 |
+| 2026-05 | 22 | 71 | 1,677 (JS-filtered) |
+| ASL 2026-05 | 5 | 41 | 2,814 |
+
+#### Code Changes:
+
+**1. Paper/Card Filter (commit `bd80b2b`)**
+- `sop-portal.html`: Added `_isBottleTester(sku)` function in `loadTesterData()`
+- Excludes EPT*, EPTP*, ASLT*, ASLTP*, AC* from `testers_dispatched` KPI counts
+- Records still stored in DB — filtered only in analysis layer
+- Added `sku_code` to the tester_history select query
+
+**2. Tester Intelligence Dashboard (commit `43015ae`)**
+- New button: "🧪 Tester Intelligence Report" (blue gradient) in Testers tab filter bar
+- Full-screen overlay panel (`#testerIntelPanel`) — same pattern as Eid Performance panel
+
+**Dashboard Zones:**
+- **Zone 1 — Hero KPIs**: Testers dispatched · Sales · Utilisation rate · MoM change · Store count with over/under/efficient breakdown
+- **Zone 2 — Bar Charts**: 5-month testers trend + 5-month sales trend side by side
+- **Zone 3 — Store Classification**: Over-utilised (>20%) · Monitor (10–20%) · Efficient (≤10%) · Under-utilised (0 testers + has sales)
+- **Zone 4 — Store Leaderboard**: All stores descending, with 5-month sparkline per store · Sort by testers/sales/rate
+- **Zone 5 — Top 20 SKUs** + MoM summary table
+
+**Store Drill-Down** (click any row): KPI tiles · 5-month bar chart · Status badge · All SKUs dispatched this month
+
+**Filters**: Division (EPP/ASL/ALL) + Focus month (Jan–May 2026)
+
+**Export**: CSV with utilisation status per store
+
+#### Daily TODO additions (stock-register.html):
+Added 3 new items to AM Hub TODO checklist:
+- "Update tester status for ALL markets — May 2026" (under Testers section)
+- New "Stock Updates" section: "Enter yesterday's store stock update for ALL markets"
+- New "Stock Updates" section: "Apply pending changes to Stock Register"
+
+#### Sales data verified (confirmed live in Supabase):
+- EPP UAE May 2026: 24,691 units · 23 stores ✅
+- ASL UAE May 2026: 1,161 units · 5 stores ✅
+- Oman May 2026: 2,227 units · 3 stores ✅
+- KSA Jan 2025–May 2026: full history ✅
+
+---
+
 ### Session — 1 June 2026 (Session 42 — May 2026 Eid Performance Executive Dashboard)
 **Files changed**: `sop-portal.html`
 **Commit**: Not yet pushed
