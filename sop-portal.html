@@ -2953,7 +2953,7 @@ async function loadTesterData() {
     const PAGE = 1000;
     const tFetches = Array.from({ length: Math.ceil((tCount||0)/PAGE) }, (_, i) =>
       sb.from('tester_history')
-        .select('division,month_year,product_name,store_code,store_name,testers_dispatched,sales_generated,contrib_pct')
+        .select('division,month_year,sku_code,product_name,store_code,store_name,testers_dispatched,sales_generated,contrib_pct')
         .range(i*PAGE, (i+1)*PAGE-1)
     );
     const sFetches = Array.from({ length: Math.ceil((sCount||0)/PAGE) }, (_, i) =>
@@ -2965,14 +2965,25 @@ async function loadTesterData() {
       Promise.all(sFetches)
     ]);
 
-    // Build tester lookup: store+month → row
+    // Tester bottles only — exclude papers, cards, accessories from KPI counts
+    const _isBottleTester = sku => {
+      if (!sku) return false;
+      const s = sku.toUpperCase();
+      return !(s.startsWith('EPT') || s.startsWith('EPTP') ||
+               s.startsWith('ASLT') || s.startsWith('ASLTP') ||
+               s.startsWith('AC'));
+    };
+
+    // Build tester lookup: store+month → row (bottles only for testers_dispatched)
     const testerMap = {};
     for (const { data, error } of tResults) {
       if (error) throw error;
       (data||[]).forEach(r => {
         const k = r.store_code + '|' + r.month_year;
         if (!testerMap[k]) testerMap[k] = { ...r, testers_dispatched: 0 };
-        testerMap[k].testers_dispatched += (r.testers_dispatched||0);
+        if (_isBottleTester(r.sku_code)) {
+          testerMap[k].testers_dispatched += (r.testers_dispatched||0);
+        }
       });
     }
 
