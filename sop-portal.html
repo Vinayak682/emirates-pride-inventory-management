@@ -2937,6 +2937,15 @@ function cancelTargetsEdit() {
 let testerData = [], filteredTesters = [], testerLoaded = false;
 let testerRawRows = [], filteredTesterSkus = [];
 
+// Strip "-T" suffix from SKU codes to get the parent FG code (e.g. B00008-T → B00008)
+function _testerBaseCode(sku) {
+  return sku ? sku.replace(/-T$/i, '').trim() : sku;
+}
+// Strip "-Tester ..." / "-Tetser ..." from product names to get the parent FG name
+function _testerBaseName(name) {
+  return name ? name.replace(/\s*-\s*te(?:ster|tser).*/i, '').trim() : name;
+}
+
 async function loadTesterData() {
   if (testerLoaded) { applyTesterFilters(); return; }
   document.getElementById('t-loading-status').textContent = 'Loading from Supabase…';
@@ -3037,6 +3046,9 @@ async function loadTesterData() {
     }
 
     testerLoaded = true;
+    // Normalize store names from STORES master — fixes SAP report names like "DM Shop" vs "Dubai Mall"
+    testerData.forEach(r => { const info = storeInfoMap[r.store_code]; if (info) r.store_name = info.name; });
+    testerRawRows.forEach(r => { const info = storeInfoMap[r.store_code]; if (info) r.store_name = info.name; });
     populateTesterStoreFilter();
     applyTesterFilters();
     const months = [...new Set(testerData.map(r => r.month_year))].sort();
@@ -3119,7 +3131,7 @@ function renderTesterKPIs() {
   });
   const topStore = Object.values(byStore).sort((a,b) => b.sales - a.sales)[0];
 
-  const uniqueSkus = new Set(filteredTesterSkus.map(r => r.product_name)).size;
+  const uniqueSkus = new Set(filteredTesterSkus.map(r => _testerBaseCode(r.sku_code) || _testerBaseName(r.product_name))).size;
 
   document.getElementById('kpi-t-dispatched').textContent = totDisp.toLocaleString();
   document.getElementById('kpi-t-sales').textContent      = totSales.toLocaleString();
@@ -3222,8 +3234,8 @@ function renderTesterTrend() {
 function renderTesterSkuTable() {
   const bySku = {};
   filteredTesterSkus.forEach(r => {
-    const key = r.product_name;
-    if (!bySku[key]) bySku[key] = { div: r.division, disp: 0, sales: 0 };
+    const key = _testerBaseCode(r.sku_code) || _testerBaseName(r.product_name);
+    if (!bySku[key]) bySku[key] = { div: r.division, name: _testerBaseName(r.product_name), disp: 0, sales: 0 };
     bySku[key].disp  += r.testers_dispatched || 0;
     bySku[key].sales += r.sales_generated    || 0;
   });
@@ -3235,13 +3247,13 @@ function renderTesterSkuTable() {
     return;
   }
   const maxDisp = Math.max(1, rows[0][1].disp);
-  document.getElementById('tester-sku-tbody').innerHTML = rows.map(([name, d]) => {
+  document.getElementById('tester-sku-tbody').innerHTML = rows.map(([, d]) => {
     const divPill = d.div === 'EPP'
       ? `<span style="font-size:10px;background:#EAF3FF;color:#3B5BDB;padding:2px 8px;border-radius:2px;font-weight:600;">EPP</span>`
       : `<span style="font-size:10px;background:#F3EFFF;color:#7048E8;padding:2px 8px;border-radius:2px;font-weight:600;">ASL</span>`;
     const bar = Math.round(d.disp / maxDisp * 100);
     return `<tr>
-      <td style="font-weight:600;max-width:240px;">${name}</td>
+      <td style="font-weight:600;max-width:240px;">${d.name}</td>
       <td>${divPill}</td>
       <td class="num">${d.disp.toLocaleString()}</td>
       <td class="num" style="color:#0B7A45;font-weight:600;">${d.sales.toLocaleString()}</td>
@@ -3554,8 +3566,8 @@ function renderTesterIntel() {
   // Use individual SKU rows (testerRawRows), not aggregated testerData
   const skuMap = {};
   testerRawRows.filter(r => r.month_year === focusMonth && (div === 'ALL' || r.division === div)).forEach(r => {
-    const k = r.sku_code || r.product_name;
-    if (!skuMap[k]) skuMap[k] = { name: r.product_name, sku: r.sku_code, div: r.division, testers: 0, stores: new Set() };
+    const k = _testerBaseCode(r.sku_code) || _testerBaseName(r.product_name);
+    if (!skuMap[k]) skuMap[k] = { name: _testerBaseName(r.product_name), sku: _testerBaseCode(r.sku_code), div: r.division, testers: 0, stores: new Set() };
     skuMap[k].testers += r.testers_dispatched || 0;
     skuMap[k].stores.add(r.store_code);
   });
@@ -3670,16 +3682,21 @@ function openTiDrill(storeCode) {
     byMonth[r.month_year].sales   += r.sales_generated   || 0;
   });
 
-  // Focus month SKUs — use individual SKU rows (not aggregated testerData)
-  const focusSkus = testerRawRows
-    .filter(r => r.store_code === storeCode && r.month_year === focusMonth && (r.testers_dispatched || 0) > 0)
-    .sort((a,b) => (b.testers_dispatched||0) - (a.testers_dispatched||0));
+  // Focus month SKUs — aggregate by normalized base code (combines FG + tester variants)
+  const focusSkuMap = {};
+  testerRawRows.filter(r => r.store_code === storeCode && r.month_year === focusMonth && (r.testers_dispatched || 0) > 0)
+    .forEach(r => {
+      const k = _testerBaseCode(r.sku_code) || _testerBaseName(r.product_name);
+      if (!focusSkuMap[k]) focusSkuMap[k] = { name: _testerBaseName(r.product_name), qty: 0 };
+      focusSkuMap[k].qty += r.testers_dispatched || 0;
+    });
+  const focusSkus = Object.values(focusSkuMap).sort((a,b) => b.qty - a.qty);
 
   const fT = byMonth[focusMonth] ? byMonth[focusMonth].testers : 0;
   const fS = byMonth[focusMonth] ? byMonth[focusMonth].sales   : 0;
   const rate = fS > 0 ? (fT / fS * 100).toFixed(1) + '%' : '—';
   const maxT = Math.max(1, ...Object.values(byMonth).map(m => m.testers));
-  const maxSku = Math.max(1, focusSkus[0] ? focusSkus[0].testers_dispatched : 1);
+  const maxSku = Math.max(1, focusSkus[0] ? focusSkus[0].qty : 1);
 
   let h = '<div style="background:#1a3a5c;padding:20px 24px;position:sticky;top:0;z-index:5;">'
     + '<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
@@ -3726,12 +3743,12 @@ function openTiDrill(storeCode) {
   // SKUs
   if (focusSkus.length) {
     h += '<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1a3a5c;margin-bottom:10px;">SKUs Dispatched This Month (' + focusSkus.length + ')</div>';
-    focusSkus.forEach(r => {
-      const pct = Math.round((r.testers_dispatched || 0) / maxSku * 100);
+    focusSkus.forEach(s => {
+      const pct = Math.round(s.qty / maxSku * 100);
       h += '<div style="margin-bottom:8px;">'
         + '<div style="display:flex;justify-content:space-between;margin-bottom:3px;">'
-        + '<span style="font-size:11px;font-weight:600;color:#1A1A1A;">' + (r.product_name || r.sku_code) + '</span>'
-        + '<span style="font-size:11px;font-weight:700;color:#1a3a5c;">' + (r.testers_dispatched || 0) + '</span>'
+        + '<span style="font-size:11px;font-weight:600;color:#1A1A1A;">' + s.name + '</span>'
+        + '<span style="font-size:11px;font-weight:700;color:#1a3a5c;">' + s.qty + '</span>'
         + '</div>'
         + '<div style="background:#E8E4DC;border-radius:2px;height:5px;"><div style="background:#1a3a5c;height:5px;border-radius:2px;width:' + pct + '%;"></div></div>'
         + '</div>';
