@@ -2944,28 +2944,83 @@ async function loadTesterData() {
       <div style="font-size:11px;color:var(--ink-light);letter-spacing:0.08em;text-transform:uppercase;">Loading</div>
     </td></tr>`;
   try {
-    const { count, error: cErr } = await sb
-      .from('tester_history').select('*', { count:'exact', head:true });
-    if (cErr) throw cErr;
+    // Load tester_history and sales_history in parallel
+    const [{ count: tCount }, { count: sCount }] = await Promise.all([
+      sb.from('tester_history').select('*', { count:'exact', head:true }),
+      sb.from('sales_history').select('*', { count:'exact', head:true })
+    ]);
 
     const PAGE = 1000;
-    const pages = Math.ceil(count / PAGE);
-    const fetches = Array.from({ length: pages }, (_, i) =>
+    const tFetches = Array.from({ length: Math.ceil((tCount||0)/PAGE) }, (_, i) =>
       sb.from('tester_history')
         .select('division,month_year,product_name,store_code,store_name,testers_dispatched,sales_generated,contrib_pct')
-        .range(i * PAGE, (i + 1) * PAGE - 1)
+        .range(i*PAGE, (i+1)*PAGE-1)
     );
-    const results = await Promise.all(fetches);
-    testerData = [];
-    for (const { data, error } of results) {
+    const sFetches = Array.from({ length: Math.ceil((sCount||0)/PAGE) }, (_, i) =>
+      sb.from('sales_history').select('store_code,month_year,qty_sold').range(i*PAGE, (i+1)*PAGE-1)
+    );
+
+    const [tResults, sResults] = await Promise.all([
+      Promise.all(tFetches),
+      Promise.all(sFetches)
+    ]);
+
+    // Build tester lookup: store+month → row
+    const testerMap = {};
+    for (const { data, error } of tResults) {
       if (error) throw error;
-      testerData = testerData.concat(data || []);
+      (data||[]).forEach(r => {
+        const k = r.store_code + '|' + r.month_year;
+        if (!testerMap[k]) testerMap[k] = { ...r, testers_dispatched: 0 };
+        testerMap[k].testers_dispatched += (r.testers_dispatched||0);
+      });
     }
+
+    // Build sales lookup: store+month → total qty + unique SKU count
+    const salesMap = {};
+    const storeInfoMap = {};
+    STORES.forEach(s => { storeInfoMap[s.code] = s; });
+    for (const { data: sd } of sResults) {
+      (sd||[]).forEach(r => {
+        const k = r.store_code + '|' + r.month_year;
+        if (!salesMap[k]) salesMap[k] = { qty: 0 };
+        salesMap[k].qty += (r.qty_sold||0);
+      });
+    }
+
+    // Build unified testerData: one row per store+month, sourced from sales_history
+    // overlay testers_dispatched from tester_history where available
+    testerData = [];
+    const seen = new Set();
+    // First add all tester_history rows (with real sales injected)
+    for (const [k, tr] of Object.entries(testerMap)) {
+      tr.sales_generated = salesMap[k] ? salesMap[k].qty : 0;
+      testerData.push(tr);
+      seen.add(k);
+    }
+    // Then add store+month combos that exist in sales_history but NOT in tester_history
+    for (const [k, sm] of Object.entries(salesMap)) {
+      if (seen.has(k)) continue;
+      const [store_code, month_year] = k.split('|');
+      const info = storeInfoMap[store_code];
+      testerData.push({
+        store_code,
+        month_year,
+        store_name: info ? info.name : store_code,
+        division: info ? info.type : 'EPP',
+        product_name: '—',
+        testers_dispatched: 0,
+        sales_generated: sm.qty,
+        contrib_pct: 0
+      });
+    }
+
     testerLoaded = true;
     populateTesterStoreFilter();
     applyTesterFilters();
+    const months = [...new Set(testerData.map(r => r.month_year))].sort();
     document.getElementById('t-loading-status').textContent =
-      `${testerData.length.toLocaleString()} records — Jan 2025 to Apr 2026`;
+      `${testerData.length.toLocaleString()} records — ${months[0]||''} to ${months[months.length-1]||''}`;
   } catch(e) {
     document.getElementById('t-loading-status').textContent = 'Load failed: ' + e.message;
     document.getElementById('tester-store-tbody').innerHTML =
