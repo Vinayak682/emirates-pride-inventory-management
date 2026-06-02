@@ -3376,7 +3376,7 @@ function _tiCssBar(h, color, title) {
   return '<div style="width:18px;height:' + h + 'px;background:' + color + ';border-radius:3px 3px 0 0;align-self:flex-end;flex-shrink:0;" title="' + title + '"></div>';
 }
 
-function renderTesterIntel() {
+function renderTesterIntel(skipRebuild) {
   const div = document.getElementById('ti-division').value;
   const focusMonth = document.getElementById('ti-focus-month').value;
 
@@ -3428,8 +3428,10 @@ function renderTesterIntel() {
     });
   });
 
-  _tiStoreMetrics = Object.values(storeMap).sort((a, b) => b.testers - a.testers);
-  _tiCurrentSort = 'testers';
+  if (!skipRebuild) {
+    _tiStoreMetrics = Object.values(storeMap).sort((a, b) => b.testers - a.testers);
+    _tiCurrentSort = 'testers';
+  }
 
   // ── Grand KPIs ─────────────────────────────────────────────────────
   const gTesters = _tiStoreMetrics.reduce((s, r) => s + r.testers, 0);
@@ -3697,8 +3699,8 @@ function tiSortLeaderboard(key) {
     const rb = b.sales > 0 ? b.testers/b.sales : -1;
     return rb - ra;
   });
-  // Re-render just the tbody
-  renderTesterIntel();
+  // Re-render without rebuilding metrics (preserves sort)
+  renderTesterIntel(true);
 }
 
 function openTiDrill(storeCode) {
