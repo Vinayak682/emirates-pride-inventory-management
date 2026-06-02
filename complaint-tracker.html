@@ -330,18 +330,16 @@
     <div class="filter-bar">
       <select class="fb-sel" id="fStatus" onchange="applyFilters()">
         <option value="">All Statuses</option>
-        <option value="pending">Pending Review</option>
-        <option value="under_review">Under Review</option>
-        <option value="accepted_replacement">Accepted — Replacement</option>
-        <option value="replacement_dispatched">Replacement Dispatched</option>
-        <option value="accepted_repair">Accepted — Repair</option>
-        <option value="item_sent_to_wh">Item Sent to WH</option>
-        <option value="item_received_wh">Item at Warehouse</option>
-        <option value="under_repair">Under Repair</option>
-        <option value="repaired_dispatching">Repaired — Dispatching</option>
-        <option value="rejected">Rejected</option>
-        <option value="delivered">Delivered</option>
-        <option value="closed">Closed</option>
+        <option value="pending">⏳ Pending Decision</option>
+        <option value="replacement_approved">✅ Replacement Approved</option>
+        <option value="replacement_dispatched">📦 Replacement Dispatched</option>
+        <option value="repair_approved">🔧 Repair Approved</option>
+        <option value="repair_in_progress">🔧 At Warehouse</option>
+        <option value="repaired_dispatching">📦 Repaired — Dispatching</option>
+        <option value="repair_dispatched">📦 Repair Dispatched</option>
+        <option value="rejected">✕ Not Approved</option>
+        <option value="delivered">✓ Delivered</option>
+        <option value="closed">Case Closed</option>
       </select>
       <select class="fb-sel" id="fStore" style="display:none;" onchange="applyFilters()">
         <option value="">All Stores</option>
@@ -548,18 +546,24 @@ const CTYPE_LABELS = {
 };
 
 const STATUS_META = {
-  pending:              {label:'Pending Review',           cls:'sb-pending'},
-  under_review:         {label:'Under Review',             cls:'sb-under_review'},
-  accepted_replacement: {label:'✓ Replacement Approved',   cls:'sb-accepted_replacement'},
-  replacement_dispatched:{label:'Replacement Dispatched',  cls:'sb-replacement_dispatched'},
-  accepted_repair:      {label:'✓ Repair Approved',        cls:'sb-accepted_repair'},
-  item_sent_to_wh:      {label:'Item Sent to WH',          cls:'sb-item_sent_to_wh'},
-  item_received_wh:     {label:'Item at Warehouse',        cls:'sb-item_received_wh'},
-  under_repair:         {label:'Under Repair',             cls:'sb-under_repair'},
-  repaired_dispatching: {label:'Repaired — Dispatching',   cls:'sb-repaired_dispatching'},
-  rejected:             {label:'✕ Rejected',               cls:'sb-rejected'},
-  delivered:            {label:'✓ Delivered to Customer',  cls:'sb-delivered'},
-  closed:               {label:'Case Closed',              cls:'sb-closed'},
+  // Current statuses
+  pending:                {label:'Pending Manager Decision', cls:'sb-pending'},
+  replacement_approved:   {label:'✓ Replacement Approved',  cls:'sb-accepted_replacement'},
+  replacement_dispatched: {label:'Replacement Dispatched',  cls:'sb-replacement_dispatched'},
+  repair_approved:        {label:'🔧 Repair Approved',      cls:'sb-accepted_repair'},
+  repair_in_progress:     {label:'At Warehouse / Repair',   cls:'sb-item_received_wh'},
+  repaired_dispatching:   {label:'Repaired — Dispatching',  cls:'sb-repaired_dispatching'},
+  repair_dispatched:      {label:'Repaired — Dispatched',   cls:'sb-repaired_dispatching'},
+  rejected:               {label:'✕ Not Approved',          cls:'sb-rejected'},
+  delivered:              {label:'✓ Delivered to Customer', cls:'sb-delivered'},
+  closed:                 {label:'Case Closed',             cls:'sb-closed'},
+  // Legacy statuses (backward compat)
+  under_review:           {label:'Under Review',            cls:'sb-pending'},
+  accepted_replacement:   {label:'✓ Replacement Approved',  cls:'sb-accepted_replacement'},
+  accepted_repair:        {label:'🔧 Repair Approved',      cls:'sb-accepted_repair'},
+  item_sent_to_wh:        {label:'At Warehouse',            cls:'sb-item_received_wh'},
+  item_received_wh:       {label:'At Warehouse',            cls:'sb-item_received_wh'},
+  under_repair:           {label:'Under Repair',            cls:'sb-under_repair'},
 };
 
 // Minimal Supabase REST client
@@ -866,7 +870,7 @@ async function loadComplaints(){
 function updateKPIs(){
   if(!isMgr) return;
   const n30=new Date(); n30.setDate(n30.getDate()-30);
-  const repairSt=['accepted_repair','item_sent_to_wh','item_received_wh','under_repair','repaired_dispatching'];
+  const repairSt=['repair_approved','accepted_repair','repair_in_progress','item_sent_to_wh','item_received_wh','under_repair','repaired_dispatching','repair_dispatched'];
   const actioned=allData.filter(c=>c.outcome).length;
   const rejected=allData.filter(c=>c.outcome==='rejection').length;
   const now=Date.now();
@@ -875,9 +879,9 @@ function updateKPIs(){
     (now-new Date(c.submitted_at).getTime())>7*86400000
   ).length;
   document.getElementById('kTotal').textContent=allData.length;
-  document.getElementById('kPending').textContent=allData.filter(c=>c.status==='pending'||c.status==='under_review').length;
+  document.getElementById('kPending').textContent=allData.filter(c=>['pending','under_review'].includes(c.status)).length;
   document.getElementById('kRepair').textContent=allData.filter(c=>repairSt.includes(c.status)).length;
-  document.getElementById('kResolved').textContent=allData.filter(c=>(c.status==='delivered'||c.status==='closed')&&new Date(c.updated_at)>=n30).length;
+  document.getElementById('kResolved').textContent=allData.filter(c=>['delivered','closed'].includes(c.status)&&new Date(c.updated_at)>=n30).length;
   document.getElementById('kRejRate').textContent=actioned?Math.round(rejected/actioned*100)+'%':'—';
   document.getElementById('kOverdue').textContent=overdue;
 }
@@ -888,7 +892,7 @@ function applyFilters(){
   const tp=document.getElementById('fType').value;
   const q=(document.getElementById('fSearch').value||'').toLowerCase();
   let list=allData;
-  if(st) list=list.filter(c=>c.status===st);
+  if(st) list=list.filter(c=>_normStatus(c.status)===st||c.status===st);
   if(sc) list=list.filter(c=>c.store_code===sc);
   if(tp) list=list.filter(c=>c.complaint_type===tp);
   if(q)  list=list.filter(c=>(c.complaint_ref||'').toLowerCase().includes(q)||(c.customer_name||'').toLowerCase().includes(q)||(c.product_name||'').toLowerCase().includes(q));
@@ -906,14 +910,14 @@ function renderList(list){
   // Manager: show pending-decision banner at the top
   let mgrBanner='';
   if(isMgr){
-    const pendingCount=allData.filter(c=>c.status==='pending'||c.status==='under_review').length;
-    const repCount=allData.filter(c=>['accepted_repair','item_sent_to_wh','item_received_wh','under_repair','repaired_dispatching'].includes(c.status)).length;
+    const pendingCount=allData.filter(c=>['pending','under_review'].includes(c.status)).length;
+    const repCount=allData.filter(c=>['repair_approved','accepted_repair','repair_in_progress','item_sent_to_wh','item_received_wh','under_repair','repaired_dispatching','repair_dispatched'].includes(c.status)).length;
     const overdue=allData.filter(c=>!['delivered','closed','rejected'].includes(c.status)&&(now-new Date(c.submitted_at).getTime())>7*86400000).length;
     if(pendingCount>0||repCount>0||overdue>0){
       mgrBanner=`<div style="background:#FFF8E6;border:1.5px solid #C9A84C;border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
         <div style="font-size:11px;font-weight:700;color:#7A6525;letter-spacing:.05em;flex-shrink:0;">⚖️ MANAGER ATTENTION REQUIRED</div>
         ${pendingCount>0?`<div style="background:#FF9500;color:#fff;font-size:10px;font-weight:700;padding:5px 14px;border-radius:20px;cursor:pointer;" onclick="document.getElementById('fStatus').value='pending';applyFilters()">🔴 ${pendingCount} Awaiting Your Decision</div>`:''}
-        ${repCount>0?`<div style="background:#2980B9;color:#fff;font-size:10px;font-weight:700;padding:5px 14px;border-radius:20px;cursor:pointer;" onclick="document.getElementById('fStatus').value='item_received_wh';applyFilters()">🔧 ${repCount} In Repair Pipeline</div>`:''}
+        ${repCount>0?`<div style="background:#2980B9;color:#fff;font-size:10px;font-weight:700;padding:5px 14px;border-radius:20px;cursor:pointer;" onclick="document.getElementById('fStatus').value='repair_in_progress';applyFilters()">🔧 ${repCount} In Repair Pipeline</div>`:''}
         ${overdue>0?`<div style="background:#C0392B;color:#fff;font-size:10px;font-weight:700;padding:5px 14px;border-radius:20px;cursor:pointer;" onclick="applyFilters()">⏱ ${overdue} Overdue (7+ days)</div>`:''}
       </div>`;
     }
@@ -928,37 +932,37 @@ function renderList(list){
     const ats=(c.attachments||[]);
     const needsDecision=isMgr&&(c.status==='pending'||c.status==='under_review');
 
-    // Quick-decision buttons for manager on pending cards
-    const quickActions=needsDecision?`
-      <div style="border-top:1px solid #F0EDE8;margin-top:10px;padding-top:10px;display:flex;gap:8px;flex-wrap:wrap;" onclick="event.stopPropagation()">
-        <div style="font-size:9px;font-weight:700;color:#7A6525;letter-spacing:.5px;width:100%;margin-bottom:4px;">⚖️ QUICK DECISION:</div>
-        <button onclick="event.stopPropagation();quickDecide('${c.id}','accepted_replacement','replacement','Complaint Accepted — Replacement Approved')"
-          style="background:#1A7A3C;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;">
-          ✅ Replacement
-        </button>
-        <button onclick="event.stopPropagation();quickDecide('${c.id}','accepted_repair','repair','Complaint Accepted — Repair Required')"
-          style="background:#2980B9;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;">
-          🔧 Repair
-        </button>
-        <button onclick="event.stopPropagation();quickDecide('${c.id}','rejected','rejection','Complaint Rejected')"
-          style="background:#C0392B;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;">
-          ✕ Reject
-        </button>
+    // For pending complaints show a prominent "Decide Now" strip
+    const decideBanner = needsDecision ? `
+      <div style="border-top:1px solid #F5E8C0;margin-top:10px;padding-top:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;" onclick="event.stopPropagation()">
+        <div style="font-size:10px;font-weight:700;color:#A0780A;">⚖️ Awaiting your decision — open to review &amp; decide</div>
         <button onclick="event.stopPropagation();openDetail('${c.id}')"
-          style="background:var(--gold-pale);color:var(--gold-dark);border:1px solid var(--gold);border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;">
-          👁 Full Review
+          style="background:#6B5B35;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+          👁 Review &amp; Decide →
         </button>
-      </div>`:'';
+      </div>` : '';
 
-    // Outcome badge for actioned complaints
+    // Next-action banner for in-progress complaints (manager)
+    const inProgressBanner = (isMgr && c.outcome && !['delivered','closed','rejected'].includes(c.status)) ? (() => {
+      const nxt = NEXT_ACTION_LABEL[c.status] || NEXT_ACTION_LABEL[_normStatus(c.status)] || '';
+      return nxt ? `<div style="border-top:1px solid #E8F0F8;margin-top:10px;padding-top:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;" onclick="event.stopPropagation()">
+        <div style="font-size:10px;color:#2980B9;font-weight:600;">→ Next: ${nxt}</div>
+        <button onclick="event.stopPropagation();openDetail('${c.id}')"
+          style="background:#2980B9;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+          Update →
+        </button>
+      </div>` : '';
+    })() : '';
+
+    // Outcome badge
     const outcomeBadge = c.outcome ? `<div style="font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-top:4px;padding:2px 8px;border-radius:10px;display:inline-block;${
       c.outcome==='replacement'?'background:#E8F5ED;color:#1A7A3C;':
       c.outcome==='repair'?'background:#EBF5FF;color:#2980B9;':
       'background:#FEECEC;color:#C0392B;'
-    }">${c.outcome==='replacement'?'✅ Replacement':c.outcome==='repair'?'🔧 Repair':'✕ Rejected'}</div>` : '';
+    }">${c.outcome==='replacement'?'✅ Replacement':c.outcome==='repair'?'🔧 Repair':'✕ Not Approved'}</div>` : '';
 
-    return `<div class="cc s-${c.status}"${!needsDecision?` onclick="openDetail('${c.id}')"`:''}
-      style="${needsDecision?'border:1.5px solid #FF9500;background:#FFFDF5;cursor:default;':'cursor:pointer;'}">
+    return `<div class="cc s-${c.status}" onclick="openDetail('${c.id}')"
+      style="${needsDecision?'border:1.5px solid #EDBA3A;background:#FFFDF5;':''}cursor:pointer;">
       <div class="cc-hdr">
         <div style="flex:1;min-width:0;">
           <div class="cc-ref">${c.complaint_ref||'—'}</div>
@@ -972,31 +976,20 @@ function renderList(list){
           ${ats.length?`<div style="font-size:9px;color:var(--ink-light);margin-top:4px;">📎 ${ats.length} file${ats.length>1?'s':''}</div>`:''}
         </div>
       </div>
-      <div class="cc-meta" ${needsDecision?'onclick="openDetail(\''+c.id+'\')" style="cursor:pointer;"':''}>
+      <div class="cc-meta">
         <span>👤 ${c.customer_name||'—'}</span>
         <span>📱 ${c.customer_phone||'—'}</span>
         ${isMgr?`<span>🏪 ${c.store_name||c.store_code}</span>`:''}
         <span>📅 ${dt}</span>
         ${c.submitted_by?`<span>Staff: ${c.submitted_by}</span>`:''}
+        ${c.actioned_by?`<span>Approved: ${c.actioned_by}</span>`:''}
       </div>
-      ${quickActions}
+      ${decideBanner}${inProgressBanner}
     </div>`;
   }).join('');
 }
 
-// Quick decision from card (no notes, direct action)
-async function quickDecide(id, nextStatus, outcome, tlLabel){
-  const c = allData.find(x=>x.id===id);
-  if(!c) return;
-  const now=new Date().toISOString();
-  const tlEntry={status:nextStatus,label:tlLabel,at:now,by:'Manager (Quick Decision)',notes:null};
-  const update={status:nextStatus,outcome,timeline:[...(c.timeline||[]),tlEntry],updated_at:now,actioned_at:now,actioned_by:'Manager'};
-  try{
-    await sb.patch('customer_complaints',update,`?id=eq.${id}`);
-    toast('✓ '+tlLabel);
-    await loadComplaints();
-  }catch(e){ toast('Error: '+e.message); }
-}
+// Quick decide removed — all decisions require manager name via openDetail()
 
 // ══════════════════════════════════════════════════════════════════
 // NEW COMPLAINT
@@ -1234,115 +1227,307 @@ function renderDetailBody(c){
   `;
 }
 
+// ── helpers ─────────────────────────────────────────────────────────
+function _normStatus(s){
+  return {under_review:'pending',accepted_replacement:'replacement_approved',
+    accepted_repair:'repair_approved',item_sent_to_wh:'repair_in_progress',
+    item_received_wh:'repair_in_progress',under_repair:'repair_in_progress'}[s]||s;
+}
+const NEXT_ACTION_LABEL = {
+  replacement_approved:'Mark Replacement Dispatched',
+  replacement_dispatched:'Confirm Customer Received',
+  repair_approved:'Confirm Item Collected & Sent to WH',
+  repair_in_progress:'Mark Repair Complete — Ready to Dispatch',
+  repaired_dispatching:'Dispatch Repaired Item to Customer',
+  repair_dispatched:'Confirm Customer Received Repaired Item',
+  delivered:'Close Case',rejected:'Close Case',
+};
+let _selectedDecision = null;
+
+// ── stage progress tracker HTML ──────────────────────────────────────
+function buildStageTracker(c){
+  const track = c.outcome;
+  if(!track) return '';
+  const tracks = {
+    replacement:['Submitted','Approved','Dispatched','Delivered','Closed'],
+    repair:     ['Submitted','Approved','At WH','Repaired','Dispatched','Delivered','Closed'],
+    rejection:  ['Submitted','Not Approved','Closed'],
+  };
+  const stageStatus = {
+    replacement:[['pending','under_review'],['replacement_approved','accepted_replacement'],['replacement_dispatched'],['delivered'],['closed']],
+    repair:     [['pending','under_review'],['repair_approved','accepted_repair'],['repair_in_progress','item_sent_to_wh','item_received_wh'],['repaired_dispatching','under_repair'],['repair_dispatched'],['delivered'],['closed']],
+    rejection:  [['pending','under_review'],['rejected'],['closed']],
+  };
+  const labels = tracks[track]||[];
+  const statuses = stageStatus[track]||[];
+  const colors = {replacement:'#1A7A40',repair:'#2980B9',rejection:'#C0392B'};
+  const col = colors[track]||'#6B5B35';
+  let cur=0;
+  statuses.forEach((ss,i)=>{ if(ss.includes(c.status)) cur=i; });
+
+  let parts=[];
+  labels.forEach((lbl,i)=>{
+    const done=i<cur, active=i===cur;
+    const bg = done||active ? col : '#E5E0D8';
+    const tc = done||active ? col : '#B0A898';
+    parts.push(`<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 0 auto;">
+      <div style="width:${active?14:10}px;height:${active?14:10}px;border-radius:50%;background:${bg};${active?'box-shadow:0 0 0 3px '+col+'33;':''}"></div>
+      <div style="font-size:8px;font-weight:${active?700:500};color:${tc};white-space:nowrap;">${lbl}</div>
+    </div>`);
+    if(i<labels.length-1) parts.push(`<div style="flex:1;height:2px;background:${i<cur?col:'#E5E0D8'};margin-bottom:11px;min-width:8px;"></div>`);
+  });
+  const trackLbls={replacement:'✅ REPLACEMENT TRACK',repair:'🔧 REPAIR TRACK',rejection:'✕ NOT APPROVED'};
+  return `<div style="background:#FAFAF8;border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+    <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${col};margin-bottom:10px;">${trackLbls[track]||track}</div>
+    <div style="display:flex;align-items:center;gap:0;overflow-x:auto;">${parts.join('')}</div>
+  </div>`;
+}
+
+// ── action name form ─────────────────────────────────────────────────
+function _actionForm(actorLabel, actorPlaceholder, noteLabel, notePlaceholder, btnLabel, btnColor, onConfirm, noteRequired){
+  return `<div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div>
+        <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:4px;">${actorLabel} <span style="color:#C0392B;">★ Required</span></label>
+        <input id="actorNameInput" placeholder="${actorPlaceholder}"
+          style="width:100%;border:1.5px solid #C9A84C;border-radius:7px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:13px;outline:none;background:#FFFDF5;" />
+      </div>
+      <div>
+        <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:4px;">${noteLabel}${noteRequired?' <span style="color:#C0392B;">★ Required</span>':''}</label>
+        <input id="actorNoteInput" placeholder="${notePlaceholder}"
+          style="width:100%;border:1.5px solid ${noteRequired?'#C0392B':'var(--border)'};border-radius:7px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:13px;outline:none;background:#FAFAF8;" />
+      </div>
+    </div>
+    <button onclick="${onConfirm}"
+      style="background:${btnColor};border:none;color:#fff;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;padding:11px 26px;border-radius:8px;cursor:pointer;letter-spacing:.5px;">
+      ${btnLabel}
+    </button>
+  </div>`;
+}
+
+// ── main renderActions ────────────────────────────────────────────────
 function renderActions(c){
   const strip=document.getElementById('actStrip');
   const btns=document.getElementById('actBtns');
-  document.getElementById('actNoteArea').style.display='none';
-  document.getElementById('actNote').value='';
+  if(!isMgr){strip.style.display='none';return;}
 
-  const canActMgr=isMgr;
-  const canSendWH=!isMgr&&c.store_code===me.code&&c.status==='accepted_repair';
-
-  let actions=[];
-
-  if(canActMgr){
-    const s=c.status;
-    if(s==='pending'||s==='under_review'){
-      actions=[
-        {label:'✓ APPROVE — REPLACEMENT',sublabel:'Customer receives a new product',cls:'abt-rep',next:'accepted_replacement',tl:'Complaint Accepted — Replacement Approved',outcome:'replacement'},
-        {label:'🔧 APPROVE — REPAIR',sublabel:'Send item to Warehouse / Factory',cls:'abt-fix',next:'accepted_repair',tl:'Complaint Accepted — Repair Required',outcome:'repair'},
-        {label:'✕ REJECT COMPLAINT',sublabel:'Not eligible — explain reason below',cls:'abt-rej',next:'rejected',tl:'Complaint Rejected',outcome:'rejection'},
-      ];
-    } else if(s==='accepted_replacement'){
-      actions=[{label:'📦 Mark Replacement Dispatched',sublabel:'Product has been sent to customer',cls:'abt-adv',next:'replacement_dispatched',tl:'Replacement Product Dispatched to Customer'}];
-    } else if(s==='replacement_dispatched'){
-      actions=[{label:'✅ Confirm Delivered to Customer',sublabel:'Customer has received the replacement',cls:'abt-adv',next:'delivered',tl:'Replacement Delivered — Case Resolved'}];
-    } else if(s==='accepted_repair'){
-      actions=[{label:'📬 Confirm Item Sent to Warehouse',sublabel:'Store has dispatched the item',cls:'abt-wh',next:'item_sent_to_wh',tl:'Item Sent to Warehouse for Repair'}];
-    } else if(s==='item_sent_to_wh'){
-      actions=[{label:'✅ Item Received at Warehouse',sublabel:'WH team has the item in hand',cls:'abt-adv',next:'item_received_wh',tl:'Item Received at Warehouse'}];
-    } else if(s==='item_received_wh'){
-      actions=[
-        {label:'🔧 Under Repair at Warehouse',sublabel:'Repair work has started',cls:'abt-fix',next:'under_repair',tl:'Item Under Repair at Warehouse'},
-        {label:'🏭 Escalated to Factory',sublabel:'Item sent to factory for deeper repair',cls:'abt-wh',next:'under_repair',tl:'Item Sent to Factory for Repair'},
-      ];
-    } else if(s==='under_repair'){
-      actions=[{label:'📦 Repaired — Dispatching Back',sublabel:'Item fixed and being returned to customer',cls:'abt-adv',next:'repaired_dispatching',tl:'Item Repaired and Being Dispatched'}];
-    } else if(s==='repaired_dispatching'){
-      actions=[{label:'✅ Delivered to Customer',sublabel:'Customer has received repaired item',cls:'abt-adv',next:'delivered',tl:'Repaired Item Delivered — Case Resolved'}];
-    } else if(s==='delivered'||s==='rejected'){
-      actions=[{label:'✓ Close Case',sublabel:'Archive this complaint',cls:'abt-adv',next:'closed',tl:'Case Closed'}];
-    }
-  }
-
-  if(canSendWH){
-    actions=[{label:'📬 I Have Sent the Item to Warehouse',sublabel:'Confirm dispatch of item to WH',cls:'abt-wh',next:'item_sent_to_wh',tl:'Item Sent to Warehouse for Repair (confirmed by store)'}];
-  }
-
-  if(!actions.length){strip.style.display='none';return;}
+  const s = c.status;
+  const ns = _normStatus(s);
   strip.style.display='block';
 
-  // For pending/under_review show the 3 big outcome cards prominently
-  const isPendingDecision=(c.status==='pending'||c.status==='under_review')&&isMgr;
-
-  if(isPendingDecision){
+  // ─── PENDING: 3-outcome decision ─────────────────────────────────
+  if(ns==='pending'){
+    _selectedDecision=null;
     btns.innerHTML=`
-      <div style="background:#FFF8E6;border:1.5px solid #C9A84C;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7A6525;margin-bottom:10px;">⚖️ Manager Decision Required</div>
-        <div style="font-size:11px;color:#4A4540;margin-bottom:12px;">Review the complaint above and select one of the 3 outcomes:</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-          <button class="abt abt-rep mgr-dec-btn" onclick="takeAction(0)" style="display:flex;flex-direction:column;align-items:center;padding:16px 10px;border-radius:10px;gap:6px;min-height:90px;">
-            <span style="font-size:22px;">✅</span>
-            <span style="font-size:11px;font-weight:700;letter-spacing:.05em;">REPLACEMENT</span>
-            <span style="font-size:9px;opacity:.75;font-weight:400;line-height:1.3;">New product issued to customer</span>
+      <div style="background:#FFF8E6;border:1.5px solid #C9A84C;border-radius:10px;padding:14px 16px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7A6525;margin-bottom:8px;">⚖️ Manager Decision Required · قرار المدير</div>
+        <div style="font-size:11px;color:#4A4540;margin-bottom:12px;">Select the outcome — your name is recorded at every step.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:0;" id="decisionCards">
+          <button id="dec-replacement" onclick="selectDecision('replacement')"
+            style="display:flex;flex-direction:column;align-items:center;padding:16px 10px;border-radius:10px;gap:6px;min-height:88px;background:linear-gradient(135deg,#155C2C,#1E8A42);color:#fff;border:2px solid transparent;cursor:pointer;transition:all .15s;">
+            <span style="font-size:24px;">✅</span>
+            <span style="font-size:11px;font-weight:700;">REPLACEMENT</span>
+            <span style="font-size:9px;opacity:.75;font-weight:400;line-height:1.3;text-align:center;">New product to customer</span>
           </button>
-          <button class="abt abt-fix mgr-dec-btn" onclick="takeAction(1)" style="display:flex;flex-direction:column;align-items:center;padding:16px 10px;border-radius:10px;gap:6px;min-height:90px;">
-            <span style="font-size:22px;">🔧</span>
-            <span style="font-size:11px;font-weight:700;letter-spacing:.05em;">REPAIR</span>
-            <span style="font-size:9px;opacity:.75;font-weight:400;line-height:1.3;">Item sent to WH / Factory</span>
+          <button id="dec-repair" onclick="selectDecision('repair')"
+            style="display:flex;flex-direction:column;align-items:center;padding:16px 10px;border-radius:10px;gap:6px;min-height:88px;background:linear-gradient(135deg,#14427A,#2172B0);color:#fff;border:2px solid transparent;cursor:pointer;transition:all .15s;">
+            <span style="font-size:24px;">🔧</span>
+            <span style="font-size:11px;font-weight:700;">REPAIR</span>
+            <span style="font-size:9px;opacity:.75;font-weight:400;line-height:1.3;text-align:center;">Fix broken pump / item</span>
           </button>
-          <button class="abt abt-rej mgr-dec-btn" onclick="takeAction(2)" style="display:flex;flex-direction:column;align-items:center;padding:16px 10px;border-radius:10px;gap:6px;min-height:90px;">
-            <span style="font-size:22px;">✕</span>
-            <span style="font-size:11px;font-weight:700;letter-spacing:.05em;">REJECT</span>
-            <span style="font-size:9px;opacity:.75;font-weight:400;line-height:1.3;">Not eligible — add reason</span>
+          <button id="dec-rejection" onclick="selectDecision('rejection')"
+            style="display:flex;flex-direction:column;align-items:center;padding:16px 10px;border-radius:10px;gap:6px;min-height:88px;background:linear-gradient(135deg,#7A1212,#B52B2B);color:#fff;border:2px solid transparent;cursor:pointer;transition:all .15s;">
+            <span style="font-size:24px;">✕</span>
+            <span style="font-size:11px;font-weight:700;">NOT APPROVED</span>
+            <span style="font-size:9px;opacity:.75;font-weight:400;line-height:1.3;text-align:center;">Complaint rejected</span>
           </button>
         </div>
-      </div>
-      <button class="abt abt-note" onclick="toggleNote()" style="width:100%;">✎ Add Notes / Reason (Recommended before deciding)</button>
-    `;
-  } else {
-    btns.innerHTML=actions.map((a,i)=>
-      `<button class="abt ${a.cls}" onclick="takeAction(${i})" style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:11px 14px;">
-        <span style="font-weight:700;">${a.label}</span>
-        ${a.sublabel?`<span style="font-size:9px;opacity:.70;font-weight:400;">${a.sublabel}</span>`:''}
-      </button>`
-    ).join('')+`<button class="abt abt-note" onclick="toggleNote()">✎ Add Note</button>`;
+        <div id="decisionForm" style="display:none;margin-top:12px;">
+          <div id="decisionFormTitle" style="font-size:11px;font-weight:700;margin-bottom:10px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+            <div>
+              <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:4px;">APPROVED / DECIDED BY <span style="color:#C0392B;">★ Required</span></label>
+              <input id="actorNameInput" placeholder="Your full name — e.g. Vinayak"
+                style="width:100%;border:1.5px solid #C9A84C;border-radius:7px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:13px;outline:none;background:#FFFDF5;" />
+            </div>
+            <div>
+              <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:4px;" id="decisionNoteLabel">NOTES</label>
+              <input id="actorNoteInput" placeholder="Reason, remarks…"
+                style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:13px;outline:none;background:#FAFAF8;" />
+            </div>
+          </div>
+          <button id="confirmDecisionBtn" onclick="confirmDecision()"
+            style="background:#6B5B35;border:none;color:#fff;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;padding:11px 26px;border-radius:8px;cursor:pointer;letter-spacing:.5px;">
+            Confirm Decision
+          </button>
+        </div>
+      </div>`;
+    btns._actions=[];
+    return;
   }
-  btns._actions=actions;
+
+  // ─── POST-DECISION STAGES ─────────────────────────────────────────
+  const stageTracker = buildStageTracker(c);
+  let cfg = null;
+
+  // Replacement track
+  if(['replacement_approved','accepted_replacement'].includes(s)){
+    cfg={label:'📦 Mark Replacement Dispatched',sub:'Confirm the replacement product has been sent to the customer',
+      aLbl:'DISPATCHED BY',aPh:'Name of person sending the replacement',
+      nLbl:'DISPATCH NOTES',nPh:'Courier name, tracking no., date sent…',
+      next:'replacement_dispatched',tl:'Replacement Product Dispatched to Customer',col:'#1A6A40',req:false};
+  } else if(s==='replacement_dispatched'){
+    cfg={label:'✅ Confirm Customer Received',sub:'Customer has received and confirmed the replacement',
+      aLbl:'CONFIRMED BY',aPh:'Your name — who confirmed with customer',
+      nLbl:'CONFIRMATION NOTES',nPh:'Customer called back, WhatsApp reply, date…',
+      next:'delivered',tl:'Customer Confirmed Receipt of Replacement — Case Resolved',col:'#1A6A40',req:false};
+
+  // Repair track
+  } else if(['repair_approved','accepted_repair'].includes(s)){
+    cfg={label:'📬 Confirm Item Collected & Sent to WH',sub:'The defective item has been collected from the customer and is on its way to the warehouse',
+      aLbl:'COLLECTED BY',aPh:'Name of person who collected the item',
+      nLbl:'COLLECTION NOTES',nPh:'How collected, item condition, date…',
+      next:'repair_in_progress',tl:'Defective Item Collected — Sent to Warehouse',col:'#2980B9',req:false};
+  } else if(['repair_in_progress','item_sent_to_wh','item_received_wh'].includes(s)){
+    cfg={label:'✅ Repair Complete — Ready to Dispatch',sub:'Item has been fixed at the warehouse or factory and is ready to return to the customer',
+      aLbl:'REPAIRED BY',aPh:'WH technician / factory name',
+      nLbl:'REPAIR NOTES',nPh:'What was repaired, parts replaced, test result…',
+      next:'repaired_dispatching',tl:'Item Repaired — Ready for Return to Customer',col:'#8E44AD',req:false};
+  } else if(['repaired_dispatching','under_repair'].includes(s)){
+    cfg={label:'📦 Dispatch Repaired Item to Customer',sub:'Confirm the repaired item has been sent back to the customer',
+      aLbl:'DISPATCHED BY',aPh:'Name of person dispatching the item',
+      nLbl:'DISPATCH NOTES',nPh:'Courier, tracking number, date…',
+      next:'repair_dispatched',tl:'Repaired Item Dispatched to Customer',col:'#1A6A40',req:false};
+  } else if(s==='repair_dispatched'){
+    cfg={label:'✅ Confirm Customer Received Repaired Item',sub:'Customer has received the repaired product and the case can be resolved',
+      aLbl:'CONFIRMED BY',aPh:'Your name — who confirmed with customer',
+      nLbl:'CONFIRMATION NOTES',nPh:'Customer satisfied, call/WhatsApp reference…',
+      next:'delivered',tl:'Customer Confirmed Receipt of Repaired Item — Case Resolved',col:'#1A6A40',req:false};
+
+  // Close
+  } else if(s==='delivered'||s==='rejected'){
+    cfg={label:'✓ Close This Case',sub:'Archive this complaint — all actions completed',
+      aLbl:'CLOSED BY',aPh:'Your name',
+      nLbl:'CLOSING NOTES',nPh:'Any final remarks…',
+      next:'closed',tl:'Case Closed',col:'#6B5B35',req:false};
+  }
+
+  if(!cfg){strip.style.display='none';return;}
+
+  btns.innerHTML = stageTracker + `
+    <div style="background:#fff;border:1.5px solid ${cfg.col}44;border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:700;color:${cfg.col};margin-bottom:3px;">${cfg.label}</div>
+      <div style="font-size:10px;color:var(--ink-light);margin-bottom:12px;">${cfg.sub}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:4px;">${cfg.aLbl} <span style="color:#C0392B;">★ Required</span></label>
+          <input id="actorNameInput" placeholder="${cfg.aPh}"
+            style="width:100%;border:1.5px solid #C9A84C;border-radius:7px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:13px;outline:none;background:#FFFDF5;" />
+        </div>
+        <div>
+          <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:4px;">${cfg.nLbl}</label>
+          <input id="actorNoteInput" placeholder="${cfg.nPh}"
+            style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:13px;outline:none;background:#FAFAF8;" />
+        </div>
+      </div>
+      <button onclick="confirmStageAction()"
+        style="background:${cfg.col};border:none;color:#fff;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;padding:11px 26px;border-radius:8px;cursor:pointer;letter-spacing:.5px;">
+        ${cfg.label}
+      </button>
+    </div>`;
+  btns._nextAction = cfg;
 }
 
-function toggleNote(){
-  const a=document.getElementById('actNoteArea');
-  a.style.display=a.style.display==='none'?'block':'none';
-  if(a.style.display==='block') document.getElementById('actNote').focus();
+// ── select one of the 3 outcomes on pending screen ────────────────────
+function selectDecision(type){
+  _selectedDecision=type;
+  ['replacement','repair','rejection'].forEach(t=>{
+    const b=document.getElementById('dec-'+t);
+    if(b) b.style.opacity = t===type ? '1' : '0.35';
+  });
+  const form=document.getElementById('decisionForm');
+  form.style.display='block';
+  const title=document.getElementById('decisionFormTitle');
+  const noteInput=document.getElementById('actorNoteInput');
+  const noteLabel=document.getElementById('decisionNoteLabel');
+  const btn=document.getElementById('confirmDecisionBtn');
+  if(type==='replacement'){
+    title.innerHTML='<span style="color:#1A7A40;">✅ Replacement selected — enter your name to confirm:</span>';
+    btn.style.background='#1A7A40';
+    btn.textContent='✅ Confirm — Approve Replacement';
+    noteLabel.textContent='NOTES (optional)';
+    noteInput.placeholder='Any notes for this decision…';
+    noteInput.style.borderColor='var(--border)';
+  } else if(type==='repair'){
+    title.innerHTML='<span style="color:#2980B9;">🔧 Repair selected — enter your name to confirm:</span>';
+    btn.style.background='#2980B9';
+    btn.textContent='🔧 Confirm — Approve Repair';
+    noteLabel.textContent='NOTES (optional)';
+    noteInput.placeholder='What needs to be repaired / factory notes…';
+    noteInput.style.borderColor='var(--border)';
+  } else {
+    title.innerHTML='<span style="color:#C0392B;">✕ Not Approved — enter your name and reason:</span>';
+    btn.style.background='#C0392B';
+    btn.textContent='✕ Confirm — Reject Complaint';
+    noteLabel.innerHTML='REASON FOR REJECTION <span style="color:#C0392B;">★ Required</span>';
+    noteInput.placeholder='Explain why this complaint is not approved — required';
+    noteInput.style.borderColor='#C0392B';
+  }
+  document.getElementById('actorNameInput').focus();
 }
 
-async function takeAction(idx){
-  const actions=document.getElementById('actBtns')._actions;
-  const a=actions[idx];
-  if(!a||!activeC) return;
-  const note=document.getElementById('actNote').value.trim();
+// ── confirm the initial 3-outcome decision ───────────────────────────
+async function confirmDecision(){
+  const name=(document.getElementById('actorNameInput').value||'').trim();
+  const note=(document.getElementById('actorNoteInput').value||'').trim();
+  if(!name){
+    document.getElementById('actorNameInput').style.borderColor='#C0392B';
+    document.getElementById('actorNameInput').focus();
+    toast('⚠ Your name is required to record this decision'); return;
+  }
+  if(_selectedDecision==='rejection'&&!note){
+    document.getElementById('actorNoteInput').style.borderColor='#C0392B';
+    document.getElementById('actorNoteInput').focus();
+    toast('⚠ Rejection reason is required'); return;
+  }
+  const map={
+    replacement:{next:'replacement_approved',outcome:'replacement',tl:'Complaint Approved — Replacement Authorised by Manager'},
+    repair:     {next:'repair_approved',     outcome:'repair',      tl:'Complaint Approved — Repair Authorised by Manager'},
+    rejection:  {next:'rejected',            outcome:'rejection',   tl:'Complaint Not Approved — Rejected by Manager'},
+  };
+  const m=map[_selectedDecision]; if(!m) return;
   const now=new Date().toISOString();
-  const tlEntry={status:a.next,label:a.tl,at:now,by:isMgr?'Manager':me.name+(me.name?'':'Staff'),notes:note||null};
-  const update={status:a.next,timeline:[...(activeC.timeline||[]),tlEntry],updated_at:now};
-  if(a.outcome) update.outcome=a.outcome;
-  if(note) update.resolution_notes=note;
-  if(!activeC.actioned_at){update.actioned_at=now;update.actioned_by=isMgr?'Manager':me.name;}
+  const tlEntry={status:m.next,label:m.tl,at:now,by:name,notes:note||null};
+  const update={status:m.next,outcome:m.outcome,
+    timeline:[...(activeC.timeline||[]),tlEntry],
+    updated_at:now,actioned_at:now,actioned_by:name,
+    resolution_notes:note||null};
   try{
     await sb.patch('customer_complaints',update,`?id=eq.${activeC.id}`);
-    toast('✓ Updated: '+(STATUS_META[a.next]?.label||a.next));
-    closeDetail();
-    await loadComplaints();
+    toast('✓ Decision by '+name+': '+m.tl);
+    closeDetail(); await loadComplaints();
+  }catch(e){toast('Error: '+e.message);}
+}
+
+// ── confirm any subsequent stage action ──────────────────────────────
+async function confirmStageAction(){
+  const name=(document.getElementById('actorNameInput').value||'').trim();
+  const note=(document.getElementById('actorNoteInput').value||'').trim();
+  const cfg=document.getElementById('actBtns')._nextAction;
+  if(!name){
+    document.getElementById('actorNameInput').style.borderColor='#C0392B';
+    document.getElementById('actorNameInput').focus();
+    toast('⚠ Your name is required for this action'); return;
+  }
+  const now=new Date().toISOString();
+  const tlEntry={status:cfg.next,label:cfg.tl,at:now,by:name,notes:note||null};
+  const update={status:cfg.next,timeline:[...(activeC.timeline||[]),tlEntry],updated_at:now};
+  if(note) update.resolution_notes=note;
+  if(cfg.next==='delivered') update.resolved_at=now;
+  try{
+    await sb.patch('customer_complaints',update,`?id=eq.${activeC.id}`);
+    toast('✓ '+cfg.tl+' — by '+name);
+    closeDetail(); await loadComplaints();
   }catch(e){toast('Error: '+e.message);}
 }
 
