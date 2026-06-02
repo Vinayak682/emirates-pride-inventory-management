@@ -4598,146 +4598,529 @@ async function refreshComplaintsPanel() {
   }
 }
 
+// ─── COMPLAINTS PANEL — inline review, approve, repair, reject ───────
+let _ccData = [];
+let _ccSelDec = null;
+const _CTYPE = {pump_issue:'Pump Issue',fragrance_issue:'Fragrance Issue',leakage:'Leakage',broken_cap:'Broken Cap/Nozzle',cosmetic_damage:'Cosmetic Damage',wrong_product:'Wrong Product',other:'Other'};
+
+function _ccNorm(s){
+  return {under_review:'pending',accepted_replacement:'replacement_approved',
+    accepted_repair:'repair_approved',item_sent_to_wh:'repair_in_progress',
+    item_received_wh:'repair_in_progress',under_repair:'repair_in_progress'}[s]||s;
+}
+
 function renderComplaintsPanel(data, body) {
+  _ccData = data;
+  _ccRenderList(body);
+}
+
+function _ccRenderList(bodyEl) {
+  const body = bodyEl || document.getElementById('complaintsPanelBody');
   const now = Date.now();
   const n30 = new Date(); n30.setDate(n30.getDate()-30);
-  const repairSt = ['accepted_repair','item_sent_to_wh','item_received_wh','under_repair','repaired_dispatching'];
-  const actioned = data.filter(c=>c.outcome).length;
-  const rejected = data.filter(c=>c.outcome==='rejection').length;
-  const overdue  = data.filter(c=>!['delivered','closed','rejected'].includes(c.status)&&(now-new Date(c.submitted_at).getTime())>7*86400000).length;
+  const repairSt = ['repair_approved','accepted_repair','repair_in_progress','item_sent_to_wh','item_received_wh','under_repair','repaired_dispatching','repair_dispatched'];
+  const data = _ccData;
 
-  // KPI row
   const kpis = [
-    {label:'Total',       val:data.length,                                                    color:'var(--gold-bar)'},
-    {label:'Pending',     val:data.filter(c=>c.status==='pending'||c.status==='under_review').length, color:'#D35400'},
-    {label:'In Repair',   val:data.filter(c=>repairSt.includes(c.status)).length,             color:'#8E44AD'},
-    {label:'Resolved 30d',val:data.filter(c=>['delivered','closed'].includes(c.status)&&new Date(c.updated_at)>=n30).length, color:'#1A7A40'},
-    {label:'Rejected',    val:rejected,                                                        color:'#C0392B'},
-    {label:'Overdue 7d+', val:overdue,                                                         color:'#D68910'},
+    {label:'Total',        val:data.length,                                                                    color:'var(--gold-bar)'},
+    {label:'Pending',      val:data.filter(c=>['pending','under_review'].includes(c.status)).length,           color:'#D35400'},
+    {label:'In Repair',    val:data.filter(c=>repairSt.includes(c.status)).length,                            color:'#8E44AD'},
+    {label:'Resolved 30d', val:data.filter(c=>['delivered','closed'].includes(c.status)&&new Date(c.updated_at)>=n30).length, color:'#1A7A40'},
+    {label:'Rejected',     val:data.filter(c=>c.outcome==='rejection').length,                                 color:'#C0392B'},
+    {label:'Overdue 7d+',  val:data.filter(c=>!['delivered','closed','rejected'].includes(c.status)&&(now-new Date(c.submitted_at).getTime())>7*86400000).length, color:'#D68910'},
   ];
 
-  const CTYPE = {pump_issue:'Pump',fragrance_issue:'Fragrance',leakage:'Leakage',broken_cap:'Broken Cap',cosmetic_damage:'Cosmetic',wrong_product:'Wrong Product',other:'Other'};
+  // By-store
+  const byStore={};
+  data.forEach(c=>{
+    const k=c.store_name||c.store_code||'Unknown';
+    if(!byStore[k]) byStore[k]={total:0,pending:0,repair:0,resolved:0};
+    byStore[k].total++;
+    if(['pending','under_review'].includes(c.status)) byStore[k].pending++;
+    if(repairSt.includes(c.status)) byStore[k].repair++;
+    if(['delivered','closed'].includes(c.status)) byStore[k].resolved++;
+  });
 
-  let html = `
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:22px;">
+  // By type
+  const byCtype={};
+  data.forEach(c=>{const k=_CTYPE[c.complaint_type]||'Other';byCtype[k]=(byCtype[k]||0)+1;});
+  const ctMax=Math.max(...Object.values(byCtype),1);
+
+  let html=`
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px;">
     ${kpis.map(k=>`<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;border-top:3px solid ${k.color};">
       <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-light);margin-bottom:5px;">${k.label}</div>
       <div style="font-family:var(--f-serif);font-size:30px;font-weight:600;color:${k.color};line-height:1;">${k.val}</div>
     </div>`).join('')}
-  </div>`;
-
-  // By-store breakdown
-  const byStore = {};
-  data.forEach(c => {
-    const k = c.store_name || c.store_code;
-    if (!byStore[k]) byStore[k] = {total:0,pending:0,repair:0,resolved:0};
-    byStore[k].total++;
-    if(c.status==='pending'||c.status==='under_review') byStore[k].pending++;
-    if(repairSt.includes(c.status)) byStore[k].repair++;
-    if(c.status==='delivered'||c.status==='closed') byStore[k].resolved++;
-  });
-
-  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px;">
-  <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-    <div style="background:#B03A2E;padding:10px 14px;font-size:10px;font-weight:700;color:#fff;letter-spacing:0.5px;text-transform:uppercase;">By Store</div>
-    <table style="width:100%;border-collapse:collapse;font-size:11px;">
-      <thead><tr style="background:var(--gold-pale);">
-        <th style="padding:8px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:0.8px;color:var(--ink-light);text-transform:uppercase;">Store</th>
-        <th style="padding:8px 8px;text-align:center;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Total</th>
-        <th style="padding:8px 8px;text-align:center;font-size:9px;font-weight:700;color:#D35400;text-transform:uppercase;">Pending</th>
-        <th style="padding:8px 8px;text-align:center;font-size:9px;font-weight:700;color:#8E44AD;text-transform:uppercase;">Repair</th>
-        <th style="padding:8px 8px;text-align:center;font-size:9px;font-weight:700;color:#1A7A40;text-transform:uppercase;">Resolved</th>
-      </tr></thead>
-      <tbody>
-        ${Object.entries(byStore).sort((a,b)=>b[1].total-a[1].total).map(([store,v],i)=>`
-        <tr style="border-top:1px solid var(--border);background:${i%2?'#FAFAF8':'#fff'};">
-          <td style="padding:8px 12px;font-weight:500;color:var(--ink);">${store}</td>
-          <td style="padding:8px 8px;text-align:center;font-family:var(--f-mono);font-weight:700;">${v.total}</td>
-          <td style="padding:8px 8px;text-align:center;font-family:var(--f-mono);color:#D35400;font-weight:${v.pending?'700':'400'};">${v.pending||'—'}</td>
-          <td style="padding:8px 8px;text-align:center;font-family:var(--f-mono);color:#8E44AD;font-weight:${v.repair?'700':'400'};">${v.repair||'—'}</td>
-          <td style="padding:8px 8px;text-align:center;font-family:var(--f-mono);color:#1A7A40;font-weight:${v.resolved?'700':'400'};">${v.resolved||'—'}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div style="background:#6B5B35;padding:9px 14px;font-size:9px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;">BY STORE</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="background:var(--gold-pale);">
+          <th style="padding:7px 12px;text-align:left;font-size:8px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Store</th>
+          <th style="padding:7px 8px;text-align:center;font-size:8px;font-weight:700;color:var(--ink-light);">Total</th>
+          <th style="padding:7px 8px;text-align:center;font-size:8px;font-weight:700;color:#D35400;">Pending</th>
+          <th style="padding:7px 8px;text-align:center;font-size:8px;font-weight:700;color:#8E44AD;">Repair</th>
+          <th style="padding:7px 8px;text-align:center;font-size:8px;font-weight:700;color:#1A7A40;">Done</th>
+        </tr></thead>
+        <tbody>${Object.entries(byStore).sort((a,b)=>b[1].total-a[1].total).map(([s,v],i)=>`
+          <tr style="border-top:1px solid var(--border);background:${i%2?'#FAFAF8':'#fff'};">
+            <td style="padding:7px 12px;font-size:11px;">${s}</td>
+            <td style="padding:7px 8px;text-align:center;font-family:var(--f-mono);font-weight:700;">${v.total}</td>
+            <td style="padding:7px 8px;text-align:center;font-family:var(--f-mono);color:#D35400;font-weight:${v.pending?700:400};">${v.pending||'—'}</td>
+            <td style="padding:7px 8px;text-align:center;font-family:var(--f-mono);color:#8E44AD;font-weight:${v.repair?700:400};">${v.repair||'—'}</td>
+            <td style="padding:7px 8px;text-align:center;font-family:var(--f-mono);color:#1A7A40;font-weight:${v.resolved?700:400};">${v.resolved||'—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div style="background:#6B5B35;padding:9px 14px;font-size:9px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;">BY COMPLAINT TYPE</div>
+      <div style="padding:14px;">
+        ${Object.entries(byCtype).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
+          <div style="margin-bottom:9px;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+              <span>${t}</span><span style="font-family:var(--f-mono);font-weight:700;color:#B03A2E;">${n}</span>
+            </div>
+            <div style="background:#F5F2EC;border-radius:4px;height:6px;">
+              <div style="background:#C0392B;height:100%;width:${Math.round(n/ctMax*100)}%;border-radius:4px;"></div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
   </div>
 
-  <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-    <div style="background:#B03A2E;padding:10px 14px;font-size:10px;font-weight:700;color:#fff;letter-spacing:0.5px;text-transform:uppercase;">By Complaint Type</div>
-    <div style="padding:14px;">
-      ${(()=>{
-        const byCtype={};
-        data.forEach(c=>{const k=CTYPE[c.complaint_type]||c.complaint_type||'Other';byCtype[k]=(byCtype[k]||0)+1;});
-        const max=Math.max(...Object.values(byCtype),1);
-        return Object.entries(byCtype).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
-          <div style="margin-bottom:8px;">
-            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
-              <span style="color:var(--ink);font-weight:500;">${t}</span>
-              <span style="font-family:var(--f-mono);font-weight:700;color:#B03A2E;">${n}</span>
-            </div>
-            <div style="background:#F5F2EC;border-radius:4px;height:6px;overflow:hidden;">
-              <div style="background:#C0392B;height:100%;width:${Math.round(n/max*100)}%;border-radius:4px;transition:width 0.3s;"></div>
-            </div>
-          </div>`).join('');
-      })()}
+  <!-- ALL COMPLAINTS — click any row to review & act -->
+  <div style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+    <div style="background:#B03A2E;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:10px;font-weight:700;color:#fff;letter-spacing:0.5px;text-transform:uppercase;">All Complaints — Click any row to Review &amp; Act</div>
+      <span style="font-size:9px;color:rgba(255,255,255,0.7);">${data.length} total</span>
     </div>
-  </div></div>`;
-
-  // Recent complaints table
-  const recent = data.slice(0, 20);
-  html += `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-    <div style="background:#B03A2E;padding:10px 14px;font-size:10px;font-weight:700;color:#fff;letter-spacing:0.5px;text-transform:uppercase;">Recent Complaints (Last 20)</div>
     <table style="width:100%;border-collapse:collapse;font-size:11px;">
       <thead><tr style="background:var(--gold-pale);">
-        <th style="padding:9px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:0.8px;color:var(--ink-light);text-transform:uppercase;">Ref</th>
+        <th style="padding:9px 12px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Ref</th>
         <th style="padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Store</th>
         <th style="padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Customer</th>
         <th style="padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Product</th>
         <th style="padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Type</th>
         <th style="padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Status</th>
-        <th style="padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Date</th>
-        <th style="padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:#D68910;text-transform:uppercase;">Days Open</th>
-        <th style="padding:9px 10px;text-align:center;font-size:9px;font-weight:700;color:#B03A2E;text-transform:uppercase;">Action</th>
+        <th style="padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Days</th>
+        <th style="padding:9px 10px;text-align:center;font-size:9px;font-weight:700;color:#B03A2E;text-transform:uppercase;">Action Required</th>
       </tr></thead>
       <tbody>
-        ${recent.map((c,i)=>{
+        ${data.map((c,i)=>{
           const sm=CC_STATUS[c.status]||{label:c.status,color:'#888',bg:'#F5F5F5'};
           const dt=c.submitted_at?new Date(c.submitted_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}):'—';
           const daysOpen=c.submitted_at?Math.ceil((now-new Date(c.submitted_at).getTime())/86400000):0;
-          const overdue=!['delivered','closed','rejected'].includes(c.status)&&daysOpen>7;
           const isPending=['pending','under_review'].includes(c.status);
           const isDone=['delivered','closed','rejected'].includes(c.status);
-          const trackerUrl='complaint-tracker.html';
-          const actionBtn = isPending
-            ? `<a href="${trackerUrl}" target="_blank"
-                style="display:inline-block;background:#B03A2E;color:#fff;border-radius:6px;padding:6px 12px;font-family:var(--f-body);font-size:9px;font-weight:700;text-decoration:none;white-space:nowrap;letter-spacing:.3px;">
-                ⚖️ Review &amp; Decide
-               </a>`
-            : isDone
-            ? `<span style="font-size:9px;color:#1A7A40;font-weight:600;">✓ Done</span>`
-            : `<a href="${trackerUrl}" target="_blank"
-                style="display:inline-block;background:#2980B9;color:#fff;border-radius:6px;padding:6px 12px;font-family:var(--f-body);font-size:9px;font-weight:700;text-decoration:none;white-space:nowrap;letter-spacing:.3px;">
-                → Update
-               </a>`;
-          return `<tr style="border-top:1px solid var(--border);background:${isPending?'#FFFDF5':i%2?'#FAFAF8':'#fff'};">
+          const isRepair=repairSt.includes(c.status);
+          const ns=_ccNorm(c.status);
+          let actionCell='';
+          if(isPending) actionCell=`<button onclick="event.stopPropagation();_ccOpenDetail('${c.id}')"
+            style="background:#B03A2E;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">
+            ⚖️ Decide Now</button>`;
+          else if(!isDone) actionCell=`<button onclick="event.stopPropagation();_ccOpenDetail('${c.id}')"
+            style="background:#2980B9;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">
+            → Update Stage</button>`;
+          else actionCell=`<span style="font-size:9px;color:#1A7A40;font-weight:700;">✓ Closed</span>`;
+          return `<tr onclick="_ccOpenDetail('${c.id}')" style="border-top:1px solid var(--border);background:${isPending?'#FFFDF5':i%2?'#FAFAF8':'#fff'};cursor:pointer;transition:background .1s;" onmouseover="this.style.background='#F0EDE8'" onmouseout="this.style.background='${isPending?'#FFFDF5':i%2?'#FAFAF8':'#fff'}'">
             <td style="padding:8px 12px;font-family:var(--f-mono);font-size:10px;font-weight:600;color:var(--gold-dark);">${c.complaint_ref||'—'}</td>
             <td style="padding:8px 10px;font-size:11px;color:var(--ink-mid);">${(c.store_name||c.store_code||'—').split(' ').slice(0,3).join(' ')}</td>
             <td style="padding:8px 10px;font-weight:500;">${c.customer_name||'—'}</td>
-            <td style="padding:8px 10px;color:var(--ink-mid);">${(c.product_name||'—').slice(0,20)}</td>
-            <td style="padding:8px 10px;color:var(--ink-mid);">${CTYPE[c.complaint_type]||c.complaint_type||'—'}</td>
-            <td style="padding:8px 10px;"><span style="background:${sm.bg};color:${sm.color};font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;">${sm.label}</span></td>
-            <td style="padding:8px 10px;font-family:var(--f-mono);font-size:10px;">${dt}</td>
-            <td style="padding:8px 10px;font-family:var(--f-mono);font-size:10px;font-weight:700;color:${overdue?'#C0392B':daysOpen>4?'#D68910':'#1A7A40'};">${daysOpen}d${overdue?' ⚠':''}</td>
-            <td style="padding:8px 10px;text-align:center;">${actionBtn}</td>
+            <td style="padding:8px 10px;color:var(--ink-mid);">${(c.product_name||'—').slice(0,22)}</td>
+            <td style="padding:8px 10px;color:var(--ink-mid);font-size:10px;">${_CTYPE[c.complaint_type]||c.complaint_type||'—'}</td>
+            <td style="padding:8px 10px;"><span style="background:${sm.bg};color:${sm.color};font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;">${sm.label}</span>
+              ${c.actioned_by?`<div style="font-size:8px;color:var(--ink-light);margin-top:2px;">by ${c.actioned_by}</div>`:''}</td>
+            <td style="padding:8px 10px;font-family:var(--f-mono);font-size:10px;font-weight:700;color:${daysOpen>7?'#C0392B':daysOpen>4?'#D68910':'#1A7A40'};">${daysOpen}d</td>
+            <td style="padding:8px 10px;text-align:center;">${actionCell}</td>
           </tr>`;
         }).join('')}
       </tbody>
     </table>
-    <div style="padding:10px 14px;text-align:right;">
-      <a href="complaint-tracker.html" target="_blank" style="font-size:11px;color:#B03A2E;font-weight:600;font-family:var(--f-body);">Open full Complaint Tracker →</a>
-    </div>
   </div>`;
 
   body.innerHTML = html;
+}
+
+function _ccOpenDetail(id) {
+  const c = _ccData.find(x=>x.id===id);
+  if(!c) return;
+  _ccSelDec = null;
+  const body = document.getElementById('complaintsPanelBody');
+  const s = c.status;
+  const ns = _ccNorm(s);
+  const sm = CC_STATUS[s]||{label:s,color:'#888',bg:'#F5F5F5'};
+  const ct = _CTYPE[c.complaint_type]||c.complaint_type||'—';
+  const pd = c.purchase_date?new Date(c.purchase_date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
+  const sd = c.submitted_at?new Date(c.submitted_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
+  const tl = c.timeline||[];
+  const daysOpen = c.submitted_at?Math.ceil((Date.now()-new Date(c.submitted_at).getTime())/86400000):0;
+  const isPending = ['pending','under_review'].includes(s);
+  const isDone = ['delivered','closed','rejected'].includes(s);
+
+  // Stage tracker dots
+  const track = c.outcome;
+  let stageBar='';
+  if(track){
+    const tracks={replacement:['Submitted','Approved','Dispatched','Delivered','Closed'],repair:['Submitted','Approved','At WH','Repaired','Dispatched','Delivered','Closed'],rejection:['Submitted','Rejected','Closed']};
+    const stMap={replacement:[['pending','under_review'],['replacement_approved','accepted_replacement'],['replacement_dispatched'],['delivered'],['closed']],repair:[['pending','under_review'],['repair_approved','accepted_repair'],['repair_in_progress','item_sent_to_wh','item_received_wh'],['repaired_dispatching','under_repair'],['repair_dispatched'],['delivered'],['closed']],rejection:[['pending','under_review'],['rejected'],['closed']]};
+    const lbls=tracks[track]||[];const sts=stMap[track]||[];
+    const cols={replacement:'#1A7A40',repair:'#2980B9',rejection:'#C0392B'};
+    const col=cols[track]||'#6B5B35';
+    let cur=0;sts.forEach((ss,i)=>{if(ss.includes(s))cur=i;});
+    const parts=[];
+    lbls.forEach((lbl,i)=>{
+      const done=i<cur,active=i===cur;
+      const bg=done||active?col:'#E5E0D8';
+      parts.push(`<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 0 auto;"><div style="width:${active?14:10}px;height:${active?14:10}px;border-radius:50%;background:${bg};${active?'box-shadow:0 0 0 3px '+col+'33;':''}"></div><div style="font-size:8px;font-weight:${active?700:500};color:${done||active?col:'#B0A898'};white-space:nowrap;">${lbl}</div></div>`);
+      if(i<lbls.length-1) parts.push(`<div style="flex:1;height:2px;background:${i<cur?col:'#E5E0D8'};margin-bottom:11px;min-width:6px;"></div>`);
+    });
+    const trkLbl={replacement:'✅ REPLACEMENT TRACK',repair:'🔧 REPAIR TRACK',rejection:'✕ NOT APPROVED'};
+    stageBar=`<div style="background:#FAFAF8;border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;"><div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${col};margin-bottom:8px;">${trkLbl[track]||track}</div><div style="display:flex;align-items:center;overflow-x:auto;">${parts.join('')}</div></div>`;
+  }
+
+  // Timeline
+  const tlHtml = tl.map((t,i)=>{
+    const isLast=i===tl.length-1;
+    const tdt=new Date(t.at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const dotColor=isLast?(t.status==='rejected'?'#C0392B':['delivered','closed'].includes(t.status)?'#1A7A40':'#2980B9'):'#C9A84C';
+    return `<div style="position:relative;padding-left:22px;margin-bottom:12px;">
+      <div style="position:absolute;left:5px;top:2px;width:10px;height:10px;border-radius:50%;background:${dotColor};border:2px solid #fff;box-shadow:0 0 0 2px ${dotColor};"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+        <div>
+          <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-light);">${tdt}</div>
+          <div style="font-size:12px;font-weight:600;margin-top:1px;">${t.label||t.status}</div>
+          ${t.notes?`<div style="font-size:11px;color:var(--ink-mid);margin-top:2px;">${t.notes}</div>`:''}
+          ${t.by?`<div style="font-size:10px;color:var(--ink-light);font-style:italic;">— ${t.by}</div>`:''}
+        </div>
+        ${i>0?`<button onclick="_ccReprintDoc('${c.id}','${t.status}','${t.at}')" style="flex-shrink:0;background:var(--gold-pale);border:1px solid var(--border);color:var(--gold-dark);font-family:var(--f-body);font-size:9px;font-weight:700;padding:4px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;">📄 Print Doc</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Action section
+  let actionHtml='';
+  if(!isDone){
+    if(isPending){
+      actionHtml=`
+      <div style="background:#FFF8E6;border:2px solid #C9A84C;border-radius:10px;padding:16px;margin-top:16px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7A6525;margin-bottom:10px;">⚖️ Manager Decision — Select Outcome</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;" id="ccDecCards">
+          <button id="ccDec-replacement" onclick="_ccSelectDec('replacement')" style="display:flex;flex-direction:column;align-items:center;padding:14px 8px;border-radius:10px;gap:5px;min-height:80px;background:linear-gradient(135deg,#155C2C,#1E8A42);color:#fff;border:3px solid transparent;cursor:pointer;transition:all .15s;">
+            <span style="font-size:22px;">✅</span><span style="font-size:11px;font-weight:700;">REPLACEMENT</span><span style="font-size:9px;opacity:.75;text-align:center;line-height:1.3;">New product to customer</span>
+          </button>
+          <button id="ccDec-repair" onclick="_ccSelectDec('repair')" style="display:flex;flex-direction:column;align-items:center;padding:14px 8px;border-radius:10px;gap:5px;min-height:80px;background:linear-gradient(135deg,#14427A,#2172B0);color:#fff;border:3px solid transparent;cursor:pointer;transition:all .15s;">
+            <span style="font-size:22px;">🔧</span><span style="font-size:11px;font-weight:700;">REPAIR</span><span style="font-size:9px;opacity:.75;text-align:center;line-height:1.3;">Fix / send to warehouse</span>
+          </button>
+          <button id="ccDec-rejection" onclick="_ccSelectDec('rejection')" style="display:flex;flex-direction:column;align-items:center;padding:14px 8px;border-radius:10px;gap:5px;min-height:80px;background:linear-gradient(135deg,#7A1212,#B52B2B);color:#fff;border:3px solid transparent;cursor:pointer;transition:all .15s;">
+            <span style="font-size:22px;">✕</span><span style="font-size:11px;font-weight:700;">NOT APPROVED</span><span style="font-size:9px;opacity:.75;text-align:center;line-height:1.3;">Reject complaint</span>
+          </button>
+        </div>
+        <div id="ccDecForm" style="display:none;border-top:1px solid #E5D8B0;padding-top:12px;">
+          <div id="ccDecFormTitle" style="font-size:11px;font-weight:700;margin-bottom:10px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+            <div>
+              <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:4px;">YOUR NAME ★ Required</label>
+              <input id="ccActorName" placeholder="Enter your full name" style="width:100%;border:1.5px solid #C9A84C;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;background:#FFFDF5;font-family:var(--f-body);" />
+            </div>
+            <div>
+              <label id="ccDecNoteLabel" style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:4px;">NOTES</label>
+              <input id="ccActorNote" placeholder="Reason / notes…" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-size:13px;outline:none;background:#FAFAF8;font-family:var(--f-body);" />
+            </div>
+          </div>
+          <button id="ccDecConfirmBtn" onclick="_ccConfirmDecision('${c.id}')" style="background:#6B5B35;border:none;color:#fff;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 26px;border-radius:8px;cursor:pointer;letter-spacing:.5px;">Confirm Decision</button>
+        </div>
+      </div>`;
+    } else {
+      // Next stage
+      const stageCfg = {
+        replacement_approved:   {lbl:'📦 Mark Replacement Dispatched',      aLbl:'DISPATCHED BY', aPh:'Name of person dispatching the replacement', nPh:'Courier, tracking no…', next:'replacement_dispatched', tl:'Replacement Product Dispatched to Customer',col:'#1A6A40'},
+        accepted_replacement:   {lbl:'📦 Mark Replacement Dispatched',      aLbl:'DISPATCHED BY', aPh:'Name of person dispatching the replacement', nPh:'Courier, tracking no…', next:'replacement_dispatched', tl:'Replacement Product Dispatched to Customer',col:'#1A6A40'},
+        replacement_dispatched: {lbl:'✅ Confirm Customer Received',         aLbl:'CONFIRMED BY',  aPh:'Who confirmed with customer',                nPh:'Call/WhatsApp confirmation date…', next:'delivered', tl:'Customer Confirmed Receipt of Replacement — Case Resolved',col:'#1A6A40'},
+        repair_approved:        {lbl:'📬 Item Collected — Sent to WH',       aLbl:'COLLECTED BY',  aPh:'Name of person who collected item',          nPh:'Condition, how collected…', next:'repair_in_progress', tl:'Defective Item Collected — Sent to Warehouse',col:'#2980B9'},
+        accepted_repair:        {lbl:'📬 Item Collected — Sent to WH',       aLbl:'COLLECTED BY',  aPh:'Name of person who collected item',          nPh:'Condition, how collected…', next:'repair_in_progress', tl:'Defective Item Collected — Sent to Warehouse',col:'#2980B9'},
+        repair_in_progress:     {lbl:'✅ Repair Complete — Ready to Send',   aLbl:'REPAIRED BY',   aPh:'WH technician / factory name',              nPh:'What was repaired, parts replaced…', next:'repaired_dispatching', tl:'Item Repaired — Ready for Return to Customer',col:'#8E44AD'},
+        item_sent_to_wh:        {lbl:'✅ Repair Complete — Ready to Send',   aLbl:'REPAIRED BY',   aPh:'WH technician / factory name',              nPh:'What was repaired, parts replaced…', next:'repaired_dispatching', tl:'Item Repaired — Ready for Return to Customer',col:'#8E44AD'},
+        item_received_wh:       {lbl:'✅ Repair Complete — Ready to Send',   aLbl:'REPAIRED BY',   aPh:'WH technician / factory name',              nPh:'What was repaired, parts replaced…', next:'repaired_dispatching', tl:'Item Repaired — Ready for Return to Customer',col:'#8E44AD'},
+        under_repair:           {lbl:'📦 Dispatch Repaired Item to Customer',aLbl:'DISPATCHED BY', aPh:'Name of person sending item back',           nPh:'Courier, tracking no…', next:'repair_dispatched', tl:'Repaired Item Dispatched to Customer',col:'#1A6A40'},
+        repaired_dispatching:   {lbl:'📦 Dispatch Repaired Item to Customer',aLbl:'DISPATCHED BY', aPh:'Name of person sending item back',           nPh:'Courier, tracking no…', next:'repair_dispatched', tl:'Repaired Item Dispatched to Customer',col:'#1A6A40'},
+        repair_dispatched:      {lbl:'✅ Confirm Customer Received',         aLbl:'CONFIRMED BY',  aPh:'Who confirmed with customer',                nPh:'Customer satisfied, call ref…', next:'delivered', tl:'Customer Confirmed Receipt of Repaired Item — Case Resolved',col:'#1A6A40'},
+        delivered:              {lbl:'✓ Close This Case',                   aLbl:'CLOSED BY',     aPh:'Your name',                                  nPh:'Final notes…', next:'closed', tl:'Case Closed',col:'#6B5B35'},
+        rejected:               {lbl:'✓ Close This Case',                   aLbl:'CLOSED BY',     aPh:'Your name',                                  nPh:'Final notes…', next:'closed', tl:'Case Closed',col:'#6B5B35'},
+      };
+      const cfg=stageCfg[s];
+      if(cfg){
+        actionHtml=`
+        <div style="background:#fff;border:2px solid ${cfg.col}44;border-radius:10px;padding:16px;margin-top:16px;">
+          <div style="font-size:12px;font-weight:700;color:${cfg.col};margin-bottom:3px;">${cfg.lbl}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 10px;">
+            <div>
+              <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:4px;">${cfg.aLbl} ★ Required</label>
+              <input id="ccActorName" placeholder="${cfg.aPh}" style="width:100%;border:1.5px solid #C9A84C;border-radius:7px;padding:9px 12px;font-size:13px;outline:none;background:#FFFDF5;font-family:var(--f-body);" />
+            </div>
+            <div>
+              <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:4px;">NOTES</label>
+              <input id="ccActorNote" placeholder="${cfg.nPh}" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-size:13px;outline:none;background:#FAFAF8;font-family:var(--f-body);" />
+            </div>
+          </div>
+          <button onclick="_ccConfirmStage('${c.id}','${cfg.next}','${cfg.tl}')" style="background:${cfg.col};border:none;color:#fff;font-family:var(--f-body);font-size:12px;font-weight:700;padding:11px 26px;border-radius:8px;cursor:pointer;letter-spacing:.5px;">${cfg.lbl}</button>
+        </div>`;
+      }
+    }
+  }
+
+  body.innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid var(--border);">
+      <button onclick="_ccRenderList()" style="background:var(--gold-pale);border:1.5px solid var(--border);color:var(--ink);font-family:var(--f-body);font-size:11px;font-weight:700;padding:8px 16px;border-radius:7px;cursor:pointer;">← All Complaints</button>
+      <div style="flex:1;">
+        <div style="font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--gold-dark);">${c.complaint_ref||'—'}</div>
+        <div style="font-family:var(--f-serif);font-size:18px;font-weight:600;margin-top:1px;">${c.product_name||'—'}</div>
+      </div>
+      <span style="background:${sm.bg};color:${sm.color};font-size:9px;font-weight:700;padding:4px 12px;border-radius:20px;">${sm.label}</span>
+      <button onclick="_ccPrintDoc('${c.id}',null)" style="background:var(--gold-bar);border:none;color:#fff;font-family:var(--f-body);font-size:11px;font-weight:700;padding:8px 16px;border-radius:7px;cursor:pointer;">📄 Print Full Record</button>
+    </div>
+
+    ${stageBar}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+      <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:10px;">👤 Customer</div>
+        <div style="font-size:9px;color:var(--ink-light);text-transform:uppercase;font-weight:700;margin-bottom:2px;">Name</div><div style="font-size:13px;font-weight:500;margin-bottom:8px;">${c.customer_name||'—'}</div>
+        <div style="font-size:9px;color:var(--ink-light);text-transform:uppercase;font-weight:700;margin-bottom:2px;">Phone</div><div style="font-size:13px;margin-bottom:8px;"><a href="tel:${c.customer_phone}" style="color:var(--gold-dark);text-decoration:none;font-weight:500;">${c.customer_phone||'—'}</a></div>
+        <div style="font-size:9px;color:var(--ink-light);text-transform:uppercase;font-weight:700;margin-bottom:2px;">Purchase Date</div><div style="font-size:13px;margin-bottom:8px;">${pd}</div>
+        <div style="font-size:9px;color:var(--ink-light);text-transform:uppercase;font-weight:700;margin-bottom:2px;">Receipt / Invoice</div><div style="font-family:var(--f-mono);font-size:12px;">${c.receipt_number||'—'}</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:10px;">🛍 Product & Store</div>
+        <div style="font-size:9px;color:var(--ink-light);text-transform:uppercase;font-weight:700;margin-bottom:2px;">Product</div><div style="font-size:13px;font-weight:500;margin-bottom:8px;">${c.product_name||'—'}</div>
+        <div style="font-size:9px;color:var(--ink-light);text-transform:uppercase;font-weight:700;margin-bottom:2px;">SKU</div><div style="font-family:var(--f-mono);font-size:12px;color:var(--gold-dark);margin-bottom:8px;">${c.sku_code||'—'}</div>
+        <div style="font-size:9px;color:var(--ink-light);text-transform:uppercase;font-weight:700;margin-bottom:2px;">Complaint Type</div><div style="font-size:13px;margin-bottom:8px;">${ct}</div>
+        <div style="font-size:9px;color:var(--ink-light);text-transform:uppercase;font-weight:700;margin-bottom:2px;">Store / Submitted</div><div style="font-size:13px;">${c.store_name||c.store_code||'—'} · ${sd}</div>
+      </div>
+    </div>
+
+    <div style="background:var(--gold-pale);border-left:4px solid var(--gold);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:16px;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:5px;">Complaint Description</div>
+      <div style="font-size:13px;line-height:1.6;">${c.complaint_description||'—'}</div>
+    </div>
+
+    ${actionHtml}
+
+    <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:16px;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:14px;">⏱ Case History (${tl.length} entries)</div>
+      <div style="position:relative;padding-left:0;">${tlHtml||'<div style="color:var(--ink-light);font-size:12px;">No history yet.</div>'}</div>
+    </div>`;
+
+  document.getElementById('complaintsPanelBody').scrollTop=0;
+}
+
+function _ccSelectDec(type){
+  _ccSelDec=type;
+  ['replacement','repair','rejection'].forEach(t=>{
+    const b=document.getElementById('ccDec-'+t);
+    if(b) b.style.opacity=t===type?'1':'0.35';
+  });
+  document.getElementById('ccDecForm').style.display='block';
+  const titleEl=document.getElementById('ccDecFormTitle');
+  const noteInput=document.getElementById('ccActorNote');
+  const noteLabel=document.getElementById('ccDecNoteLabel');
+  const btn=document.getElementById('ccDecConfirmBtn');
+  if(type==='replacement'){
+    titleEl.innerHTML='<span style="color:#1A7A40;">✅ Replacement — enter your name to confirm:</span>';
+    btn.style.background='#1A7A40'; btn.textContent='✅ Confirm — Approve Replacement';
+    noteLabel.textContent='NOTES (optional)';
+    noteInput.placeholder='Any notes for this decision…'; noteInput.style.borderColor='var(--border)';
+  } else if(type==='repair'){
+    titleEl.innerHTML='<span style="color:#2980B9;">🔧 Repair — enter your name to confirm:</span>';
+    btn.style.background='#2980B9'; btn.textContent='🔧 Confirm — Approve Repair';
+    noteLabel.textContent='NOTES (optional)';
+    noteInput.placeholder='What needs to be repaired…'; noteInput.style.borderColor='var(--border)';
+  } else {
+    titleEl.innerHTML='<span style="color:#C0392B;">✕ Not Approved — enter name + mandatory reason:</span>';
+    btn.style.background='#C0392B'; btn.textContent='✕ Confirm — Reject Complaint';
+    noteLabel.innerHTML='REASON FOR REJECTION ★ Required';
+    noteInput.placeholder='Explain why rejected — required'; noteInput.style.borderColor='#C0392B';
+  }
+  document.getElementById('ccActorName').focus();
+}
+
+async function _ccConfirmDecision(id){
+  const name=(document.getElementById('ccActorName').value||'').trim();
+  const note=(document.getElementById('ccActorNote').value||'').trim();
+  if(!name){document.getElementById('ccActorName').style.borderColor='#C0392B';document.getElementById('ccActorName').focus();return;}
+  if(_ccSelDec==='rejection'&&!note){document.getElementById('ccActorNote').style.borderColor='#C0392B';document.getElementById('ccActorNote').focus();return;}
+  const map={
+    replacement:{next:'replacement_approved',outcome:'replacement',tl:'Complaint Approved — Replacement Authorised'},
+    repair:     {next:'repair_approved',     outcome:'repair',      tl:'Complaint Approved — Repair Authorised'},
+    rejection:  {next:'rejected',            outcome:'rejection',   tl:'Complaint Not Approved — Rejected'},
+  };
+  const m=map[_ccSelDec]; if(!m) return;
+  const now=new Date().toISOString();
+  const c=_ccData.find(x=>x.id===id); if(!c) return;
+  const tlEntry={status:m.next,label:m.tl,at:now,by:name,notes:note||null};
+  const update={status:m.next,outcome:m.outcome,timeline:[...(c.timeline||[]),tlEntry],updated_at:now,actioned_at:now,actioned_by:name,resolution_notes:note||null};
+  try{
+    await fetch(`${SB_URL_CC}/rest/v1/customer_complaints?id=eq.${id}`,{method:'PATCH',headers:{'apikey':SB_ANON_CC,'Authorization':'Bearer '+SB_ANON_CC,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(update)});
+    _ccPrintDoc(id, tlEntry, {...c,...update});
+    toast('✓ Decision saved by '+name+' — document opened');
+    await refreshComplaintsPanel();
+  }catch(e){toast('Error: '+e.message);}
+}
+
+async function _ccConfirmStage(id, nextStatus, tlLabel){
+  const name=(document.getElementById('ccActorName').value||'').trim();
+  const note=(document.getElementById('ccActorNote').value||'').trim();
+  if(!name){document.getElementById('ccActorName').style.borderColor='#C0392B';document.getElementById('ccActorName').focus();return;}
+  const c=_ccData.find(x=>x.id===id); if(!c) return;
+  const now=new Date().toISOString();
+  const tlEntry={status:nextStatus,label:tlLabel,at:now,by:name,notes:note||null};
+  const update={status:nextStatus,timeline:[...(c.timeline||[]),tlEntry],updated_at:now};
+  if(note) update.resolution_notes=note;
+  if(nextStatus==='delivered') update.resolved_at=now;
+  try{
+    await fetch(`${SB_URL_CC}/rest/v1/customer_complaints?id=eq.${id}`,{method:'PATCH',headers:{'apikey':SB_ANON_CC,'Authorization':'Bearer '+SB_ANON_CC,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(update)});
+    _ccPrintDoc(id, tlEntry, {...c,...update});
+    toast('✓ '+tlLabel+' — by '+name+' — document opened');
+    await refreshComplaintsPanel();
+  }catch(e){toast('Error: '+e.message);}
+}
+
+function _ccReprintDoc(id, status, at){
+  const c=_ccData.find(x=>x.id===id); if(!c) return;
+  const entry=(c.timeline||[]).find(t=>t.status===status&&t.at===at);
+  if(entry) _ccPrintDoc(id, entry, c);
+}
+
+function _ccPrintDoc(id, tlEntry, prebuiltC){
+  const c = prebuiltC || _ccData.find(x=>x.id===id);
+  if(!c) return;
+  const status = tlEntry ? tlEntry.status : c.status;
+  const CT={pump_issue:'Pump Not Working',fragrance_issue:'Fragrance Issue',leakage:'Leakage/Spillage',broken_cap:'Broken Cap/Nozzle',cosmetic_damage:'Cosmetic Damage',wrong_product:'Wrong Product',other:'Other'};
+  const docCfg={
+    replacement_approved:   {title:'REPLACEMENT AUTHORIZATION',    title_ar:'تفويض الاستبدال',           icon:'✅',color:'#155C2C',bg:'#E8F5ED',intro:'The customer complaint has been reviewed and a replacement product has been authorized.',sigs:['Authorized By (Manager)','Customer Acknowledgement','Store Representative']},
+    replacement_dispatched: {title:'REPLACEMENT DISPATCH NOTE',    title_ar:'مذكرة إرسال المنتج البديل', icon:'📦',color:'#1A5276',bg:'#EBF5FB',intro:'The replacement product has been dispatched to the customer.',sigs:['Dispatched By','Received By (Customer)','Store Representative']},
+    repair_approved:        {title:'REPAIR AUTHORIZATION',         title_ar:'تفويض الإصلاح',             icon:'🔧',color:'#1A3A6A',bg:'#EBF5FB',intro:'The complaint has been reviewed and the defective item is approved for repair.',sigs:['Authorized By (Manager)','Customer Acknowledgement','Store Representative']},
+    repair_in_progress:     {title:'ITEM COLLECTION RECEIPT',      title_ar:'إيصال استلام المنتج',       icon:'📬',color:'#2980B9',bg:'#EBF5FB',intro:'The defective item has been collected from the customer and sent to the warehouse for repair.',sigs:['Collected By','Customer (Item Handed Over)','Warehouse Receiving']},
+    repaired_dispatching:   {title:'REPAIR COMPLETION REPORT',     title_ar:'تقرير اكتمال الإصلاح',     icon:'🔧✓',color:'#6C3483',bg:'#F5EEF8',intro:'The item has been repaired and is ready for return to the customer.',sigs:['Repaired By (Technician)','Warehouse Supervisor','Quality Check By']},
+    repair_dispatched:      {title:'REPAIRED ITEM DISPATCH NOTE',  title_ar:'مذكرة إرسال المنتج المُصلح',icon:'📦',color:'#1A5276',bg:'#EBF5FB',intro:'The repaired item has been dispatched back to the customer.',sigs:['Dispatched By','Received By (Customer)','Warehouse Representative']},
+    rejected:               {title:'COMPLAINT REJECTION NOTICE',   title_ar:'إشعار رفض الشكوى',          icon:'✕',color:'#7A1212',bg:'#FDECEA',intro:'The complaint has been reviewed and has not been approved for replacement or repair.',sigs:['Rejected By (Manager)','Customer Notified By','Store Representative']},
+    delivered:              {title:'CASE RESOLVED — CONFIRMATION', title_ar:'تأكيد حل الشكوى',           icon:'✓',color:'#155C2C',bg:'#E8F5ED',intro:'The complaint has been fully resolved. The customer has received the replacement or repaired item.',sigs:['Confirmed By','Customer Signature','Store Representative']},
+    closed:                 {title:'CASE CLOSURE CERTIFICATE',     title_ar:'شهادة إغلاق الشكوى',        icon:'📁',color:'#4A4540',bg:'#F5F2EC',intro:'This complaint case has been formally closed and archived.',sigs:['Closed By','Manager Sign-off','Date']},
+  };
+  const normSt={under_review:'pending',accepted_replacement:'replacement_approved',accepted_repair:'repair_approved',item_sent_to_wh:'repair_in_progress',item_received_wh:'repair_in_progress',under_repair:'repair_in_progress'}[status]||status;
+  const cfg=docCfg[status]||docCfg[normSt]||{title:'COMPLAINT RECORD',title_ar:'سجل الشكوى',icon:'📋',color:'#6B5B35',bg:'#F5F2EC',intro:'Customer complaint record.',sigs:['Manager','Customer','Staff']};
+  const ct=CT[c.complaint_type]||c.complaint_type||'—';
+  const pd=c.purchase_date?new Date(c.purchase_date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
+  const sd=c.submitted_at?new Date(c.submitted_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
+  const tl=c.timeline||[];
+  const actor=tlEntry?tlEntry.by:(c.actioned_by||'—');
+  const actAt=tlEntry?new Date(tlEntry.at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+  const actNotes=tlEntry?(tlEntry.notes||''):(c.resolution_notes||'');
+  const docNo=(c.complaint_ref||'CC')+'—'+status.toUpperCase().replace(/_/g,'-').slice(0,8);
+  const printDate=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const isRej=status==='rejected';
+
+  const tlHtml=tl.map((t,i)=>{
+    const isThis=tlEntry&&t.at===tlEntry.at&&t.status===tlEntry.status;
+    const tdt=new Date(t.at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `<tr style="${isThis?'background:'+cfg.bg+';font-weight:700;':''}">
+      <td style="padding:6px 10px;font-family:monospace;font-size:9px;color:#8A8278;">${tdt}</td>
+      <td style="padding:6px 10px;font-size:10px;">${t.label||t.status}${isThis?' ← THIS ACTION':''}</td>
+      <td style="padding:6px 10px;font-size:10px;">${t.by||'—'}</td>
+      <td style="padding:6px 10px;font-size:10px;color:#4A4540;">${t.notes||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const sigHtml=cfg.sigs.map(l=>`<div style="flex:1;min-width:160px;border:1px solid #E5E0D8;border-radius:8px;padding:12px 14px;">
+    <div style="font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;margin-bottom:26px;">${l}</div>
+    <div style="border-top:1.5px solid #4A4540;padding-top:4px;font-size:8px;color:#8A8278;">Signature &amp; Date</div>
+  </div>`).join('');
+
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${docNo}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Montserrat',sans-serif;font-size:11px;color:#1A1A1A;padding:28px;max-width:800px;margin:0 auto;}
+  .hdr{background:${cfg.color};color:#fff;padding:18px 22px;border-radius:10px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+  .brand{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;letter-spacing:4px;}
+  .dtitle{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:.8;margin-top:6px;}
+  .dtitle-big{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;margin-top:2px;}
+  .dtitle-ar{font-size:11px;opacity:.65;margin-top:2px;}
+  .ref-box{text-align:right;flex-shrink:0;}
+  .ref{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:#C9A84C;}
+  .banner{background:${cfg.bg};border-left:4px solid ${cfg.color};border-radius:0 8px 8px 0;padding:10px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:center;}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+  .card{border:1px solid #E5E0D8;border-radius:8px;padding:12px 14px;}
+  .ct{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${cfg.color};margin-bottom:9px;}
+  .fl{font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;margin-bottom:2px;}
+  .fv{font-size:12px;font-weight:500;margin-bottom:7px;}
+  h3{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${cfg.color};border-bottom:2px solid ${cfg.color};padding-bottom:5px;margin:16px 0 10px;}
+  .desc{background:#F5F2EC;border-left:4px solid #C9A84C;padding:10px 14px;border-radius:0 7px 7px 0;font-size:11px;line-height:1.6;margin-bottom:0;}
+  .rej-reason{background:#FDECEA;border-left:4px solid #C0392B;padding:10px 14px;border-radius:0 7px 7px 0;font-size:12px;font-weight:700;color:#7A1212;line-height:1.6;}
+  .abox{background:${cfg.bg};border:2px solid ${cfg.color};border-radius:10px;padding:14px 16px;margin:16px 0;}
+  .abox-title{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:${cfg.color};margin-bottom:10px;}
+  .af{display:flex;gap:20px;flex-wrap:wrap;}
+  .afl{font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;margin-bottom:3px;}
+  .afv{font-size:14px;font-weight:700;color:${cfg.color};}
+  table{width:100%;border-collapse:collapse;font-size:10px;}
+  thead th{background:${cfg.color};color:#fff;padding:7px 10px;text-align:left;font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;}
+  tbody td{border-bottom:1px solid #F0EDE8;padding:6px 10px;}
+  .sig-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
+  .footer{margin-top:24px;padding-top:10px;border-top:1.5px solid #E5E0D8;display:flex;justify-content:space-between;font-size:8px;color:#8A8278;}
+  @media print{body{padding:16px;}@page{margin:12mm;}}</style></head><body>
+  <div class="hdr">
+    <div>
+      <div class="brand">EMIRATES PRIDE</div>
+      <div style="font-size:11px;opacity:.7;margin-top:2px;">فخر الإمارات للعطور</div>
+      <div class="dtitle">Customer Complaint Document · وثيقة شكوى العميل</div>
+      <div class="dtitle-big">${cfg.icon} ${cfg.title}</div>
+      <div class="dtitle-ar">${cfg.title_ar}</div>
+    </div>
+    <div class="ref-box">
+      <div class="ref">${c.complaint_ref||'—'}</div>
+      <div style="font-size:9px;opacity:.7;margin-top:3px;">Doc: ${docNo}</div>
+      <div style="font-size:9px;opacity:.7;">Printed: ${printDate}</div>
+      <div style="margin-top:8px;background:rgba(201,168,76,.25);border:1px solid #C9A84C;color:#C9A84C;font-size:8px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;text-align:center;">${(CC_STATUS[status]||{label:status}).label||status}</div>
+    </div>
+  </div>
+  <div class="banner"><div style="font-size:20px;">${cfg.icon}</div><div><div style="font-size:10px;font-weight:700;color:${cfg.color};">${c.outcome==='replacement'?'✅ REPLACEMENT TRACK':c.outcome==='repair'?'🔧 REPAIR TRACK':c.outcome==='rejection'?'✕ NOT APPROVED':'COMPLAINT RECORD'}</div><div style="font-size:10px;color:#4A4540;margin-top:2px;">${cfg.intro}</div></div></div>
+  <div class="g2">
+    <div class="card"><div class="ct">👤 Customer Details</div>
+      <div class="fl">Full Name</div><div class="fv">${c.customer_name||'—'}</div>
+      <div class="fl">Phone Number</div><div class="fv">${c.customer_phone||'—'}</div>
+      <div class="fl">Purchase Date</div><div class="fv">${pd}</div>
+      <div class="fl">Receipt / Invoice No.</div><div class="fv" style="font-family:'IBM Plex Mono',monospace;font-size:11px;">${c.receipt_number||'—'}</div>
+    </div>
+    <div class="card"><div class="ct">🛍 Product & Store</div>
+      <div class="fl">Product Name</div><div class="fv">${c.product_name||'—'}</div>
+      <div class="fl">SKU Code</div><div class="fv" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7A6525;">${c.sku_code||'—'}</div>
+      <div class="fl">Complaint Type</div><div class="fv">${ct}</div>
+      <div class="fl">Store / Submitted By / Date</div><div class="fv">${c.store_name||c.store_code||'—'} · ${c.submitted_by||'—'} · ${sd}</div>
+    </div>
+  </div>
+  <h3>Complaint Description · وصف الشكوى</h3>
+  <div class="desc">${c.complaint_description||'—'}</div>
+  ${isRej&&actNotes?`<h3>Reason for Rejection · سبب الرفض</h3><div class="rej-reason">${actNotes}</div>`:''}
+  <div class="abox">
+    <div class="abox-title">${cfg.icon} ${cfg.title} — Action Details</div>
+    <div class="af">
+      <div><div class="afl">Actioned By</div><div class="afv">${actor}</div></div>
+      <div><div class="afl">Date &amp; Time</div><div class="afv" style="font-family:'IBM Plex Mono',monospace;font-size:12px;">${actAt}</div></div>
+      ${actNotes&&!isRej?`<div style="flex:2"><div class="afl">Notes / Remarks</div><div style="font-size:11px;margin-top:2px;">${actNotes}</div></div>`:''}
+    </div>
+  </div>
+  <h3>Complete Case History · سجل الحالة الكامل</h3>
+  <table><thead><tr><th>Date &amp; Time</th><th>Stage / Action</th><th>Actioned By</th><th>Notes</th></tr></thead>
+  <tbody>${tlHtml}</tbody></table>
+  <h3>Signatures &amp; Acknowledgement · التوقيعات</h3>
+  <div class="sig-row">${sigHtml}</div>
+  <div class="footer">
+    <div><b>EMIRATES PRIDE PERFUMES</b> · Emirates Pride Perfumes Trading · UAE · Oman</div>
+    <div style="text-align:right;">${c.complaint_ref||''} · ${docNo}<br>Official record — retain for files</div>
+  </div>
+  <script>window.onload=()=>{window.print();}<\/script></body></html>`);
+  w.document.close();
 }
 
 // ── Manager Dashboard — Quick Instruction ─────────────────────────
