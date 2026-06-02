@@ -5074,7 +5074,7 @@ async function _ccQuickCloseConfirm(){
   const now = new Date().toISOString();
   const tlEntry = {status:'closed', label:tlLabel, at:now, by:name, notes:note||null};
   const newTimeline = [...(c.timeline||[]), tlEntry];
-  const update = {status:'closed', timeline:newTimeline, updated_at:now, resolved_at:now};
+  const update = {status:'closed', timeline:newTimeline, updated_at:now};
   if(note) update.resolution_notes = note;
   try{
     const r = await fetch(SB_URL_CC+'/rest/v1/customer_complaints?id=eq.'+encodeURIComponent(id), {
@@ -5156,7 +5156,7 @@ async function _ccConfirmStage(id, nextStatus, tlLabel){
   const tlEntry={status:nextStatus,label:tlLabel,at:now,by:name,notes:note||null};
   const update={status:nextStatus,timeline:[...(c.timeline||[]),tlEntry],updated_at:now};
   if(note) update.resolution_notes=note;
-  if(nextStatus==='delivered'||nextStatus==='closed') update.resolved_at=now;
+  // resolved_at column not in schema — timestamp captured in timeline entry instead
   try{
     await fetch(`${SB_URL_CC}/rest/v1/customer_complaints?id=eq.${id}`,{method:'PATCH',headers:{'apikey':SB_ANON_CC,'Authorization':'Bearer '+SB_ANON_CC,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(update)});
     _ccPrintDoc(id, tlEntry, {...c,...update});

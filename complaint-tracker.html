@@ -1535,7 +1535,7 @@ async function confirmStageAction(){
   const tlEntry={status:cfg.next,label:cfg.tl,at:now,by:name,notes:note||null};
   const update={status:cfg.next,timeline:[...(activeC.timeline||[]),tlEntry],updated_at:now};
   if(note) update.resolution_notes=note;
-  if(cfg.next==='delivered') update.resolved_at=now;
+  // resolved_at not in schema — timestamp captured in timeline
   try{
     await sb.patch('customer_complaints',update,`?id=eq.${activeC.id}`);
     const merged={...activeC,...update};
