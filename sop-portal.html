@@ -3838,15 +3838,25 @@ async function loadInvFromSupabase(){
       <div class="spinner" style="margin:0 auto 10px;"></div>Loading store inventory…
     </td></tr>`;
   try {
-    // Read from store_soh_snapshots (excludes warehouse rows WH_EPP / WH_ASL)
-    const { data: rows, error } = await sb
-      .from('store_soh_snapshots')
-      .select('store_code,store_name,snapshot_date,sku_code,product_name,soh_qty')
-      .not('store_code','in','(WH_EPP,WH_ASL)')
-      .order('snapshot_date',{ascending:false})
-      .order('store_code')
-      .limit(8000);
-    if(error) throw error;
+    // Paginate in batches of 1000 (Supabase hard cap per request)
+    // keeps fetching until we get fewer than 1000 rows back (= last page)
+    let allRows = [], offset = 0, PAGE = 1000;
+    while(true){
+      const { data: page, error } = await sb
+        .from('store_soh_snapshots')
+        .select('store_code,store_name,snapshot_date,sku_code,product_name,soh_qty')
+        .not('store_code','in','(WH_EPP,WH_ASL)')
+        .order('snapshot_date',{ascending:false})
+        .order('store_code',{ascending:true})
+        .order('product_name',{ascending:true})
+        .range(offset, offset + PAGE - 1);
+      if(error) throw error;
+      if(!page || !page.length) break;
+      allRows = allRows.concat(page);
+      if(page.length < PAGE) break;   // last page
+      offset += PAGE;
+    }
+    const rows = allRows;
 
     if(!rows||!rows.length){
       invLoaded=true; invLoading=false;
@@ -3855,12 +3865,13 @@ async function loadInvFromSupabase(){
 
     // Group by store_code + snapshot_date → one "upload" entry per store per date
     const groups={};
-    (rows||[]).forEach(r=>{
+    rows.forEach(r=>{
       const key=`${r.store_code}||${r.snapshot_date}`;
       if(!groups[key]) groups[key]={store:r.store_code,date:r.snapshot_date,data:[]};
       groups[key].data.push({sku_code:r.sku_code||'',name:r.product_name,qty_upload:r.soh_qty||0});
     });
 
+    const snapLabel = rows.length ? rows[0].snapshot_date : 'SOH Upload';
     let uid=1;
     invHistory=Object.values(groups).map(g=>({
       id: uid++,
@@ -3868,7 +3879,7 @@ async function loadInvFromSupabase(){
       date:  g.date,
       skus:  g.data.filter(d=>d.sku_code).length,
       total: g.data.reduce((s,d)=>s+(d.qty_upload||0),0),
-      by:    'Store SOH — 24 May 2026',
+      by:    'Store SOH — ' + snapLabel,
       data:  g.data
     }));
     invHistory.sort((a,b)=>b.date.localeCompare(a.date)||a.store.localeCompare(b.store));
