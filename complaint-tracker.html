@@ -1214,12 +1214,22 @@ function renderDetailBody(c){
         const isLast=i===tl.length-1;
         const dotC=isLast?(t.status==='rejected'?'dr':['delivered','closed'].includes(t.status)?'dg':'db'):'';
         const tdt=new Date(t.at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+        const hasDoc = DOC_CFG[t.status] || DOC_CFG[_normStatus(t.status)];
+        const tlJson = JSON.stringify(t).replace(/'/g,"\\'").replace(/"/g,'&quot;');
         return `<div class="tl-item">
           <div class="tl-dot ${dotC}"></div>
           <div class="tl-time">${tdt}</div>
-          <div class="tl-lbl">${t.label||t.status}</div>
-          ${t.notes?`<div class="tl-note">${t.notes}</div>`:''}
-          ${t.by?`<div class="tl-by">— ${t.by}</div>`:''}
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div>
+              <div class="tl-lbl">${t.label||t.status}</div>
+              ${t.notes?`<div class="tl-note">${t.notes}</div>`:''}
+              ${t.by?`<div class="tl-by">— ${t.by}</div>`:''}
+            </div>
+            ${hasDoc?`<button onclick="reprrintDoc('${t.status}','${t.at}')"
+              style="flex-shrink:0;background:var(--gold-pale);border:1px solid var(--border);color:var(--gold-dark);font-family:var(--f-body);font-size:9px;font-weight:700;padding:4px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;">
+              📄 Print Doc
+            </button>`:''}
+          </div>
         </div>`;
       }).join('')}
     </div>
@@ -1504,7 +1514,9 @@ async function confirmDecision(){
     resolution_notes:note||null};
   try{
     await sb.patch('customer_complaints',update,`?id=eq.${activeC.id}`);
-    toast('✓ Decision by '+name+': '+m.tl);
+    const merged={...activeC,...update};
+    generateComplaintDoc(merged,tlEntry);
+    toast('✓ Decision saved — document opened for printing');
     closeDetail(); await loadComplaints();
   }catch(e){toast('Error: '+e.message);}
 }
@@ -1526,70 +1538,291 @@ async function confirmStageAction(){
   if(cfg.next==='delivered') update.resolved_at=now;
   try{
     await sb.patch('customer_complaints',update,`?id=eq.${activeC.id}`);
-    toast('✓ '+cfg.tl+' — by '+name);
+    const merged={...activeC,...update};
+    generateComplaintDoc(merged,tlEntry);
+    toast('✓ '+cfg.tl+' — document opened for printing');
     closeDetail(); await loadComplaints();
   }catch(e){toast('Error: '+e.message);}
 }
 
 // ══════════════════════════════════════════════════════════════════
-// PDF PRINT
+// DOCUMENT GENERATION — every stage produces a formal document
 // ══════════════════════════════════════════════════════════════════
-function printComplaint(){
-  if(!activeC) return;
-  const c=activeC;
-  const sm=STATUS_META[c.status]||{label:c.status};
-  const ct=CTYPE_LABELS[c.complaint_type]||c.complaint_type;
-  const tl=c.timeline||[];
-  const pd=c.purchase_date?new Date(c.purchase_date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
-  const sd=c.submitted_at?new Date(c.submitted_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
-  const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>${c.complaint_ref}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Montserrat:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Montserrat',sans-serif;font-size:11px;color:#1A1A1A;padding:28px;max-width:760px;margin:0 auto;}
-  .hdr{background:#6B5B35;color:#fff;padding:14px 18px;border-radius:8px;margin-bottom:18px;}
-  .brand{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;letter-spacing:3px;}
-  .ref{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#C9A84C;margin-top:4px;}
-  .stbadge{display:inline-block;background:rgba(201,168,76,0.2);border:1px solid #C9A84C;color:#C9A84C;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;margin-top:6px;}
-  h3{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#7A6525;border-bottom:1px solid #E5E0D8;padding-bottom:5px;margin:16px 0 10px;}
-  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .f{margin-bottom:7px;}.fl{font-size:8px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8A8278;margin-bottom:2px;}.fv{font-size:11px;}
-  .desc{background:#F5F2EC;border-left:3px solid #C9A84C;padding:8px 12px;border-radius:0 5px 5px 0;font-size:11px;line-height:1.5;margin-bottom:12px;}
-  .tli{margin-bottom:8px;padding-left:16px;border-left:2px solid #E5E0D8;}
-  .tltime{font-family:'IBM Plex Mono',monospace;font-size:8px;color:#8A8278;}
-  .tllbl{font-size:11px;font-weight:600;}.tlnote{font-size:10px;color:#4A4540;margin-top:1px;}.tlby{font-size:9px;color:#8A8278;font-style:italic;}
-  .footer{margin-top:28px;padding-top:10px;border-top:1px solid #E5E0D8;font-size:9px;color:#8A8278;display:flex;justify-content:space-between;}
-  @media print{body{padding:16px;}}</style></head><body>
-  <div class="hdr"><div class="brand">EMIRATES PRIDE PERFUMES</div>
-  <div style="font-size:10px;opacity:0.8;margin-top:2px;">Customer Complaint Record · سجل شكوى العميل</div>
-  <div class="ref">${c.complaint_ref}</div><div class="stbadge">${sm.label}</div></div>
-  <div class="g2">
+
+// Called from detail panel header "⬇ Print" button (full case record)
+function printComplaint(){ if(activeC) generateComplaintDoc(activeC, null); }
+
+// DOC CONFIG per status — title, colour, icon, body copy
+const DOC_CFG = {
+  replacement_approved: {
+    title:'REPLACEMENT AUTHORIZATION',
+    title_ar:'تفويض الاستبدال',
+    icon:'✅', color:'#155C2C', bg:'#E8F5ED',
+    intro:'This document confirms that the customer complaint has been reviewed and a replacement product has been authorized by management.',
+    sigRows:['Authorized By (Manager)','Received By (Customer)','Store Representative'],
+  },
+  replacement_dispatched: {
+    title:'REPLACEMENT DISPATCH NOTE',
+    title_ar:'مذكرة إرسال المنتج البديل',
+    icon:'📦', color:'#1A5276', bg:'#EBF5FB',
+    intro:'This document confirms that the replacement product has been dispatched to the customer.',
+    sigRows:['Dispatched By','Received By (Customer)','Store Representative'],
+  },
+  repair_approved: {
+    title:'REPAIR AUTHORIZATION',
+    title_ar:'تفويض الإصلاح',
+    icon:'🔧', color:'#1A3A6A', bg:'#EBF5FB',
+    intro:'This document confirms that the customer complaint has been reviewed and the defective item has been approved for repair at the warehouse or factory.',
+    sigRows:['Authorized By (Manager)','Customer Acknowledgement','Store Representative'],
+  },
+  repair_in_progress: {
+    title:'DEFECTIVE ITEM COLLECTION RECEIPT',
+    title_ar:'إيصال استلام المنتج المعطل',
+    icon:'📬', color:'#2980B9', bg:'#EBF5FB',
+    intro:'This document confirms that the defective item has been collected from the customer and sent to the Emirates Pride warehouse for repair.',
+    sigRows:['Collected By','Customer (Item Handed Over)','Warehouse Receiving'],
+  },
+  repaired_dispatching: {
+    title:'REPAIR COMPLETION REPORT',
+    title_ar:'تقرير اكتمال الإصلاح',
+    icon:'🔧✓', color:'#6C3483', bg:'#F5EEF8',
+    intro:'This document confirms that the item has been repaired at the warehouse or factory and is ready for return to the customer.',
+    sigRows:['Repaired By (Technician)','Warehouse Supervisor','Quality Check By'],
+  },
+  repair_dispatched: {
+    title:'REPAIRED ITEM DISPATCH NOTE',
+    title_ar:'مذكرة إرسال المنتج بعد الإصلاح',
+    icon:'📦', color:'#1A5276', bg:'#EBF5FB',
+    intro:'This document confirms that the repaired item has been dispatched back to the customer.',
+    sigRows:['Dispatched By','Received By (Customer)','Warehouse Representative'],
+  },
+  rejected: {
+    title:'COMPLAINT REJECTION NOTICE',
+    title_ar:'إشعار رفض الشكوى',
+    icon:'✕', color:'#7A1212', bg:'#FDECEA',
+    intro:'This document confirms that the customer complaint has been reviewed and has not been approved for replacement or repair. The reason is documented below.',
+    sigRows:['Rejected By (Manager)','Customer Notified By','Store Representative'],
+  },
+  delivered: {
+    title:'CUSTOMER COMPLAINT — CASE RESOLVED',
+    title_ar:'تأكيد حل شكوى العميل',
+    icon:'✓', color:'#155C2C', bg:'#E8F5ED',
+    intro:'This document confirms that the complaint has been fully resolved and the customer has received the replacement or repaired item.',
+    sigRows:['Confirmed By','Customer Signature','Store Representative'],
+  },
+  closed: {
+    title:'COMPLAINT CASE CLOSURE CERTIFICATE',
+    title_ar:'شهادة إغلاق الشكوى',
+    icon:'📁', color:'#4A4540', bg:'#F5F2EC',
+    intro:'This complaint case has been reviewed, actioned, and formally closed. All records are archived.',
+    sigRows:['Closed By','Manager Sign-off','Date'],
+  },
+};
+
+function generateComplaintDoc(c, triggeringEntry){
+  const status = triggeringEntry ? triggeringEntry.status : c.status;
+  // Normalise legacy statuses
+  const normSt = _normStatus ? _normStatus(status) : status;
+  const cfg = DOC_CFG[status] || DOC_CFG[normSt] || {
+    title:'COMPLAINT RECORD', title_ar:'سجل الشكوى', icon:'📋',
+    color:'#6B5B35', bg:'#F5F2EC',
+    intro:'Customer complaint record.',
+    sigRows:['Manager','Customer','Staff'],
+  };
+
+  const ct = CTYPE_LABELS[c.complaint_type] || c.complaint_type || '—';
+  const pd = c.purchase_date ? new Date(c.purchase_date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+  const sd = c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+  const tl = c.timeline || [];
+  const actor = triggeringEntry ? triggeringEntry.by : (c.actioned_by||'—');
+  const actAt = triggeringEntry ? new Date(triggeringEntry.at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+  const actNotes = triggeringEntry ? (triggeringEntry.notes||'') : (c.resolution_notes||'');
+  const docNo = c.complaint_ref + '-' + status.toUpperCase().replace(/_/g,'-').slice(0,8);
+  const printDate = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+
+  const isRejection = status === 'rejected';
+
+  // Outcome track banner
+  const outcomeBannerColor = c.outcome==='replacement'?'#155C2C':c.outcome==='repair'?'#1A3A6A':'#7A1212';
+  const outcomeBannerLabel = c.outcome==='replacement'?'✅ REPLACEMENT TRACK':c.outcome==='repair'?'🔧 REPAIR TRACK':'✕ NOT APPROVED';
+
+  // Full timeline HTML
+  const tlHtml = tl.map((t,i)=>{
+    const tdt = new Date(t.at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const isThis = triggeringEntry && t.at===triggeringEntry.at && t.status===triggeringEntry.status;
+    return `<tr style="background:${isThis?cfg.bg:'#fff'};${isThis?'font-weight:600;':''}">
+      <td style="padding:7px 10px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#8A8278;white-space:nowrap;">${tdt}</td>
+      <td style="padding:7px 10px;font-size:10px;font-weight:${isThis?700:500};">${t.label||t.status}${isThis?' ← THIS ACTION':''}</td>
+      <td style="padding:7px 10px;font-size:10px;color:#4A4540;">${t.by||'—'}</td>
+      <td style="padding:7px 10px;font-size:10px;color:#4A4540;">${t.notes||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Signature rows
+  const sigHtml = cfg.sigRows.map(lbl=>`
+    <div style="flex:1;min-width:180px;border:1px solid #E5E0D8;border-radius:8px;padding:14px 16px;">
+      <div style="font-size:8px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8A8278;margin-bottom:28px;">${lbl}</div>
+      <div style="border-top:1.5px solid #4A4540;padding-top:5px;font-size:8px;color:#8A8278;">Signature &amp; Date</div>
+    </div>`).join('');
+
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head>
+  <meta charset="UTF-8">
+  <title>${docNo}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Montserrat',sans-serif;font-size:11px;color:#1A1A1A;background:#fff;padding:32px;max-width:800px;margin:0 auto;}
+    /* Header */
+    .doc-hdr{background:${cfg.color};color:#fff;padding:20px 24px;border-radius:10px;margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;}
+    .brand-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;letter-spacing:4px;line-height:1;}
+    .brand-ar{font-size:11px;opacity:0.75;margin-top:3px;}
+    .doc-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:0.85;margin-top:8px;}
+    .doc-title-big{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;letter-spacing:1px;margin-top:2px;}
+    .doc-title-ar{font-size:11px;opacity:0.7;margin-top:2px;}
+    .doc-ref-box{text-align:right;flex-shrink:0;}
+    .doc-ref{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:#C9A84C;letter-spacing:1px;}
+    .doc-date{font-size:9px;opacity:0.75;margin-top:4px;}
+    /* Outcome banner */
+    .out-banner{background:${cfg.bg};border-left:4px solid ${cfg.color};border-radius:0 8px 8px 0;padding:10px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;}
+    .out-icon{font-size:22px;}
+    .out-text{font-size:10px;font-weight:700;letter-spacing:0.5px;color:${cfg.color};}
+    .out-intro{font-size:10px;color:#4A4540;line-height:1.6;margin-top:2px;}
+    /* Section */
+    h3{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${cfg.color};border-bottom:2px solid ${cfg.color};padding-bottom:6px;margin:20px 0 12px;}
+    /* Grid */
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px;}
+    .card{border:1px solid #E5E0D8;border-radius:8px;padding:14px 16px;}
+    .card-title{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${cfg.color};margin-bottom:10px;}
+    .f{margin-bottom:8px;}
+    .fl{font-size:8px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8A8278;margin-bottom:2px;}
+    .fv{font-size:12px;font-weight:500;}
+    .fv.mono{font-family:'IBM Plex Mono',monospace;color:#7A6525;}
+    /* Action box */
+    .action-box{background:${cfg.bg};border:2px solid ${cfg.color};border-radius:10px;padding:16px 18px;margin-bottom:18px;}
+    .action-box-title{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${cfg.color};margin-bottom:12px;}
+    .action-row{display:flex;gap:24px;flex-wrap:wrap;}
+    .action-field{flex:1;min-width:150px;}
+    /* Description */
+    .desc-box{background:#F5F2EC;border-left:4px solid #C9A84C;border-radius:0 8px 8px 0;padding:12px 16px;line-height:1.65;font-size:11px;}
+    ${isRejection?`.rejection-reason{background:#FDECEA;border-left:4px solid #C0392B;border-radius:0 8px 8px 0;padding:12px 16px;font-size:12px;font-weight:600;color:#7A1212;line-height:1.6;}`:''}
+    /* Timeline */
+    table{width:100%;border-collapse:collapse;font-size:10px;}
+    thead th{background:${cfg.color};color:#fff;padding:8px 10px;text-align:left;font-size:8px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;}
+    tbody td{border-bottom:1px solid #F0EDE8;}
+    /* Signatures */
+    .sig-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;}
+    /* Footer */
+    .footer{margin-top:30px;padding-top:10px;border-top:1.5px solid #E5E0D8;display:flex;justify-content:space-between;align-items:center;font-size:8px;color:#8A8278;}
+    .footer-brand{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;color:${cfg.color};}
+    @media print{body{padding:18px;}@page{margin:15mm;}}
+  </style></head><body>
+
+  <!-- HEADER -->
+  <div class="doc-hdr">
     <div>
-      <h3>Customer</h3>
-      <div class="f"><div class="fl">Name</div><div class="fv">${c.customer_name||'—'}</div></div>
-      <div class="f"><div class="fl">Phone</div><div class="fv">${c.customer_phone||'—'}</div></div>
-      <div class="f"><div class="fl">Purchase Date</div><div class="fv">${pd}</div></div>
-      <div class="f"><div class="fl">Receipt No.</div><div class="fv">${c.receipt_number||'—'}</div></div>
+      <div class="brand-name">EMIRATES PRIDE</div>
+      <div class="brand-ar">فخر الإمارات للعطور</div>
+      <div class="doc-title">Customer Complaint Document · وثيقة شكوى العميل</div>
+      <div class="doc-title-big">${cfg.icon} ${cfg.title}</div>
+      <div class="doc-title-ar">${cfg.title_ar}</div>
     </div>
-    <div>
-      <h3>Product & Store</h3>
-      <div class="f"><div class="fl">Product</div><div class="fv">${c.product_name||'—'}</div></div>
-      <div class="f"><div class="fl">SKU Code</div><div class="fv">${c.sku_code||'—'}</div></div>
-      <div class="f"><div class="fl">Complaint Type</div><div class="fv">${ct}</div></div>
-      <div class="f"><div class="fl">Store</div><div class="fv">${c.store_name||c.store_code}</div></div>
-      <div class="f"><div class="fl">Submitted By</div><div class="fv">${c.submitted_by||'—'} · ${sd}</div></div>
+    <div class="doc-ref-box">
+      <div class="doc-ref">${c.complaint_ref}</div>
+      <div class="doc-date">Doc No: ${docNo}</div>
+      <div class="doc-date">Printed: ${printDate}</div>
+      <div style="margin-top:8px;background:rgba(201,168,76,0.25);border:1px solid #C9A84C;color:#C9A84C;font-size:8px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;text-align:center;">${(STATUS_META[status]||{label:status}).label}</div>
     </div>
   </div>
-  <h3>Complaint Description</h3>
-  <div class="desc">${c.complaint_description||'—'}</div>
-  ${c.resolution_notes?`<h3>Resolution</h3><div class="desc" style="border-color:#27AE60;background:#EBF5EB;">${c.resolution_notes}</div>`:''}
-  <h3>Timeline</h3>
-  ${tl.map(t=>{
-    const tdt=new Date(t.at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
-    return `<div class="tli"><div class="tltime">${tdt}</div><div class="tllbl">${t.label||t.status}</div>${t.notes?`<div class="tlnote">${t.notes}</div>`:''}${t.by?`<div class="tlby">— ${t.by}</div>`:''}</div>`;
-  }).join('')}
-  <div class="footer"><span>Emirates Pride Perfumes — Complaint Record</span><span>Printed ${new Date().toLocaleDateString('en-GB')}</span></div>
-  <script>window.onload=()=>{window.print();}<\/script></body></html>`);
+
+  <!-- INTRO BANNER -->
+  <div class="out-banner">
+    <div class="out-icon">${cfg.icon}</div>
+    <div>
+      <div class="out-text">${outcomeBannerLabel}</div>
+      <div class="out-intro">${cfg.intro}</div>
+    </div>
+  </div>
+
+  <!-- CUSTOMER + PRODUCT -->
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">👤 Customer Details · تفاصيل العميل</div>
+      <div class="f"><div class="fl">Full Name</div><div class="fv">${c.customer_name||'—'}</div></div>
+      <div class="f"><div class="fl">Phone Number</div><div class="fv">${c.customer_phone||'—'}</div></div>
+      <div class="f"><div class="fl">Purchase Date</div><div class="fv">${pd}</div></div>
+      <div class="f"><div class="fl">Receipt / Invoice No.</div><div class="fv mono">${c.receipt_number||'—'}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🛍 Product & Store · المنتج والمتجر</div>
+      <div class="f"><div class="fl">Product Name</div><div class="fv">${c.product_name||'—'}</div></div>
+      <div class="f"><div class="fl">SKU Code</div><div class="fv mono">${c.sku_code||'—'}</div></div>
+      <div class="f"><div class="fl">Complaint Type</div><div class="fv">${ct}</div></div>
+      <div class="f"><div class="fl">Store</div><div class="fv">${c.store_name||c.store_code||'—'}</div></div>
+      <div class="f"><div class="fl">Submitted By / Date</div><div class="fv">${c.submitted_by||'—'} · ${sd}</div></div>
+    </div>
+  </div>
+
+  <!-- COMPLAINT DESCRIPTION -->
+  <h3>Complaint Description · وصف الشكوى</h3>
+  <div class="desc-box">${c.complaint_description||'—'}</div>
+
+  ${isRejection&&actNotes?`<h3>Reason for Rejection · سبب الرفض</h3><div class="rejection-reason">${actNotes}</div>`:''}
+
+  <!-- THIS ACTION -->
+  <div class="action-box" style="margin-top:20px;">
+    <div class="action-box-title">${cfg.icon} ${cfg.title} — Action Details</div>
+    <div class="action-row">
+      <div class="action-field">
+        <div class="fl">Actioned By</div>
+        <div class="fv" style="font-size:15px;font-weight:700;color:${cfg.color};">${actor}</div>
+      </div>
+      <div class="action-field">
+        <div class="fl">Date &amp; Time</div>
+        <div class="fv mono">${actAt}</div>
+      </div>
+      ${actNotes&&!isRejection?`<div class="action-field" style="flex:2;">
+        <div class="fl">Notes / Remarks</div>
+        <div class="fv">${actNotes}</div>
+      </div>`:''}
+    </div>
+  </div>
+
+  <!-- FULL CASE HISTORY -->
+  <h3>Complete Case History · سجل الحالة الكامل</h3>
+  <table>
+    <thead><tr>
+      <th>Date &amp; Time</th><th>Action / Stage</th><th>Actioned By</th><th>Notes</th>
+    </tr></thead>
+    <tbody>${tlHtml}</tbody>
+  </table>
+
+  <!-- SIGNATURES -->
+  <h3>Signatures &amp; Acknowledgement · التوقيعات</h3>
+  <div class="sig-row">${sigHtml}</div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div>
+      <div class="footer-brand">EMIRATES PRIDE PERFUMES</div>
+      <div>Emirates Pride Perfumes Trading · UAE · Oman</div>
+    </div>
+    <div style="text-align:right;">
+      <div>${c.complaint_ref} · ${docNo}</div>
+      <div>This is an official Emirates Pride document. Retain for records.</div>
+    </div>
+  </div>
+
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
   w.document.close();
+}
+
+// Reprint any past document from timeline
+function reprrintDoc(status, at){
+  if(!activeC) return;
+  const entry = (activeC.timeline||[]).find(t=>t.status===status && t.at===at);
+  if(entry) generateComplaintDoc(activeC, entry);
 }
 
 // ══════════════════════════════════════════════════════════════════
