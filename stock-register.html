@@ -4741,6 +4741,92 @@ function _ccRenderList(bodyEl) {
     </table>
   </div>`;
 
+  // ── Closed Cases (collapsed) ──────────────────────────────────────
+  const closed = data.filter(c=>['closed','delivered','rejected'].includes(c.status));
+  if(closed.length){
+    const avgDays = closed.filter(c=>c.submitted_at&&c.resolved_at).reduce((s,c)=>{
+      return s+Math.ceil((new Date(c.resolved_at)-new Date(c.submitted_at))/86400000);
+    },0) / (closed.filter(c=>c.submitted_at&&c.resolved_at).length||1);
+    const byOutcome={replacement:0,repair:0,rejection:0};
+    closed.forEach(c=>{if(c.outcome) byOutcome[c.outcome]=(byOutcome[c.outcome]||0)+1;});
+
+    html += `
+    <div style="margin-top:18px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div onclick="document.getElementById('ccClosedBody').style.display=document.getElementById('ccClosedBody').style.display==='none'?'block':'none';this.querySelector('.cc-arrow').textContent=document.getElementById('ccClosedBody').style.display==='none'?'▼ expand':'▲ collapse'"
+        style="background:#F5F2EC;padding:12px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span style="font-size:14px;">📁</span>
+          <div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold-dark);">Closed Cases — History &amp; Analysis</div>
+            <div style="font-size:10px;color:var(--ink-light);margin-top:2px;">${closed.length} cases closed · Avg resolution ${Math.round(avgDays)} days</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <span style="background:#E8F5ED;color:#1A7A40;font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;">✅ ${byOutcome.replacement} Replacements</span>
+            <span style="background:#EBF5FB;color:#2980B9;font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;">🔧 ${byOutcome.repair} Repairs</span>
+            <span style="background:#FDECEA;color:#C0392B;font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;">✕ ${byOutcome.rejection} Rejected</span>
+          </div>
+        </div>
+        <span class="cc-arrow" style="font-size:10px;font-weight:700;color:var(--ink-light);">▼ expand</span>
+      </div>
+      <div id="ccClosedBody" style="display:none;">
+        <!-- Mini analytics strip -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--border);">
+          <div style="padding:12px 16px;border-right:1px solid var(--border);text-align:center;">
+            <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);margin-bottom:4px;">Total Closed</div>
+            <div style="font-family:var(--f-serif);font-size:28px;font-weight:600;color:var(--gold-bar);">${closed.length}</div>
+          </div>
+          <div style="padding:12px 16px;border-right:1px solid var(--border);text-align:center;">
+            <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);margin-bottom:4px;">Avg Resolution</div>
+            <div style="font-family:var(--f-serif);font-size:28px;font-weight:600;color:#1A7A40;">${Math.round(avgDays)}<span style="font-size:14px;"> days</span></div>
+          </div>
+          <div style="padding:12px 16px;border-right:1px solid var(--border);text-align:center;">
+            <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);margin-bottom:4px;">Replacement Rate</div>
+            <div style="font-family:var(--f-serif);font-size:28px;font-weight:600;color:#1A7A40;">${closed.length?Math.round(byOutcome.replacement/closed.length*100):0}<span style="font-size:14px;">%</span></div>
+          </div>
+          <div style="padding:12px 16px;text-align:center;">
+            <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);margin-bottom:4px;">Rejection Rate</div>
+            <div style="font-family:var(--f-serif);font-size:28px;font-weight:600;color:#C0392B;">${closed.length?Math.round(byOutcome.rejection/closed.length*100):0}<span style="font-size:14px;">%</span></div>
+          </div>
+        </div>
+        <!-- Closed cases table -->
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead><tr style="background:var(--gold-pale);">
+            <th style="padding:8px 12px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Ref</th>
+            <th style="padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Store</th>
+            <th style="padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Customer</th>
+            <th style="padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Product</th>
+            <th style="padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Type</th>
+            <th style="padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Outcome</th>
+            <th style="padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Actioned By</th>
+            <th style="padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Days</th>
+            <th style="padding:8px 10px;text-align:center;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">View</th>
+          </tr></thead>
+          <tbody>
+            ${closed.map((c,i)=>{
+              const dt=c.submitted_at?new Date(c.submitted_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}):'—';
+              const daysOpen=c.submitted_at&&c.resolved_at?Math.ceil((new Date(c.resolved_at)-new Date(c.submitted_at))/86400000):'—';
+              const outBadge=c.outcome==='replacement'?'<span style="background:#E8F5ED;color:#1A7A40;font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;">✅ Replaced</span>':
+                c.outcome==='repair'?'<span style="background:#EBF5FB;color:#2980B9;font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;">🔧 Repaired</span>':
+                c.outcome==='rejection'?'<span style="background:#FDECEA;color:#C0392B;font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;">✕ Rejected</span>':
+                '<span style="background:#F2F3F4;color:#7F8C8D;font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;">Closed</span>';
+              return `<tr onclick="_ccOpenDetail('${c.id}')" style="border-top:1px solid var(--border);background:${i%2?'#FAFAF8':'#fff'};cursor:pointer;" onmouseover="this.style.background='#F0EDE8'" onmouseout="this.style.background='${i%2?'#FAFAF8':'#fff'}'">
+                <td style="padding:7px 12px;font-family:var(--f-mono);font-size:10px;font-weight:600;color:var(--gold-dark);">${c.complaint_ref||'—'}</td>
+                <td style="padding:7px 10px;font-size:11px;color:var(--ink-mid);">${(c.store_name||c.store_code||'—').split(' ').slice(0,3).join(' ')}</td>
+                <td style="padding:7px 10px;">${c.customer_name||'—'}</td>
+                <td style="padding:7px 10px;color:var(--ink-mid);">${(c.product_name||'—').slice(0,22)}</td>
+                <td style="padding:7px 10px;color:var(--ink-mid);font-size:10px;">${_CTYPE[c.complaint_type]||'—'}</td>
+                <td style="padding:7px 10px;">${outBadge}</td>
+                <td style="padding:7px 10px;font-size:10px;color:var(--ink-mid);">${c.actioned_by||'—'}</td>
+                <td style="padding:7px 10px;font-family:var(--f-mono);font-size:10px;font-weight:700;color:${daysOpen>7?'#D68910':'#1A7A40'};">${daysOpen}${typeof daysOpen==='number'?'d':''}</td>
+                <td style="padding:7px 10px;text-align:center;"><button onclick="event.stopPropagation();_ccOpenDetail('${c.id}')" style="background:var(--gold-pale);border:1px solid var(--border);color:var(--gold-dark);font-family:var(--f-body);font-size:9px;font-weight:700;padding:4px 10px;border-radius:5px;cursor:pointer;">View →</button></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
   body.innerHTML = html;
 }
 
@@ -4838,7 +4924,7 @@ function _ccOpenDetail(id) {
       const stageCfg = {
         replacement_approved:   {lbl:'📦 Mark Replacement Dispatched',      aLbl:'DISPATCHED BY', aPh:'Name of person dispatching the replacement', nPh:'Courier, tracking no…', next:'replacement_dispatched', tl:'Replacement Product Dispatched to Customer',col:'#1A6A40'},
         accepted_replacement:   {lbl:'📦 Mark Replacement Dispatched',      aLbl:'DISPATCHED BY', aPh:'Name of person dispatching the replacement', nPh:'Courier, tracking no…', next:'replacement_dispatched', tl:'Replacement Product Dispatched to Customer',col:'#1A6A40'},
-        replacement_dispatched: {lbl:'✅ Confirm Customer Received',         aLbl:'CONFIRMED BY',  aPh:'Who confirmed with customer',                nPh:'Call/WhatsApp confirmation date…', next:'delivered', tl:'Customer Confirmed Receipt of Replacement — Case Resolved',col:'#1A6A40'},
+        replacement_dispatched: {lbl:'✅ Confirm Customer Received & Close Case',aLbl:'CONFIRMED BY', aPh:'Who confirmed with customer',               nPh:'Call/WhatsApp confirmation date…', next:'closed', tl:'Customer Received Replacement — Case Closed',col:'#1A6A40'},
         repair_approved:        {lbl:'📬 Item Collected — Sent to WH',       aLbl:'COLLECTED BY',  aPh:'Name of person who collected item',          nPh:'Condition, how collected…', next:'repair_in_progress', tl:'Defective Item Collected — Sent to Warehouse',col:'#2980B9'},
         accepted_repair:        {lbl:'📬 Item Collected — Sent to WH',       aLbl:'COLLECTED BY',  aPh:'Name of person who collected item',          nPh:'Condition, how collected…', next:'repair_in_progress', tl:'Defective Item Collected — Sent to Warehouse',col:'#2980B9'},
         repair_in_progress:     {lbl:'✅ Repair Complete — Ready to Send',   aLbl:'REPAIRED BY',   aPh:'WH technician / factory name',              nPh:'What was repaired, parts replaced…', next:'repaired_dispatching', tl:'Item Repaired — Ready for Return to Customer',col:'#8E44AD'},
@@ -4846,9 +4932,9 @@ function _ccOpenDetail(id) {
         item_received_wh:       {lbl:'✅ Repair Complete — Ready to Send',   aLbl:'REPAIRED BY',   aPh:'WH technician / factory name',              nPh:'What was repaired, parts replaced…', next:'repaired_dispatching', tl:'Item Repaired — Ready for Return to Customer',col:'#8E44AD'},
         under_repair:           {lbl:'📦 Dispatch Repaired Item to Customer',aLbl:'DISPATCHED BY', aPh:'Name of person sending item back',           nPh:'Courier, tracking no…', next:'repair_dispatched', tl:'Repaired Item Dispatched to Customer',col:'#1A6A40'},
         repaired_dispatching:   {lbl:'📦 Dispatch Repaired Item to Customer',aLbl:'DISPATCHED BY', aPh:'Name of person sending item back',           nPh:'Courier, tracking no…', next:'repair_dispatched', tl:'Repaired Item Dispatched to Customer',col:'#1A6A40'},
-        repair_dispatched:      {lbl:'✅ Confirm Customer Received',         aLbl:'CONFIRMED BY',  aPh:'Who confirmed with customer',                nPh:'Customer satisfied, call ref…', next:'delivered', tl:'Customer Confirmed Receipt of Repaired Item — Case Resolved',col:'#1A6A40'},
-        delivered:              {lbl:'✓ Close This Case',                   aLbl:'CLOSED BY',     aPh:'Your name',                                  nPh:'Final notes…', next:'closed', tl:'Case Closed',col:'#6B5B35'},
-        rejected:               {lbl:'✓ Close This Case',                   aLbl:'CLOSED BY',     aPh:'Your name',                                  nPh:'Final notes…', next:'closed', tl:'Case Closed',col:'#6B5B35'},
+        repair_dispatched:      {lbl:'✅ Confirm Customer Received & Close Case',aLbl:'CONFIRMED BY', aPh:'Who confirmed with customer',               nPh:'Customer satisfied, call ref…', next:'closed', tl:'Customer Received Repaired Item — Case Closed',col:'#1A6A40'},
+        delivered:              {lbl:'✓ Close This Case',                    aLbl:'CLOSED BY',    aPh:'Your name',                                  nPh:'Final notes…', next:'closed', tl:'Case Closed',col:'#6B5B35'},
+        rejected:               {lbl:'✓ Close This Case',                    aLbl:'CLOSED BY',    aPh:'Your name',                                  nPh:'Final notes…', next:'closed', tl:'Case Closed',col:'#6B5B35'},
       };
       const cfg=stageCfg[s];
       if(cfg){
@@ -4978,7 +5064,7 @@ async function _ccConfirmStage(id, nextStatus, tlLabel){
   const tlEntry={status:nextStatus,label:tlLabel,at:now,by:name,notes:note||null};
   const update={status:nextStatus,timeline:[...(c.timeline||[]),tlEntry],updated_at:now};
   if(note) update.resolution_notes=note;
-  if(nextStatus==='delivered') update.resolved_at=now;
+  if(nextStatus==='delivered'||nextStatus==='closed') update.resolved_at=now;
   try{
     await fetch(`${SB_URL_CC}/rest/v1/customer_complaints?id=eq.${id}`,{method:'PATCH',headers:{'apikey':SB_ANON_CC,'Authorization':'Bearer '+SB_ANON_CC,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(update)});
     _ccPrintDoc(id, tlEntry, {...c,...update});
