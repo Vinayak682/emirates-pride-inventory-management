@@ -4715,16 +4715,32 @@ function _ccRenderList(bodyEl) {
           const daysOpen=c.submitted_at?Math.ceil((now-new Date(c.submitted_at).getTime())/86400000):0;
           const isPending=['pending','under_review'].includes(c.status);
           const isDone=['delivered','closed','rejected'].includes(c.status);
-          const isRepair=repairSt.includes(c.status);
+          const isFinalStep=['replacement_dispatched','repair_dispatched','delivered'].includes(c.status);
           const ns=_ccNorm(c.status);
+          // Label for what the next stage actually is
+          const nextLbl={
+            replacement_approved:'Mark Dispatched',accepted_replacement:'Mark Dispatched',
+            repair_approved:'Item Collected?',accepted_repair:'Item Collected?',
+            repair_in_progress:'Repair Done?',item_sent_to_wh:'Repair Done?',item_received_wh:'Repair Done?',
+            repaired_dispatching:'Dispatch Back',under_repair:'Dispatch Back',
+          }[c.status]||'Update Stage';
           let actionCell='';
-          if(isPending) actionCell=`<button onclick="event.stopPropagation();_ccOpenDetail('${c.id}')"
-            style="background:#B03A2E;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">
-            ⚖️ Decide Now</button>`;
-          else if(!isDone) actionCell=`<button onclick="event.stopPropagation();_ccOpenDetail('${c.id}')"
-            style="background:#2980B9;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">
-            → Update Stage</button>`;
-          else actionCell=`<span style="font-size:9px;color:#1A7A40;font-weight:700;">✓ Closed</span>`;
+          if(isPending){
+            actionCell=`<button onclick="event.stopPropagation();_ccOpenDetail('${c.id}')"
+              style="background:#B03A2E;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">
+              ⚖️ Decide Now</button>`;
+          } else if(isFinalStep){
+            // Direct close button — no need to open detail
+            actionCell=`<button onclick="event.stopPropagation();_ccQuickClose('${c.id}')"
+              style="background:#1A7A40;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">
+              ✅ Customer Received — Close</button>`;
+          } else if(!isDone){
+            actionCell=`<button onclick="event.stopPropagation();_ccOpenDetail('${c.id}')"
+              style="background:#2980B9;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-family:var(--f-body);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">
+              → ${nextLbl}</button>`;
+          } else {
+            actionCell=`<span style="font-size:9px;color:#1A7A40;font-weight:700;">✓ Closed</span>`;
+          }
           return `<tr onclick="_ccOpenDetail('${c.id}')" style="border-top:1px solid var(--border);background:${isPending?'#FFFDF5':i%2?'#FAFAF8':'#fff'};cursor:pointer;transition:background .1s;" onmouseover="this.style.background='#F0EDE8'" onmouseout="this.style.background='${isPending?'#FFFDF5':i%2?'#FAFAF8':'#fff'}'">
             <td style="padding:8px 12px;font-family:var(--f-mono);font-size:10px;font-weight:600;color:var(--gold-dark);">${c.complaint_ref||'—'}</td>
             <td style="padding:8px 10px;font-size:11px;color:var(--ink-mid);">${(c.store_name||c.store_code||'—').split(' ').slice(0,3).join(' ')}</td>
@@ -5000,6 +5016,65 @@ function _ccOpenDetail(id) {
     </div>`;
 
   document.getElementById('complaintsPanelBody').scrollTop=0;
+}
+
+// Quick-close from list row — small overlay, no need to open full detail
+function _ccQuickClose(id){
+  const c=_ccData.find(x=>x.id===id); if(!c) return;
+  // Remove any existing quick-close overlay
+  const old=document.getElementById('ccQCModal'); if(old) old.remove();
+  const tlLabel = c.outcome==='repair'?'Customer Received Repaired Item — Case Closed':'Customer Received Replacement — Case Closed';
+  const overlay=document.createElement('div');
+  overlay.id='ccQCModal';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML=`
+    <div style="background:#fff;border-radius:14px;padding:26px 28px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+      <div style="font-family:var(--f-serif);font-size:20px;font-weight:600;color:var(--ink);margin-bottom:4px;">✅ Close This Case</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--gold-dark);margin-bottom:6px;">${c.complaint_ref||''}</div>
+      <div style="font-size:12px;color:var(--ink-mid);margin-bottom:18px;">${c.product_name||''} · ${c.store_name||c.store_code||''}</div>
+      <div style="background:#E8F5ED;border-left:4px solid #1A7A40;border-radius:0 8px 8px 0;padding:10px 14px;font-size:11px;color:#155C2C;margin-bottom:18px;line-height:1.6;">
+        Customer has received the ${c.outcome==='repair'?'repaired item':'replacement product'}. Confirming this will <strong>close the case</strong> and generate the closure document.
+      </div>
+      <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:5px;">CONFIRMED BY ★ Required</label>
+      <input id="ccQCName" placeholder="Your full name — e.g. Vinayak"
+        style="width:100%;border:1.5px solid #C9A84C;border-radius:7px;padding:10px 13px;font-size:14px;outline:none;background:#FFFDF5;font-family:var(--f-body);margin-bottom:10px;" />
+      <label style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#8A8278;display:block;margin-bottom:5px;">NOTES (optional)</label>
+      <input id="ccQCNote" placeholder="e.g. Customer called to confirm, WhatsApp reply received…"
+        style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:10px 13px;font-size:13px;outline:none;background:#FAFAF8;font-family:var(--f-body);margin-bottom:18px;" />
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('ccQCModal').remove()"
+          style="flex:1;background:var(--gold-pale);border:1.5px solid var(--border);color:var(--ink-mid);font-family:var(--f-body);font-size:12px;font-weight:600;padding:12px;border-radius:8px;cursor:pointer;">Cancel</button>
+        <button onclick="_ccQuickCloseConfirm('${id}','${tlLabel}')"
+          style="flex:2;background:#1A7A40;border:none;color:#fff;font-family:var(--f-body);font-size:13px;font-weight:700;padding:12px;border-radius:8px;cursor:pointer;letter-spacing:.3px;">✅ Confirm &amp; Close Case</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{if(e.target===overlay) overlay.remove();});
+  setTimeout(()=>document.getElementById('ccQCName').focus(),80);
+}
+
+async function _ccQuickCloseConfirm(id, tlLabel){
+  const name=(document.getElementById('ccQCName').value||'').trim();
+  const note=(document.getElementById('ccQCNote').value||'').trim();
+  if(!name){
+    document.getElementById('ccQCName').style.borderColor='#C0392B';
+    document.getElementById('ccQCName').focus();
+    return;
+  }
+  const c=_ccData.find(x=>x.id===id); if(!c) return;
+  const now=new Date().toISOString();
+  const tlEntry={status:'closed',label:tlLabel,at:now,by:name,notes:note||null};
+  const update={status:'closed',timeline:[...(c.timeline||[]),tlEntry],updated_at:now,resolved_at:now};
+  if(note) update.resolution_notes=note;
+  document.getElementById('ccQCModal').remove();
+  try{
+    await fetch(`${SB_URL_CC}/rest/v1/customer_complaints?id=eq.${id}`,{method:'PATCH',
+      headers:{'apikey':SB_ANON_CC,'Authorization':'Bearer '+SB_ANON_CC,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(update)});
+    _ccPrintDoc(id, tlEntry, {...c,...update});
+    toast('✓ Case closed by '+name+' — document opened');
+    await refreshComplaintsPanel();
+  }catch(e){toast('Error: '+e.message);}
 }
 
 function _ccSelectDec(type){
