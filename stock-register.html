@@ -4696,6 +4696,7 @@ function renderComplaintsPanel(data, body) {
         <th style="padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Status</th>
         <th style="padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink-light);text-transform:uppercase;">Date</th>
         <th style="padding:9px 10px;text-align:left;font-size:9px;font-weight:700;color:#D68910;text-transform:uppercase;">Days Open</th>
+        <th style="padding:9px 10px;text-align:center;font-size:9px;font-weight:700;color:#B03A2E;text-transform:uppercase;">Action</th>
       </tr></thead>
       <tbody>
         ${recent.map((c,i)=>{
@@ -4703,7 +4704,21 @@ function renderComplaintsPanel(data, body) {
           const dt=c.submitted_at?new Date(c.submitted_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}):'—';
           const daysOpen=c.submitted_at?Math.ceil((now-new Date(c.submitted_at).getTime())/86400000):0;
           const overdue=!['delivered','closed','rejected'].includes(c.status)&&daysOpen>7;
-          return `<tr style="border-top:1px solid var(--border);background:${i%2?'#FAFAF8':'#fff'};">
+          const isPending=['pending','under_review'].includes(c.status);
+          const isDone=['delivered','closed','rejected'].includes(c.status);
+          const trackerUrl='complaint-tracker.html';
+          const actionBtn = isPending
+            ? `<a href="${trackerUrl}" target="_blank"
+                style="display:inline-block;background:#B03A2E;color:#fff;border-radius:6px;padding:6px 12px;font-family:var(--f-body);font-size:9px;font-weight:700;text-decoration:none;white-space:nowrap;letter-spacing:.3px;">
+                ⚖️ Review &amp; Decide
+               </a>`
+            : isDone
+            ? `<span style="font-size:9px;color:#1A7A40;font-weight:600;">✓ Done</span>`
+            : `<a href="${trackerUrl}" target="_blank"
+                style="display:inline-block;background:#2980B9;color:#fff;border-radius:6px;padding:6px 12px;font-family:var(--f-body);font-size:9px;font-weight:700;text-decoration:none;white-space:nowrap;letter-spacing:.3px;">
+                → Update
+               </a>`;
+          return `<tr style="border-top:1px solid var(--border);background:${isPending?'#FFFDF5':i%2?'#FAFAF8':'#fff'};">
             <td style="padding:8px 12px;font-family:var(--f-mono);font-size:10px;font-weight:600;color:var(--gold-dark);">${c.complaint_ref||'—'}</td>
             <td style="padding:8px 10px;font-size:11px;color:var(--ink-mid);">${(c.store_name||c.store_code||'—').split(' ').slice(0,3).join(' ')}</td>
             <td style="padding:8px 10px;font-weight:500;">${c.customer_name||'—'}</td>
@@ -4712,6 +4727,7 @@ function renderComplaintsPanel(data, body) {
             <td style="padding:8px 10px;"><span style="background:${sm.bg};color:${sm.color};font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;">${sm.label}</span></td>
             <td style="padding:8px 10px;font-family:var(--f-mono);font-size:10px;">${dt}</td>
             <td style="padding:8px 10px;font-family:var(--f-mono);font-size:10px;font-weight:700;color:${overdue?'#C0392B':daysOpen>4?'#D68910':'#1A7A40'};">${daysOpen}d${overdue?' ⚠':''}</td>
+            <td style="padding:8px 10px;text-align:center;">${actionBtn}</td>
           </tr>`;
         }).join('')}
       </tbody>
@@ -14292,6 +14308,11 @@ const _TODO_ITEMS=[
   {section:'🧪 Testers',items:[
     {key:'tester_review',  label:'Review tester counts from WhatsApp updates', sub:'Check low / empty testers across all stores'},
     {key:'tester_writeoff',label:'Record any tester write-offs or conversions in stock register', sub:'FG → Tester conversions via Request Tester form'},
+    {key:'tester_status_may',label:'Update tester status for ALL markets — May 2026', sub:'UAE (EPP + ASL), Oman — confirm live tester counts per store are current'},
+  ]},
+  {section:'📦 Stock Updates',items:[
+    {key:'store_stock_update_yesterday',label:'Enter yesterday\'s store stock update for ALL markets', sub:'UAE (EPP + ASL), Oman — update from WhatsApp reports received'},
+    {key:'stock_register_changes',label:'Apply pending changes to Stock Register', sub:'Update any corrections, adjustments or new entries flagged today'},
   ]},
   {section:'📊 Weekly Tasks',items:[
     {key:'weekly_req_form',  label:'Send weekly stock request form link to all 3 AMs', sub:'Link: am-stock-request.html — AMs fill on mobile'},
