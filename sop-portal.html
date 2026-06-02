@@ -3119,7 +3119,7 @@ function renderTesterKPIs() {
   });
   const topStore = Object.values(byStore).sort((a,b) => b.sales - a.sales)[0];
 
-  const uniqueSkus = new Set(filteredTesters.map(r => r.product_name)).size;
+  const uniqueSkus = new Set(filteredTesterSkus.map(r => r.product_name)).size;
 
   document.getElementById('kpi-t-dispatched').textContent = totDisp.toLocaleString();
   document.getElementById('kpi-t-sales').textContent      = totSales.toLocaleString();
@@ -3146,7 +3146,10 @@ function renderTesterStoreTable() {
     };
     byStore[r.store_code].disp  += r.testers_dispatched || 0;
     byStore[r.store_code].sales += r.sales_generated    || 0;
-    byStore[r.store_code].skus.add(r.product_name);
+  });
+  // Count unique SKUs per store from individual SKU rows (not aggregated rows)
+  filteredTesterSkus.forEach(r => {
+    if (byStore[r.store_code]) byStore[r.store_code].skus.add(r.product_name);
   });
 
   const rows = Object.entries(byStore).sort((a,b) => b[1].sales - a[1].sales);
