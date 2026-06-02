@@ -1043,8 +1043,8 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
     <div class="filter-bar">
       <select class="sel" id="t-division" onchange="applyTesterFilters()">
         <option value="ALL">EPP + ASL</option>
-        <option value="EPP">EPP UAE</option>
-        <option value="ASL">ASL UAE</option>
+        <option value="EPP">EPP (UAE + Oman)</option>
+        <option value="ASL">ASL (UAE + Oman)</option>
       </select>
       <select class="sel" id="t-year" onchange="applyTesterFilters()">
         <option value="ALL">All Years</option>
@@ -2955,7 +2955,7 @@ async function loadTesterData() {
     const PAGE = 1000;
     const tFetches = Array.from({ length: Math.ceil((tCount||0)/PAGE) }, (_, i) =>
       sb.from('tester_history')
-        .select('division,month_year,sku_code,product_name,store_code,store_name,testers_dispatched,sales_generated,contrib_pct')
+        .select('division,month_year,sku_code,product_name,store_code,store_name,testers_dispatched,sales_generated')
         .range(i*PAGE, (i+1)*PAGE-1)
     );
     const sFetches = Array.from({ length: Math.ceil((sCount||0)/PAGE) }, (_, i) =>
@@ -3255,14 +3255,18 @@ function renderTesterSkuTable() {
 }
 
 function exportTesterCsv() {
-  if (!filteredTesters.length) { toast('No data to export', 'warn'); return; }
-  let csv = 'Division,Month,Product Name,Store Code,Store Name,Testers Dispatched,Sales Generated,Contrib Rate\n';
-  filteredTesters.forEach(r => {
-    const contrib = r.sales_generated > 0 ? (r.testers_dispatched / r.sales_generated * 100).toFixed(1) + '%' : '—';
-    csv += `${r.division},${r.month_year},"${r.product_name}",${r.store_code},"${r.store_name}",${r.testers_dispatched},${r.sales_generated},${contrib}\n`;
+  if (!filteredTesterSkus.length) { toast('No data to export', 'warn'); return; }
+  // Build sales lookup for contrib rate per store+month
+  const salesLookup = {};
+  filteredTesters.forEach(r => { salesLookup[r.store_code + '|' + r.month_year] = r.sales_generated || 0; });
+  let csv = 'Division,Month,SKU Code,Product Name,Store Code,Store Name,Testers Dispatched,Store Total Sales,Contrib Rate\n';
+  filteredTesterSkus.forEach(r => {
+    const storeSales = salesLookup[r.store_code + '|' + r.month_year] || 0;
+    const contrib = storeSales > 0 ? (r.testers_dispatched / storeSales * 100).toFixed(2) + '%' : '—';
+    csv += `${r.division},${r.month_year},${r.sku_code},"${r.product_name}",${r.store_code},"${r.store_name}",${r.testers_dispatched},${storeSales},${contrib}\n`;
   });
   dlFile('Tester_Export_' + new Date().toISOString().slice(0,10) + '.csv', csv, 'text/csv');
-  toast('Tester CSV exported');
+  toast('Tester CSV exported — ' + filteredTesterSkus.length + ' SKU rows');
 }
 
 // ══════════════════════════════════════════════
@@ -3547,12 +3551,12 @@ function renderTesterIntel() {
   html += '</tbody></table></div></div>';
 
   // ── Zone 5: Top SKUs by tester consumption ──────────────────────────
+  // Use individual SKU rows (testerRawRows), not aggregated testerData
   const skuMap = {};
-  base.filter(r => r.month_year === focusMonth).forEach(r => {
+  testerRawRows.filter(r => r.month_year === focusMonth && (div === 'ALL' || r.division === div)).forEach(r => {
     const k = r.sku_code || r.product_name;
-    if (!skuMap[k]) skuMap[k] = { name: r.product_name, sku: r.sku_code, div: r.division, testers: 0, sales: 0, stores: new Set() };
+    if (!skuMap[k]) skuMap[k] = { name: r.product_name, sku: r.sku_code, div: r.division, testers: 0, stores: new Set() };
     skuMap[k].testers += r.testers_dispatched || 0;
-    skuMap[k].sales   += r.sales_generated   || 0;
     skuMap[k].stores.add(r.store_code);
   });
   const topSkus = Object.values(skuMap).filter(s => s.testers > 0).sort((a, b) => b.testers - a.testers).slice(0, 20);
@@ -3666,8 +3670,9 @@ function openTiDrill(storeCode) {
     byMonth[r.month_year].sales   += r.sales_generated   || 0;
   });
 
-  // Focus month SKUs
-  const focusSkus = storeRows.filter(r => r.month_year === focusMonth && (r.testers_dispatched || 0) > 0)
+  // Focus month SKUs — use individual SKU rows (not aggregated testerData)
+  const focusSkus = testerRawRows
+    .filter(r => r.store_code === storeCode && r.month_year === focusMonth && (r.testers_dispatched || 0) > 0)
     .sort((a,b) => (b.testers_dispatched||0) - (a.testers_dispatched||0));
 
   const fT = byMonth[focusMonth] ? byMonth[focusMonth].testers : 0;
