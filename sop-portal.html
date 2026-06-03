@@ -5043,9 +5043,18 @@ function _renderCategoryHealth(){
 // ── Transfer Opportunity Engine ───────────────────────────────────
 function _computeTransfers(){
   const m=_invMetrics;
-  const SURPLUS_THRESHOLD=90;  // DoS > 90 = surplus
-  const DEFICIT_THRESHOLD=14;  // DoS < 14 = deficit
-  const MIN_TRANSFER=3;        // minimum units worth transferring
+  const SURPLUS_THRESHOLD=90;
+  const MIN_TRANSFER=3;
+
+  // Build per-store-SKU monthly sales lookup for last 2 months
+  const MONTHS=['2026-05','2026-04'];
+  const monthlySales={}; // store|sku|month → qty
+  invSalesData.forEach(r=>{
+    if(!MONTHS.includes(r.month_year)) return;
+    const k=`${r.store_code}|${r.sku_code}|${r.month_year}`;
+    monthlySales[k]=(monthlySales[k]||0)+r.qty_sold;
+  });
+  const _mSales=(store,sku,mo)=>monthlySales[`${store}|${sku}|${mo}`]||0;
 
   const opportunities=[];
   const allSkus=new Set(Object.values(m.metrics).flatMap(s=>Object.keys(s)));
@@ -5063,15 +5072,21 @@ function _computeTransfers(){
     deficitStores.sort((a,b)=>(a.dos||0)-(b.dos||0));
     const best=surplusStores[0];
     const need=deficitStores[0];
-    // How much can we transfer? Keep 60-day buffer at donor store
     const bufferQty=Math.ceil(best.dailyRate*60);
     const availQty=Math.max(0,best.soh-bufferQty);
-    // How much does the recipient need for 60-day cover?
     const needQty=Math.ceil(need.dailyRate*60-need.soh);
     const transferQty=Math.min(availQty,needQty);
     if(transferQty>=MIN_TRANSFER){
-      opportunities.push({sku,name:m.nameMap[sku]||sku,from:best.store,to:need.store,
-        fromDos:best.dos,toDos:need.dos||0,transferQty,fromSoh:best.soh,toSoh:need.soh});
+      opportunities.push({
+        sku, name:m.nameMap[sku]||sku,
+        from:best.store, to:need.store,
+        fromDos:best.dos, toDos:need.dos||0,
+        transferQty, fromSoh:best.soh, toSoh:need.soh,
+        fromRate:best.rate, toRate:need.rate,
+        // last 2 months actual sales
+        fromM1:_mSales(best.store,sku,'2026-05'), fromM2:_mSales(best.store,sku,'2026-04'),
+        toM1:_mSales(need.store,sku,'2026-05'),   toM2:_mSales(need.store,sku,'2026-04'),
+      });
     }
   });
   return opportunities.sort((a,b)=>b.transferQty-a.transferQty);
@@ -5080,23 +5095,51 @@ function _computeTransfers(){
 function _renderTransferOpportunities(){
   const transfers=_computeTransfers();
   document.getElementById('inv-transfer-meta').textContent=`${transfers.length} transfers found — resolve shortfalls without new stock`;
+
+  // Update header to 5 columns
+  const thead = document.querySelector('#inv-transfer-tbody')?.closest('table')?.querySelector('thead tr');
+  if(thead) thead.innerHTML=`
+    <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:#2E7D32;border-bottom:1px solid #C8E6C9;">PRODUCT</th>
+    <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:#2E7D32;border-bottom:1px solid #C8E6C9;">FROM (SURPLUS)</th>
+    <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:#2E7D32;border-bottom:1px solid #C8E6C9;">TO (SHORT)</th>
+    <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.08em;color:#2E7D32;border-bottom:1px solid #C8E6C9;">SEND QTY</th>`;
+
   document.getElementById('inv-transfer-tbody').innerHTML=transfers.slice(0,20).map((t,i)=>{
-    const fromSi=getStore(t.from),toSi=getStore(t.to);
+    const fromSi=getStore(t.from), toSi=getStore(t.to);
     const urgencyColor=t.toDos<7?'#C0392B':t.toDos<14?'#E67E22':'#8B6914';
+    const wkRate=(r)=>r>0?`~${(r/4.3).toFixed(1)}/wk`:'no sales';
+    // Sales trend arrows
+    const fromTrend=t.fromM1>0&&t.fromM2>0?(t.fromM1>t.fromM2?'▲':'▼'):'';
+    const toTrend  =t.toM1>0&&t.toM2>0  ?(t.toM1>t.toM2?'▲':'▼'):'';
+    const fromTrendColor=fromTrend==='▲'?'#27AE60':fromTrend==='▼'?'#C0392B':'#999';
+    const toTrendColor  =toTrend==='▲'?'#27AE60':toTrend==='▼'?'#C0392B':'#999';
+
     return `<tr style="border-bottom:1px solid #E8F5E9;${i%2===0?'background:#F9FBF9':''}">
-      <td style="padding:6px 10px;font-size:11px;max-width:110px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="${t.name}">
-        <div style="font-weight:600;">${t.name}</div>
-        <div style="font-size:9px;color:var(--ink-light);font-family:'IBM Plex Mono',monospace;">${t.sku}</div>
+      <td style="padding:8px 10px;font-size:11px;">
+        <div style="font-weight:600;color:var(--ink);">${t.name}</div>
+        <div style="font-size:9px;color:var(--ink-light);font-family:'IBM Plex Mono',monospace;margin-top:1px;">${t.sku}</div>
       </td>
-      <td style="padding:6px 10px;font-size:11px;">
-        <div style="color:var(--ink-mid);">${fromSi.name}</div>
-        <div style="font-size:9px;color:#2980B9;">${t.fromSoh} units · ${t.fromDos?.toFixed(0)||'?'}d DoS</div>
+      <td style="padding:8px 10px;font-size:11px;">
+        <div style="color:var(--ink-mid);font-weight:600;">${fromSi.name}</div>
+        <div style="font-size:9px;color:#2980B9;margin-top:2px;">${t.fromSoh} units · <strong>${t.fromDos?.toFixed(0)||'?'}d DoS</strong></div>
+        <div style="font-size:9px;color:var(--ink-light);margin-top:2px;display:flex;gap:8px;">
+          <span>May: <strong style="color:var(--ink);">${t.fromM1||'—'}</strong></span>
+          <span>Apr: <strong style="color:var(--ink);">${t.fromM2||'—'}</strong></span>
+          <span style="color:${fromTrendColor};font-weight:700;">${fromTrend}</span>
+          <span style="color:#7F8C8D;">${wkRate(t.fromRate)}</span>
+        </div>
       </td>
-      <td style="padding:6px 10px;font-size:11px;">
-        <div style="color:${urgencyColor};font-weight:600;">${toSi.name}</div>
-        <div style="font-size:9px;color:${urgencyColor};">${t.toSoh} units · ${t.toDos?.toFixed(0)||'0'}d DoS</div>
+      <td style="padding:8px 10px;font-size:11px;">
+        <div style="color:${urgencyColor};font-weight:700;">${toSi.name}</div>
+        <div style="font-size:9px;color:${urgencyColor};margin-top:2px;">${t.toSoh} units · <strong>${t.toDos?.toFixed(0)||'0'}d DoS</strong></div>
+        <div style="font-size:9px;color:var(--ink-light);margin-top:2px;display:flex;gap:8px;">
+          <span>May: <strong style="color:var(--ink);">${t.toM1||'—'}</strong></span>
+          <span>Apr: <strong style="color:var(--ink);">${t.toM2||'—'}</strong></span>
+          <span style="color:${toTrendColor};font-weight:700;">${toTrend}</span>
+          <span style="color:#7F8C8D;">${wkRate(t.toRate)}</span>
+        </div>
       </td>
-      <td style="padding:6px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;color:#2E7D32;">${t.transferQty}</td>
+      <td style="padding:8px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700;color:#2E7D32;vertical-align:middle;">${t.transferQty}</td>
     </tr>`;
   }).join('')||'<tr><td colspan="4" style="padding:24px;text-align:center;color:var(--ink-light);">No surplus-deficit matches found in current data.</td></tr>';
 }
