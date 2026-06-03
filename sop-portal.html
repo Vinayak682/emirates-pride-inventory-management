@@ -1332,7 +1332,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       </select>
       <input type="text" class="tbl-search" id="t-search" placeholder="Search product…" oninput="applyTesterFilters()" style="width:180px;">
       <button class="filter-btn-ghost" onclick="exportTesterCsv()" style="margin-left:auto;">↓ Export CSV</button>
-      <button onclick="openTesterIntel()" style="background:linear-gradient(135deg,#1a3a5c,#2563a8);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(26,58,92,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#122840,#1a3a5c)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a5c,#2563a8)'">🧪 Tester Intelligence Report</button>
+      <button onclick="openTesterIntel()" style="background:linear-gradient(135deg,#1a3a5c,#2563a8);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(26,58,92,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#122840,#1a3a5c)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a5c,#2563a8)'">🧪 Tester Analytics Report</button>
       <button onclick="openAMTesterCheck()" style="background:linear-gradient(135deg,#5C4A1A,#8B6914);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(92,74,26,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#3D3010,#5C4A1A)'" onmouseout="this.style.background='linear-gradient(135deg,#5C4A1A,#8B6914)'">🔍 AM Tester Check</button>
     </div>
 
@@ -4086,7 +4086,7 @@ function exportTesterIntel() {
     csv += s.code + ',"' + (s.name||s.code) + '",' + s.division + ',' + s.testers + ',' + s.sales + ',' + rate + ',' + status + '\n';
   });
   dlFile('TesterIntelligence_' + focusMonth + '.csv', csv, 'text/csv');
-  toast('Tester Intelligence report exported');
+  toast('Tester Analytics report exported');
 }
 
 // ══════════════════════════════════════════════
@@ -10359,7 +10359,7 @@ async function doExportDownload() {
     <div style="display:flex;align-items:center;gap:20px;">
       <button onclick="closeTesterIntel()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">✕</button>
       <div>
-        <div style="font-size:17px;font-weight:700;color:#fff;letter-spacing:.04em;font-family:'Cormorant Garamond',serif;">🧪 Tester Intelligence Report</div>
+        <div style="font-size:17px;font-weight:700;color:#fff;letter-spacing:.04em;font-family:'Cormorant Garamond',serif;">🧪 Tester Analytics Report</div>
         <div style="font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);font-weight:700;font-family:'Montserrat',sans-serif;">Emirates Pride · Store-wise Tester Utilisation Analysis</div>
       </div>
     </div>
