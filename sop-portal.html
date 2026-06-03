@@ -11164,12 +11164,16 @@ function openEidStoreDrill(code) {
 /* ── AM TESTER CHECK TOOL ─────────────────────────────────────────────────── */
 
 // Compound tester codes that can't be derived algorithmically — maps tester code → retail sales code
-// ASLAOT-NNN = ASL "All Over Spray" tester series; numbers DON'T align with AH series numbers
-// Only include confirmed mappings (verified against tester_history + sales_history in Supabase Jun 2026)
-// When new ASLAOT codes appear, confirm scent name → find matching AH code → add here
+// Verified against tester_history + sales_history in Supabase (Jun 2026 full audit)
+// Rules for adding entries:
+//   ASLAOT-NNN = ASL "All Over Spray" tester — numbers DON'T align with AH series; must be explicit
+//   Typos (e.g. O0007 vs O00007) — add here so sales lookup finds the correct code
 const _TESTER_CODE_MAP = {
-  'ASLAOT-002': 'AH008',  // Dark Musk All Over Spray → AH008 (Dark Musk Hair & Body Mist) ✓ confirmed
-  'ASLAOT-003': 'AH003',  // Velvet Amber All Over Spray → AH003 (Velvet Amber Hair & Body Mist) ✓ confirmed
+  // ASL All Over Spray tester series → Hair & Body Mist retail codes (numbers don't match)
+  'ASLAOT-002': 'AH008',  // Dark Musk All Over Spray → AH008 ✓
+  'ASLAOT-003': 'AH003',  // Velvet Amber All Over Spray → AH003 ✓
+  // Typo in tester_history upload — O0007 (3 zeros) should be O00007 (4 zeros)
+  'O0007': 'O00007',      // Oud Hindi Khas — typo, 1452 sales missed without this ✓
 };
 
 // Normalize SKU code: strip tester suffixes so B00021, B00021-T, B00021-PB all → B00021
@@ -11179,6 +11183,8 @@ function _normSku(sku) {
   if (_TESTER_CODE_MAP[upper]) return _TESTER_CODE_MAP[upper];
   return sku
     .replace(/-T$/i, '')
+    .replace(/-TN$/i, '')   // e.g. SP0023-TN (Masters Signature Night tester)
+    .replace(/-NA$/i, '')   // e.g. C00006-NA, C00008-NA (discontinued/NA variants)
     .replace(/-PB$/i, '')
     .replace(/-TD$/i, '')
     .replace(/-TG$/i, '')
