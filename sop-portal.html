@@ -11279,13 +11279,12 @@ function _renderCitySkuSplit() {
   if (!_citySkuSelected) return;
   const baseCode = _citySkuSelected.code;
   const MONTHS = ['2026-05','2026-04','2026-03'];
-  const MN = {'2026-05':'May','2026-04':'Apr','2026-03':'Mar'};
+  const MN_LABEL = {'2026-05':'May 2026','2026-04':'Apr 2026','2026-03':'Mar 2026'};
 
-  // ASL legacy map (same as store view)
   const ASL_LEGACY = {'YMK001':['ASL_YAS001','ASL_A009'],'BAW001':['ASL_BAW001','ASL_AL007'],'MAK001':['ASL_MAK001','ASL_AL004'],'FJ0001':['ASL_FUJ001','ASL_FJ001'],'BAS001':['ASL_A011']};
 
-  // Build tester totals: store → month → qty
-  const tMap = {}; // store → {month:qty}
+  // Build tester map
+  const tMap = {};
   testerRawRows.forEach(r => {
     if (_normSku(r.sku_code) !== baseCode || (r.testers_dispatched||0) === 0) return;
     if (!MONTHS.includes(r.month_year)) return;
@@ -11293,16 +11292,13 @@ function _renderCitySkuSplit() {
     tMap[r.store_code][r.month_year] = (tMap[r.store_code][r.month_year]||0) + (r.testers_dispatched||0);
   });
 
-  // Build sales totals: store → month → qty (with legacy mapping)
-  const sMap = {}; // store → {month:qty}
+  // Build sales map (with legacy mapping)
+  const sMap = {};
   salesData.forEach(r => {
     if (r.sku_code !== baseCode) return;
     if (!MONTHS.includes(r.month_year)) return;
-    // Find canonical store code (reverse-map legacy)
     let canonical = r.store_code;
-    Object.entries(ASL_LEGACY).forEach(([canon, legacies]) => {
-      if (legacies.includes(r.store_code)) canonical = canon;
-    });
+    Object.entries(ASL_LEGACY).forEach(([canon,legacies]) => { if(legacies.includes(r.store_code)) canonical=canon; });
     if (!sMap[canonical]) sMap[canonical] = {};
     sMap[canonical][r.month_year] = (sMap[canonical][r.month_year]||0) + (r.qty_sold||0);
   });
@@ -11311,71 +11307,139 @@ function _renderCitySkuSplit() {
   let html = '';
 
   CITY_GROUPS.forEach(g => {
-    // Only include stores that have any data
     const storesWithData = g.codes.filter(c => tMap[c] || sMap[c]);
     if (!storesWithData.length) return;
 
-    const cityTotalT = storesWithData.reduce((n,c)=>n+MONTHS.reduce((s,m)=>s+(tMap[c]||{})[m]||0,0),0);
-    const cityTotalS = storesWithData.reduce((n,c)=>n+MONTHS.reduce((s,m)=>s+(sMap[c]||{})[m]||0,0),0);
+    const cityTotalT = storesWithData.reduce((n,c)=>n+MONTHS.reduce((s,m)=>s+((tMap[c]||{})[m]||0),0),0);
+    const cityTotalS = storesWithData.reduce((n,c)=>n+MONTHS.reduce((s,m)=>s+((sMap[c]||{})[m]||0),0),0);
+    const cityContrib = cityTotalS>0 ? (cityTotalT/cityTotalS*100) : null;
+    const cityContribColor = cityContrib===null?'#aaa':cityContrib>15?'#FF8A80':cityContrib>5?'#FFD740':'#69F0AE';
+    const cityContribBadge = cityContrib!==null
+      ? `<span style="background:${cityContrib>15?'rgba(255,138,128,.2)':cityContrib>5?'rgba(255,215,64,.2)':'rgba(105,240,174,.15)'};color:${cityContribColor};font-weight:700;padding:3px 10px;border-radius:20px;font-size:11px;">Contrib ${cityContrib.toFixed(0)}%</span>`
+      : '';
 
-    const storeRows = storesWithData.map((code,i) => {
-      const sInfo = STORES.find(s => s.code === code) || {name: code};
-      const brand = ['BAS001','YMK001','BAW001','MAK001','FJ0001','OM_ASL001'].includes(code) ? 'ASL' : (code.startsWith('KSA_') ? 'KSA' : code.startsWith('OM') ? 'EPP' : 'EPP');
-      const brandPill = `<span style="font-size:8px;padding:1px 5px;border-radius:2px;font-weight:700;background:${brand==='ASL'?'#EDE9F4':brand==='KSA'?'#E8F5E9':'#EAF2FB'};color:${brand==='ASL'?'#6A3DA8':brand==='KSA'?'#1B5E20':'#1565C0'};">${brand}</span>`;
+    const storeRows = storesWithData.map((code, i) => {
+      const sInfo = STORES.find(s => s.code === code) || {name:code};
+      const isASL = ['BAS001','YMK001','BAW001','MAK001','FJ0001','OM_ASL001'].includes(code);
+      const isKSA = code.startsWith('KSA_');
+      const brand = isASL?'ASL':isKSA?'KSA':'EPP';
+      const brandBg  = isASL?'#EDE9F4':isKSA?'#E8F5E9':'#E3F0FF';
+      const brandClr = isASL?'#6A3DA8':isKSA?'#1B5E20':'#1565C0';
+      const rowBg = i%2===0 ? '#fff' : '#FAFAF8';
 
       const monthCells = MONTHS.map(m => {
         const t = (tMap[code]||{})[m]||0;
         const s = (sMap[code]||{})[m]||0;
-        const contrib = t > 0 && s > 0 ? (t/s*100).toFixed(0)+'%' : t > 0 ? '<span style="color:#C0392B;font-size:9px;">No sales</span>' : '—';
-        const contribColor = t > 0 && s > 0 ? (t/s > 0.15 ? '#C0392B' : t/s > 0.05 ? '#8B6914' : '#0B7A45') : 'var(--ink-light)';
-        return `<td style="padding:7px 10px;text-align:center;border-left:1px solid #F0EDE8;background:${i%2===0?'#fff':'#FAFAF8'};">
-          <div style="display:flex;justify-content:center;gap:10px;align-items:center;">
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:#1a2744;">${t||'—'}</span>
-            <span style="font-size:10px;color:#27AE60;">${s>0?s:'—'}</span>
-            <span style="font-size:9px;font-weight:700;color:${contribColor};">${contrib}</span>
+        const ratio = (t>0&&s>0) ? t/s : null;
+        const contribPct = ratio!==null ? (ratio*100).toFixed(0) : null;
+        const contribClr = ratio===null?'#ccc':ratio>0.15?'#C0392B':ratio>0.05?'#E67E22':'#0B7A45';
+        const barW = ratio!==null ? Math.min(100,ratio*100).toFixed(0) : 0;
+        const barClr = ratio===null?'#eee':ratio>0.15?'#E74C3C':ratio>0.05?'#F39C12':'#27AE60';
+        const noSales = t>0&&s===0;
+
+        return `<td style="padding:0;border-left:1px solid #EAECF0;background:${rowBg};min-width:150px;">
+          <div style="padding:10px 14px;">
+            <!-- Testers -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+              <span style="font-size:9px;font-weight:700;letter-spacing:.08em;color:#6B8CBE;text-transform:uppercase;">Testers</span>
+              <span style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#1a2744;line-height:1;">${t>0?t:'<span style="font-size:13px;color:#ccc;">—</span>'}</span>
+            </div>
+            <!-- Sales -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:9px;font-weight:700;letter-spacing:.08em;color:#4CAF7D;text-transform:uppercase;">Sales</span>
+              <span style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#1B5E20;line-height:1;">${s>0?s:'<span style="font-size:13px;color:#ccc;">—</span>'}</span>
+            </div>
+            <!-- Contrib bar -->
+            <div style="border-top:1px solid #F0EDE8;padding-top:6px;">
+              ${noSales
+                ? `<div style="font-size:9px;color:#C0392B;font-weight:600;letter-spacing:.04em;">No sales yet</div>`
+                : ratio===null
+                  ? `<div style="font-size:9px;color:#ccc;letter-spacing:.04em;">No testers sent</div>`
+                  : `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+                      <span style="font-size:9px;font-weight:700;letter-spacing:.06em;color:${contribClr};">CONTRIB</span>
+                      <span style="font-size:11px;font-weight:700;color:${contribClr};">${contribPct}%</span>
+                    </div>
+                    <div style="height:4px;background:#F0EDE8;border-radius:2px;overflow:hidden;">
+                      <div style="height:4px;width:${barW}%;background:${barClr};border-radius:2px;transition:width .3s;"></div>
+                    </div>`
+              }
+            </div>
           </div>
         </td>`;
       }).join('');
 
-      return `<tr>
-        <td style="padding:7px 14px;font-size:11px;background:${i%2===0?'#fff':'#FAFAF8'};white-space:nowrap;">
-          <div style="font-weight:600;color:var(--ink);">${sInfo.name}</div>
-          <div style="display:flex;gap:5px;align-items:center;margin-top:2px;">
+      return `<tr style="border-bottom:1px solid #F0EDE8;">
+        <td style="padding:12px 16px;background:${rowBg};min-width:180px;vertical-align:top;">
+          <div style="font-weight:700;font-size:12px;color:var(--ink);margin-bottom:4px;">${sInfo.name}</div>
+          <div style="display:flex;gap:5px;align-items:center;">
             <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-dark);">${code}</span>
-            ${brandPill}
+            <span style="font-size:8px;font-weight:700;padding:1px 6px;border-radius:3px;background:${brandBg};color:${brandClr};">${brand}</span>
           </div>
         </td>
         ${monthCells}
       </tr>`;
     }).join('');
 
+    // City totals footer row
+    const footerCells = MONTHS.map(m => {
+      const t = storesWithData.reduce((n,c)=>n+((tMap[c]||{})[m]||0),0);
+      const s = storesWithData.reduce((n,c)=>n+((sMap[c]||{})[m]||0),0);
+      const contrib = s>0?(t/s*100).toFixed(0):null;
+      const clr = contrib===null?'#aaa':parseFloat(contrib)>15?'#C0392B':parseFloat(contrib)>5?'#E67E22':'#0B7A45';
+      return `<td style="padding:10px 14px;border-left:1px solid #EAECF0;background:#F5F2EC;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:10px;color:#555;">T: <strong style="color:#1a2744;">${t||'—'}</strong></span>
+          <span style="font-size:10px;color:#555;">Sales: <strong style="color:#1B5E20;">${s||'—'}</strong></span>
+          ${contrib!==null?`<span style="font-size:10px;font-weight:700;color:${clr};">${contrib}%</span>`:'<span style="color:#ccc;font-size:10px;">—</span>'}
+        </div>
+      </td>`;
+    }).join('');
+
     html += `
-      <div style="margin-bottom:18px;border:1px solid var(--border);overflow:hidden;border-radius:2px;">
-        <div style="background:#1a2744;padding:10px 16px;display:flex;align-items:center;gap:10px;">
-          <span style="font-size:16px;">${g.flag}</span>
-          <span style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:#fff;">${g.city}</span>
-          <span style="font-size:10px;color:rgba(255,255,255,.5);">${storesWithData.length} store${storesWithData.length>1?'s':''}</span>
-          <div style="margin-left:auto;display:flex;gap:16px;font-size:10px;">
-            <span style="color:rgba(255,255,255,.7);">Testers: <strong style="color:#fff;">${cityTotalT}</strong></span>
-            <span style="color:rgba(255,255,255,.7);">Sales: <strong style="color:#fff;">${cityTotalS}</strong></span>
-            ${cityTotalT>0&&cityTotalS>0?`<span style="color:${cityTotalT/cityTotalS>0.15?'#FF8A80':cityTotalT/cityTotalS>0.05?'#FFD740':'#69F0AE'};">Contrib: <strong>${(cityTotalT/cityTotalS*100).toFixed(0)}%</strong></span>`:''}
+      <div style="margin-bottom:20px;border:1px solid #DDE3ED;border-radius:6px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+
+        <!-- City header -->
+        <div style="background:linear-gradient(135deg,#1a2744,#243258);padding:12px 18px;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:20px;line-height:1;">${g.flag}</span>
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff;line-height:1.1;">${g.city}</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:2px;letter-spacing:.08em;">${storesWithData.length} STORE${storesWithData.length>1?'S':''}</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:20px;align-items:center;">
+            <div style="text-align:center;">
+              <div style="font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.08em;margin-bottom:2px;">TESTERS</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#fff;">${cityTotalT}</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.08em;margin-bottom:2px;">SALES</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#69F0AE;">${cityTotalS}</div>
+            </div>
+            ${cityContribBadge}
           </div>
         </div>
+
+        <!-- Table -->
         <div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;font-size:12px;">
-            <thead><tr style="background:#F5F2EC;">
-              <th style="padding:7px 14px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">STORE</th>
-              ${MONTHS.map(m=>`<th style="padding:7px 10px;text-align:center;font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);border-left:1px solid #F0EDE8;min-width:130px;">
-                ${MN[m]} &nbsp;<span style="font-weight:400;font-size:8px;">T · Sales · Contrib</span>
-              </th>`).join('')}
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="background:#F8F9FC;border-bottom:2px solid #DDE3ED;">
+                <th style="padding:10px 16px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.12em;color:#6B7FA8;min-width:180px;">STORE</th>
+                ${MONTHS.map(m=>`<th style="padding:10px 14px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.12em;color:#6B7FA8;border-left:2px solid #DDE3ED;min-width:150px;">${MN_LABEL[m].toUpperCase()}</th>`).join('')}
+              </tr>
             </thead>
             <tbody>${storeRows}</tbody>
+            <tfoot>
+              <tr style="border-top:2px solid #DDE3ED;">
+                <td style="padding:10px 16px;font-size:10px;font-weight:700;color:var(--ink-mid);background:#F5F2EC;letter-spacing:.06em;">CITY TOTAL</td>
+                ${footerCells}
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>`;
   });
 
-  if (!html) html = `<div style="text-align:center;padding:40px;color:var(--ink-light);">No tester or sales data found for <strong>${baseCode}</strong> across any store.</div>`;
+  if (!html) html = `<div style="text-align:center;padding:60px;color:var(--ink-light);"><div style="font-size:28px;margin-bottom:12px;">🔍</div><div style="font-size:12px;letter-spacing:.08em;">No tester or sales data found for <strong>${baseCode}</strong> across any store.</div></div>`;
   result.innerHTML = html;
 }
 
