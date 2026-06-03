@@ -11322,10 +11322,19 @@ function runAMTesterLookup(baseCode) {
     testersByMonth[r.month_year] = (testersByMonth[r.month_year]||0) + (r.testers_dispatched||0);
   });
 
-  // Sales data (sales_history uses bare codes)
+  // Sales data — also check legacy ASL codes for historical data
+  // e.g. YMK001 sales pre-May 2026 were uploaded as ASL_YAS001
+  const ASL_LEGACY_MAP = {
+    'YMK001': ['ASL_YAS001','ASL_A009'],
+    'BAW001': ['ASL_BAW001','ASL_AL007'],
+    'MAK001': ['ASL_MAK001','ASL_AL004'],
+    'FJ0001': ['ASL_FUJ001','ASL_FJ001'],
+    'BAS001': ['ASL_A011'],
+  };
+  const storeCodesToCheck = new Set([storeCode, ...(ASL_LEGACY_MAP[storeCode]||[])]);
   const salesByMonth = {};
   salesData.forEach(r => {
-    if (r.store_code === storeCode && r.sku_code === baseCode) {
+    if (storeCodesToCheck.has(r.store_code) && r.sku_code === baseCode) {
       salesByMonth[r.month_year] = (salesByMonth[r.month_year]||0) + (r.qty_sold||0);
     }
   });
