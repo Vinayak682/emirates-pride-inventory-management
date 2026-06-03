@@ -5197,8 +5197,8 @@ function _renderDeadStockRadar(){
       if(d.status!=='deadstock'||d.soh===0) return;
       const key=store+'|'+sku;
       const months=(salesByStoreSkuMonth[key]||[]).sort().reverse();
-      const lastSale=months[0]||'Never';
-      const monthsIdle=lastSale==='Never'?99:_monthsAgo(lastSale);
+      const lastSale=months[0]||null;
+      const monthsIdle=lastSale?_monthsAgo(lastSale):null;
       rows.push({store,sku,name:m.nameMap[sku]||sku,soh:d.soh,lastSale,monthsIdle});
     });
   });
@@ -5206,7 +5206,8 @@ function _renderDeadStockRadar(){
   document.getElementById('inv-dead-meta').textContent=`${rows.length} idle items · ${rows.reduce((s,r)=>s+r.soh,0).toLocaleString()} units locked`;
   document.getElementById('inv-dead-tbody').innerHTML=rows.slice(0,30).map((r,i)=>{
     const si=getStore(r.store);
-    const idle=r.monthsIdle>=12?`<span style="color:#C0392B;font-weight:700;">${r.monthsIdle}mo</span>`:
+    const idle=r.monthsIdle===null?`<span style="color:#95A5A6;font-size:10px;font-style:italic;">No sales data</span>`:
+               r.monthsIdle>=12?`<span style="color:#C0392B;font-weight:700;">${r.monthsIdle}mo</span>`:
                r.monthsIdle>=6?`<span style="color:#E67E22;">${r.monthsIdle}mo</span>`:
                `<span style="color:#7F8C8D;">${r.monthsIdle}mo</span>`;
     return `<tr style="border-bottom:1px solid #F5E9B8;${i%2===0?'background:#FFFDF5':''}">
