@@ -1196,7 +1196,6 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
            <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:#8B6914;border-bottom:1px solid #E8D5A0;">STORE</th>
            <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:#8B6914;border-bottom:1px solid #E8D5A0;">PRODUCT</th>
            <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.08em;color:#8B6914;border-bottom:1px solid #E8D5A0;">SOH</th>
-           <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.08em;color:#8B6914;border-bottom:1px solid #E8D5A0;">MO IDLE</th>
           </tr></thead>
           <tbody id="inv-dead-tbody"></tbody>
          </table>
@@ -5214,7 +5213,6 @@ function _renderDeadStockRadar(){
       <td style="padding:6px 10px;font-size:11px;max-width:90px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${si.name}</td>
       <td style="padding:6px 10px;font-size:11px;max-width:110px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="${r.name}">${r.name}</td>
       <td style="padding:6px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;">${r.soh}</td>
-      <td style="padding:6px 10px;text-align:right;">${idle}</td>
     </tr>`;
   }).join('')||'<tr><td colspan="4" style="padding:30px;text-align:center;color:#27AE60;font-size:13px;">No dead stock detected — all stocked products are selling!</td></tr>';
 }
