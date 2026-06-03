@@ -192,6 +192,8 @@ html,body{height:100%;background:var(--white);color:var(--ink);font-family:'Mont
   border:1px solid var(--border);padding:9px 20px;cursor:pointer;transition:all .2s;
 }
 .filter-btn-ghost:hover{border-color:var(--gold);color:var(--gold-dark);}
+.drill-sort-btn{font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:all .15s;}
+.drill-sort-btn.active{background:var(--gold-bar)!important;color:#fff!important;border-color:var(--gold-bar)!important;}
 
 /* ── STAT CARDS ── */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--border);}
@@ -948,7 +950,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
      <!-- Command bar -->
      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
       <div style="flex:1;min-width:200px;">
-       <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--gold-dark);">Inventory Intelligence</div>
+       <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--gold-dark);">Inventory Analytics</div>
        <div id="inv-intel-meta" style="font-size:11px;color:var(--ink-light);margin-top:1px;">Loading data…</div>
       </div>
       <select class="sel" id="inv-intel-div" onchange="rebuildInvIntelligence()" style="font-size:11px;width:110px;">
@@ -959,6 +961,124 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <button class="filter-btn-ghost" onclick="rebuildInvIntelligence()" style="font-size:10px;">&#8635; Refresh</button>
       <button class="filter-btn-ghost" onclick="document.getElementById('inv-upload-panel').style.display=document.getElementById('inv-upload-panel').style.display==='none'?'block':'none'" style="font-size:10px;">&#8593; Upload Snapshot</button>
       <button class="filter-btn-ghost" onclick="document.getElementById('inv-history-panel').style.display=document.getElementById('inv-history-panel').style.display==='none'?'block':'none'" style="font-size:10px;">History</button>
+     </div>
+
+     <!-- ── DRILL-DOWN SEARCH BAR ── -->
+     <div id="inv-drill-bar" style="background:#F5F2EC;border:1px solid var(--border);padding:16px 20px;margin-bottom:20px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--gold-dark);margin-bottom:12px;">DRILL-DOWN SEARCH</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+       <!-- Store Search -->
+       <div>
+        <label style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--ink-mid);display:block;margin-bottom:5px;">SEARCH BY STORE</label>
+        <div style="display:flex;gap:8px;">
+         <select id="drill-store-sel" class="sel" style="flex:1;font-size:12px;" onchange="_onDrillStoreChange()">
+          <option value="">— Select a store —</option>
+         </select>
+         <button onclick="_clearDrillDown()" style="font-size:10px;padding:0 10px;background:#fff;border:1px solid var(--border);color:var(--ink-mid);cursor:pointer;letter-spacing:.05em;">✕ Clear</button>
+        </div>
+       </div>
+
+       <!-- SKU Search -->
+       <div>
+        <label style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--ink-mid);display:block;margin-bottom:5px;">SEARCH BY SKU / PRODUCT</label>
+        <div style="display:flex;gap:8px;">
+         <input id="drill-sku-input" type="text" placeholder="Type SKU code or product name…" style="flex:1;font-size:12px;padding:7px 10px;border:1px solid var(--border);font-family:'IBM Plex Mono',monospace;outline:none;" oninput="_onDrillSKUInput()" autocomplete="off"/>
+        </div>
+        <div id="drill-sku-dropdown" style="display:none;position:absolute;z-index:200;background:#fff;border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:240px;overflow-y:auto;min-width:320px;"></div>
+       </div>
+
+      </div>
+     </div>
+
+     <!-- Drill-Down Results Panel -->
+     <div id="inv-drill-results" style="display:none;margin-bottom:22px;border:1.5px solid var(--gold);overflow:hidden;">
+      <div id="inv-drill-header" style="background:var(--gold-bar);padding:14px 20px;display:flex;align-items:center;gap:12px;">
+       <div style="flex:1;">
+        <div id="inv-drill-title" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#fff;"></div>
+        <div id="inv-drill-subtitle" style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;"></div>
+       </div>
+       <div id="inv-drill-kpis" style="display:flex;gap:10px;"></div>
+       <button onclick="_clearDrillDown()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:11px;padding:5px 12px;cursor:pointer;letter-spacing:.05em;">✕ Close</button>
+      </div>
+      <!-- Sort bar (store view) -->
+      <div id="inv-drill-sort-bar" style="display:none;background:#FAFAF8;border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:8px;align-items:center;">
+       <span style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--ink-light);">SORT:</span>
+       <button class="drill-sort-btn active" data-sort="status" onclick="_setDrillSort('status')" style="font-size:10px;padding:3px 10px;border:1px solid var(--border);background:#fff;cursor:pointer;letter-spacing:.05em;">Status</button>
+       <button class="drill-sort-btn" data-sort="dos" onclick="_setDrillSort('dos')" style="font-size:10px;padding:3px 10px;border:1px solid var(--border);background:#fff;cursor:pointer;letter-spacing:.05em;">Days of Supply ↑</button>
+       <button class="drill-sort-btn" data-sort="soh" onclick="_setDrillSort('soh')" style="font-size:10px;padding:3px 10px;border:1px solid var(--border);background:#fff;cursor:pointer;letter-spacing:.05em;">SOH ↓</button>
+       <button class="drill-sort-btn" data-sort="rate" onclick="_setDrillSort('rate')" style="font-size:10px;padding:3px 10px;border:1px solid var(--border);background:#fff;cursor:pointer;letter-spacing:.05em;">Sales Rate ↓</button>
+       <div style="flex:1;"></div>
+       <input id="drill-filter-input" type="text" placeholder="Filter products…" style="font-size:11px;padding:4px 8px;border:1px solid var(--border);width:180px;outline:none;" oninput="_renderDrillTable()"/>
+      </div>
+      <div style="overflow-x:auto;">
+       <table id="inv-drill-table" style="width:100%;border-collapse:collapse;font-size:12px;"></table>
+      </div>
+     </div>
+
+     <!-- ── REGION × SKU CHECK ── -->
+     <div id="inv-region-check-bar" style="background:#F0F4FF;border:1px solid #C5D0E8;padding:16px 20px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+       <div style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#1a2744;">REGION × SKU CHECK</div>
+       <div style="font-size:11px;color:#4A5580;">— Select a region + add SKUs to see stock status across all stores</div>
+      </div>
+      <div style="display:grid;grid-template-columns:240px 1fr auto;gap:14px;align-items:flex-start;">
+
+       <!-- Region selector -->
+       <div>
+        <label style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#4A5580;display:block;margin-bottom:5px;">1. SELECT REGION</label>
+        <select id="rc-region-sel" class="sel" style="width:100%;font-size:12px;">
+         <option value="">— Choose Region —</option>
+         <optgroup label="🇦🇪 EPP UAE">
+          <option value="epp-abudhabi">Abu Dhabi  (AM: Hessin)</option>
+          <option value="epp-alain">Al Ain  (AM: Hessin)</option>
+          <option value="epp-dubai">Dubai  (AM: Imad)</option>
+          <option value="epp-other">Other Emirates  (AM: Elmatloub)</option>
+          <option value="epp-all">All EPP UAE</option>
+         </optgroup>
+         <optgroup label="🇦🇪 ASL UAE">
+          <option value="asl-uae">All ASL UAE</option>
+         </optgroup>
+         <optgroup label="🇴🇲 Oman">
+          <option value="oman">All Oman</option>
+         </optgroup>
+         <optgroup label="🇸🇦 KSA">
+          <option value="ksa">All KSA</option>
+         </optgroup>
+         <option value="all">All Regions</option>
+        </select>
+       </div>
+
+       <!-- SKU search + chips -->
+       <div style="position:relative;">
+        <label style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#4A5580;display:block;margin-bottom:5px;">2. ADD SKUs  <span style="font-weight:400;opacity:.7;">(type to search, add up to 10)</span></label>
+        <div id="rc-sku-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:34px;padding:4px 6px;border:1px solid var(--border);background:#fff;margin-bottom:6px;"></div>
+        <input id="rc-sku-input" type="text" placeholder="Type SKU code or product name…" style="width:100%;font-size:12px;padding:7px 10px;border:1px solid var(--border);font-family:'IBM Plex Mono',monospace;outline:none;box-sizing:border-box;" oninput="_onRCSKUInput()" autocomplete="off"/>
+        <div id="rc-sku-dropdown" style="display:none;position:absolute;z-index:250;background:#fff;border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:220px;overflow-y:auto;min-width:320px;left:0;"></div>
+       </div>
+
+       <!-- Run button -->
+       <div style="padding-top:20px;">
+        <button onclick="_runRegionCheck()" style="background:#1a2744;color:#fff;border:none;padding:10px 20px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;cursor:pointer;white-space:nowrap;">CHECK STOCK →</button>
+        <div style="margin-top:6px;"><button onclick="_clearRegionCheck()" style="font-size:10px;background:none;border:none;color:#4A5580;cursor:pointer;text-decoration:underline;padding:0;">Clear all</button></div>
+       </div>
+
+      </div>
+     </div>
+
+     <!-- Region Check Results -->
+     <div id="inv-rc-results" style="display:none;margin-bottom:22px;border:1.5px solid #1a2744;overflow:hidden;">
+      <div style="background:#1a2744;padding:14px 20px;display:flex;align-items:center;gap:12px;">
+       <div style="flex:1;">
+        <div id="inv-rc-title" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#fff;"></div>
+        <div id="inv-rc-subtitle" style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;"></div>
+       </div>
+       <button onclick="_clearRegionCheck()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:11px;padding:5px 12px;cursor:pointer;letter-spacing:.05em;">✕ Close</button>
+      </div>
+      <div style="overflow-x:auto;">
+       <table id="inv-rc-table" style="width:100%;border-collapse:collapse;font-size:12px;"></table>
+      </div>
+      <div id="inv-rc-summary" style="padding:12px 20px;background:#F5F2EC;border-top:1px solid var(--border);font-size:11px;color:var(--ink-mid);display:flex;gap:20px;flex-wrap:wrap;"></div>
      </div>
 
      <!-- Loading -->
@@ -2429,7 +2549,7 @@ function applySalesFilters() {
     (ptype !== 'monthly' || ['01','02','03'].includes(month) || month === 'ALL') &&
     (ptype !== 'quarterly' || ['1'].includes(qtr) || ptype === 'annual');
   if (showsASL && showsApr2026) {
-    warnings.push('⚠️ <strong>ASL April 2026 — possible double-count:</strong> Data exists under both old codes (ASL_A009, ASL_AL007) and new codes (ASL_YAS001, ASL_BAW001 etc.) for the same stores. Total may be overstated by ~160 units. Confirm store code mapping with Amal before presenting to management.');
+    warnings.push('⚠️ <strong>ASL April 2026 — possible double-count:</strong> Data exists under both old codes (ASL_A009, ASL_AL007) and new codes (ASL_YAS001, ASL_BAW001 etc.) for the same stores. Total may be overstated by ~160 units. Confirm store code mapping before presenting to management.');
   }
   if (showsASL && showsEarly2026) {
     warnings.push('ℹ️ <strong>ASL Jan–Mar 2026:</strong> Data uses legacy store codes (ASL_A009, ASL_A011, ASL_AL004, ASL_AL007, ASL_FJ001) whose exact store mapping has not been confirmed. Store names shown as estimates only.');
@@ -4087,11 +4207,473 @@ async function buildInvIntelligence(){
     `${storesN} stores · SOH as at ${dt} · Sales rate: ${m.last3.join(', ')} · Target coverage: 60 days`;
   document.getElementById('inv-intel-loading').style.display = 'none';
   document.getElementById('inv-intel-body').style.display    = 'block';
+  _populateDrillDropdowns();
 }
 
 function rebuildInvIntelligence(){
   invSalesLoaded = false;
   buildInvIntelligence();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DRILL-DOWN ENGINE — Store & SKU search
+// ══════════════════════════════════════════════════════════════════
+
+let _drillMode   = null; // 'store' | 'sku'
+let _drillCode   = null; // store code or sku code
+let _drillSort   = 'status';
+let _drillData   = [];   // rows for current drill view
+
+const STATUS_ORDER = {stockout:0,critical:1,low:2,adequate:3,overstock:4,deadstock:5,inactive:6};
+
+function _populateDrillDropdowns(){
+  if(!_invMetrics) return;
+  const sel = document.getElementById('drill-store-sel');
+  if(!sel || sel.options.length > 1) return; // already populated
+  const stores = Object.keys(_invMetrics.storeSummary).sort((a,b)=>{
+    const na = (STORES.find(s=>s.code===a)||{}).name||a;
+    const nb = (STORES.find(s=>s.code===b)||{}).name||b;
+    return na.localeCompare(nb);
+  });
+  stores.forEach(code=>{
+    const name = (STORES.find(s=>s.code===code)||{}).name||code;
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = `${name} (${code})`;
+    sel.appendChild(opt);
+  });
+}
+
+function _onDrillStoreChange(){
+  const code = document.getElementById('drill-store-sel').value;
+  if(!code){ _clearDrillDown(); return; }
+  // clear SKU input
+  document.getElementById('drill-sku-input').value='';
+  document.getElementById('drill-sku-dropdown').style.display='none';
+  _runStoreDrillDown(code);
+}
+
+function _onDrillSKUInput(){
+  const q = document.getElementById('drill-sku-input').value.trim().toLowerCase();
+  const dd = document.getElementById('drill-sku-dropdown');
+  if(!_invMetrics || q.length < 1){ dd.style.display='none'; return; }
+  const matches = Object.entries(_invMetrics.skuSummary)
+    .filter(([sku,s])=> sku.toLowerCase().includes(q) || (s.name||'').toLowerCase().includes(q))
+    .sort((a,b)=> a[0].localeCompare(b[0]))
+    .slice(0,30);
+  if(!matches.length){ dd.style.display='none'; return; }
+  // position dropdown under input
+  const inp = document.getElementById('drill-sku-input');
+  const rect = inp.getBoundingClientRect();
+  dd.style.top  = (rect.bottom + window.scrollY) + 'px';
+  dd.style.left = (rect.left  + window.scrollX) + 'px';
+  dd.style.position = 'absolute';
+  dd.innerHTML = matches.map(([sku,s])=>`
+    <div onclick="_selectDrillSKU('${sku}')" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid #F0EDE8;display:flex;align-items:center;gap:10px;"
+         onmouseover="this.style.background='#F5F2EC'" onmouseout="this.style.background='#fff'">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold-dark);min-width:70px;">${sku}</span>
+      <span style="font-size:12px;color:var(--ink);">${s.name||sku}</span>
+      <span style="margin-left:auto;font-size:10px;color:var(--ink-light);">${s.storesStocked} stores</span>
+    </div>`).join('');
+  dd.style.display='block';
+}
+
+function _selectDrillSKU(sku){
+  document.getElementById('drill-sku-input').value = sku;
+  document.getElementById('drill-sku-dropdown').style.display='none';
+  document.getElementById('drill-store-sel').value='';
+  _runSKUDrillDown(sku);
+}
+
+function _runStoreDrillDown(storeCode){
+  if(!_invMetrics) return;
+  _drillMode = 'store';
+  _drillCode = storeCode;
+  const m = _invMetrics;
+  const storeName = (STORES.find(s=>s.code===storeCode)||{}).name||storeCode;
+  const snap = m.latestSnap[storeCode];
+  const skuMetrics = m.metrics[storeCode]||{};
+
+  _drillData = Object.entries(skuMetrics).map(([sku,d])=>({
+    sku, name: m.nameMap[sku]||sku,
+    soh:d.soh, rate:d.rate, dos:d.dos, status:d.status, orderUnits:d.orderUnits
+  }));
+
+  // Header KPIs
+  const ss = m.storeSummary[storeCode]||{c:{}};
+  const kpis = [
+    {label:'Total SKUs', val: _drillData.length},
+    {label:'Critical',   val: ss.c.critical||0,  color:'#C0392B'},
+    {label:'Low Stock',  val: ss.c.low||0,        color:'#E67E22'},
+    {label:'Stockouts',  val: ss.c.stockout||0,   color:'#922B21'},
+    {label:'Dead Stock', val: ss.c.deadstock||0,  color:'#7F8C8D'},
+    {label:'Avg DoS',    val: isFinite(ss.avgDos)&&ss.avgDos>0 ? Math.round(ss.avgDos)+'d':'—', color:'#27AE60'},
+  ];
+
+  document.getElementById('inv-drill-title').textContent    = storeName;
+  document.getElementById('inv-drill-subtitle').textContent = `${storeCode} · SOH as at ${snap?snap.date:'—'} · ${_drillData.length} SKUs`;
+  document.getElementById('inv-drill-kpis').innerHTML = kpis.map(k=>`
+    <div style="text-align:center;padding:6px 10px;background:rgba(255,255,255,.12);border-radius:2px;min-width:60px;">
+      <div style="font-size:16px;font-weight:700;color:${k.color||'#fff'};">${k.val}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.65);letter-spacing:.06em;">${k.label}</div>
+    </div>`).join('');
+
+  document.getElementById('inv-drill-sort-bar').style.display='flex';
+  document.getElementById('drill-filter-input').value='';
+  document.getElementById('inv-drill-results').style.display='block';
+  document.getElementById('inv-drill-results').scrollIntoView({behavior:'smooth',block:'nearest'});
+  _renderDrillTable();
+}
+
+function _runSKUDrillDown(skuCode){
+  if(!_invMetrics) return;
+  _drillMode = 'sku';
+  _drillCode = skuCode;
+  const m = _invMetrics;
+  const skuName = m.nameMap[skuCode]||skuCode;
+
+  _drillData = Object.entries(m.metrics)
+    .filter(([,skus])=> skuCode in skus)
+    .map(([store,skus])=>{
+      const d = skus[skuCode];
+      const storeName = (STORES.find(s=>s.code===store)||{}).name||store;
+      return {store, storeName, soh:d.soh, rate:d.rate, dos:d.dos, status:d.status, orderUnits:d.orderUnits};
+    });
+
+  const totalSoh = _drillData.reduce((s,r)=>s+r.soh,0);
+  const stockouts = _drillData.filter(r=>r.status==='stockout').length;
+  const critical  = _drillData.filter(r=>r.status==='critical').length;
+  const stocked   = _drillData.filter(r=>r.soh>0).length;
+  const dosVals   = _drillData.filter(r=>r.dos&&r.dos<999).map(r=>r.dos);
+  const avgDos    = dosVals.length ? Math.round(dosVals.reduce((a,b)=>a+b,0)/dosVals.length) : 0;
+
+  const kpis=[
+    {label:'Stores',    val:_drillData.length},
+    {label:'Stocked',   val:stocked,           color:'#27AE60'},
+    {label:'Stockouts', val:stockouts,          color:'#C0392B'},
+    {label:'Critical',  val:critical,           color:'#E67E22'},
+    {label:'Total SOH', val:totalSoh},
+    {label:'Avg DoS',   val:avgDos>0?avgDos+'d':'—', color:'#27AE60'},
+  ];
+
+  document.getElementById('inv-drill-title').textContent    = skuName;
+  document.getElementById('inv-drill-subtitle').textContent = `SKU: ${skuCode} · across ${_drillData.length} stores`;
+  document.getElementById('inv-drill-kpis').innerHTML = kpis.map(k=>`
+    <div style="text-align:center;padding:6px 10px;background:rgba(255,255,255,.12);border-radius:2px;min-width:60px;">
+      <div style="font-size:16px;font-weight:700;color:${k.color||'#fff'};">${k.val}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.65);letter-spacing:.06em;">${k.label}</div>
+    </div>`).join('');
+
+  document.getElementById('inv-drill-sort-bar').style.display='flex';
+  document.getElementById('drill-filter-input').value='';
+  document.getElementById('inv-drill-results').style.display='block';
+  document.getElementById('inv-drill-results').scrollIntoView({behavior:'smooth',block:'nearest'});
+  _renderDrillTable();
+}
+
+function _setDrillSort(s){
+  _drillSort = s;
+  document.querySelectorAll('.drill-sort-btn').forEach(b=>b.classList.toggle('active', b.dataset.sort===s));
+  _renderDrillTable();
+}
+
+function _renderDrillTable(){
+  if(!_drillData.length) return;
+  const filterQ = (document.getElementById('drill-filter-input')||{}).value||'';
+  const q = filterQ.trim().toLowerCase();
+
+  let rows = [..._drillData];
+  if(q) rows = rows.filter(r=> (r.name||'').toLowerCase().includes(q)||(r.sku||'').toLowerCase().includes(q)||(r.storeName||'').toLowerCase().includes(q)||(r.store||'').toLowerCase().includes(q));
+
+  // Sort
+  rows.sort((a,b)=>{
+    if(_drillSort==='status') return (STATUS_ORDER[a.status]||9)-(STATUS_ORDER[b.status]||9);
+    if(_drillSort==='dos')    return (a.dos===null?9999:a.dos)-(b.dos===null?9999:b.dos);
+    if(_drillSort==='soh')    return b.soh-a.soh;
+    if(_drillSort==='rate')   return b.rate-a.rate;
+    return 0;
+  });
+
+  const tbl = document.getElementById('inv-drill-table');
+  const isStore = _drillMode==='store';
+
+  const thead = isStore ? `
+    <thead><tr style="background:#F5F2EC;">
+      <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">SKU</th>
+      <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">PRODUCT</th>
+      <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">SOH</th>
+      <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">MO RATE</th>
+      <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">DoS</th>
+      <th style="padding:9px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">STATUS</th>
+      <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">ORDER QTY</th>
+      <th style="padding:9px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">→ SKU VIEW</th>
+    </tr></thead>` : `
+    <thead><tr style="background:#F5F2EC;">
+      <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">STORE</th>
+      <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">CODE</th>
+      <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">SOH</th>
+      <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">MO RATE</th>
+      <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">DoS</th>
+      <th style="padding:9px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">STATUS</th>
+      <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">ORDER QTY</th>
+      <th style="padding:9px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">→ STORE VIEW</th>
+    </tr></thead>`;
+
+  const tbody = rows.map((r,i)=>{
+    const cfg = INV_STATUS_CFG[r.status]||INV_STATUS_CFG.inactive;
+    const dosStr = r.dos===null?'—':r.dos>=999?'No sales':Math.round(r.dos)+'d';
+    const dosBg  = r.dos===null||r.dos>=999?'':'';
+    const rateStr = r.rate>0 ? r.rate.toFixed(1) : '—';
+    const orderStr= r.orderUnits>0 ? `<span style="color:#C0392B;font-weight:700;">${r.orderUnits}</span>` : '<span style="color:#ccc;">—</span>';
+    const statusBadge = `<span style="background:${cfg.bg};color:${cfg.fg};font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:2px;">${cfg.label}</span>`;
+    const rowBg = i%2===0?'#fff':'#FAFAF8';
+
+    if(isStore){
+      return `<tr style="background:${rowBg};border-bottom:1px solid #F0EDE8;">
+        <td style="padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold-dark);">${r.sku}</td>
+        <td style="padding:9px 12px;font-size:12px;color:var(--ink);">${r.name}</td>
+        <td style="padding:9px 12px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;">${r.soh}</td>
+        <td style="padding:9px 12px;text-align:right;font-size:11px;color:var(--ink-mid);">${rateStr}</td>
+        <td style="padding:9px 12px;text-align:right;font-size:12px;font-weight:600;color:${r.dos!==null&&r.dos<14&&r.dos!==999?'#C0392B':r.dos<30&&r.dos!==null?'#E67E22':'var(--ink)'};">${dosStr}</td>
+        <td style="padding:9px 12px;text-align:center;">${statusBadge}</td>
+        <td style="padding:9px 12px;text-align:right;">${orderStr}</td>
+        <td style="padding:9px 12px;text-align:center;"><button onclick="_selectDrillSKU('${r.sku}')" style="font-size:10px;padding:3px 9px;background:#F5F2EC;border:1px solid var(--border);color:var(--gold-dark);cursor:pointer;letter-spacing:.04em;">All stores</button></td>
+      </tr>`;
+    } else {
+      return `<tr style="background:${rowBg};border-bottom:1px solid #F0EDE8;">
+        <td style="padding:9px 12px;font-size:12px;color:var(--ink);">${r.storeName}</td>
+        <td style="padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold-dark);">${r.store}</td>
+        <td style="padding:9px 12px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;">${r.soh}</td>
+        <td style="padding:9px 12px;text-align:right;font-size:11px;color:var(--ink-mid);">${rateStr}</td>
+        <td style="padding:9px 12px;text-align:right;font-size:12px;font-weight:600;color:${r.dos!==null&&r.dos<14&&r.dos!==999?'#C0392B':r.dos<30&&r.dos!==null?'#E67E22':'var(--ink)'};">${dosStr}</td>
+        <td style="padding:9px 12px;text-align:center;">${statusBadge}</td>
+        <td style="padding:9px 12px;text-align:right;">${orderStr}</td>
+        <td style="padding:9px 12px;text-align:center;"><button onclick="_runStoreDrillDown('${r.store}')" style="font-size:10px;padding:3px 9px;background:#F5F2EC;border:1px solid var(--border);color:var(--gold-dark);cursor:pointer;letter-spacing:.04em;">Full store</button></td>
+      </tr>`;
+    }
+  }).join('');
+
+  tbl.innerHTML = thead + `<tbody>${tbody||'<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--ink-light);">No results</td></tr>'}</tbody>`;
+}
+
+function _clearDrillDown(){
+  _drillMode=null; _drillCode=null; _drillData=[];
+  document.getElementById('inv-drill-results').style.display='none';
+  document.getElementById('drill-store-sel').value='';
+  document.getElementById('drill-sku-input').value='';
+  document.getElementById('drill-sku-dropdown').style.display='none';
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click',function(e){
+  const dd=document.getElementById('drill-sku-dropdown');
+  if(dd && !dd.contains(e.target) && e.target.id!=='drill-sku-input') dd.style.display='none';
+  const rdd=document.getElementById('rc-sku-dropdown');
+  if(rdd && !rdd.contains(e.target) && e.target.id!=='rc-sku-input') rdd.style.display='none';
+});
+
+// ══════════════════════════════════════════════════════════════════
+// REGION × SKU CHECK ENGINE
+// ══════════════════════════════════════════════════════════════════
+
+// Region → store codes map
+const RC_REGIONS = {
+  'epp-abudhabi': ['A0001','A0002','A0003','A0004','A0005','A0007','A0008','A0009','A0010','PS_YAS'],
+  'epp-alain':    ['AL001','AL002','AL003','AL004','AL005','AL006'],
+  'epp-dubai':    ['DX001','DX003','DX004','DX005','DX006','DX008'],
+  'epp-other':    ['SH001','AJ001','RK001','RK002','FJ001'],
+  'epp-all':      ['A0001','A0002','A0003','A0004','A0005','A0007','A0008','A0009','A0010','PS_YAS',
+                   'AL001','AL002','AL003','AL004','AL005','AL006',
+                   'DX001','DX003','DX004','DX005','DX006','DX008',
+                   'SH001','AJ001','RK001','RK002','FJ001'],
+  'asl-uae':      ['BAS001','YMK001','BAW001','MAK001','FJ0001'],
+  'oman':         ['OM001','OM002','OM_ASL001'],
+  'ksa':          ['KSA_AHS001','KSA_HAM001','KSA_KHL001','KSA_MED001','KSA_ABH001',
+                   'KSA_JED001','KSA_GRN001','KSA_HAY001','KSA_HAY002','KSA_JPM001',
+                   'KSA_MKH001','KSA_MOA001','KSA_DAH001','KSA_DAH002','KSA_RYD001',
+                   'KSA_RSM001','KSA_RYD002','KSA_SLM001','KSA_JED002','KSA_YSM001'],
+  'all':          null // means all stores with SOH data
+};
+
+const RC_REGION_LABELS = {
+  'epp-abudhabi':'EPP Abu Dhabi (AM: Hessin)',
+  'epp-alain':   'EPP Al Ain (AM: Hessin)',
+  'epp-dubai':   'EPP Dubai (AM: Imad)',
+  'epp-other':   'EPP Other Emirates (AM: Elmatloub)',
+  'epp-all':     'All EPP UAE',
+  'asl-uae':     'ASL UAE',
+  'oman':        'Oman',
+  'ksa':         'KSA',
+  'all':         'All Regions'
+};
+
+let _rcSKUs = []; // [{code, name}]
+
+function _onRCSKUInput(){
+  const q = document.getElementById('rc-sku-input').value.trim().toLowerCase();
+  const dd = document.getElementById('rc-sku-dropdown');
+  if(!_invMetrics || q.length < 1){ dd.style.display='none'; return; }
+  const already = new Set(_rcSKUs.map(s=>s.code));
+  const matches = Object.entries(_invMetrics.skuSummary)
+    .filter(([sku,s])=> !already.has(sku) && (sku.toLowerCase().includes(q)||(s.name||'').toLowerCase().includes(q)))
+    .sort((a,b)=>a[0].localeCompare(b[0]))
+    .slice(0,25);
+  if(!matches.length){ dd.style.display='none'; return; }
+  const inp = document.getElementById('rc-sku-input');
+  const rect = inp.getBoundingClientRect();
+  dd.style.top  = (rect.bottom + window.scrollY)+'px';
+  dd.style.left = (rect.left  + window.scrollX)+'px';
+  dd.innerHTML = matches.map(([sku,s])=>`
+    <div onclick="_addRCSKU('${sku}','${(s.name||sku).replace(/'/g,"&#39;")}')"
+         style="padding:9px 14px;cursor:pointer;border-bottom:1px solid #F0EDE8;display:flex;align-items:center;gap:10px;"
+         onmouseover="this.style.background='#EFF3FF'" onmouseout="this.style.background='#fff'">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#1a2744;min-width:72px;">${sku}</span>
+      <span style="font-size:12px;color:var(--ink);">${s.name||sku}</span>
+    </div>`).join('');
+  dd.style.display='block';
+}
+
+function _addRCSKU(code, name){
+  if(_rcSKUs.length >= 10) return;
+  if(_rcSKUs.find(s=>s.code===code)) return;
+  _rcSKUs.push({code, name});
+  document.getElementById('rc-sku-input').value='';
+  document.getElementById('rc-sku-dropdown').style.display='none';
+  _renderRCChips();
+}
+
+function _removeRCSKU(code){
+  _rcSKUs = _rcSKUs.filter(s=>s.code!==code);
+  _renderRCChips();
+}
+
+function _renderRCChips(){
+  const box = document.getElementById('rc-sku-chips');
+  if(!_rcSKUs.length){
+    box.innerHTML = '<span style="font-size:11px;color:var(--ink-light);padding:4px 2px;">No SKUs added yet — search above</span>';
+    return;
+  }
+  box.innerHTML = _rcSKUs.map(s=>`
+    <span style="display:inline-flex;align-items:center;gap:5px;background:#1a2744;color:#fff;font-size:11px;padding:3px 10px 3px 8px;border-radius:2px;font-family:'IBM Plex Mono',monospace;">
+      ${s.code}
+      <span style="font-family:'Montserrat',sans-serif;font-size:10px;opacity:.75;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.name}</span>
+      <span onclick="_removeRCSKU('${s.code}')" style="cursor:pointer;opacity:.6;margin-left:3px;font-size:12px;font-family:sans-serif;" title="Remove">✕</span>
+    </span>`).join('');
+}
+
+function _runRegionCheck(){
+  if(!_invMetrics){ alert('Inventory data not loaded yet. Wait for the dashboard to finish loading.'); return; }
+  const regionKey = document.getElementById('rc-region-sel').value;
+  if(!regionKey){ alert('Please select a region first.'); return; }
+  if(!_rcSKUs.length){ alert('Please add at least one SKU.'); return; }
+
+  const m = _invMetrics;
+  // Resolve stores in region — filter to those that have SOH data
+  let storeCodes = RC_REGIONS[regionKey]
+    ? RC_REGIONS[regionKey].filter(c=> c in m.metrics)
+    : Object.keys(m.metrics);
+
+  if(!storeCodes.length){ alert('No SOH data found for this region. Upload store snapshots first.'); return; }
+
+  const regionLabel = RC_REGION_LABELS[regionKey]||regionKey;
+  document.getElementById('inv-rc-title').textContent    = regionLabel + ' — Stock Check';
+  document.getElementById('inv-rc-subtitle').textContent = `${storeCodes.length} stores · ${_rcSKUs.length} SKUs checked`;
+
+  // Build table: rows = stores, cols = SKUs
+  // Header row
+  const thSKUs = _rcSKUs.map(s=>`
+    <th style="padding:9px 10px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--ink-light);border-bottom:1px solid var(--border);border-left:1px solid var(--border);min-width:90px;max-width:130px;">
+      <div style="font-family:'IBM Plex Mono',monospace;color:var(--gold-dark);">${s.code}</div>
+      <div style="font-weight:500;color:var(--ink-mid);font-size:9px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;">${s.name}</div>
+    </th>`).join('');
+
+  // Summary counts: per SKU, how many stores have it in stock
+  const skuStockedCount = {};
+  const skuZeroCount    = {};
+  _rcSKUs.forEach(s=>{ skuStockedCount[s.code]=0; skuZeroCount[s.code]=0; });
+
+  // Data rows
+  const rows = storeCodes.map((store,i)=>{
+    const storeName = (STORES.find(s=>s.code===store)||{}).name||store;
+    const storeMetrics = m.metrics[store]||{};
+    const cells = _rcSKUs.map(sku=>{
+      const d = storeMetrics[sku.code];
+      if(!d) return `<td style="padding:8px 10px;text-align:center;border-left:1px solid var(--border);border-bottom:1px solid #F0EDE8;background:#FAFAFA;">
+        <span style="font-size:10px;color:#ccc;">—</span></td>`;
+      const cfg = INV_STATUS_CFG[d.status]||INV_STATUS_CFG.inactive;
+      const dosStr = d.dos===null?'—':d.dos>=999?'No sales':Math.round(d.dos)+'d';
+      if(d.soh>0) skuStockedCount[sku.code]++; else skuZeroCount[sku.code]++;
+      // Cell bg based on status
+      const cellBg = d.status==='stockout'?'#FFF0F0':d.status==='critical'?'#FFF5F0':d.status==='low'?'#FFFBF0':d.status==='deadstock'?'#F8F9FA':'#F0FFF4';
+      return `<td style="padding:8px 10px;text-align:center;border-left:1px solid var(--border);border-bottom:1px solid #F0EDE8;background:${cellBg};">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:${cfg.dot};">${d.soh}</div>
+        <div style="font-size:9px;color:${cfg.dot};opacity:.8;margin-top:1px;">${dosStr}</div>
+        <span style="background:${cfg.bg};color:${cfg.fg};font-size:8px;font-weight:700;letter-spacing:.06em;padding:1px 5px;border-radius:1px;">${cfg.label}</span>
+      </td>`;
+    }).join('');
+    const rowBg = i%2===0?'#fff':'#FAFAF8';
+    return `<tr style="background:${rowBg};">
+      <td style="padding:9px 14px;font-size:12px;color:var(--ink);border-bottom:1px solid #F0EDE8;white-space:nowrap;">
+        <div>${storeName}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gold-dark);">${store}</div>
+      </td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  // Footer summary row
+  const footerCells = _rcSKUs.map(s=>{
+    const total = storeCodes.length;
+    const stocked = skuStockedCount[s.code];
+    const zero    = skuZeroCount[s.code];
+    const pct     = total>0?Math.round(stocked/total*100):0;
+    const barColor = pct>=70?'#27AE60':pct>=40?'#E67E22':'#C0392B';
+    return `<td style="padding:8px 10px;text-align:center;border-left:1px solid var(--border);background:#F5F2EC;">
+      <div style="font-size:11px;font-weight:700;color:${barColor};">${stocked}/${total}</div>
+      <div style="height:4px;background:#E0D8CC;border-radius:2px;margin:4px 6px;">
+        <div style="height:4px;background:${barColor};border-radius:2px;width:${pct}%;"></div>
+      </div>
+      <div style="font-size:9px;color:var(--ink-light);">${pct}% stocked</div>
+      ${zero>0?`<div style="font-size:9px;color:#C0392B;font-weight:600;">${zero} out</div>`:''}
+    </td>`;
+  }).join('');
+
+  document.getElementById('inv-rc-table').innerHTML = `
+    <thead>
+      <tr style="background:#F5F2EC;">
+        <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-light);border-bottom:1px solid var(--border);">STORE</th>
+        ${thSKUs}
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+    <tfoot>
+      <tr>
+        <td style="padding:9px 14px;font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--ink-mid);border-top:2px solid var(--border);background:#F5F2EC;">COVERAGE</td>
+        ${footerCells}
+      </tr>
+    </tfoot>`;
+
+  // Summary line
+  const totalGaps = _rcSKUs.reduce((n,s)=>n+skuZeroCount[s.code],0);
+  const summaryParts = _rcSKUs.map(s=>{
+    const z = skuZeroCount[s.code];
+    return z>0 ? `<span style="color:#C0392B;font-weight:600;">${s.code}: ${z} store${z>1?'s':''} out</span>` : `<span style="color:#27AE60;">${s.code}: ✓ all stocked</span>`;
+  });
+  document.getElementById('inv-rc-summary').innerHTML =
+    `<span style="font-weight:700;color:var(--ink-mid);">GAPS:</span> ` + summaryParts.join(' &nbsp;·&nbsp; ') +
+    (totalGaps>0?` &nbsp;&nbsp;<span style="color:#C0392B;font-weight:700;">${totalGaps} total gaps across ${storeCodes.length} stores</span>`:'');
+
+  document.getElementById('inv-rc-results').style.display='block';
+  document.getElementById('inv-rc-results').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function _clearRegionCheck(){
+  _rcSKUs=[];
+  _renderRCChips();
+  document.getElementById('rc-region-sel').value='';
+  document.getElementById('rc-sku-input').value='';
+  document.getElementById('rc-sku-dropdown').style.display='none';
+  document.getElementById('inv-rc-results').style.display='none';
 }
 
 async function _loadInvSalesData(){
@@ -10584,25 +11166,52 @@ function _populateAMStoreDropdown() {
   const sel = document.getElementById('am-tc-store');
   const current = sel.value;
   sel.innerHTML = '<option value="">— Select Store —</option>';
-  const seen = new Map();
-  testerRawRows.forEach(r => {
-    if (!seen.has(r.store_code)) {
-      const info = STORES.find(s => s.code === r.store_code);
-      seen.set(r.store_code, (info ? info.name : null) || r.store_name || r.store_code);
-    }
-  });
-  // Also add stores from salesData that might not have tester history
-  salesData.forEach(r => {
-    if (!seen.has(r.store_code)) {
-      const info = STORES.find(s => s.code === r.store_code);
-      if (info && info.type !== 'WH') seen.set(r.store_code, info.name);
-    }
-  });
-  [...seen.entries()].sort((a,b) => a[1].localeCompare(b[1])).forEach(([code, name]) => {
-    const o = document.createElement('option');
-    o.value = code; o.textContent = name;
-    if (code === current) o.selected = true;
-    sel.appendChild(o);
+
+  // Canonical stores only — no legacy, retired, or duplicate codes
+  const LEGACY_CODES = new Set([
+    'ASL_YAS001','ASL_BAW001','ASL_MAK001','ASL_FUJ001','ASL_FJ001',
+    'ASL_A009','ASL_AL007','ASL_A011','ASL_AL004',
+    'FJ001A',           // duplicate of FJ0001
+    'DX001K',           // legacy Dubai Mall Kiosk
+    'A0006','A0012','A0013','AL008','FJ002', // retired
+    'HO','PS_ZCC',      // Head Office / promo stands — not stores
+  ]);
+
+  // Which codes actually have data (tester or sales)
+  const activeCodes = new Set([
+    ...testerRawRows.map(r => r.store_code),
+    ...salesData.map(r => r.store_code),
+  ]);
+
+  // Group definitions: label → [store codes in order]
+  const GROUPS = [
+    { label: '🇦🇪 EPP — Abu Dhabi  (AM: Hessin)', codes: ['A0001','A0002','A0003','A0004','A0005','A0007','A0008','A0009','A0010','PS_YAS'] },
+    { label: '🇦🇪 EPP — Al Ain  (AM: Hessin)',    codes: ['AL001','AL002','AL003','AL004','AL005','AL006'] },
+    { label: '🇦🇪 EPP — Dubai  (AM: Imad)',        codes: ['DX001','DX003','DX004','DX005','DX006','DX008'] },
+    { label: '🇦🇪 EPP — Other Emirates  (AM: Elmatloub)', codes: ['SH001','AJ001','RK001','RK002','FJ001'] },
+    { label: '🇦🇪 ASL UAE',                        codes: ['BAS001','YMK001','BAW001','MAK001','FJ0001'] },
+    { label: '🇴🇲 Oman',                           codes: ['OM001','OM002','OM_ASL001'] },
+    { label: '🇸🇦 KSA',                            codes: ['KSA_AHS001','KSA_HAM001','KSA_KHL001','KSA_MED001','KSA_ABH001',
+                                                           'KSA_JED001','KSA_GRN001','KSA_HAY001','KSA_HAY002','KSA_JPM001',
+                                                           'KSA_MKH001','KSA_MOA001','KSA_DAH001','KSA_DAH002','KSA_RYD001',
+                                                           'KSA_RSM001','KSA_RYD002','KSA_SLM001','KSA_JED002','KSA_YSM001'] },
+  ];
+
+  GROUPS.forEach(g => {
+    const storesInGroup = g.codes
+      .filter(code => !LEGACY_CODES.has(code) && activeCodes.has(code))
+      .map(code => ({ code, name: (STORES.find(s => s.code === code)||{}).name || code }));
+    if (!storesInGroup.length) return;
+    const grp = document.createElement('optgroup');
+    grp.label = g.label;
+    storesInGroup.forEach(({ code, name }) => {
+      const o = document.createElement('option');
+      o.value = code;
+      o.textContent = name;
+      if (code === current) o.selected = true;
+      grp.appendChild(o);
+    });
+    sel.appendChild(grp);
   });
 }
 

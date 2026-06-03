@@ -4,6 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## ⚠️ NON-NEGOTIABLE RULE — SELF-TEST BEFORE SAYING DONE
+
+> **"Perform all the checks before me telling. Instill this. Prepare a series of tests and then confirm to me."**
+> — Amal, 2 Jun 2026
+
+**Before shipping ANY feature that reads from Supabase:**
+1. Query the actual table first. Check column names, data formats, null patterns.
+2. Look for multi-format keys (e.g. same SKU stored as `B00021` AND `B00021-T` in different months).
+3. Verify with a known ground truth — if Amal mentioned a specific number, SQL-confirm it before writing JS.
+4. Run edge cases mentally: zero data, new store not in STORES[], SKU with no sales, suffix mismatch.
+5. Only say "done" after the known example produces the correct result.
+
+**Known data quirk that burned us (Jun 2026):**
+`tester_history` stores the same product under bare code (Oct 2025–Feb 2026) AND `-T` suffix (Mar 2026 onwards). This is the **confirmed permanent format split** — Amal confirmed Mar 2026+ will always use `-T` suffix. Jan + Feb data will be re-uploaded by Amal when available. Old bare-code rows stay as-is. Always run `_normSku()` before comparing tester SKU codes — it handles both formats.
+
+---
+
 ## Commands
 
 ### Local Development
@@ -454,6 +471,100 @@ The S&OP portal is used by Emirates Pride management. Primary responsibilities:
 ## PROJECT DETAILS — Full Development Log
 
 > **Format**: Each session listed newest first. Include: date, files changed, what was done, commit hash if pushed.
+
+---
+
+### Session — 2 June 2026 (Session 45 — Stock Master Excel Full Upload + Verification)
+**Files changed**: `upload_stock_master.py` (new)
+**Commit**: not pushed (local script)
+
+#### What was done:
+
+**Task**: Upload `Emirates_Pride_Perfumes_Stock_Master.xlsx` (28 sheets, 27 stores) to Supabase `store_soh_snapshots` with 150% accuracy guarantee.
+
+**Script**: `upload_stock_master.py` — full pipeline: parse → spot-check → SQL generate → upload → verify
+
+**Key accuracy features built in:**
+- **Smart column selection**: 8 stores had unfilled latest-day columns (all dashes). Script auto-detects the rightmost column with ≥5 non-zero rows and uses that instead. Examples: AL001 used col 2/5 (Jun-1, not Jun-4), BAS Shop used col 2/5 (Jun-2, not Jun-5).
+- **Annotation row filtering**: Skips note rows like "Oud Amiri (+24)", "(image 1 split)" variants, "(dup row)" etc.
+- **Pre-upload spot-check**: 5 manual cross-checks abort the upload if ANY mismatch found.
+- **Post-upload row+unit verification**: Queries Supabase back and confirms every store matches source Excel exactly.
+
+**Verified results (27/27 stores — all BANG ON):**
+- Total product rows: **2,542**
+- Total units: **22,267**
+- Upload errors: **0**
+- Row-level + unit-level verification: all 27 stores match
+
+**Snapshot dates used per store (smart column selection):**
+- Most stores: 2026-06-01 (latest fully-filled day)
+- A0001 (BAS Shop): 2026-06-02
+- A0010 (BAS Shop 2): 2026-05-31 (col 4/5 — last filled day)
+- FJ0001 (ASL Fujairah): 2026-06-02
+
+**SQL backup**: `C:\Users\AMALKANDATHIL\Downloads\stock_master_upload.sql` (2,585 lines)
+
+**Top store totals (units in Supabase):**
+| Store | Code | Units |
+|-------|------|-------|
+| BAS Shop | A0001 | 2,693 |
+| Dalma Mall Shop | A0003 | 2,137 |
+| BAS Shop 2 | A0010 | 1,909 |
+| Dubai Mall | DX001 | 1,961 |
+| Makani Shop | AL006 | 1,799 |
+| Jimi Mall | AL004 | 1,552 |
+| Boutique Al Manar Mall | RK001 | 1,478 |
+| Dubai Hills Mall | DX006 | 1,575 |
+
+---
+
+### Session — 2 June 2026 (Session 44 — Full S&OP Data Audit + AM Tester Check Tool)
+**Files changed**: `sop-portal.html`
+**Commit**: `4f922c7` → pushed to main → GitHub Pages live
+
+#### Full Supabase Data Audit Findings:
+
+**✅ Confirmed correct:**
+- EPP UAE May 2026: 24,691 units · 23 stores ✅
+- ASL UAE May 2026: 1,161 units · 5 stores (BAS001/YMK001/BAW001/MAK001/FJ0001) ✅
+- Oman May 2026: 2,227 units · 3 stores ✅
+- KSA all-time: 59,825 units Jan 2025–May 2026 ✅
+- tester_history: 36,583 rows, EPP+ASL Jan 2025–May 2026 ✅
+
+**❌ Known data quality issues (documented, warnings added to portal):**
+1. **ASL Apr 2026 double-count**: Old codes (ASL_A009=87, ASL_AL007=73) AND new codes (ASL_YAS001=256, ASL_BAW001=179 etc.) BOTH exist for the same stores in Apr 2026. Total overstated by ~160 units. Need Amal to confirm ASL_A009 and ASL_AL007 exact store mappings to deduplicate.
+2. **ASL Jan–Mar 2026 legacy codes**: ASL_A009, ASL_A011, ASL_AL004, ASL_AL007, ASL_FJ001 — exact store mapping not confirmed. ASL_A011 (966 units) and ASL_AL004 (582 units) store identity unknown.
+3. **B00020/B00021 not "missing"**: Master Signature launched Oct 2025, Midnight Bloom launched Nov 2025 — zero Jan–Sep 2025 is CORRECT. Added `SKU_LAUNCHED` map to portal so "⚡ New Oct 2025" badge shows in SKU view.
+4. **tester_history RLS disabled**: Table fully exposed to anon key. Enable RLS + add read policy before go-live.
+
+#### What was built:
+
+**1. AM Tester Check Tool** (gold button "🔍 AM Tester Check" in Testers tab filter bar)
+- Full-screen overlay panel with store + SKU dropdowns
+- Store dropdown: all stores that have had tester dispatches
+- SKU dropdown: grouped — "★ Has Prior Tester History" first, then "Sales Only" (no testers yet)
+- Shows last 6 months table: Month | Testers Given | SKU Sales | Contrib % | Status badge
+- Status badges: ✓ Efficient (≤5%), ◉ Monitor (5–15%), ▲ High Use (>15%), No Testers, No Sales
+- Bottom recommendation block: APPROVE / MONITOR / HOLD with plain-English reasoning
+- Contrib % formula: testers dispatched ÷ SKU units sold × 100 (lower = more efficient)
+- Use this EVERY TIME before approving an AM tester request
+
+**2. Data Quality Warning Banner** (Sales tab, auto-shows/hides based on filters)
+- Fires when ASL + Apr 2026 visible: warns about double-count risk
+- Fires when ASL + Jan–Mar 2026 visible: warns about unconfirmed legacy store codes
+
+**3. SKU Launch Date Badges** (SKU view in Sales tab)
+- `SKU_LAUNCHED` map added: B00020 (Oct 2025), B00021 (Nov 2025), RM series (May 2026) etc.
+- Shows "⚡ New Oct 2025" amber badge next to product name in SKU view
+- Tooltip: "earlier months show zero, not missing data"
+
+#### Pending actions for Amal:
+1. Confirm: ASL_A009 → which store? (YMK001 Yas Mall or BAS001?)
+2. Confirm: ASL_A011 → which store? (BAS001?)
+3. Confirm: ASL_AL004 → which store? (BAW001 or MAK001?)
+4. Confirm: ASL_AL007 → which store? (the other one)
+5. Enable RLS on tester_history table (security issue — see audit above)
+6. Remind Amal: update store stock when next pushing to GitHub
 
 ---
 
