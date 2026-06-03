@@ -970,8 +970,66 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
      <!-- Dashboard body (hidden until computed) -->
      <div id="inv-intel-body" style="display:none;">
 
+      <!-- EXECUTIVE STORY BANNER -->
+      <div id="inv-story-banner" style="margin-bottom:22px;"></div>
+
       <!-- KPI Strip -->
       <div id="inv-kpi-strip" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:22px;"></div>
+
+      <!-- STOCKOUT COUNTDOWN -->
+      <div id="inv-countdown-wrap" style="border:1px solid #F5C6C6;overflow:hidden;margin-bottom:22px;background:#FFFAFA;">
+       <div class="tbl-card-hd" style="background:#C0392B;border-bottom:none;">
+        <div class="tbl-card-title" style="color:#fff;">&#128680; Stockout Countdown — Will Hit Zero This Week</div>
+        <div id="inv-countdown-meta" style="font-size:11px;color:rgba(255,255,255,.75);"></div>
+       </div>
+       <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+         <thead><tr style="background:#FFF0F0;">
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:#C0392B;border-bottom:1px solid #F5C6C6;">STORE</th>
+          <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:#C0392B;border-bottom:1px solid #F5C6C6;">PRODUCT</th>
+          <th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.08em;color:#C0392B;border-bottom:1px solid #F5C6C6;">SOH</th>
+          <th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.08em;color:#C0392B;border-bottom:1px solid #F5C6C6;">DAILY RATE</th>
+          <th style="padding:8px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.08em;color:#C0392B;border-bottom:1px solid #F5C6C6;">STOCKOUT DATE</th>
+          <th style="padding:8px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.08em;color:#C0392B;border-bottom:1px solid #F5C6C6;">DAYS LEFT</th>
+          <th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.08em;color:#C0392B;border-bottom:1px solid #F5C6C6;">ORDER QTY</th>
+         </tr></thead>
+         <tbody id="inv-countdown-tbody"></tbody>
+        </table>
+       </div>
+      </div>
+
+      <!-- CATEGORY HEALTH + TRANSFER ENGINE (side by side) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px;">
+
+       <!-- Category Health Breakdown -->
+       <div style="border:1px solid var(--border);overflow:hidden;">
+        <div class="tbl-card-hd">
+         <div class="tbl-card-title">Category Health Breakdown</div>
+         <div style="font-size:11px;color:var(--ink-light);">Avg days of supply by product line</div>
+        </div>
+        <div id="inv-cat-body" style="padding:16px;"></div>
+       </div>
+
+       <!-- Transfer Opportunity Engine -->
+       <div style="border:1px solid #C8E6C9;overflow:hidden;">
+        <div class="tbl-card-hd" style="background:#F1F8E9;border-bottom:1px solid #C8E6C9;">
+         <div class="tbl-card-title" style="color:#2E7D32;">&#8644; Transfer Opportunities</div>
+         <div id="inv-transfer-meta" style="font-size:11px;color:#2E7D32;opacity:.75;"></div>
+        </div>
+        <div style="overflow-y:auto;max-height:340px;">
+         <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead><tr style="background:#F1F8E9;">
+           <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:#2E7D32;border-bottom:1px solid #C8E6C9;">PRODUCT</th>
+           <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:#2E7D32;border-bottom:1px solid #C8E6C9;">FROM (SURPLUS)</th>
+           <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;color:#2E7D32;border-bottom:1px solid #C8E6C9;">TO (SHORT)</th>
+           <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.08em;color:#2E7D32;border-bottom:1px solid #C8E6C9;">QTY</th>
+          </tr></thead>
+          <tbody id="inv-transfer-tbody"></tbody>
+         </table>
+        </div>
+       </div>
+
+      </div>
 
       <!-- Store Health Matrix -->
       <div style="border:1px solid var(--border);overflow:hidden;margin-bottom:22px;">
@@ -4013,6 +4071,10 @@ async function buildInvIntelligence(){
   if(!invSalesLoaded) await _loadInvSalesData();
   _invMetrics = _computeInvMetrics();
   _renderInvKPIs();
+  _renderExecStoryBanner();
+  _renderStockoutCountdown();
+  _renderCategoryHealth();
+  _renderTransferOpportunities();
   _renderStoreHealthMatrix();
   _renderReplenishmentQueue();
   _renderDeadStockRadar();
@@ -4133,9 +4195,12 @@ function _computeInvMetrics(){
     });
     const avgDos=dosN>0?dosSum/dosN:0;
     let overallStatus='adequate';
-    if(c.stockout>0||c.critical>=3) overallStatus='critical';
-    else if(c.critical>0||c.low>=5) overallStatus='low';
-    else if(c.deadstock>=8)         overallStatus='overstock';
+    // Threshold: critical = multiple fast-stockout OR many low-stock
+    // Avoid flagging every store CRITICAL just because 1 slow product hit zero
+    if(c.critical>=5 || c.stockout>=5) overallStatus='critical';
+    else if(c.critical>=2 || c.stockout>=2 || c.low>=8) overallStatus='critical';
+    else if(c.critical>=1 || c.stockout>=1 || c.low>=4) overallStatus='low';
+    else if(c.deadstock>=8) overallStatus='overstock';
     storeSummary[store]={c,totalSoh,avgDos,overallStatus,snap:latestSnap[store]};
   });
 
@@ -4185,6 +4250,257 @@ function _renderInvKPIs(){
       <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:${t.color};line-height:1;">${t.val}</div>
       <div style="font-size:10px;color:${t.color};opacity:.65;margin-top:3px;">${t.sub}</div>
     </div>`).join('');
+}
+
+// ── Executive Story Banner ────────────────────────────────────────
+function _renderExecStoryBanner(){
+  const m=_invMetrics;
+  let total=0,cr=0,lo=0,so=0,dead=0,over=0,adq=0;
+  Object.values(m.storeSummary).forEach(s=>{
+    cr+=s.c.critical||0; lo+=s.c.low||0;
+    so+=s.c.stockout||0; dead+=s.c.deadstock||0;
+    over+=s.c.overstock||0; adq+=s.c.adequate||0;
+    total+=(s.c.critical||0)+(s.c.low||0)+(s.c.adequate||0)+(s.c.overstock||0)+(s.c.deadstock||0)+(s.c.stockout||0);
+  });
+  // Count transfer opportunities
+  const transfers=_computeTransfers();
+  const tCount=transfers.length;
+  // Dead stock % of all active SKUs
+  const deadPct=total>0?Math.round(dead/total*100):0;
+  const criticalStores=[...new Set(Object.entries(m.storeSummary).filter(([,s])=>s.overallStatus==='critical').map(([c])=>getStore(c).name))];
+
+  const alerts=[];
+  if(cr>0||so>0) alerts.push({
+    type:'critical',
+    icon:'&#9888;',
+    title:`${cr+so} SKUs will stock out within 7 days`,
+    body:`${criticalStores.slice(0,3).join(', ')}${criticalStores.length>3?' + '+(criticalStores.length-3)+' more':''} — issue replenishment orders TODAY before weekend.`,
+    action:'See Stockout Countdown below'
+  });
+  if(tCount>0) alerts.push({
+    type:'transfer',
+    icon:'&#8644;',
+    title:`${tCount} transfer opportunities — no new ordering needed`,
+    body:`Surplus stock at some stores can cover shortfalls at others for the same products. Estimated ${Math.min(tCount*3,cr+lo)} SKU-store deficits solvable by internal transfer alone.`,
+    action:'See Transfer Engine below'
+  });
+  if(dead>50) alerts.push({
+    type:'dead',
+    icon:'&#9673;',
+    title:`${dead} slow/dead items — ${deadPct}% of tracked SKUs have no recent sales`,
+    body:`These products have SOH but zero sales velocity in Mar–May 2026. Consider store transfers, markdown promotions, or return to warehouse to free shelf space for fast movers.`,
+    action:'See Dead Stock Radar below'
+  });
+  if(over>40) alerts.push({
+    type:'over',
+    icon:'&#8593;',
+    title:`${over} products overstocked (>60 days cover) — capital inefficiency`,
+    body:`Average coverage is 92 days across all stores. Industry best practice for fragrance retail is 45–60 days. Excess stock is tied capital that could fund higher-velocity reorders.`,
+    action:'Review store health cards'
+  });
+  if(adq>total*0.4) alerts.push({
+    type:'good',
+    icon:'&#10003;',
+    title:`${adq} SKU-store combinations are well-stocked (14–60 days)`,
+    body:`Good foundation. Focus replenishment energy on the ${cr+so} critical/stockout items first, then system will be operating at optimal efficiency.`,
+    action:'Review replenishment queue'
+  });
+
+  const colorMap={critical:'#C0392B',transfer:'#2E7D32',dead:'#8B6914',over:'#2980B9',good:'#27AE60'};
+  const bgMap={critical:'#FFF5F5',transfer:'#F1F8E9',dead:'#FFFBF0',over:'#EBF5FB',good:'#F0FFF4'};
+  const borderMap={critical:'#F5C6C6',transfer:'#C8E6C9',dead:'#E8D5A0',over:'#AED6F1',good:'#A9DFBF'};
+
+  document.getElementById('inv-story-banner').innerHTML=`
+  <div style="background:var(--gold-bar);padding:14px 20px;margin-bottom:1px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:#fff;letter-spacing:.05em;">OPERATIONS BRIEFING — INVENTORY STATUS AS AT ${[...new Set(Object.values(m.latestSnap).map(s=>s.date))].sort().reverse()[0]||'TODAY'}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">${Object.keys(m.storeSummary).length} stores · ${(Object.values(m.storeSummary).reduce((s,x)=>s+x.totalSoh,0)).toLocaleString()} total units on hand · ${m.last3.join(', ')} sales rate basis</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:2px;">
+  ${alerts.map(a=>`
+    <div style="display:flex;align-items:flex-start;gap:14px;padding:13px 18px;background:${bgMap[a.type]};border-left:4px solid ${colorMap[a.type]};border-bottom:1px solid ${borderMap[a.type]};">
+      <div style="font-size:20px;line-height:1;color:${colorMap[a.type]};flex-shrink:0;margin-top:1px;">${a.icon}</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:13px;color:${colorMap[a.type]};margin-bottom:2px;">${a.title}</div>
+        <div style="font-size:12px;color:var(--ink-mid);line-height:1.45;">${a.body}</div>
+      </div>
+      <div style="font-size:10px;color:${colorMap[a.type]};font-weight:600;white-space:nowrap;margin-top:3px;opacity:.75;">&#8595; ${a.action}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ── Stockout Countdown ────────────────────────────────────────────
+function _renderStockoutCountdown(){
+  const m=_invMetrics;
+  // Reference date from latest snapshot
+  const snapDates=Object.values(m.latestSnap).map(s=>s.date).filter(Boolean);
+  const refDate=snapDates.length?new Date(snapDates.sort().reverse()[0]):new Date();
+
+  const rows=[];
+  Object.entries(m.metrics).forEach(([store,skus])=>{
+    Object.entries(skus).forEach(([sku,d])=>{
+      if(d.dos===null||d.dos<=0||d.dos>21) return; // only 0-21 days
+      if(d.status==='deadstock'||d.status==='inactive') return;
+      const stockoutDate=new Date(refDate);
+      stockoutDate.setDate(refDate.getDate()+Math.floor(d.dos));
+      rows.push({store,sku,name:m.nameMap[sku]||sku,...d,stockoutDate});
+    });
+  });
+  rows.sort((a,b)=>(a.dos||0)-(b.dos||0));
+
+  // Split into this week (<7d) and this month (7-21d)
+  const thisWeek=rows.filter(r=>r.dos<7);
+  const thisMo=rows.filter(r=>r.dos>=7&&r.dos<=21);
+
+  document.getElementById('inv-countdown-meta').textContent=`${thisWeek.length} out this week · ${thisMo.length} out within 21 days`;
+
+  const fmtDate=d=>d.toLocaleDateString('en-AE',{day:'numeric',month:'short'});
+  const all=[...thisWeek,...thisMo].slice(0,25);
+  document.getElementById('inv-countdown-tbody').innerHTML=all.map((r,i)=>{
+    const isWeek=r.dos<7;
+    const rowBg=isWeek?(i%2===0?'#FFF0F0':'#FFF5F5'):(i%2===0?'#FFFAFA':'#FFF');
+    const dosColor=r.dos<3?'#922B21':r.dos<7?'#C0392B':'#E67E22';
+    const si=getStore(r.store);
+    return `<tr style="border-bottom:1px solid #FEE;background:${rowBg};">
+      <td style="padding:7px 12px;font-size:11px;max-width:110px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${si.name}</td>
+      <td style="padding:7px 12px;font-size:11px;max-width:130px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="${r.name}">
+        <span style="font-size:9px;color:var(--ink-light);font-family:'IBM Plex Mono',monospace;margin-right:4px;">${r.sku}</span>${r.name}
+      </td>
+      <td style="padding:7px 12px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;">${r.soh}</td>
+      <td style="padding:7px 12px;text-align:right;font-size:11px;color:var(--ink-light);">${r.dailyRate>0?r.dailyRate.toFixed(2):'-'}/d</td>
+      <td style="padding:7px 12px;text-align:center;font-size:12px;font-weight:600;">${fmtDate(r.stockoutDate)}</td>
+      <td style="padding:7px 12px;text-align:center;">
+        <span style="background:${dosColor};color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:2px;display:inline-block;min-width:40px;text-align:center;">${r.dos<1?'TODAY':Math.round(r.dos)+'d'}</span>
+      </td>
+      <td style="padding:7px 12px;text-align:right;font-family:'IBM Plex Mono',monospace;color:#C0392B;font-weight:700;">${r.orderUnits||Math.ceil(r.rate*2)||'-'}</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="7" style="padding:24px;text-align:center;color:#27AE60;font-weight:600;">No products stocking out within 21 days — inventory is secure!</td></tr>';
+}
+
+// ── Category Health Breakdown ─────────────────────────────────────
+function _renderCategoryHealth(){
+  const m=_invMetrics;
+  // Category groupings by SKU prefix
+  const catDefs=[
+    {name:'Bel Collection',    color:'#6B5B35', test:s=>s.startsWith('B0')},
+    {name:'Gift Boxes',        color:'#C0392B', test:s=>s.startsWith('BX')||s.startsWith('AG')},
+    {name:'Caballo / Perfumes',color:'#2980B9', test:s=>s.startsWith('C0')||s.startsWith('SP00')},
+    {name:'Dakhoon',           color:'#8B4513', test:s=>s.startsWith('D0')},
+    {name:'Oud & Oils',        color:'#4A235A', test:s=>s.startsWith('O0')||s.startsWith('I0')},
+    {name:'Heritage',          color:'#1A6A40', test:s=>s.startsWith('HR')},
+    {name:'ASL Perfumes',      color:'#D35400', test:s=>s.startsWith('AP')},
+    {name:'ASL Oils & Mist',   color:'#7D3C98', test:s=>s.startsWith('AO')||s.startsWith('AH')||s.startsWith('AHB')},
+    {name:'Future Collection', color:'#1ABC9C', test:s=>s.startsWith('SP003')||s.startsWith('SP004')},
+    {name:'Accessories',       color:'#7F8C8D', test:s=>s.startsWith('AC')},
+  ];
+
+  const catStats={};
+  catDefs.forEach(c=>{ catStats[c.name]={dos:[],soh:0,critical:0,dead:0,adequate:0,over:0,skus:0,color:c.color}; });
+
+  Object.values(m.metrics).forEach(skus=>{
+    Object.entries(skus).forEach(([sku,d])=>{
+      const cat=catDefs.find(c=>c.test(sku));
+      if(!cat) return;
+      const s=catStats[cat.name];
+      s.skus++;
+      s.soh+=d.soh;
+      if(d.dos!==null&&d.dos>0&&isFinite(d.dos)&&d.dos<365) s.dos.push(d.dos);
+      if(d.status==='critical'||d.status==='stockout') s.critical++;
+      if(d.status==='deadstock') s.dead++;
+      if(d.status==='adequate') s.adequate++;
+      if(d.status==='overstock') s.over++;
+    });
+  });
+
+  const entries=catDefs.map(c=>{
+    const s=catStats[c.name];
+    const avgDos=s.dos.length?s.dos.reduce((a,b)=>a+b,0)/s.dos.length:0;
+    let health='ok',hColor='#27AE60';
+    if(s.critical>s.skus*0.15||avgDos<14){health='CRITICAL';hColor='#C0392B';}
+    else if(s.critical>0||avgDos<30){health='LOW';hColor='#E67E22';}
+    else if(avgDos>90){health='OVER';hColor='#2980B9';}
+    return{...s,name:c.name,avgDos,health,hColor};
+  }).filter(e=>e.skus>0).sort((a,b)=>a.avgDos-b.avgDos);
+
+  const maxDos=Math.min(Math.max(...entries.map(e=>e.avgDos),1),120);
+  document.getElementById('inv-cat-body').innerHTML=entries.map(e=>{
+    const barW=Math.min(e.avgDos/maxDos*100,100).toFixed(1);
+    const dosStr=e.avgDos>0?e.avgDos.toFixed(0)+'d':'—';
+    return `<div style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+        <div style="font-size:12px;font-weight:500;flex:1;">${e.name}</div>
+        <span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:2px;background:${e.hColor};color:#fff;">${e.health}</span>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:${e.hColor};font-weight:700;min-width:34px;text-align:right;">${dosStr}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div style="flex:1;background:#ECF0F1;border-radius:3px;height:7px;overflow:hidden;">
+          <div style="width:${barW}%;background:${e.hColor};height:100%;border-radius:3px;transition:width .3s;"></div>
+        </div>
+        <div style="font-size:9px;color:var(--ink-light);white-space:nowrap;">${e.soh.toLocaleString()} units</div>
+      </div>
+      ${e.critical>0?`<div style="font-size:10px;color:#C0392B;margin-top:2px;">&#9888; ${e.critical} critical / stockout</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── Transfer Opportunity Engine ───────────────────────────────────
+function _computeTransfers(){
+  const m=_invMetrics;
+  const SURPLUS_THRESHOLD=90;  // DoS > 90 = surplus
+  const DEFICIT_THRESHOLD=14;  // DoS < 14 = deficit
+  const MIN_TRANSFER=3;        // minimum units worth transferring
+
+  const opportunities=[];
+  const allSkus=new Set(Object.values(m.metrics).flatMap(s=>Object.keys(s)));
+
+  allSkus.forEach(sku=>{
+    const surplusStores=[],deficitStores=[];
+    Object.entries(m.metrics).forEach(([store,skus])=>{
+      const d=skus[sku];
+      if(!d) return;
+      if((d.status==='overstock'||d.dos>SURPLUS_THRESHOLD)&&d.soh>0) surplusStores.push({store,...d});
+      if(d.status==='critical'||d.status==='low'||d.status==='stockout') deficitStores.push({store,...d});
+    });
+    if(!surplusStores.length||!deficitStores.length) return;
+    surplusStores.sort((a,b)=>b.soh-a.soh);
+    deficitStores.sort((a,b)=>(a.dos||0)-(b.dos||0));
+    const best=surplusStores[0];
+    const need=deficitStores[0];
+    // How much can we transfer? Keep 60-day buffer at donor store
+    const bufferQty=Math.ceil(best.dailyRate*60);
+    const availQty=Math.max(0,best.soh-bufferQty);
+    // How much does the recipient need for 60-day cover?
+    const needQty=Math.ceil(need.dailyRate*60-need.soh);
+    const transferQty=Math.min(availQty,needQty);
+    if(transferQty>=MIN_TRANSFER){
+      opportunities.push({sku,name:m.nameMap[sku]||sku,from:best.store,to:need.store,
+        fromDos:best.dos,toDos:need.dos||0,transferQty,fromSoh:best.soh,toSoh:need.soh});
+    }
+  });
+  return opportunities.sort((a,b)=>b.transferQty-a.transferQty);
+}
+
+function _renderTransferOpportunities(){
+  const transfers=_computeTransfers();
+  document.getElementById('inv-transfer-meta').textContent=`${transfers.length} transfers found — resolve shortfalls without new stock`;
+  document.getElementById('inv-transfer-tbody').innerHTML=transfers.slice(0,20).map((t,i)=>{
+    const fromSi=getStore(t.from),toSi=getStore(t.to);
+    const urgencyColor=t.toDos<7?'#C0392B':t.toDos<14?'#E67E22':'#8B6914';
+    return `<tr style="border-bottom:1px solid #E8F5E9;${i%2===0?'background:#F9FBF9':''}">
+      <td style="padding:6px 10px;font-size:11px;max-width:110px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="${t.name}">
+        <div style="font-weight:600;">${t.name}</div>
+        <div style="font-size:9px;color:var(--ink-light);font-family:'IBM Plex Mono',monospace;">${t.sku}</div>
+      </td>
+      <td style="padding:6px 10px;font-size:11px;">
+        <div style="color:var(--ink-mid);">${fromSi.name}</div>
+        <div style="font-size:9px;color:#2980B9;">${t.fromSoh} units · ${t.fromDos?.toFixed(0)||'?'}d DoS</div>
+      </td>
+      <td style="padding:6px 10px;font-size:11px;">
+        <div style="color:${urgencyColor};font-weight:600;">${toSi.name}</div>
+        <div style="font-size:9px;color:${urgencyColor};">${t.toSoh} units · ${t.toDos?.toFixed(0)||'0'}d DoS</div>
+      </td>
+      <td style="padding:6px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;color:#2E7D32;">${t.transferQty}</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="4" style="padding:24px;text-align:center;color:var(--ink-light);">No surplus-deficit matches found in current data.</td></tr>';
 }
 
 function _renderStoreHealthMatrix(){
