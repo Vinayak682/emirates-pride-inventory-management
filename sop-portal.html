@@ -4159,6 +4159,7 @@ async function loadInvFromSupabase(){
   refreshInvHistory();
   loadCurrentInventory();
   buildInvIntelligence();   // ← trigger intelligence dashboard
+  _renderRCChips();         // init chips placeholder
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -4509,13 +4510,29 @@ const RC_REGION_LABELS = {
 
 let _rcSKUs = []; // [{code, name}]
 
+// Build SKU lookup from all available sources — works even before _invMetrics loads
+function _rcGetSkuMap(){
+  const map = {}; // code → name
+  // 1. Always-available hardcoded names
+  Object.entries(SKU_NAMES).forEach(([k,v])=>{ map[k]=v; });
+  // 2. salesData (loaded when Sales tab visited)
+  if(typeof salesData !== 'undefined') salesData.forEach(r=>{ if(r.sku_code && !map[r.sku_code]) map[r.sku_code]=r.sku_code; });
+  // 3. invSalesData (loaded when Inventory tab visited)
+  if(typeof invSalesData !== 'undefined') invSalesData.forEach(r=>{ if(r.sku_code && !map[r.sku_code]) map[r.sku_code]=r.sku_code; });
+  // 4. _invMetrics (best — has names from SOH snapshots)
+  if(_invMetrics) Object.entries(_invMetrics.nameMap||{}).forEach(([k,v])=>{ if(v) map[k]=v; });
+  return map;
+}
+
 function _onRCSKUInput(){
   const q = document.getElementById('rc-sku-input').value.trim().toLowerCase();
   const dd = document.getElementById('rc-sku-dropdown');
-  if(!_invMetrics || q.length < 1){ dd.style.display='none'; return; }
+  if(q.length < 1){ dd.style.display='none'; return; }
+  const skuMap = _rcGetSkuMap();
+  if(!Object.keys(skuMap).length){ dd.style.display='none'; return; }
   const already = new Set(_rcSKUs.map(s=>s.code));
-  const matches = Object.entries(_invMetrics.skuSummary)
-    .filter(([sku,s])=> !already.has(sku) && (sku.toLowerCase().includes(q)||(s.name||'').toLowerCase().includes(q)))
+  const matches = Object.entries(skuMap)
+    .filter(([sku,name])=> !already.has(sku) && (sku.toLowerCase().includes(q)||(name||'').toLowerCase().includes(q)))
     .sort((a,b)=>a[0].localeCompare(b[0]))
     .slice(0,25);
   if(!matches.length){ dd.style.display='none'; return; }
@@ -4523,12 +4540,12 @@ function _onRCSKUInput(){
   const rect = inp.getBoundingClientRect();
   dd.style.top  = (rect.bottom + window.scrollY)+'px';
   dd.style.left = (rect.left  + window.scrollX)+'px';
-  dd.innerHTML = matches.map(([sku,s])=>`
-    <div onclick="_addRCSKU('${sku}','${(s.name||sku).replace(/'/g,"&#39;")}')"
+  dd.innerHTML = matches.map(([sku,name])=>`
+    <div onclick="_addRCSKU('${sku}','${(name||sku).replace(/'/g,"&#39;")}')"
          style="padding:9px 14px;cursor:pointer;border-bottom:1px solid #F0EDE8;display:flex;align-items:center;gap:10px;"
          onmouseover="this.style.background='#EFF3FF'" onmouseout="this.style.background='#fff'">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#1a2744;min-width:72px;">${sku}</span>
-      <span style="font-size:12px;color:var(--ink);">${s.name||sku}</span>
+      <span style="font-size:12px;color:var(--ink);">${name||sku}</span>
     </div>`).join('');
   dd.style.display='block';
 }
