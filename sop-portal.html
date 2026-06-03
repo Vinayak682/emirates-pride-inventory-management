@@ -11163,9 +11163,20 @@ function openEidStoreDrill(code) {
 
 /* ── AM TESTER CHECK TOOL ─────────────────────────────────────────────────── */
 
+// Compound tester codes that can't be derived algorithmically — maps tester code → retail sales code
+// ASLAOT-NNN = ASL "All Over Spray" tester series; numbers DON'T align with AH series numbers
+// Only include confirmed mappings (verified against tester_history + sales_history in Supabase Jun 2026)
+// When new ASLAOT codes appear, confirm scent name → find matching AH code → add here
+const _TESTER_CODE_MAP = {
+  'ASLAOT-002': 'AH008',  // Dark Musk All Over Spray → AH008 (Dark Musk Hair & Body Mist) ✓ confirmed
+  'ASLAOT-003': 'AH003',  // Velvet Amber All Over Spray → AH003 (Velvet Amber Hair & Body Mist) ✓ confirmed
+};
+
 // Normalize SKU code: strip tester suffixes so B00021, B00021-T, B00021-PB all → B00021
 function _normSku(sku) {
   if (!sku) return sku;
+  const upper = sku.toUpperCase();
+  if (_TESTER_CODE_MAP[upper]) return _TESTER_CODE_MAP[upper];
   return sku
     .replace(/-T$/i, '')
     .replace(/-PB$/i, '')
