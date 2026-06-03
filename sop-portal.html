@@ -11194,11 +11194,18 @@ function _normSku(sku) {
 // Get friendly name for a base SKU code, checking all suffix variants
 function _skuLabel(baseCode) {
   if (SKU_NAMES[baseCode]) return SKU_NAMES[baseCode];
-  // Check tester_history product names for any variant of this code
-  const row = testerRawRows.find(r => _normSku(r.sku_code) === baseCode && r.product_name && r.product_name !== baseCode && !r.product_name.includes('-T'));
+  // Strip tester naming artifacts from a product name so labels show retail name
+  const _cleanName = n => n
+    .replace(/^T\s*[-–]\s*/i, '')          // strip "T - " prefix (e.g. "T - Caramel Luban Perfume -Tester")
+    .replace(/[-–]\s*Tester.*$/i, '')       // strip "-Tester 50ML" / "-Tester 10 pcs" suffix
+    .replace(/\s+Tester\s*\d*\s*(ML|ml)?$/i, '') // strip " Tester 6ml" suffix
+    .trim();
+  // Prefer a row whose name has no tester markers at all
+  const row = testerRawRows.find(r => _normSku(r.sku_code) === baseCode && r.product_name && r.product_name !== baseCode && !r.product_name.includes('-T') && !/tester/i.test(r.product_name));
   if (row) return row.product_name;
+  // Fall back: clean tester artifacts out of whatever name we can find
   const row2 = testerRawRows.find(r => _normSku(r.sku_code) === baseCode && r.product_name);
-  return row2 ? row2.product_name : baseCode;
+  return row2 ? _cleanName(row2.product_name) : baseCode;
 }
 
 function openAMTesterCheck() {
