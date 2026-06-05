@@ -10770,1164 +10770,791 @@ async function doExportDownload() {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// SALES MIS PANEL (inside Sales tab)
+// SALES MIS PANEL — PROFESSIONAL REBUILD
 // ══════════════════════════════════════════════════════════════════
+let _m = null, _mv = 'summary';
 
-let _misTab = 'store'; // current sub-tab
-let _misMonths = [];   // sorted month list
-let _misRows = [];     // filtered salesData rows
-let _misSkuMap = {};   // sku_code → product name
+const _MIS_CAT_MAP = {
+  BX:'Gift Boxes', SP:'Sets & Packs', MP:'Sets & Packs',
+  HR:'Heritage Collection', RM:'New Collections', RA:'New Collections',
+  AP:'ASL Perfumes', AO:'ASL Oils', AH:'ASL Hair & Body', AG:'ASL Gift Sets',
+  AC:'Accessories', B:'Bel Collection', C:'Caballo Collection',
+  D:'Dakhoon', O:'Oud Collection'
+};
+const _MIS_CAT_ORDER = [
+  'Bel Collection','Caballo Collection','Gift Boxes','Sets & Packs',
+  'Dakhoon','Oud Collection','Heritage Collection','New Collections',
+  'ASL Perfumes','ASL Oils','ASL Hair & Body','ASL Gift Sets','Accessories','Other'
+];
+function _misSkuCat(sku) {
+  const pfx = ['BX','SP','MP','HR','RM','RA','AP','AO','AH','AG','AC','B','C','D','O'];
+  for (const p of pfx) if (sku.startsWith(p)) return _MIS_CAT_MAP[p]||'Other';
+  return 'Other';
+}
+function _misSkuName(k) {
+  const m={};
+  if(typeof CATS!=='undefined') CATS.forEach(s=>m[s.code]=s.en);
+  if(typeof TESTERS!=='undefined') TESTERS.forEach(s=>m[s.code]=s.en);
+  return m[k]||k;
+}
 
+// ── Open / Close / Tab
 function openMISPanel() {
-  const panel = document.getElementById('misPerfPanel');
-  panel.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  _misTab = 'store';
-  _misSyncTabButtons();
+  document.getElementById('misPerfPanel').style.display='flex';
+  document.body.style.overflow='hidden';
+  _mv='summary'; _misActivateBtn('mis-v-summary');
   if (!salesLoaded) {
-    document.getElementById('mis2-loading').style.display = 'block';
-    document.getElementById('mis2-content').style.display = 'none';
-    const poll = setInterval(() => { if (salesLoaded) { clearInterval(poll); buildMISPanel(); } }, 200);
-  } else {
-    buildMISPanel();
-  }
+    document.getElementById('mis-body').innerHTML =
+      '<div style="text-align:center;padding:80px;color:#8A8278;"><div class="spinner" style="margin:0 auto 16px;"></div><div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Loading Sales Data…</div></div>';
+    const t=setInterval(()=>{if(salesLoaded){clearInterval(t);buildMIS();}},200);
+  } else { buildMIS(); }
 }
-
 function closeMISPanel() {
-  document.getElementById('misPerfPanel').style.display = 'none';
-  document.body.style.overflow = '';
-  closeMISDrill();
+  document.getElementById('misPerfPanel').style.display='none';
+  document.body.style.overflow=''; closeMISDrill();
 }
-
-function misPanelTab(tab) {
-  _misTab = tab;
-  _misSyncTabButtons();
-  _misRenderCurrentTab();
-}
-
-function _misSyncTabButtons() {
-  ['store','sku','detail'].forEach(t => {
-    const btn = document.getElementById('mis2-tab-'+t);
-    if (!btn) return;
-    if (t === _misTab) {
-      btn.style.background = 'rgba(255,255,255,.12)';
-      btn.style.color = '#fff';
-      btn.style.borderBottomColor = '#C9A84C';
-    } else {
-      btn.style.background = 'transparent';
-      btn.style.color = 'rgba(255,255,255,.55)';
-      btn.style.borderBottomColor = 'transparent';
-    }
+function misSetView(v) { _mv=v; _misActivateBtn('mis-v-'+v); _misRender(); }
+function _misActivateBtn(id) {
+  ['summary','stores','skus','matrix'].forEach(v=>{
+    const b=document.getElementById('mis-v-'+v); if(!b) return;
+    const on='mis-v-'+v===id;
+    b.style.borderBottom  = on?'3px solid #6B5B35':'3px solid transparent';
+    b.style.color         = on?'#6B5B35':'#8A8278';
+    b.style.fontWeight    = on?'700':'500';
+    b.style.background    = on?'#FAFAF8':'transparent';
   });
 }
 
-function buildMISPanel() {
-  const region = document.getElementById('mis2-region').value;
-  const year   = document.getElementById('mis2-year').value;
-
-  // Build SKU name map from CATS/TESTERS arrays
-  _misSkuMap = {};
-  if (typeof CATS !== 'undefined') CATS.forEach(s => { _misSkuMap[s.code] = s.en; });
-  if (typeof TESTERS !== 'undefined') TESTERS.forEach(s => { _misSkuMap[s.code] = s.en; });
-
-  // Filter data
-  _misRows = salesData.filter(r => {
-    const si = getStore(r.store_code);
-    if (region !== 'ALL' && si.region !== region) return false;
-    if (year === '2026' && !r.month_year.startsWith('2026')) return false;
-    if (year === '2025' && !r.month_year.startsWith('2025')) return false;
+// ── Compute
+function buildMIS() {
+  const region=document.getElementById('mis-rgn').value;
+  const year=document.getElementById('mis-yr').value;
+  const rows=salesData.filter(r=>{
+    if(region!=='ALL'&&getStore(r.store_code).region!==region) return false;
+    if(year==='2026'&&!r.month_year.startsWith('2026')) return false;
+    if(year==='2025'&&!r.month_year.startsWith('2025')) return false;
     return true;
   });
-
-  _misMonths = [...new Set(_misRows.map(r => r.month_year))].sort();
-
-  // KPI strip
-  _misRenderKpiStrip();
-
-  document.getElementById('mis2-loading').style.display = 'none';
-  document.getElementById('mis2-content').style.display  = 'block';
-
-  _misRenderCurrentTab();
-}
-
-function _misRenderCurrentTab() {
-  const search = (document.getElementById('mis2-search').value || '').toLowerCase().trim();
-  if (_misTab === 'store')  _misRenderStore(search);
-  else if (_misTab === 'sku')    _misRenderSku(search);
-  else                      _misRenderDetail(search);
-}
-
-function _misFilterTable() { _misRenderCurrentTab(); }
-
-// ── KPI strip
-function _misRenderKpiStrip() {
-  const totals = {};
-  _misMonths.forEach(m => { totals[m] = 0; });
-  _misRows.forEach(r => { totals[r.month_year] = (totals[r.month_year]||0) + r.qty_sold; });
-  const grandAll = Object.values(totals).reduce((s,v)=>s+v,0);
-  let html = `<div style="flex-shrink:0;background:var(--gold-bar);color:#fff;border-radius:4px;padding:9px 16px;min-width:110px;margin-right:4px;">
-    <div style="font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;font-weight:700;margin-bottom:2px;">GRAND TOTAL</div>
-    <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;line-height:1;">${grandAll.toLocaleString()}</div>
-    <div style="font-size:8px;opacity:.65;">${_misMonths.length} months</div>
-  </div>`;
-  _misMonths.forEach((m,i) => {
-    const v    = totals[m]||0;
-    const prev = i>0 ? (totals[_misMonths[i-1]]||0) : null;
-    const pct  = prev ? ((v-prev)/prev*100) : null;
-    const isL  = i===_misMonths.length-1;
-    const bg   = isL ? '#FFF8E8' : '#fff';
-    const bord = isL ? '2px solid #C9A84C' : '1px solid #E5E0D8';
-    let badge = '';
-    if (pct!==null) {
-      const c = pct>=0 ? '#0B7A45' : '#C0392B';
-      const a = pct>=0 ? '▲' : '▼';
-      badge = `<div style="font-size:8.5px;font-weight:700;color:${c};margin-top:2px;">${a} ${Math.abs(pct).toFixed(1)}%</div>`;
-    }
-    html += `<div style="flex-shrink:0;background:${bg};border:${bord};border-radius:4px;padding:8px 13px;min-width:90px;">
-      <div style="font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;font-weight:700;margin-bottom:2px;">${_misMoLbl(m)}</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--gold-bar);line-height:1;">${v.toLocaleString()}</div>
-      ${badge}
-    </div>`;
+  const months=[...new Set(rows.map(r=>r.month_year))].sort();
+  const latestM=months[months.length-1];
+  const prevM=months.length>=2?months[months.length-2]:null;
+  const grand={};months.forEach(m=>grand[m]=0);
+  rows.forEach(r=>{grand[r.month_year]=(grand[r.month_year]||0)+r.qty_sold;});
+  const grandYTD=rows.reduce((s,r)=>s+r.qty_sold,0);
+  const byReg={},byStore={},bySku={};
+  rows.forEach(r=>{
+    const reg=getStore(r.store_code).region;
+    if(!byReg[reg]){byReg[reg]={};months.forEach(m=>byReg[reg][m]=0);}
+    if(!byStore[r.store_code]){byStore[r.store_code]={};months.forEach(m=>byStore[r.store_code][m]=0);}
+    if(!bySku[r.sku_code]){bySku[r.sku_code]={};months.forEach(m=>bySku[r.sku_code][m]=0);}
+    byReg[reg][r.month_year]=(byReg[reg][r.month_year]||0)+r.qty_sold;
+    byStore[r.store_code][r.month_year]=(byStore[r.store_code][r.month_year]||0)+r.qty_sold;
+    bySku[r.sku_code][r.month_year]=(bySku[r.sku_code][r.month_year]||0)+r.qty_sold;
   });
-  document.getElementById('mis2-kpi-strip').innerHTML = html;
-}
-
-function _misMoLbl(my) {
-  const [y,m] = my.split('-');
-  return MONTH_SHORT[+m]+" '"+y.slice(2);
-}
-function _misPct(c,p) { return p ? ((c-p)/p*100) : null; }
-function _misMoMTd(v,prev,isLatest) {
-  const bg  = isLatest ? '#FFF8E8' : '';
-  const bs  = isLatest ? 'border-left:2px solid #C9A84C;' : '';
-  const pct = _misPct(v, prev);
-  const num = `<div style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;color:${isLatest?'#6B5B35':'#1A1A1A'};">${v?v.toLocaleString():'—'}</div>`;
-  let mom = '';
-  if (pct!==null && prev!==null) {
-    const pos = pct>=0;
-    const big = Math.abs(pct)>=20;
-    const clr = pos?(big?'#0B7A45':'#1A8A50'):(big?'#C0392B':'#C0392B');
-    const mbg = pos?(big?'#D4EDDA':'#EDF7EE'):(big?'#FDECEA':'#FEF3F2');
-    mom = `<div style="background:${mbg};color:${clr};font-size:9px;font-weight:700;text-align:center;padding:2px 4px;border-radius:2px;margin-top:2px;white-space:nowrap;">${pos?'▲':'▼'} ${Math.abs(pct).toFixed(1)}%</div>`;
-  } else if (prev===0&&v>0) {
-    mom = `<div style="background:#EDF7EE;color:#0B7A45;font-size:9px;font-weight:700;text-align:center;padding:2px 4px;border-radius:2px;margin-top:2px;">NEW</div>`;
+  const storeYTD={},skuYTD={};
+  Object.keys(byStore).forEach(sc=>{storeYTD[sc]=months.reduce((s,m)=>s+(byStore[sc][m]||0),0);});
+  Object.keys(bySku).forEach(k=>{skuYTD[k]=months.reduce((s,m)=>s+(bySku[k][m]||0),0);});
+  _m={rows,months,latestM,prevM,grand,grandYTD,byReg,byStore,bySku,storeYTD,skuYTD};
+  if(months.length){
+    document.getElementById('mis-header-period').textContent=
+      _misML(months[0])+' → '+_misML(latestM)+'  ·  '+months.length+' Months  ·  '+grandYTD.toLocaleString()+' Units YTD';
   }
-  return `<td style="padding:6px 10px;background:${bg};${bs}vertical-align:top;">${num}${mom}</td>`;
+  _misRender();
+}
+function _misRender() {
+  const q=(document.getElementById('mis-search')?.value||'').toLowerCase().trim();
+  if(_mv==='summary') _misSummary();
+  else if(_mv==='stores') _misStores(q);
+  else if(_mv==='skus') _misSkus(q);
+  else _misMatrix(q);
 }
 
-// ── Table header
-function _misTableHeader(dim1, dim2) {
-  const M = _misMonths;
-  let th = `<thead><tr style="background:#1a3a5c;color:#fff;position:sticky;top:0;z-index:5;">`;
-  th += `<th style="text-align:left;padding:10px 14px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;min-width:${dim2?'80px':'180px'};position:sticky;left:0;background:#1a3a5c;z-index:6;">${dim1}</th>`;
-  if (dim2) th += `<th style="text-align:left;padding:10px 8px;font-size:10px;font-weight:700;letter-spacing:.06em;min-width:160px;position:sticky;left:80px;background:#1a3a5c;z-index:6;">${dim2}</th>`;
-  M.forEach((m,i) => {
-    const isL = i===M.length-1;
-    const bg  = isL ? '#2563a8' : '#1a3a5c';
-    const bl  = isL ? 'border-left:2px solid #C9A84C;' : '';
-    th += `<th colspan="1" style="text-align:center;padding:10px 10px;font-size:10px;font-weight:700;background:${bg};${bl}white-space:nowrap;min-width:90px;">${_misMoLbl(m)}${isL?' ★':''}</th>`;
+// ── Helpers
+function _misML(my){const[y,m]=my.split('-');return MONTH_SHORT[+m]+" '"+y.slice(2);}
+function _misN(n){return(n&&n!==0)?n.toLocaleString():'—';}
+function _misDelta(c,p){return p!==null&&p!==undefined?c-p:null;}
+function _misPct(c,p){return(p&&p>0)?(c-p)/p*100:null;}
+function _misMoMSt(pct){
+  if(pct===null)return{bg:'#F5F2EC',col:'#8A8278'};
+  if(pct>=20) return{bg:'#155724',col:'#fff'};
+  if(pct>=10) return{bg:'#D4EDDA',col:'#155724'};
+  if(pct>=0)  return{bg:'#F0FBF2',col:'#1A6A40'};
+  if(pct>=-10)return{bg:'#FEF0EF',col:'#7B0000'};
+  if(pct>=-20)return{bg:'#FDDBD9',col:'#7B0000'};
+  return{bg:'#C0392B',col:'#fff'};
+}
+function _misSecTitle(t){
+  return'<div style="font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#6B5B35;margin:24px 0 10px;display:flex;align-items:center;gap:12px;"><span style="flex:1;border-top:1px solid #DDD8D0;"></span>'+t+'<span style="flex:1;border-top:1px solid #DDD8D0;"></span></div>';
+}
+function _misTH(extra){return'padding:10px 12px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:#fff;'+(extra||'');}
+
+// ════════════════════════════════════════════════
+// VIEW 1 — EXECUTIVE SUMMARY
+// ════════════════════════════════════════════════
+function _misSummary(){
+  if(!_m)return;
+  const{months,latestM,prevM,grand,grandYTD,byReg,byStore,bySku,storeYTD,skuYTD}=_m;
+  let H='<div style="max-width:1360px;margin:0 auto;padding:20px 24px 40px;">';
+
+  // 1. Monthly Trajectory
+  H+=_misSecTitle('MONTHLY PERFORMANCE TRAJECTORY');
+  H+='<div style="background:#fff;border:1px solid #E5E0D8;border-radius:4px;overflow:hidden;">';
+  H+='<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  H+='<thead><tr style="background:#0f2744;">';
+  H+='<th style="'+_misTH('text-align:left;width:110px;')+'">MONTH</th>';
+  H+='<th style="'+_misTH('text-align:right;')+'">UNITS SOLD</th>';
+  H+='<th style="'+_misTH('text-align:right;')+'">vs PRIOR MONTH</th>';
+  H+='<th style="'+_misTH('text-align:center;width:110px;')+'">MoM %</th>';
+  H+='<th style="'+_misTH('text-align:right;')+'">3M ROLLING AVG</th>';
+  H+='<th style="'+_misTH('text-align:right;background:#0a1a2e;')+'">YTD CUMULATIVE</th>';
+  H+='</tr></thead><tbody>';
+  let ytdC=0;
+  months.forEach((m,i)=>{
+    const v=grand[m]||0,prev=i>0?(grand[months[i-1]]||0):null;
+    const d=_misDelta(v,prev),p=_misPct(v,prev);
+    ytdC+=v;
+    const avg3=Math.round(months.slice(Math.max(0,i-2),i+1).reduce((s,mx)=>s+(grand[mx]||0),0)/Math.min(i+1,3));
+    const ms=_misMoMSt(p),isL=m===latestM,rb=isL?'#FFF8E8':i%2===0?'#fff':'#FAFAF8';
+    H+='<tr style="background:'+rb+';">';
+    H+='<td style="padding:10px 14px;font-family:\'Montserrat\',sans-serif;font-weight:'+(isL?700:500)+';font-size:12px;color:'+(isL?'#6B5B35':'#1A1A1A')+';border-left:'+(isL?'3px solid #C9A84C':'3px solid transparent')+';">'+_misML(m)+(isL?' &#9733;':'')+'</td>';
+    H+='<td style="padding:10px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:13px;font-weight:'+(isL?700:600)+';color:'+(isL?'#6B5B35':'#1A1A1A')+';">'+_misN(v)+'</td>';
+    H+='<td style="padding:10px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:12px;font-weight:600;color:'+(d===null?'#8A8278':d>=0?'#155724':'#7B0000')+';">'+(d===null?'—':(d>=0?'+':'')+_misN(d))+'</td>';
+    H+='<td style="padding:6px 8px;background:'+ms.bg+';text-align:center;"><span style="font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:12px;color:'+ms.col+';">'+(p===null?'—':(p>=0?'▲ ':'▼ ')+Math.abs(p).toFixed(1)+'%')+'</span></td>';
+    H+='<td style="padding:10px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:#4A4540;">'+_misN(avg3)+'</td>';
+    H+='<td style="padding:10px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:12px;font-weight:600;color:#1A1A1A;background:#F5F2EC;">'+_misN(ytdC)+'</td>';
+    H+='</tr>';
   });
-  th += `<th style="text-align:center;padding:10px 10px;font-size:10px;font-weight:700;background:#0d2240;min-width:90px;white-space:nowrap;">TOTAL</th>`;
-  th += `</tr></thead>`;
-  return th;
+  H+='</tbody></table></div>';
+
+  // 2. Region Scorecard
+  const regs=['EPP','ASL','OMAN','KSA'].filter(r=>byReg[r]);
+  const RL={EPP:'EPP UAE',ASL:'ASL UAE',OMAN:'Oman',KSA:'KSA'};
+  const RC={EPP:'#1a3a5c',ASL:'#5B2D8E',OMAN:'#0B5C35',KSA:'#7A2C00'};
+  H+=_misSecTitle('REGION SCORECARD — '+_misML(latestM));
+  H+='<div style="background:#fff;border:1px solid #E5E0D8;border-radius:4px;overflow:hidden;">';
+  H+='<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  H+='<thead><tr style="background:#0f2744;color:#fff;"><th style="'+_misTH('text-align:left;width:180px;')+'">METRIC</th>';
+  regs.forEach(r=>{H+='<th style="'+_misTH('text-align:center;')+'"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+(RC[r]||'#888')+';margin-right:5px;vertical-align:middle;"></span>'+(RL[r]||r)+'</th>';});
+  H+='<th style="'+_misTH('text-align:center;background:#0a1a2e;')+'">GRAND TOTAL</th></tr></thead><tbody>';
+  const mets=[
+    {k:'latest',lb:_misML(latestM)+' Units'},
+    {k:'prev',lb:prevM?_misML(prevM)+' Units':'Prior Month'},
+    {k:'delta',lb:'MoM Change (Units)'},
+    {k:'pct',lb:'MoM Change (%)'},
+    {k:'ytd',lb:'YTD Total'},
+    {k:'share',lb:'YTD Share %'}
+  ];
+  mets.forEach((mt,mi)=>{
+    const rb=mi%2===0?'#fff':'#FAFAF8';
+    H+='<tr style="background:'+rb+';"><td style="padding:9px 14px;font-family:\'Montserrat\',sans-serif;font-size:11px;font-weight:'+(['latest','pct','ytd'].includes(mt.k)?700:500)+';color:#4A4540;">'+mt.lb+'</td>';
+    const gLV=grand[latestM]||0,gPV=prevM?(grand[prevM]||0):null;
+    const gD=_misDelta(gLV,gPV),gP=_misPct(gLV,gPV);
+    regs.forEach(reg=>{
+      const lv=byReg[reg]?.[latestM]||0,pv=prevM?(byReg[reg]?.[prevM]||0):null;
+      const ytdR=months.reduce((s,m)=>s+(byReg[reg]?.[m]||0),0);
+      const d=_misDelta(lv,pv),p=_misPct(lv,pv),ms=_misMoMSt(p);
+      let cell,bg='',col='#1A1A1A',fw=500;
+      if(mt.k==='latest'){cell=_misN(lv);fw=600;}
+      else if(mt.k==='prev'){cell=_misN(pv||0);}
+      else if(mt.k==='delta'){cell=d===null?'—':(d>=0?'+':'')+_misN(d);col=d===null?'#8A8278':d>=0?'#155724':'#7B0000';fw=600;}
+      else if(mt.k==='pct'){bg=ms.bg;col=ms.col;fw=700;cell=p===null?'—':(p>=0?'▲ ':'▼ ')+Math.abs(p).toFixed(1)+'%';}
+      else if(mt.k==='ytd'){cell=_misN(ytdR);fw=600;}
+      else{cell=grandYTD?(ytdR/grandYTD*100).toFixed(1)+'%':'0%';}
+      H+='<td style="padding:8px 14px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:12px;font-weight:'+fw+';color:'+col+';background:'+bg+';">'+cell+'</td>';
+    });
+    let gt,gtBg='#F5F2EC',gtC='#1A1A1A',gtW=700;
+    if(mt.k==='latest'){gt=_misN(gLV);}
+    else if(mt.k==='prev'){gt=_misN(gPV||0);gtW=500;}
+    else if(mt.k==='delta'){gt=gD===null?'—':(gD>=0?'+':'')+_misN(gD);gtC=gD===null?'#8A8278':gD>=0?'#155724':'#7B0000';}
+    else if(mt.k==='pct'){const ms=_misMoMSt(gP);gtBg=ms.bg;gtC=ms.col;gt=gP===null?'—':(gP>=0?'▲ ':'▼ ')+Math.abs(gP).toFixed(1)+'%';}
+    else if(mt.k==='ytd'){gt=_misN(grandYTD);}
+    else{gt='100%';}
+    H+='<td style="padding:8px 14px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:12px;font-weight:'+gtW+';color:'+gtC+';background:'+gtBg+';">'+gt+'</td></tr>';
+  });
+  H+='</tbody></table></div>';
+
+  // 3. Top/Bottom Stores
+  const stS=Object.keys(byStore).filter(sc=>(byStore[sc][latestM]||0)>0)
+    .sort((a,b)=>(byStore[b][latestM]||0)-(byStore[a][latestM]||0));
+  const top5=stS.slice(0,5),bot5=[...stS].reverse().slice(0,5);
+  function stRows(list){
+    return list.map((sc,i)=>{
+      const s=getStore(sc),lv=byStore[sc][latestM]||0,pv=prevM?(byStore[sc][prevM]||0):null;
+      const p=_misPct(lv,pv),ms=_misMoMSt(p),ytd=storeYTD[sc]||0;
+      return'<tr style="background:'+(i%2===0?'#fff':'#FAFAF8')+';">'
+        +'<td style="padding:7px 10px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#8A8278;text-align:center;border-right:1px solid #EEE;">'+(i+1)+'</td>'
+        +'<td style="padding:7px 10px;"><div style="font-weight:600;font-size:11.5px;color:#1A1A1A;">'+s.name+'</div>'
+        +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:8.5px;color:#7A6525;margin-top:1px;">'+sc+' &middot; '+(s.city||'')+'</div></td>'
+        +'<td style="padding:7px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:12px;font-weight:600;">'+_misN(lv)+'</td>'
+        +'<td style="padding:5px 8px;background:'+ms.bg+';text-align:center;"><span style="font-weight:700;font-size:11px;color:'+ms.col+';">'+(p===null?'—':(p>=0?'▲ ':'▼ ')+Math.abs(p).toFixed(1)+'%')+'</span></td>'
+        +'<td style="padding:7px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#4A4540;">'+_misN(ytd)+'</td></tr>';
+    }).join('');
+  }
+  function stCard(list,title,hBg){
+    return'<div style="background:#fff;border:1px solid #E5E0D8;border-radius:4px;overflow:hidden;">'
+      +'<div style="background:'+hBg+';padding:9px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#fff;">'+title+'</div>'
+      +'<table style="width:100%;border-collapse:collapse;">'
+      +'<thead><tr style="background:#F5F2EC;border-bottom:2px solid #E5E0D8;">'
+      +'<th style="padding:6px 10px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8A8278;text-align:center;width:28px;">#</th>'
+      +'<th style="padding:6px 10px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8A8278;">STORE</th>'
+      +'<th style="padding:6px 10px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8A8278;text-align:right;">'+_misML(latestM)+'</th>'
+      +'<th style="padding:6px 8px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8A8278;text-align:center;width:90px;">MoM %</th>'
+      +'<th style="padding:6px 10px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8A8278;text-align:right;">YTD</th>'
+      +'</tr></thead><tbody>'+stRows(list)+'</tbody></table></div>';
+  }
+  H+=_misSecTitle('STORE PERFORMANCE — '+_misML(latestM));
+  H+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'+stCard(top5,'▲ Top 5 Performing Stores','#155724')+stCard(bot5,'▼ 5 Stores Needing Attention','#7B0000')+'</div>';
+
+  // 4. SKU Movers
+  const allMov=Object.keys(bySku)
+    .map(k=>({k,lv:bySku[k][latestM]||0,pv:prevM?(bySku[k][prevM]||0):0,pct:_misPct(bySku[k][latestM]||0,prevM?(bySku[k][prevM]||0):null)}))
+    .filter(x=>x.pct!==null&&(x.lv>0||x.pv>0));
+  const topSku=[...allMov].sort((a,b)=>b.pct-a.pct).slice(0,8);
+  const botSku=[...allMov].sort((a,b)=>a.pct-b.pct).slice(0,8);
+  function skuRows(list){
+    return list.map((x,i)=>{
+      const ms=_misMoMSt(x.pct),name=_misSkuName(x.k);
+      return'<tr style="background:'+(i%2===0?'#fff':'#FAFAF8')+';">'
+        +'<td style="padding:6px 10px;font-size:9.5px;color:#8A8278;text-align:center;border-right:1px solid #EEE;">'+(i+1)+'</td>'
+        +'<td style="padding:6px 8px;font-family:\'IBM Plex Mono\',monospace;font-size:9.5px;font-weight:700;color:#7A6525;white-space:nowrap;">'+x.k+'</td>'
+        +'<td style="padding:6px 8px;font-size:11px;color:#1A1A1A;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+name+'</td>'
+        +'<td style="padding:6px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:600;">'+_misN(x.lv)+'</td>'
+        +'<td style="padding:5px 6px;background:'+ms.bg+';text-align:center;"><span style="font-weight:700;font-size:11px;color:'+ms.col+';">'+(x.pct>=0?'▲ ':'▼ ')+Math.abs(x.pct).toFixed(1)+'%</span></td></tr>';
+    }).join('');
+  }
+  function skuCard(list,title,hBg){
+    return'<div style="background:#fff;border:1px solid #E5E0D8;border-radius:4px;overflow:hidden;">'
+      +'<div style="background:'+hBg+';padding:9px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#fff;">'+title+'</div>'
+      +'<table style="width:100%;border-collapse:collapse;">'
+      +'<thead><tr style="background:#F5F2EC;border-bottom:2px solid #E5E0D8;">'
+      +'<th style="padding:6px 10px;font-size:8px;font-weight:700;text-transform:uppercase;color:#8A8278;text-align:center;width:28px;">#</th>'
+      +'<th style="padding:6px 8px;font-size:8px;font-weight:700;text-transform:uppercase;color:#8A8278;">SKU</th>'
+      +'<th style="padding:6px 8px;font-size:8px;font-weight:700;text-transform:uppercase;color:#8A8278;">PRODUCT</th>'
+      +'<th style="padding:6px 10px;font-size:8px;font-weight:700;text-transform:uppercase;color:#8A8278;text-align:right;">'+_misML(latestM)+'</th>'
+      +'<th style="padding:6px 6px;font-size:8px;font-weight:700;text-transform:uppercase;color:#8A8278;text-align:center;width:80px;">MoM %</th>'
+      +'</tr></thead><tbody>'+skuRows(list)+'</tbody></table></div>';
+  }
+  H+=_misSecTitle('SKU MOVERS — '+_misML(latestM)+' vs '+(prevM?_misML(prevM):'Prior'));
+  H+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'+skuCard(topSku,'▲ Biggest Gainers (MoM %)','#155724')+skuCard(botSku,'▼ Biggest Declines (MoM %)','#7B0000')+'</div>';
+  H+='</div>';
+  document.getElementById('mis-body').innerHTML=H;
 }
 
-// ── BY STORE
-function _misRenderStore(search) {
-  const M = _misMonths;
-
-  // aggregate per store per month
-  const storeData = {};
-  _misRows.forEach(r => {
-    if (!storeData[r.store_code]) storeData[r.store_code] = {};
-    storeData[r.store_code][r.month_year] = (storeData[r.store_code][r.month_year]||0)+r.qty_sold;
+// ════════════════════════════════════════════════
+// VIEW 2 — STORE ANALYSIS
+// ════════════════════════════════════════════════
+function _misStores(q){
+  if(!_m)return;
+  const{months,latestM,prevM,grand,grandYTD,byStore,storeYTD}=_m;
+  const RC={EPP:'#1a3a5c',ASL:'#5B2D8E',OMAN:'#0B5C35',KSA:'#7A2C00'};
+  const RL={EPP:'EPP UAE',ASL:'ASL UAE',OMAN:'Oman',KSA:'KSA'};
+  let stores=Object.keys(byStore).sort((a,b)=>{
+    const ra=getStore(a).region,rb2=getStore(b).region;
+    if(ra!==rb2)return ra.localeCompare(rb2);
+    return(byStore[b][latestM]||0)-(byStore[a][latestM]||0);
   });
-
-  // sort stores: by region then by latest month desc
-  const latestM = M[M.length-1];
-  let stores = Object.keys(storeData).sort((a,b) => {
-    const ra = getStore(a).region, rb = getStore(b).region;
-    if (ra!==rb) return ra.localeCompare(rb);
-    return (storeData[b][latestM]||0)-(storeData[a][latestM]||0);
+  if(q)stores=stores.filter(sc=>{const s=getStore(sc);return sc.toLowerCase().includes(q)||s.name.toLowerCase().includes(q)||(s.city||'').toLowerCase().includes(q)||s.region.toLowerCase().includes(q);});
+  const regTot={};
+  [...new Set(stores.map(sc=>getStore(sc).region))].forEach(reg=>{
+    regTot[reg]={};
+    months.forEach(m=>{regTot[reg][m]=stores.filter(sc=>getStore(sc).region===reg).reduce((s,sc)=>s+(byStore[sc][m]||0),0);});
+    regTot[reg]._ytd=months.reduce((s,m)=>s+(regTot[reg][m]||0),0);
   });
+  const gTot={};months.forEach(m=>{gTot[m]=stores.reduce((s,sc)=>s+(byStore[sc][m]||0),0);});
+  const gTotYTD=stores.reduce((s,sc)=>s+(storeYTD[sc]||0),0);
 
-  if (search) stores = stores.filter(sc => {
-    const s = getStore(sc);
-    return sc.toLowerCase().includes(search) || s.name.toLowerCase().includes(search) || s.region.toLowerCase().includes(search);
+  let H='<div style="overflow-x:auto;">';
+  H+='<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px;">';
+  H+='<thead><tr style="background:#0f2744;color:#fff;position:sticky;top:0;z-index:5;">';
+  H+='<th style="'+_misTH('text-align:center;width:36px;position:sticky;left:0;background:#0f2744;z-index:6;')+'">&#35;</th>';
+  H+='<th style="'+_misTH('text-align:left;min-width:190px;position:sticky;left:36px;background:#0f2744;z-index:6;')+'">STORE</th>';
+  H+='<th style="'+_misTH('text-align:left;min-width:90px;')+'">CITY</th>';
+  months.forEach((m,i)=>{
+    const isL=i===months.length-1;
+    H+='<th style="'+_misTH('text-align:right;min-width:82px;'+(isL?'background:#1a4a8c;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;':''))+'">'+_misML(m)+(isL?' &#9733;':'')+'</th>';
   });
+  H+='<th style="'+_misTH('text-align:right;min-width:82px;border-left:2px solid rgba(255,255,255,.25);')+'">MoM Δ</th>';
+  H+='<th style="'+_misTH('text-align:center;min-width:82px;')+'">MoM %</th>';
+  H+='<th style="'+_misTH('text-align:right;min-width:82px;border-left:2px solid rgba(255,255,255,.25);background:#0a1a2e;')+'">YTD TOTAL</th>';
+  H+='<th style="'+_misTH('text-align:right;min-width:72px;background:#0a1a2e;')+'">SHARE %</th>';
+  H+='</tr></thead><tbody>';
 
-  // grand totals per month
-  const totals = {};
-  M.forEach(m => { totals[m] = stores.reduce((s,sc)=>(s+(storeData[sc][m]||0)),0); });
-
-  const regionColors = {EPP:'#1a2744',ASL:'#5B2D8E',OMAN:'#0B5C35',KSA:'#7A2C00'};
-  const regionLabels = {EPP:'EPP UAE',ASL:'ASL UAE',OMAN:'Oman',KSA:'KSA'};
-
-  let html = _misTableHeader('STORE','');
-  html += '<tbody>';
-  let lastReg = null;
-
-  stores.forEach((sc, ri) => {
-    const s   = getStore(sc);
-    const reg = s.region;
-    if (reg !== lastReg) {
-      const colspan = 2 + M.length + 1;
-      html += `<tr><td colspan="${colspan}" style="padding:6px 14px;background:#EDEBE6;font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#6B5B35;border-top:2px solid #C9A84C;position:sticky;left:0;">
-        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${regionColors[reg]||'#888'};margin-right:6px;vertical-align:middle;"></span>${regionLabels[reg]||reg}
-      </td></tr>`;
-      lastReg = reg;
+  let rank=0,lastReg=null;
+  stores.forEach(sc=>{
+    const s=getStore(sc),reg=s.region;
+    if(reg!==lastReg){
+      const rt=regTot[reg]||{},rYTD=rt._ytd||0,rlv=rt[latestM]||0,rpv=prevM?(rt[prevM]||0):null;
+      const rd=_misDelta(rlv,rpv),rp=_misPct(rlv,rpv),rms=_misMoMSt(rp);
+      const rShare=gTotYTD?(rYTD/gTotYTD*100):0;
+      const nc=3+months.length+4;
+      H+='<tr style="background:#EDEBE6;border-top:2px solid #C9A84C;">';
+      H+='<td colspan="3" style="padding:7px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#6B5B35;position:sticky;left:0;background:#EDEBE6;z-index:2;">';
+      H+='<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+(RC[reg]||'#888')+';margin-right:7px;vertical-align:middle;"></span>'+(RL[reg]||reg)+' SUBTOTAL</td>';
+      months.forEach((m,i)=>{
+        const isL=i===months.length-1;
+        H+='<td style="padding:7px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:700;color:#6B5B35;'+(isL?'background:#FFF3CC;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;':'')+'">'+_misN(rt[m]||0)+'</td>';
+      });
+      H+='<td style="padding:7px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:700;color:'+(rd===null?'#8A8278':rd>=0?'#155724':'#7B0000')+';border-left:2px solid #DDD;">'+(rd===null?'—':(rd>=0?'+':'')+_misN(rd))+'</td>';
+      H+='<td style="padding:5px 8px;background:'+rms.bg+';text-align:center;"><span style="font-weight:700;font-size:11px;color:'+rms.col+';">'+(rp===null?'—':(rp>=0?'▲ ':'▼ ')+Math.abs(rp).toFixed(1)+'%')+'</span></td>';
+      H+='<td style="padding:7px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:700;color:#6B5B35;border-left:2px solid #DDD;background:#F5F0E8;">'+_misN(rYTD)+'</td>';
+      H+='<td style="padding:7px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:700;color:#6B5B35;background:#F5F0E8;">'+rShare.toFixed(1)+'%</td></tr>';
+      lastReg=reg;
     }
-    const rowBg   = ri%2===0 ? '#fff' : '#FAFAF8';
-    const rowTotal = M.reduce((s,m)=>s+(storeData[sc][m]||0),0);
-    html += `<tr style="background:${rowBg};cursor:pointer;" onclick="openMISDrill('store','${sc}')" onmouseover="this.style.background='#EDF4FF'" onmouseout="this.style.background='${rowBg}'">`;
-    html += `<td style="padding:7px 14px;position:sticky;left:0;background:${rowBg};z-index:2;">
-      <div style="font-weight:600;font-size:11.5px;color:#1A1A1A;white-space:nowrap;">${s.name}</div>
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#7A6525;margin-top:1px;">${sc}</div>
-    </td>`;
-    M.forEach((m,i) => {
-      const v    = storeData[sc][m]||0;
-      const prev = i>0 ? (storeData[sc][M[i-1]]||0) : null;
-      html += _misMoMTd(v, prev, i===M.length-1);
+    rank++;
+    const ytd=storeYTD[sc]||0,lv=byStore[sc][latestM]||0,pv=prevM?(byStore[sc][prevM]||0):null;
+    const d=_misDelta(lv,pv),p=_misPct(lv,pv),ms=_misMoMSt(p);
+    const share=gTotYTD?(ytd/gTotYTD*100):0,rb=rank%2===0?'#FAFAF8':'#fff';
+    H+='<tr style="background:'+rb+';cursor:pointer;" onclick="openMISDrill(\'store\',\''+sc+'\')" onmouseover="this.style.background=\'#EDF4FF\'" onmouseout="this.style.background=\''+rb+'\'">`;
+    H+='<td style="padding:8px 10px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#8A8278;text-align:center;position:sticky;left:0;background:'+rb+';z-index:2;">'+rank+'</td>';
+    H+='<td style="padding:8px 10px;position:sticky;left:36px;background:'+rb+';z-index:2;"><div style="font-weight:600;font-size:11.5px;color:#1A1A1A;">'+s.name+'</div><div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#7A6525;margin-top:1px;">'+sc+'</div></td>';
+    H+='<td style="padding:8px 10px;font-size:11px;color:#4A4540;">'+(s.city||'—')+'</td>';
+    months.forEach((m,i)=>{
+      const isL=i===months.length-1,mv=byStore[sc][m]||0;
+      H+='<td style="padding:8px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:12px;font-weight:'+(isL?600:400)+';color:'+(isL?'#1A1A1A':'#4A4540')+';'+(isL?'background:#FFFBF0;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;':'')+'">'+( mv?_misN(mv):'—')+'</td>';
     });
-    html += `<td style="padding:6px 10px;background:#F0EDE8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:#6B5B35;">${rowTotal.toLocaleString()}</td>`;
-    html += '</tr>';
+    H+='<td style="padding:8px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:600;color:'+(d===null?'#8A8278':d>=0?'#155724':'#7B0000')+';border-left:2px solid #EEE;">'+(d===null?'—':(d>=0?'+':'')+_misN(d))+'</td>';
+    H+='<td style="padding:5px 8px;background:'+ms.bg+';text-align:center;"><span style="font-weight:700;font-size:11px;color:'+ms.col+';">'+(p===null?'—':(p>=0?'▲ ':'▼ ')+Math.abs(p).toFixed(1)+'%')+'</span></td>';
+    H+='<td style="padding:8px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:12px;font-weight:600;color:#1A1A1A;border-left:2px solid #EEE;background:#F5F2EC;">'+_misN(ytd)+'</td>';
+    H+='<td style="padding:8px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#4A4540;background:#F5F2EC;">'+share.toFixed(1)+'%</td></tr>';
   });
 
-  // Totals row
-  html += `<tr style="background:#1a3a5c;position:sticky;bottom:0;z-index:4;">
-    <td style="padding:9px 14px;font-weight:700;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#fff;position:sticky;left:0;background:#1a3a5c;z-index:5;">GRAND TOTAL</td>`;
-  const grandAll = M.reduce((s,m)=>s+(totals[m]||0),0);
-  M.forEach((m,i) => {
-    const v    = totals[m]||0;
-    const prev = i>0 ? (totals[M[i-1]]||0) : null;
-    const pct  = _misPct(v,prev);
-    const isL  = i===M.length-1;
-    const clr  = pct===null ? '#fff' : (pct>=0?'#90EE90':'#FF9999');
-    html += `<td style="padding:7px 10px;text-align:center;${isL?'border-left:2px solid #C9A84C;background:#0d2240;':''}">
-      <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;text-align:right;">${v.toLocaleString()}</div>
-      ${pct!==null?`<div style="font-size:9px;font-weight:700;color:${clr};text-align:center;">${pct>=0?'▲':'▼'} ${Math.abs(pct).toFixed(1)}%</div>`:''}
-    </td>`;
+  // Grand Total sticky row
+  const gLV=gTot[latestM]||0,gPV=prevM?(gTot[prevM]||0):null;
+  const gD=_misDelta(gLV,gPV),gP=_misPct(gLV,gPV),gMs=_misMoMSt(gP);
+  H+='<tr style="background:#0f2744;position:sticky;bottom:0;z-index:4;">';
+  H+='<td colspan="3" style="padding:10px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#fff;position:sticky;left:0;background:#0f2744;z-index:5;">GRAND TOTAL — '+stores.length+' stores</td>';
+  months.forEach((m,i)=>{
+    const isL=i===months.length-1;
+    H+='<td style="padding:10px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px;color:#fff;'+(isL?'background:#1a4a8c;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;':'')+'">'+_misN(gTot[m]||0)+'</td>';
   });
-  html += `<td style="padding:7px 10px;background:#0d2240;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#FFD700;">${grandAll.toLocaleString()}</td>`;
-  html += '</tr></tbody>';
-
-  document.getElementById('mis2-table').innerHTML = html;
-  document.getElementById('mis2-row-count').textContent = `${stores.length} stores · ${M.length} months`;
+  H+='<td style="padding:10px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px;color:'+(gD===null?'#aaa':gD>=0?'#90EE90':'#FF9999')+';border-left:2px solid rgba(255,255,255,.2);">'+(gD===null?'—':(gD>=0?'+':'')+_misN(gD))+'</td>';
+  H+='<td style="padding:7px 8px;background:'+gMs.bg+';text-align:center;"><span style="font-weight:700;font-size:12px;color:'+gMs.col+';">'+(gP===null?'—':(gP>=0?'▲ ':'▼ ')+Math.abs(gP).toFixed(1)+'%')+'</span></td>';
+  H+='<td style="padding:10px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:13px;color:#FFD700;border-left:2px solid rgba(255,255,255,.2);">'+_misN(gTotYTD)+'</td>';
+  H+='<td style="padding:10px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px;color:#fff;">100%</td>';
+  H+='</tr></tbody></table></div>';
+  document.getElementById('mis-body').innerHTML=H;
+  document.getElementById('mis-row-count').textContent=stores.length+' stores · '+months.length+' months';
 }
 
-// ── BY SKU
-function _misRenderSku(search) {
-  const M = _misMonths;
-  const skuData = {};
-  _misRows.forEach(r => {
-    if (!skuData[r.sku_code]) skuData[r.sku_code] = {};
-    skuData[r.sku_code][r.month_year] = (skuData[r.sku_code][r.month_year]||0)+r.qty_sold;
+// ════════════════════════════════════════════════
+// VIEW 3 — SKU ANALYSIS
+// ════════════════════════════════════════════════
+function _misSkus(q){
+  if(!_m)return;
+  const{months,latestM,prevM,bySku,skuYTD}=_m;
+  let skus=Object.keys(bySku);
+  if(q)skus=skus.filter(k=>k.toLowerCase().includes(q)||_misSkuName(k).toLowerCase().includes(q)||_misSkuCat(k).toLowerCase().includes(q));
+  const catTot={};
+  skus.forEach(k=>{
+    const cat=_misSkuCat(k);
+    if(!catTot[cat]){catTot[cat]={};months.forEach(m=>catTot[cat][m]=0);catTot[cat]._ytd=0;}
+    months.forEach(m=>{catTot[cat][m]=(catTot[cat][m]||0)+(bySku[k][m]||0);});
+    catTot[cat]._ytd+=(skuYTD[k]||0);
   });
-  const latestM = M[M.length-1];
-  let skus = Object.keys(skuData).sort((a,b)=>(skuData[b][latestM]||0)-(skuData[a][latestM]||0));
-  if (search) skus = skus.filter(k => k.toLowerCase().includes(search)||(_misSkuMap[k]||'').toLowerCase().includes(search));
-
-  const totals = {};
-  M.forEach(m=>{ totals[m]=skus.reduce((s,k)=>s+(skuData[k][m]||0),0); });
-
-  let html = _misTableHeader('SKU CODE','PRODUCT NAME');
-  html += '<tbody>';
-  skus.forEach((sku,ri) => {
-    const rowBg = ri%2===0 ? '#fff' : '#FAFAF8';
-    const name  = _misSkuMap[sku]||sku;
-    const rowTotal = M.reduce((s,m)=>s+(skuData[sku][m]||0),0);
-    html += `<tr style="background:${rowBg};cursor:pointer;" onclick="openMISDrill('sku','${sku}')" onmouseover="this.style.background='#EDF4FF'" onmouseout="this.style.background='${rowBg}'">`;
-    html += `<td style="padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;color:#7A6525;white-space:nowrap;position:sticky;left:0;background:${rowBg};z-index:2;">${sku}</td>`;
-    html += `<td style="padding:7px 8px;font-size:11px;color:#1A1A1A;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;position:sticky;left:80px;background:${rowBg};z-index:2;">${name}</td>`;
-    M.forEach((m,i) => {
-      const v    = skuData[sku][m]||0;
-      const prev = i>0?(skuData[sku][M[i-1]]||0):null;
-      html += _misMoMTd(v,prev,i===M.length-1);
-    });
-    html += `<td style="padding:6px 10px;background:#F0EDE8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:#6B5B35;">${rowTotal.toLocaleString()}</td>`;
-    html += '</tr>';
+  const gTot={};months.forEach(m=>{gTot[m]=skus.reduce((s,k)=>s+(bySku[k][m]||0),0);});
+  const gTotYTD=skus.reduce((s,k)=>s+(skuYTD[k]||0),0);
+  const sortedSkus=[...skus].sort((a,b)=>{
+    const ca=_misSkuCat(a),cb=_misSkuCat(b);
+    const io=_MIS_CAT_ORDER;
+    const oi=(io.indexOf(ca)<0?99:io.indexOf(ca))-(io.indexOf(cb)<0?99:io.indexOf(cb));
+    return oi||(bySku[b][latestM]||0)-(bySku[a][latestM]||0);
   });
 
-  // Totals
-  const grandAll = M.reduce((s,m)=>s+(totals[m]||0),0);
-  html += `<tr style="background:#1a3a5c;position:sticky;bottom:0;z-index:4;">
-    <td colspan="2" style="padding:9px 14px;font-weight:700;font-size:11px;text-transform:uppercase;color:#fff;letter-spacing:.05em;position:sticky;left:0;background:#1a3a5c;z-index:5;">GRAND TOTAL (all SKUs)</td>`;
-  M.forEach((m,i) => {
-    const v    = totals[m]||0;
-    const prev = i>0?(totals[M[i-1]]||0):null;
-    const pct  = _misPct(v,prev);
-    const isL  = i===M.length-1;
-    const clr  = pct===null?'#fff':(pct>=0?'#90EE90':'#FF9999');
-    html += `<td style="padding:7px 10px;${isL?'border-left:2px solid #C9A84C;background:#0d2240;':''}text-align:center;">
-      <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;text-align:right;">${v.toLocaleString()}</div>
-      ${pct!==null?`<div style="font-size:9px;font-weight:700;color:${clr};text-align:center;">${pct>=0?'▲':'▼'} ${Math.abs(pct).toFixed(1)}%</div>`:''}
-    </td>`;
+  let H='<div style="overflow-x:auto;">';
+  H+='<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px;">';
+  H+='<thead><tr style="background:#0f2744;color:#fff;position:sticky;top:0;z-index:5;">';
+  H+='<th style="'+_misTH('text-align:center;width:32px;position:sticky;left:0;background:#0f2744;z-index:6;')+'">&#35;</th>';
+  H+='<th style="'+_misTH('text-align:left;min-width:80px;position:sticky;left:32px;background:#0f2744;z-index:6;')+'">SKU</th>';
+  H+='<th style="'+_misTH('text-align:left;min-width:190px;position:sticky;left:112px;background:#0f2744;z-index:6;')+'">PRODUCT</th>';
+  months.forEach((m,i)=>{
+    const isL=i===months.length-1;
+    H+='<th style="'+_misTH('text-align:right;min-width:78px;'+(isL?'background:#1a4a8c;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;':''))+'">'+_misML(m)+(isL?' &#9733;':'')+'</th>';
   });
-  html += `<td style="padding:7px 10px;background:#0d2240;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#FFD700;">${grandAll.toLocaleString()}</td>`;
-  html += '</tr></tbody>';
+  H+='<th style="'+_misTH('text-align:right;min-width:78px;border-left:2px solid rgba(255,255,255,.25);')+'">MoM Δ</th>';
+  H+='<th style="'+_misTH('text-align:center;min-width:78px;')+'">MoM %</th>';
+  H+='<th style="'+_misTH('text-align:right;min-width:78px;border-left:2px solid rgba(255,255,255,.25);background:#0a1a2e;')+'">YTD TOTAL</th>';
+  H+='<th style="'+_misTH('text-align:right;min-width:68px;background:#0a1a2e;')+'">SHARE %</th>';
+  H+='</tr></thead><tbody>';
 
-  document.getElementById('mis2-table').innerHTML = html;
-  document.getElementById('mis2-row-count').textContent = `${skus.length} SKUs · ${M.length} months`;
-}
-
-// ── STORE × SKU FULL DETAIL
-function _misRenderDetail(search) {
-  const M = _misMonths;
-  const latestM = M[M.length-1];
-
-  // group by store+sku
-  const data = {}; // data[store][sku][month] = qty
-  _misRows.forEach(r => {
-    if (!data[r.store_code]) data[r.store_code] = {};
-    if (!data[r.store_code][r.sku_code]) data[r.store_code][r.sku_code] = {};
-    data[r.store_code][r.sku_code][r.month_year] = (data[r.store_code][r.sku_code][r.month_year]||0)+r.qty_sold;
-  });
-
-  // build flat rows: {store, sku, months{}}
-  let flat = [];
-  Object.keys(data).sort().forEach(sc => {
-    const s = getStore(sc);
-    Object.keys(data[sc]).sort((a,b)=>(data[sc][b][latestM]||0)-(data[sc][a][latestM]||0)).forEach(sku => {
-      flat.push({ sc, s, sku, d: data[sc][sku] });
-    });
-  });
-
-  if (search) flat = flat.filter(r =>
-    r.sc.toLowerCase().includes(search) ||
-    r.s.name.toLowerCase().includes(search) ||
-    r.sku.toLowerCase().includes(search) ||
-    (_misSkuMap[r.sku]||'').toLowerCase().includes(search)
-  );
-
-  const regionColors = {EPP:'#1a2744',ASL:'#5B2D8E',OMAN:'#0B5C35',KSA:'#7A2C00'};
-  const regionLabels = {EPP:'EPP UAE',ASL:'ASL UAE',OMAN:'Oman',KSA:'KSA'};
-
-  let html = `<thead><tr style="background:#1a3a5c;color:#fff;position:sticky;top:0;z-index:5;">
-    <th style="text-align:left;padding:10px 14px;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;min-width:160px;position:sticky;left:0;background:#1a3a5c;z-index:6;">STORE</th>
-    <th style="text-align:left;padding:10px 8px;font-size:9.5px;font-weight:700;letter-spacing:.06em;min-width:75px;white-space:nowrap;">SKU</th>
-    <th style="text-align:left;padding:10px 8px;font-size:9.5px;font-weight:700;letter-spacing:.06em;min-width:160px;">PRODUCT</th>`;
-  M.forEach((m,i) => {
-    const isL = i===M.length-1;
-    const bg  = isL?'#2563a8':'#1a3a5c';
-    const bl  = isL?'border-left:2px solid #C9A84C;':'';
-    html += `<th style="text-align:center;padding:10px 10px;font-size:9.5px;font-weight:700;background:${bg};${bl}white-space:nowrap;min-width:90px;">${_misMoLbl(m)}${isL?' ★':''}</th>`;
-  });
-  html += `<th style="text-align:center;padding:10px 10px;font-size:9.5px;font-weight:700;background:#0d2240;min-width:70px;">TOTAL</th></tr></thead>`;
-
-  html += '<tbody>';
-  let lastStore = null;
-  flat.forEach((r, ri) => {
-    if (r.sc !== lastStore) {
-      const colspan = 3+M.length+1;
-      const reg = r.s.region;
-      html += `<tr><td colspan="${colspan}" style="padding:6px 14px;background:#EDEBE6;font-weight:700;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#6B5B35;border-top:2px solid #C9A84C;position:sticky;left:0;">
-        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${regionColors[reg]||'#888'};margin-right:5px;vertical-align:middle;"></span>
-        ${r.s.name} <span style="font-family:'IBM Plex Mono',monospace;color:#8A8278;font-size:8px;margin-left:6px;">${r.sc}</span>
-        <span style="margin-left:10px;background:${regionColors[reg]||'#888'};color:#fff;padding:1px 6px;border-radius:3px;font-size:7.5px;">${regionLabels[reg]||reg}</span>
-      </td></tr>`;
-      lastStore = r.sc;
+  let rank=0,lastCat=null;
+  sortedSkus.forEach(k=>{
+    const cat=_misSkuCat(k);
+    if(cat!==lastCat){
+      const ct=catTot[cat]||{},cYTD=ct._ytd||0,clv=ct[latestM]||0,cpv=prevM?(ct[prevM]||0):null;
+      const cd=_misDelta(clv,cpv),cp=_misPct(clv,cpv),cms=_misMoMSt(cp);
+      const cShare=gTotYTD?(cYTD/gTotYTD*100):0;
+      H+='<tr style="background:#EDEBE6;border-top:2px solid #C9A84C;">';
+      H+='<td colspan="3" style="padding:7px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#6B5B35;position:sticky;left:0;background:#EDEBE6;z-index:2;">'+cat+'</td>';
+      months.forEach((m,i)=>{
+        const isL=i===months.length-1;
+        H+='<td style="padding:7px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:700;color:#6B5B35;'+(isL?'background:#FFF3CC;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;':'')+'">'+_misN(ct[m]||0)+'</td>';
+      });
+      H+='<td style="padding:7px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:700;color:'+(cd===null?'#8A8278':cd>=0?'#155724':'#7B0000')+';border-left:2px solid #DDD;">'+(cd===null?'—':(cd>=0?'+':'')+_misN(cd))+'</td>';
+      H+='<td style="padding:5px 8px;background:'+cms.bg+';text-align:center;"><span style="font-weight:700;font-size:11px;color:'+cms.col+';">'+(cp===null?'—':(cp>=0?'▲ ':'▼ ')+Math.abs(cp).toFixed(1)+'%')+'</span></td>';
+      H+='<td style="padding:7px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:700;color:#6B5B35;border-left:2px solid #DDD;background:#F5F0E8;">'+_misN(cYTD)+'</td>';
+      H+='<td style="padding:7px 12px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:700;color:#6B5B35;background:#F5F0E8;">'+cShare.toFixed(1)+'%</td></tr>';
+      lastCat=cat;
     }
-    const rowBg   = ri%2===0?'#fff':'#FAFAF8';
-    const name    = _misSkuMap[r.sku]||r.sku;
-    const rowTotal = M.reduce((s,m)=>s+(r.d[m]||0),0);
-    if (rowTotal===0) return;
-    html += `<tr style="background:${rowBg};" onmouseover="this.style.background='#F0F7FF'" onmouseout="this.style.background='${rowBg}'">`;
-    html += `<td style="padding:6px 14px;font-size:10px;color:#8A8278;font-style:italic;position:sticky;left:0;background:${rowBg};z-index:2;"></td>`;
-    html += `<td style="padding:6px 8px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:#7A6525;white-space:nowrap;">${r.sku}</td>`;
-    html += `<td style="padding:6px 8px;font-size:11px;color:#1A1A1A;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</td>`;
-    M.forEach((m,i) => {
-      const v    = r.d[m]||0;
-      const prev = i>0?(r.d[M[i-1]]||0):null;
-      html += _misMoMTd(v,prev,i===M.length-1);
+    rank++;
+    const ytd=skuYTD[k]||0,lv=bySku[k][latestM]||0,pv=prevM?(bySku[k][prevM]||0):null;
+    const d=_misDelta(lv,pv),p=_misPct(lv,pv),ms=_misMoMSt(p);
+    const share=gTotYTD?(ytd/gTotYTD*100):0,name=_misSkuName(k);
+    const rb=rank%2===0?'#FAFAF8':'#fff';
+    H+='<tr style="background:'+rb+';cursor:pointer;" onclick="openMISDrill(\'sku\',\''+k+'\')" onmouseover="this.style.background=\'#EDF4FF\'" onmouseout="this.style.background=\''+rb+'\'">';
+    H+='<td style="padding:8px 10px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#8A8278;text-align:center;position:sticky;left:0;background:'+rb+';z-index:2;">'+rank+'</td>';
+    H+='<td style="padding:8px 8px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;font-weight:700;color:#7A6525;white-space:nowrap;position:sticky;left:32px;background:'+rb+';z-index:2;">'+k+'</td>';
+    H+='<td style="padding:8px 8px;font-size:11.5px;color:#1A1A1A;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:sticky;left:112px;background:'+rb+';z-index:2;">'+name+'</td>';
+    months.forEach((m,i)=>{
+      const isL=i===months.length-1,mv=bySku[k][m]||0;
+      H+='<td style="padding:8px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:12px;font-weight:'+(isL?600:400)+';color:'+(isL?'#1A1A1A':'#4A4540')+';'+(isL?'background:#FFFBF0;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;':'')+'">'+( mv?_misN(mv):'—')+'</td>';
     });
-    html += `<td style="padding:6px 10px;background:#F0EDE8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:#6B5B35;">${rowTotal.toLocaleString()}</td>`;
-    html += '</tr>';
+    H+='<td style="padding:8px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:600;color:'+(d===null?'#8A8278':d>=0?'#155724':'#7B0000')+';border-left:2px solid #EEE;">'+(d===null?'—':(d>=0?'+':'')+_misN(d))+'</td>';
+    H+='<td style="padding:5px 8px;background:'+ms.bg+';text-align:center;"><span style="font-weight:700;font-size:11px;color:'+ms.col+';">'+(p===null?'—':(p>=0?'▲ ':'▼ ')+Math.abs(p).toFixed(1)+'%')+'</span></td>';
+    H+='<td style="padding:8px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:12px;font-weight:600;color:#1A1A1A;border-left:2px solid #EEE;background:#F5F2EC;">'+_misN(ytd)+'</td>';
+    H+='<td style="padding:8px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#4A4540;background:#F5F2EC;">'+share.toFixed(1)+'%</td></tr>';
   });
-  html += '</tbody>';
-
-  document.getElementById('mis2-table').innerHTML = html;
-  document.getElementById('mis2-row-count').textContent = `${flat.length} rows · ${M.length} months`;
+  const gLV=gTot[latestM]||0,gPV=prevM?(gTot[prevM]||0):null;
+  const gD=_misDelta(gLV,gPV),gP=_misPct(gLV,gPV),gMs=_misMoMSt(gP);
+  H+='<tr style="background:#0f2744;position:sticky;bottom:0;z-index:4;">';
+  H+='<td colspan="3" style="padding:10px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#fff;position:sticky;left:0;background:#0f2744;z-index:5;">GRAND TOTAL — '+sortedSkus.length+' SKUs</td>';
+  months.forEach((m,i)=>{
+    const isL=i===months.length-1;
+    H+='<td style="padding:10px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px;color:#fff;'+(isL?'background:#1a4a8c;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;':'')+'">'+_misN(gTot[m]||0)+'</td>';
+  });
+  H+='<td style="padding:10px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px;color:'+(gD===null?'#aaa':gD>=0?'#90EE90':'#FF9999')+';border-left:2px solid rgba(255,255,255,.2);">'+(gD===null?'—':(gD>=0?'+':'')+_misN(gD))+'</td>';
+  H+='<td style="padding:7px 8px;background:'+gMs.bg+';text-align:center;"><span style="font-weight:700;font-size:12px;color:'+gMs.col+';">'+(gP===null?'—':(gP>=0?'▲ ':'▼ ')+Math.abs(gP).toFixed(1)+'%')+'</span></td>';
+  H+='<td style="padding:10px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:13px;color:#FFD700;border-left:2px solid rgba(255,255,255,.2);">'+_misN(gTotYTD)+'</td>';
+  H+='<td style="padding:10px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:12px;color:#fff;">100%</td>';
+  H+='</tr></tbody></table></div>';
+  document.getElementById('mis-body').innerHTML=H;
+  document.getElementById('mis-row-count').textContent=sortedSkus.length+' SKUs · '+months.length+' months';
 }
 
-// ── Store / SKU Drill-Down
-function openMISDrill(type, key) {
-  const M = _misMonths;
-  let html = '';
+// ════════════════════════════════════════════════
+// VIEW 4 — FULL DETAIL (Store x SKU)
+// ════════════════════════════════════════════════
+function _misMatrix(q){
+  if(!_m)return;
+  const{months,latestM,prevM}=_m;
+  const RC={EPP:'#1a3a5c',ASL:'#5B2D8E',OMAN:'#0B5C35',KSA:'#7A2C00'};
+  const RL={EPP:'EPP UAE',ASL:'ASL UAE',OMAN:'Oman',KSA:'KSA'};
+  const det={};
+  _m.rows.forEach(r=>{
+    const k=r.store_code+'||'+r.sku_code;
+    if(!det[k])det[k]={sc:r.store_code,sku:r.sku_code,d:{}};
+    det[k].d[r.month_year]=(det[k].d[r.month_year]||0)+r.qty_sold;
+  });
+  let rows=Object.values(det).filter(r=>(r.d[latestM]||0)>0)
+    .sort((a,b)=>getStore(a.sc).region.localeCompare(getStore(b.sc).region)||a.sc.localeCompare(b.sc)||(b.d[latestM]||0)-(a.d[latestM]||0));
+  if(q)rows=rows.filter(r=>{
+    const s=getStore(r.sc);
+    return r.sc.toLowerCase().includes(q)||r.sku.toLowerCase().includes(q)||_misSkuName(r.sku).toLowerCase().includes(q)||s.name.toLowerCase().includes(q);
+  });
+  const gYTD=rows.reduce((t,r)=>t+months.reduce((s,m)=>s+(r.d[m]||0),0),0);
 
-  if (type==='store') {
-    const s = getStore(key);
-    // Get all SKUs for this store
-    const skuData = {};
-    _misRows.filter(r=>r.store_code===key).forEach(r=>{
-      if (!skuData[r.sku_code]) skuData[r.sku_code]={};
+  let H='<div style="overflow-x:auto;">';
+  H+='<table style="width:100%;border-collapse:collapse;font-size:11.5px;min-width:900px;">';
+  H+='<thead><tr style="background:#0f2744;color:#fff;position:sticky;top:0;z-index:5;">';
+  H+='<th style="'+_misTH('text-align:left;min-width:75px;position:sticky;left:0;background:#0f2744;z-index:6;')+'">REGION</th>';
+  H+='<th style="'+_misTH('text-align:left;min-width:165px;')+'">STORE</th>';
+  H+='<th style="'+_misTH('text-align:left;min-width:75px;')+'">SKU</th>';
+  H+='<th style="'+_misTH('text-align:left;min-width:170px;')+'">PRODUCT</th>';
+  months.forEach((m,i)=>{
+    const isL=i===months.length-1;
+    H+='<th style="'+_misTH('text-align:right;min-width:72px;'+(isL?'background:#1a4a8c;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;':''))+'">'+_misML(m)+(isL?' &#9733;':'')+'</th>';
+  });
+  H+='<th style="'+_misTH('text-align:right;min-width:72px;border-left:2px solid rgba(255,255,255,.25);')+'">MoM Δ</th>';
+  H+='<th style="'+_misTH('text-align:center;min-width:72px;')+'">MoM %</th>';
+  H+='<th style="'+_misTH('text-align:right;min-width:72px;border-left:2px solid rgba(255,255,255,.25);background:#0a1a2e;')+'">YTD</th>';
+  H+='<th style="'+_misTH('text-align:right;min-width:62px;background:#0a1a2e;')+'">SHARE</th>';
+  H+='</tr></thead><tbody>';
+  let lastSt=null;
+  rows.forEach((r,ri)=>{
+    const s=getStore(r.sc),reg=s.region;
+    if(r.sc!==lastSt){
+      const nc=4+months.length+4;
+      H+='<tr><td colspan="'+nc+'" style="padding:6px 12px;background:#EDEBE6;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#6B5B35;border-top:2px solid #C9A84C;position:sticky;left:0;">';
+      H+='<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+(RC[reg]||'#888')+';margin-right:6px;vertical-align:middle;"></span>'+s.name+' <span style="font-family:\'IBM Plex Mono\',monospace;color:#8A8278;font-size:8px;margin-left:8px;">'+r.sc+'</span>';
+      H+='<span style="margin-left:8px;background:'+(RC[reg]||'#888')+';color:#fff;padding:1px 6px;border-radius:2px;font-size:7.5px;">'+(RL[reg]||reg)+'</span>';
+      H+='</td></tr>';
+      lastSt=r.sc;
+    }
+    const lv=r.d[latestM]||0,pv=prevM?(r.d[prevM]||0):null;
+    const d=_misDelta(lv,pv),p=_misPct(lv,pv),ms=_misMoMSt(p);
+    const ytd=months.reduce((s,m)=>s+(r.d[m]||0),0),share=gYTD?(ytd/gYTD*100):0;
+    const name=_misSkuName(r.sku),rb=ri%2===0?'#fff':'#FAFAF8';
+    H+='<tr style="background:'+rb+';" onmouseover="this.style.background=\'#F0F7FF\'" onmouseout="this.style.background=\''+rb+'\'">`;
+    H+='<td style="padding:6px 10px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;font-weight:600;color:'+(RC[reg]||'#888')+';position:sticky;left:0;background:'+rb+';z-index:2;">'+(RL[reg]||reg)+'</td>';
+    H+='<td style="padding:6px 8px;font-size:10.5px;color:#4A4540;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">'+s.name+'</td>';
+    H+='<td style="padding:6px 8px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;font-weight:700;color:#7A6525;white-space:nowrap;">'+r.sku+'</td>';
+    H+='<td style="padding:6px 8px;font-size:11px;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">'+name+'</td>';
+    months.forEach((m,i)=>{
+      const isL=i===months.length-1,mv=r.d[m]||0;
+      H+='<td style="padding:6px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:'+(isL?600:400)+';'+(isL?'background:#FFFBF0;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;color:#1A1A1A;':'color:#4A4540;')+'">'+( mv?_misN(mv):'—')+'</td>';
+    });
+    H+='<td style="padding:6px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:600;color:'+(d===null?'#8A8278':d>=0?'#155724':'#7B0000')+';border-left:2px solid #EEE;">'+(d===null?'—':(d>=0?'+':'')+_misN(d))+'</td>';
+    H+='<td style="padding:4px 6px;background:'+ms.bg+';text-align:center;"><span style="font-weight:700;font-size:10.5px;color:'+ms.col+';">'+(p===null?'—':(p>=0?'▲ ':'▼ ')+Math.abs(p).toFixed(1)+'%')+'</span></td>';
+    H+='<td style="padding:6px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11px;font-weight:600;border-left:2px solid #EEE;background:#F5F2EC;">'+_misN(ytd)+'</td>';
+    H+='<td style="padding:6px 10px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:10px;background:#F5F2EC;">'+share.toFixed(2)+'%</td></tr>';
+  });
+  H+='</tbody></table></div>';
+  document.getElementById('mis-body').innerHTML=H;
+  document.getElementById('mis-row-count').textContent=rows.length+' rows · '+months.length+' months';
+}
+
+// ════════════════════════════════════════════════
+// DRILL-DOWN PANEL
+// ════════════════════════════════════════════════
+function openMISDrill(type,key){
+  if(!_m)return;
+  const{months,latestM,prevM}=_m;
+  let H='';
+
+  function monthStrip(totByM){
+    let s='<div style="padding:12px 14px;background:#F5F2EC;border-bottom:1px solid #E5E0D8;display:flex;gap:7px;overflow-x:auto;flex-shrink:0;">';
+    months.forEach((m,i)=>{
+      const v=totByM[m]||0,pv=i>0?(totByM[months[i-1]]||0):null,p=_misPct(v,pv),ms=_misMoMSt(p),isL=m===latestM;
+      s+='<div style="flex-shrink:0;background:#fff;border:'+(isL?'2px solid #C9A84C':'1px solid #E5E0D8')+';border-radius:3px;padding:6px 12px;min-width:76px;text-align:center;">';
+      s+='<div style="font-size:7.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8A8278;">'+_misML(m)+'</div>';
+      s+='<div style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-weight:600;color:#0f2744;line-height:1.1;">'+_misN(v)+'</div>';
+      if(p!==null)s+='<div style="font-size:9px;font-weight:700;color:'+ms.col+';background:'+ms.bg+';border-radius:2px;padding:1px 4px;margin-top:2px;">'+(p>=0?'▲ ':'▼ ')+Math.abs(p).toFixed(1)+'%</div>';
+      s+='</div>';
+    });
+    return s+'</div>';
+  }
+  function drillHeader(title,sub,code,ytd,latestPct,ms){
+    return'<div style="background:#0f2744;padding:16px 18px;display:flex;align-items:flex-start;gap:12px;position:sticky;top:0;z-index:5;">'
+      +'<button onclick="closeMISDrill()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;flex-shrink:0;line-height:30px;text-align:center;">&#x2715;</button>'
+      +'<div style="flex:1;">'
+      +'<div style="font-size:8.5px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:700;">'+title+'</div>'
+      +'<div style="font-size:14px;font-weight:700;color:#fff;margin-top:2px;">'+sub+'</div>'
+      +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9.5px;color:rgba(201,168,76,.85);margin-top:2px;">'+code+'</div>'
+      +'</div>'
+      +'<div style="text-align:right;flex-shrink:0;">'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:600;color:#fff;">'+_misN(ytd)+'</div>'
+      +'<div style="font-size:8.5px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;">YTD Units</div>'
+      +'<div style="margin-top:4px;padding:3px 10px;background:'+ms.bg+';border-radius:4px;display:inline-block;">'
+      +'<span style="font-weight:700;font-size:11px;color:'+ms.col+';">'+(latestPct===null?'N/A':(latestPct>=0?'▲ ':'▼ ')+Math.abs(latestPct).toFixed(1)+'% MoM')+'</span>'
+      +'</div></div></div>';
+  }
+  function drillTable(colHdr, rowsData, getRowFn){
+    let t='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11.5px;">';
+    t+='<thead><tr style="background:#0f2744;color:#fff;position:sticky;top:118px;z-index:4;">';
+    t+='<th style="padding:8px 10px;text-align:left;font-size:8.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;min-width:140px;">'+colHdr+'</th>';
+    months.forEach((m,i)=>{
+      const isL=i===months.length-1;
+      t+='<th style="padding:8px 8px;text-align:right;font-size:8.5px;font-weight:700;text-transform:uppercase;min-width:68px;'+(isL?'background:#1a4a8c;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;':'')+'white-space:nowrap;">'+_misML(m)+(isL?' &#9733;':'')+'</th>';
+    });
+    t+='<th style="padding:8px 8px;text-align:center;font-size:8.5px;font-weight:700;text-transform:uppercase;min-width:68px;">MoM %</th>';
+    t+='<th style="padding:8px 8px;text-align:right;font-size:8.5px;font-weight:700;text-transform:uppercase;min-width:68px;background:#0a1a2e;">YTD</th>';
+    t+='</tr></thead><tbody>';
+    rowsData.forEach((item,ri)=>{t+=getRowFn(item,ri);});
+    t+='</tbody></table></div>';
+    return t;
+  }
+
+  if(type==='store'){
+    const s=getStore(key);
+    const skuData={};
+    _m.rows.filter(r=>r.store_code===key).forEach(r=>{
+      if(!skuData[r.sku_code])skuData[r.sku_code]={};
       skuData[r.sku_code][r.month_year]=(skuData[r.sku_code][r.month_year]||0)+r.qty_sold;
     });
-    const latestM = M[M.length-1];
-    const skus = Object.keys(skuData).sort((a,b)=>(skuData[b][latestM]||0)-(skuData[a][latestM]||0));
-    const storeTotal = {};
-    M.forEach(m=>{ storeTotal[m]=skus.reduce((t,k)=>t+(skuData[k][m]||0),0); });
-
-    html = `<div style="background:#1a3a5c;padding:18px 20px;display:flex;align-items:flex-start;gap:14px;position:sticky;top:0;z-index:5;">
-      <button onclick="closeMISDrill()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:14px;cursor:pointer;flex-shrink:0;">✕</button>
-      <div>
-        <div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:700;">Store Detail · All SKUs</div>
-        <div style="font-size:15px;font-weight:700;color:#fff;">${s.name}</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(201,168,76,.9);margin-top:2px;">${key} · ${s.region} · ${s.city||'—'}</div>
-      </div>
-    </div>`;
-
-    // Month totals for this store
-    html += `<div style="padding:12px 16px;background:#F5F2EC;border-bottom:1px solid #E5E0D8;display:flex;gap:8px;overflow-x:auto;">`;
-    M.forEach((m,i) => {
-      const v    = storeTotal[m]||0;
-      const prev = i>0?(storeTotal[M[i-1]]||0):null;
-      const pct  = _misPct(v,prev);
-      const isL  = i===M.length-1;
-      let badge='';
-      if (pct!==null){const c=pct>=0?'#0B7A45':'#C0392B',a=pct>=0?'▲':'▼';badge=`<div style="font-size:8px;font-weight:700;color:${c};">${a} ${Math.abs(pct).toFixed(1)}%</div>`;}
-      html += `<div style="flex-shrink:0;background:#fff;border:${isL?'2px solid #C9A84C':'1px solid #E5E0D8'};border-radius:4px;padding:7px 12px;min-width:80px;">
-        <div style="font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;">${_misMoLbl(m)}</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#1a3a5c;">${v.toLocaleString()}</div>
-        ${badge}
-      </div>`;
-    });
-    html += `</div>`;
-
-    // SKU table
-    html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11.5px;">
-      <thead><tr style="background:#1a3a5c;color:#fff;position:sticky;top:74px;z-index:4;">
-        <th style="padding:8px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">SKU</th>
-        <th style="padding:8px 8px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;">Product</th>`;
-    M.forEach((m,i)=>{
-      const isL=i===M.length-1;
-      html+=`<th style="padding:8px 8px;text-align:center;font-size:9px;font-weight:700;${isL?'background:#2563a8;border-left:2px solid #C9A84C;':''}white-space:nowrap;">${_misMoLbl(m)}${isL?' ★':''}</th>`;
-    });
-    html+=`<th style="padding:8px 8px;text-align:right;font-size:9px;font-weight:700;background:#0d2240;">TOTAL</th></tr></thead><tbody>`;
-
-    skus.forEach((sku,ri)=>{
-      const rowTotal=M.reduce((s,m)=>s+(skuData[sku][m]||0),0);
-      if(!rowTotal) return;
-      const bg=ri%2===0?'#fff':'#FAFAF8';
-      html+=`<tr style="background:${bg};">
-        <td style="padding:6px 12px;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:10px;color:#7A6525;white-space:nowrap;">${sku}</td>
-        <td style="padding:6px 8px;font-size:11px;color:#1A1A1A;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_misSkuMap[sku]||sku}</td>`;
-      M.forEach((m,i)=>{
-        const v=skuData[sku][m]||0;
-        const prev=i>0?(skuData[sku][M[i-1]]||0):null;
-        html+=_misMoMTd(v,prev,i===M.length-1);
+    const skus=Object.keys(skuData).sort((a,b)=>(skuData[b][latestM]||0)-(skuData[a][latestM]||0));
+    const stTot={};months.forEach(m=>{stTot[m]=skus.reduce((t,k)=>t+(skuData[k][m]||0),0);});
+    const stYTD=months.reduce((t,m)=>t+(stTot[m]||0),0);
+    const lv=stTot[latestM]||0,pv=prevM?(stTot[prevM]||0):null,p=_misPct(lv,pv),ms=_misMoMSt(p);
+    H+=drillHeader('Store SKU Breakdown',s.name,key+' · '+s.region+' · '+(s.city||''),stYTD,p,ms);
+    H+=monthStrip(stTot);
+    H+=drillTable('SKU & PRODUCT',skus,(k,ri)=>{
+      const ytd=months.reduce((t,m)=>t+(skuData[k][m]||0),0);
+      if(!ytd)return'';
+      const lv2=skuData[k][latestM]||0,pv2=prevM?(skuData[k][prevM]||0):null;
+      const p2=_misPct(lv2,pv2),ms2=_misMoMSt(p2),name=_misSkuName(k),rb=ri%2===0?'#fff':'#FAFAF8';
+      let row='<tr style="background:'+rb+';">'
+        +'<td style="padding:6px 10px;"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:9.5px;font-weight:700;color:#7A6525;">'+k+'</div>'
+        +'<div style="font-size:11px;color:#1A1A1A;margin-top:1px;">'+name+'</div></td>';
+      months.forEach((m,i)=>{
+        const isL=i===months.length-1,mv=skuData[k][m]||0;
+        row+='<td style="padding:6px 8px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11.5px;font-weight:'+(isL?600:400)+';'+(isL?'background:#FFFBF0;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;color:#1A1A1A;':'color:#4A4540;')+'">'+( mv?_misN(mv):'—')+'</td>';
       });
-      html+=`<td style="padding:6px 8px;background:#F0EDE8;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:11px;color:#6B5B35;">${rowTotal.toLocaleString()}</td>`;
-      html+='</tr>';
+      row+='<td style="padding:4px 6px;background:'+ms2.bg+';text-align:center;"><span style="font-weight:700;font-size:10.5px;color:'+ms2.col+';">'+(p2===null?'—':(p2>=0?'▲ ':'▼ ')+Math.abs(p2).toFixed(1)+'%')+'</span></td>';
+      row+='<td style="padding:6px 8px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11.5px;font-weight:600;background:#F5F2EC;">'+_misN(ytd)+'</td></tr>';
+      return row;
     });
-    html+='</tbody></table></div>';
-
   } else {
-    // SKU drill
-    const name = _misSkuMap[key]||key;
-    const storeData = {};
-    _misRows.filter(r=>r.sku_code===key).forEach(r=>{
-      if(!storeData[r.store_code]) storeData[r.store_code]={};
+    const name=_misSkuName(key);
+    const storeData={};
+    _m.rows.filter(r=>r.sku_code===key).forEach(r=>{
+      if(!storeData[r.store_code])storeData[r.store_code]={};
       storeData[r.store_code][r.month_year]=(storeData[r.store_code][r.month_year]||0)+r.qty_sold;
     });
-    const latestM = M[M.length-1];
-    const stores  = Object.keys(storeData).sort((a,b)=>(storeData[b][latestM]||0)-(storeData[a][latestM]||0));
-    const skuTotal= {};
-    M.forEach(m=>{ skuTotal[m]=stores.reduce((t,sc)=>t+(storeData[sc][m]||0),0); });
-
-    html=`<div style="background:#1a3a5c;padding:18px 20px;display:flex;align-items:flex-start;gap:14px;position:sticky;top:0;z-index:5;">
-      <button onclick="closeMISDrill()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:14px;cursor:pointer;flex-shrink:0;">✕</button>
-      <div>
-        <div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:700;">SKU Detail · All Stores</div>
-        <div style="font-size:15px;font-weight:700;color:#fff;">${name}</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(201,168,76,.9);margin-top:2px;">${key}</div>
-      </div>
-    </div>`;
-    html+=`<div style="padding:12px 16px;background:#F5F2EC;border-bottom:1px solid #E5E0D8;display:flex;gap:8px;overflow-x:auto;">`;
-    M.forEach((m,i)=>{
-      const v=skuTotal[m]||0,prev=i>0?(skuTotal[M[i-1]]||0):null,pct=_misPct(v,prev),isL=i===M.length-1;
-      let badge='';if(pct!==null){const c=pct>=0?'#0B7A45':'#C0392B',a=pct>=0?'▲':'▼';badge=`<div style="font-size:8px;font-weight:700;color:${c};">${a} ${Math.abs(pct).toFixed(1)}%</div>`;}
-      html+=`<div style="flex-shrink:0;background:#fff;border:${isL?'2px solid #C9A84C':'1px solid #E5E0D8'};border-radius:4px;padding:7px 12px;min-width:80px;">
-        <div style="font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;">${_misMoLbl(m)}</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#1a3a5c;">${v.toLocaleString()}</div>${badge}</div>`;
-    });
-    html+=`</div><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11.5px;">
-      <thead><tr style="background:#1a3a5c;color:#fff;position:sticky;top:74px;z-index:4;">
-        <th style="padding:8px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">STORE</th>`;
-    M.forEach((m,i)=>{
-      const isL=i===M.length-1;
-      html+=`<th style="padding:8px 8px;text-align:center;font-size:9px;font-weight:700;${isL?'background:#2563a8;border-left:2px solid #C9A84C;':''}white-space:nowrap;">${_misMoLbl(m)}${isL?' ★':''}</th>`;
-    });
-    html+=`<th style="padding:8px 8px;text-align:right;font-size:9px;font-weight:700;background:#0d2240;">TOTAL</th></tr></thead><tbody>`;
-    stores.forEach((sc,ri)=>{
-      const s=getStore(sc),rowTotal=M.reduce((t,m)=>t+(storeData[sc][m]||0),0);
-      if(!rowTotal) return;
-      const bg=ri%2===0?'#fff':'#FAFAF8';
-      html+=`<tr style="background:${bg};"><td style="padding:6px 12px;"><div style="font-weight:600;font-size:11px;">${s.name}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#7A6525;">${sc}</div></td>`;
-      M.forEach((m,i)=>{
-        const v=storeData[sc][m]||0,prev=i>0?(storeData[sc][M[i-1]]||0):null;
-        html+=_misMoMTd(v,prev,i===M.length-1);
+    const stores=Object.keys(storeData).sort((a,b)=>(storeData[b][latestM]||0)-(storeData[a][latestM]||0));
+    const skTot={};months.forEach(m=>{skTot[m]=stores.reduce((t,sc)=>t+(storeData[sc][m]||0),0);});
+    const skYTD=months.reduce((t,m)=>t+(skTot[m]||0),0);
+    const lv=skTot[latestM]||0,pv=prevM?(skTot[prevM]||0):null,p=_misPct(lv,pv),ms=_misMoMSt(p);
+    H+=drillHeader('SKU Performance — All Stores',name,key+' · '+_misSkuCat(key),skYTD,p,ms);
+    H+=monthStrip(skTot);
+    H+=drillTable('STORE',stores,(sc,ri)=>{
+      const s=getStore(sc),ytd=months.reduce((t,m)=>t+(storeData[sc][m]||0),0);
+      if(!ytd)return'';
+      const lv2=storeData[sc][latestM]||0,pv2=prevM?(storeData[sc][prevM]||0):null;
+      const p2=_misPct(lv2,pv2),ms2=_misMoMSt(p2),rb=ri%2===0?'#fff':'#FAFAF8';
+      let row='<tr style="background:'+rb+';">'
+        +'<td style="padding:6px 10px;"><div style="font-weight:600;font-size:11px;">'+s.name+'</div>'
+        +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:8.5px;color:#7A6525;">'+sc+'</div></td>';
+      months.forEach((m,i)=>{
+        const isL=i===months.length-1,mv=storeData[sc][m]||0;
+        row+='<td style="padding:6px 8px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11.5px;font-weight:'+(isL?600:400)+';'+(isL?'background:#FFFBF0;border-left:2px solid #C9A84C;border-right:2px solid #C9A84C;color:#1A1A1A;':'color:#4A4540;')+'">'+( mv?_misN(mv):'—')+'</td>';
       });
-      html+=`<td style="padding:6px 8px;background:#F0EDE8;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:11px;color:#6B5B35;">${rowTotal.toLocaleString()}</td></tr>`;
+      row+='<td style="padding:4px 6px;background:'+ms2.bg+';text-align:center;"><span style="font-weight:700;font-size:10.5px;color:'+ms2.col+';">'+(p2===null?'—':(p2>=0?'▲ ':'▼ ')+Math.abs(p2).toFixed(1)+'%')+'</span></td>';
+      row+='<td style="padding:6px 8px;text-align:right;font-family:\'IBM Plex Mono\',monospace;font-size:11.5px;font-weight:600;background:#F5F2EC;">'+_misN(ytd)+'</td></tr>';
+      return row;
     });
-    html+='</tbody></table></div>';
+  }
+  document.getElementById('misDrillContent').innerHTML=H;
+  document.getElementById('misDrillPanel').style.display='block';
+  document.getElementById('misDrillOverlay').style.display='block';
+}
+function closeMISDrill(){
+  document.getElementById('misDrillPanel').style.display='none';
+  document.getElementById('misDrillOverlay').style.display='none';
+}
+
+// ════════════════════════════════════════════════
+// EXCEL EXPORT — 4 Sheets
+// ════════════════════════════════════════════════
+function exportMISExcel(){
+  if(typeof XLSX==='undefined'){alert('SheetJS still loading — please wait a moment.');return;}
+  if(!_m){alert('Open the MIS Report first.');return;}
+  const{months,latestM,prevM,grand,grandYTD,byReg,byStore,bySku,storeYTD,skuYTD}=_m;
+  const wb=XLSX.utils.book_new();
+  const region=document.getElementById('mis-rgn').value;
+  const year=document.getElementById('mis-yr').value;
+  const gen=new Date().toLocaleString('en-GB');
+
+  function mHdrs(){
+    const h=[];
+    months.forEach((m,i)=>{h.push(_misML(m));if(i>0)h.push(_misML(m)+' MoM%');});
+    return h;
+  }
+  function mVals(d){
+    const v=[];
+    months.forEach((m,i)=>{
+      const cv=d[m]||0,pv2=i>0?(d[months[i-1]]||0):null;
+      v.push(cv);
+      if(i>0)v.push(pv2>0?+((cv-pv2)/pv2*100).toFixed(1):null);
+    });
+    return v;
   }
 
-  document.getElementById('misDrillContent').innerHTML = html;
-  document.getElementById('misDrillPanel').style.display  = 'block';
-  document.getElementById('misDrillOverlay').style.display = 'block';
-}
-
-function closeMISDrill() {
-  document.getElementById('misDrillPanel').style.display  = 'none';
-  document.getElementById('misDrillOverlay').style.display = 'none';
-}
-
-// ── Excel Export (SheetJS)
-function exportMISExcel() {
-  if (typeof XLSX === 'undefined') { alert('SheetJS not loaded yet — please wait a moment and try again.'); return; }
-  const M = _misMonths;
-  const wb = XLSX.utils.book_new();
-
-  const moHdrs = M.map(m=>_misMoLbl(m));
-  const momHdrs = M.map(m=>_misMoLbl(m)+' MoM%');
-  const allHdrs = [];
-  M.forEach((m,i)=>{ allHdrs.push(_misMoLbl(m)); if(i>0) allHdrs.push(_misMoLbl(m)+' MoM%'); });
-
-  // ── Sheet 1: Region Summary
-  const regData = {EPP:{},ASL:{},OMAN:{},KSA:{}};
-  _misRows.forEach(r=>{ const reg=getStore(r.store_code).region; if(!regData[reg]) return; regData[reg][r.month_year]=(regData[reg][r.month_year]||0)+r.qty_sold; });
-  const totals1={};
-  M.forEach(m=>{totals1[m]=Object.values(regData).reduce((s,d)=>s+(d[m]||0),0);});
-  const s1rows=[['EMIRATES PRIDE — SALES MIS REPORT'],[`Generated: ${new Date().toLocaleString('en-GB')}`],[]];
-  const s1hdr=['Region',...allHdrs,'TOTAL'];
-  s1rows.push(s1hdr);
-  const regLabels={EPP:'EPP UAE',ASL:'ASL UAE',OMAN:'Oman',KSA:'KSA'};
-  Object.keys(regData).forEach(reg=>{
-    const row=[regLabels[reg]||reg];
-    let total=0;
-    M.forEach((m,i)=>{ const v=regData[reg][m]||0; row.push(v); if(i>0){const p=regData[reg][M[i-1]]||0; row.push(p?+((v-p)/p*100).toFixed(1):null);} total+=v; });
-    row.push(total); s1rows.push(row);
+  // Sheet 1: Executive Summary
+  const s1=[
+    ['EMIRATES PRIDE PERFUMES — SALES MIS REPORT'],
+    ['Period: '+_misML(months[0])+' → '+_misML(latestM)+'   |   Filter: '+region+' / '+year+'   |   Generated: '+gen],
+    [],['MONTHLY PERFORMANCE TRAJECTORY'],[],
+    ['Month','Units Sold','vs Prior Month','MoM %','3M Rolling Avg','YTD Cumulative']
+  ];
+  let ytdC=0;
+  months.forEach((m,i)=>{
+    const v=grand[m]||0,pv=i>0?(grand[months[i-1]]||0):null;
+    const d2=pv!==null?v-pv:null,p2=pv&&pv>0?(v-pv)/pv*100:null;
+    ytdC+=v;
+    const avg3=Math.round(months.slice(Math.max(0,i-2),i+1).reduce((s,mx)=>s+(grand[mx]||0),0)/Math.min(i+1,3));
+    s1.push([_misML(m),v,d2,p2!==null?+p2.toFixed(1):null,avg3,ytdC]);
   });
-  const gtRow=['GRAND TOTAL']; let gt=0;
-  M.forEach((m,i)=>{ const v=totals1[m]||0; gtRow.push(v); if(i>0){const p=totals1[M[i-1]]||0; gtRow.push(p?+((v-p)/p*100).toFixed(1):null);} gt+=v; });
-  gtRow.push(gt); s1rows.push(gtRow);
-  const ws1=XLSX.utils.aoa_to_sheet(s1rows);
-  XLSX.utils.book_append_sheet(wb,ws1,'Region Summary');
-
-  // ── Sheet 2: By Store
-  const storeAgg={};
-  _misRows.forEach(r=>{ if(!storeAgg[r.store_code]) storeAgg[r.store_code]={}; storeAgg[r.store_code][r.month_year]=(storeAgg[r.store_code][r.month_year]||0)+r.qty_sold; });
-  const s2rows=[['Region','Store Code','Store Name','City',...allHdrs,'TOTAL']];
-  Object.keys(storeAgg).sort((a,b)=>getStore(a).region.localeCompare(getStore(b).region)||a.localeCompare(b)).forEach(sc=>{
-    const s=getStore(sc),row=[s.region,sc,s.name,s.city||'—'];
-    let total=0;
-    M.forEach((m,i)=>{ const v=storeAgg[sc][m]||0; row.push(v); if(i>0){const p=storeAgg[sc][M[i-1]]||0; row.push(p?+((v-p)/p*100).toFixed(1):null);} total+=v; });
-    row.push(total); s2rows.push(row);
+  s1.push([],[],['REGION SCORECARD'],[]);
+  const regs=['EPP','ASL','OMAN','KSA'].filter(r=>byReg[r]);
+  const RL={EPP:'EPP UAE',ASL:'ASL UAE',OMAN:'Oman',KSA:'KSA'};
+  s1.push(['Metric',...regs.map(r=>RL[r]||r),'Grand Total']);
+  ['Latest Month Units','Prior Month Units','MoM Change (Units)','MoM Change (%)','YTD Total','YTD Share %'].forEach((lbl,li)=>{
+    const row=[lbl];
+    regs.forEach(reg=>{
+      const lv=byReg[reg]?.[latestM]||0,pv=prevM?(byReg[reg]?.[prevM]||0):null;
+      const ytdR=months.reduce((s,m)=>s+(byReg[reg]?.[m]||0),0);
+      if(li===0)row.push(lv);
+      else if(li===1)row.push(pv||0);
+      else if(li===2)row.push(pv!==null?lv-pv:null);
+      else if(li===3)row.push(pv&&pv>0?+((lv-pv)/pv*100).toFixed(1):null);
+      else if(li===4)row.push(ytdR);
+      else row.push(grandYTD?+(ytdR/grandYTD*100).toFixed(1):0);
+    });
+    const gLV=grand[latestM]||0,gPV=prevM?(grand[prevM]||0):null;
+    if(li===0)row.push(gLV);
+    else if(li===1)row.push(gPV||0);
+    else if(li===2)row.push(gPV!==null?gLV-gPV:null);
+    else if(li===3)row.push(gPV&&gPV>0?+((gLV-gPV)/gPV*100).toFixed(1):null);
+    else if(li===4)row.push(grandYTD);
+    else row.push(100);
+    s1.push(row);
   });
-  const ws2=XLSX.utils.aoa_to_sheet(s2rows);
-  XLSX.utils.book_append_sheet(wb,ws2,'By Store');
+  const ws1=XLSX.utils.aoa_to_sheet(s1);
+  ws1['!cols']=[{wch:22},{wch:14},{wch:18},{wch:10},{wch:16},{wch:18}];
+  XLSX.utils.book_append_sheet(wb,ws1,'Executive Summary');
 
-  // ── Sheet 3: By SKU
-  const skuAgg={};
-  _misRows.forEach(r=>{ if(!skuAgg[r.sku_code]) skuAgg[r.sku_code]={}; skuAgg[r.sku_code][r.month_year]=(skuAgg[r.sku_code][r.month_year]||0)+r.qty_sold; });
-  const latestM=M[M.length-1];
-  const s3rows=[['SKU Code','Product Name',...allHdrs,'TOTAL']];
-  Object.keys(skuAgg).sort((a,b)=>(skuAgg[b][latestM]||0)-(skuAgg[a][latestM]||0)).forEach(sku=>{
-    const row=[sku,_misSkuMap[sku]||sku];
-    let total=0;
-    M.forEach((m,i)=>{ const v=skuAgg[sku][m]||0; row.push(v); if(i>0){const p=skuAgg[sku][M[i-1]]||0; row.push(p?+((v-p)/p*100).toFixed(1):null);} total+=v; });
-    row.push(total); s3rows.push(row);
+  // Sheet 2: Store Analysis
+  const s2hdr=['Region','Store Code','Store Name','City',...mHdrs(),'MoM Chg (Units)','MoM Chg (%)','YTD Total','YTD Share %'];
+  const s2=[['EMIRATES PRIDE — STORE MONTH-ON-MONTH ANALYSIS'],['Period: '+_misML(months[0])+' → '+_misML(latestM)+'   |   Generated: '+gen],[],s2hdr];
+  const stSorted=Object.keys(byStore).sort((a,b)=>{
+    const ra=getStore(a).region,rb2=getStore(b).region;
+    return ra.localeCompare(rb2)||(byStore[b][latestM]||0)-(byStore[a][latestM]||0);
   });
-  const ws3=XLSX.utils.aoa_to_sheet(s3rows);
-  XLSX.utils.book_append_sheet(wb,ws3,'By SKU');
+  const gStYTD=stSorted.reduce((t,sc)=>t+(storeYTD[sc]||0),0);
+  stSorted.forEach(sc=>{
+    const s=getStore(sc),ytd=storeYTD[sc]||0;
+    const lv=byStore[sc][latestM]||0,pv=prevM?(byStore[sc][prevM]||0):null;
+    s2.push([s.region,sc,s.name,s.city||'',...mVals(byStore[sc]),
+      pv!==null?lv-pv:null,pv&&pv>0?+((lv-pv)/pv*100).toFixed(1):null,ytd,
+      gStYTD?+(ytd/gStYTD*100).toFixed(1):0]);
+  });
+  const ws2=XLSX.utils.aoa_to_sheet(s2);
+  ws2['!cols']=[{wch:10},{wch:12},{wch:28},{wch:14},...months.flatMap(()=>[{wch:10},{wch:9}]),{wch:14},{wch:10},{wch:12},{wch:10}];
+  ws2['!autofilter']={ref:'A4:'+String.fromCharCode(64+4+months.length*2+4)+'4'};
+  XLSX.utils.book_append_sheet(wb,ws2,'Store Analysis');
 
-  // ── Sheet 4: Store × SKU Full Detail
-  const s4rows=[['Region','Store Code','Store Name','SKU Code','Product Name',...allHdrs,'TOTAL']];
-  const detAgg={};
-  _misRows.forEach(r=>{
+  // Sheet 3: SKU Analysis
+  const s3hdr=['Category','SKU Code','Product Name',...mHdrs(),'MoM Chg (Units)','MoM Chg (%)','YTD Total','YTD Share %'];
+  const s3=[['EMIRATES PRIDE — SKU MONTH-ON-MONTH ANALYSIS'],['Period: '+_misML(months[0])+' → '+_misML(latestM)+'   |   Generated: '+gen],[],s3hdr];
+  const skuSorted=Object.keys(bySku).sort((a,b)=>{
+    const ca=_misSkuCat(a),cb=_misSkuCat(b);
+    const io=_MIS_CAT_ORDER,oi=(io.indexOf(ca)<0?99:io.indexOf(ca))-(io.indexOf(cb)<0?99:io.indexOf(cb));
+    return oi||(bySku[b][latestM]||0)-(bySku[a][latestM]||0);
+  });
+  const gSkuYTD=Object.values(skuYTD).reduce((s,v)=>s+v,0);
+  skuSorted.forEach(k=>{
+    const ytd=skuYTD[k]||0,lv=bySku[k][latestM]||0,pv=prevM?(bySku[k][prevM]||0):null;
+    s3.push([_misSkuCat(k),k,_misSkuName(k),...mVals(bySku[k]),
+      pv!==null?lv-pv:null,pv&&pv>0?+((lv-pv)/pv*100).toFixed(1):null,ytd,
+      gSkuYTD?+(ytd/gSkuYTD*100).toFixed(1):0]);
+  });
+  const ws3=XLSX.utils.aoa_to_sheet(s3);
+  ws3['!cols']=[{wch:20},{wch:12},{wch:30},...months.flatMap(()=>[{wch:10},{wch:9}]),{wch:14},{wch:10},{wch:12},{wch:10}];
+  ws3['!autofilter']={ref:'A4:'+String.fromCharCode(64+3+months.length*2+4)+'4'};
+  XLSX.utils.book_append_sheet(wb,ws3,'SKU Analysis');
+
+  // Sheet 4: Full Detail (Store x SKU)
+  const s4hdr=['Region','Store Code','Store Name','City','SKU Code','Product','Category',...mHdrs(),'MoM Chg (Units)','MoM Chg (%)','YTD','YTD Share %'];
+  const s4=[['EMIRATES PRIDE — FULL DETAIL: STORE × SKU'],['Period: '+_misML(months[0])+' → '+_misML(latestM)+'   |   Generated: '+gen],[],s4hdr];
+  const det={};
+  _m.rows.forEach(r=>{
     const k=r.store_code+'||'+r.sku_code;
-    if(!detAgg[k]) detAgg[k]={sc:r.store_code,sku:r.sku_code,d:{}};
-    detAgg[k].d[r.month_year]=(detAgg[k].d[r.month_year]||0)+r.qty_sold;
+    if(!det[k])det[k]={sc:r.store_code,sku:r.sku_code,d:{}};
+    det[k].d[r.month_year]=(det[k].d[r.month_year]||0)+r.qty_sold;
   });
-  Object.values(detAgg).sort((a,b)=>getStore(a.sc).region.localeCompare(getStore(b.sc).region)||a.sc.localeCompare(b.sc)||(detAgg[b.sc+'||'+b.sku]?.d[latestM]||0)-(detAgg[a.sc+'||'+a.sku]?.d[latestM]||0)).forEach(r=>{
-    const s=getStore(r.sc),row=[s.region,r.sc,s.name,r.sku,_misSkuMap[r.sku]||r.sku];
-    let total=0;
-    M.forEach((m,i)=>{ const v=r.d[m]||0; row.push(v); if(i>0){const p=r.d[M[i-1]]||0; row.push(p?+((v-p)/p*100).toFixed(1):null);} total+=v; });
-    row.push(total); s4rows.push(row);
+  const gDetYTD=Object.values(det).reduce((t,r)=>t+months.reduce((s,m)=>s+(r.d[m]||0),0),0);
+  Object.values(det).sort((a,b)=>getStore(a.sc).region.localeCompare(getStore(b.sc).region)||a.sc.localeCompare(b.sc)||(b.d[latestM]||0)-(a.d[latestM]||0)).forEach(r=>{
+    const s=getStore(r.sc),ytd=months.reduce((t,m)=>t+(r.d[m]||0),0);
+    const lv=r.d[latestM]||0,pv=prevM?(r.d[prevM]||0):null;
+    s4.push([s.region,r.sc,s.name,s.city||'',r.sku,_misSkuName(r.sku),_misSkuCat(r.sku),
+      ...mVals(r.d),pv!==null?lv-pv:null,pv&&pv>0?+((lv-pv)/pv*100).toFixed(1):null,ytd,
+      gDetYTD?+(ytd/gDetYTD*100).toFixed(2):0]);
   });
-  const ws4=XLSX.utils.aoa_to_sheet(s4rows);
-  XLSX.utils.book_append_sheet(wb,ws4,'Store x SKU Detail');
+  const ws4=XLSX.utils.aoa_to_sheet(s4);
+  ws4['!cols']=[{wch:8},{wch:12},{wch:26},{wch:14},{wch:10},{wch:28},{wch:18},...months.flatMap(()=>[{wch:10},{wch:9}]),{wch:14},{wch:10},{wch:10},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws4,'Full Detail');
 
-  // Column widths
-  [ws1,ws2,ws3,ws4].forEach(ws=>{ ws['!cols']=[{wch:18},{wch:14},{wch:26},{wch:14},...M.flatMap(()=>[{wch:10},{wch:9}]),{wch:10}]; });
-
-  const year=document.getElementById('mis2-year').value;
-  const reg =document.getElementById('mis2-region').value;
-  XLSX.writeFile(wb,`EP_SalesMIS_${year}_${reg}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  XLSX.writeFile(wb,'EP_SalesMIS_'+year+'_'+region+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
-
-// ══════════════════════════════════════════════════════════════════
-// SALES MIS REPORT (standalone tab — kept for nav tab)
-// ══════════════════════════════════════════════════════════════════
-
-let misLoaded = false;
-
-function loadMISTab() {
-  if (!salesLoaded) {
-    // Sales not loaded yet — show spinner and wait
-    document.getElementById('mis-loading').style.display = 'block';
-    document.getElementById('mis-content').style.display  = 'none';
-    const poll = setInterval(() => {
-      if (salesLoaded) { clearInterval(poll); misBuildAll(); }
-    }, 200);
-    return;
-  }
-  misBuildAll();
-}
-
-function misRefresh() { misLoaded = false; misBuildAll(); }
-
-function misBuildAll() {
-  document.getElementById('mis-loading').style.display = 'none';
-  document.getElementById('mis-content').style.display  = 'block';
-
-  const region = document.getElementById('mis-region').value;
-  const year   = document.getElementById('mis-year').value;
-  const view   = document.getElementById('mis-view').value;
-
-  // ── filter data
-  let rows = salesData.filter(r => {
-    if (region !== 'ALL' && getStore(r.store_code).region !== region) return false;
-    if (year !== 'ALL' && !r.month_year.startsWith(year)) return false;
-    // MIS: Jan 2026 onwards by default
-    if (year === '2026' && r.month_year < '2026-01') return false;
-    if (year === '2025' && r.month_year < '2025-01') return false;
-    return true;
-  });
-
-  // ── derive sorted month list
-  const allMonths = [...new Set(rows.map(r => r.month_year))].sort();
-
-  if (!allMonths.length) {
-    document.getElementById('mis-kpi-strip').innerHTML =
-      '<div style="color:var(--ink-light);font-size:12px;padding:8px;">No data available for selected filters.</div>';
-    document.getElementById('mis-pivot-table').innerHTML = '';
-    document.getElementById('mis-trend-bars').innerHTML = '';
-    document.getElementById('mis-trend-labels').innerHTML = '';
-    return;
-  }
-
-  const latestMo = allMonths[allMonths.length - 1];
-  const prevMo   = allMonths.length >= 2 ? allMonths[allMonths.length - 2] : null;
-
-  // ── compute grand totals per month
-  const grandTotal = {};
-  allMonths.forEach(m => { grandTotal[m] = 0; });
-  rows.forEach(r => { grandTotal[r.month_year] = (grandTotal[r.month_year] || 0) + r.qty_sold; });
-
-  // ── KPI strip
-  _misRenderKpi(allMonths, grandTotal, latestMo, prevMo);
-
-  // ── trend bars
-  _misTrendBars(allMonths, grandTotal);
-
-  // ── pivot table
-  if (view === 'region')  _misPivotRegion(rows, allMonths);
-  else if (view === 'store') _misPivotStore(rows, allMonths, region);
-  else                    _misPivotSku(rows, allMonths);
-
-  // subtitle
-  const subtitle = allMonths.length + ' months · ' + _misMonLabel(allMonths[0]) + ' → ' + _misMonLabel(latestMo);
-  document.getElementById('mis-table-sub').textContent = subtitle;
-
-  misLoaded = true;
-}
-
-function _misMonLabel(my) {
-  if (!my) return '—';
-  const [y, m] = my.split('-');
-  return MONTH_SHORT[+m] + " '" + y.slice(2);
-}
-
-function _misMoM(curr, prev) {
-  if (!prev || prev === 0) return null;
-  return ((curr - prev) / prev) * 100;
-}
-
-function _misMoMCell(curr, prev, compact) {
-  const pct = _misMoM(curr, prev);
-  if (pct === null) return '<td style="text-align:center;color:#ccc;font-size:10px;">—</td>';
-  const pos = pct >= 0;
-  const big = Math.abs(pct) >= 20;
-  const bg  = pos ? (big ? '#D4EDDA' : '#EDF7EE') : (big ? '#FDECEA' : '#FEF3F2');
-  const clr = pos ? '#0B7A45' : '#C0392B';
-  const arrow = pos ? '▲' : '▼';
-  const val = compact ? arrow + ' ' + Math.abs(pct).toFixed(1) + '%'
-                      : arrow + ' ' + Math.abs(pct).toFixed(1) + '%';
-  return `<td style="text-align:center;background:${bg};color:${clr};font-weight:700;font-size:11px;padding:5px 8px;white-space:nowrap;">${val}</td>`;
-}
-
-function _misNumCell(n, highlight) {
-  const style = highlight
-    ? 'text-align:right;font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:12px;padding:5px 10px;color:var(--gold-bar);'
-    : 'text-align:right;font-family:"IBM Plex Mono",monospace;font-size:12px;padding:5px 10px;color:var(--ink);';
-  return `<td style="${style}">${n ? n.toLocaleString() : '—'}</td>`;
-}
-
-// ── KPI strip: one card per month + overall MoM badge
-function _misRenderKpi(months, totals, latest, prev) {
-  const latestTotal = totals[latest] || 0;
-  const prevTotal   = prev ? (totals[prev] || 0) : null;
-  const overallPct  = _misMoM(latestTotal, prevTotal);
-  const grandAll    = Object.values(totals).reduce((s, v) => s + v, 0);
-
-  let html = '<div style="display:flex;gap:10px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;">';
-
-  // Grand total card
-  html += `
-    <div style="flex-shrink:0;background:var(--gold-bar);color:#fff;border-radius:4px;padding:12px 18px;min-width:120px;">
-      <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.8;margin-bottom:4px;">TOTAL ALL MONTHS</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;line-height:1;">${grandAll.toLocaleString()}</div>
-      <div style="font-size:9px;opacity:.7;margin-top:2px;">units</div>
-    </div>`;
-
-  // Per-month cards
-  months.forEach((m, i) => {
-    const v    = totals[m] || 0;
-    const prev = i > 0 ? (totals[months[i-1]] || 0) : null;
-    const pct  = _misMoM(v, prev);
-    const isLatest = m === months[months.length - 1];
-    const bg   = isLatest ? '#FFF8E8' : '#fff';
-    const bord = isLatest ? '2px solid var(--gold)' : '1px solid var(--border)';
-    let momBadge = '';
-    if (pct !== null) {
-      const pos = pct >= 0;
-      const clr = pos ? '#0B7A45' : '#C0392B';
-      const arr = pos ? '▲' : '▼';
-      momBadge = `<div style="font-size:9px;font-weight:700;color:${clr};margin-top:3px;">${arr} ${Math.abs(pct).toFixed(1)}% MoM</div>`;
-    }
-    html += `
-      <div style="flex-shrink:0;background:${bg};border:${bord};border-radius:4px;padding:10px 14px;min-width:105px;">
-        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light);margin-bottom:4px;">${_misMonLabel(m)}</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--gold-bar);line-height:1;">${v.toLocaleString()}</div>
-        ${momBadge}
-      </div>`;
-  });
-
-  html += '</div>';
-  document.getElementById('mis-kpi-strip').innerHTML = html;
-}
-
-// ── trend bars (CSS bar chart)
-function _misTrendBars(months, totals) {
-  const vals = months.map(m => totals[m] || 0);
-  const maxV = Math.max(...vals, 1);
-
-  const barsEl   = document.getElementById('mis-trend-bars');
-  const labelsEl = document.getElementById('mis-trend-labels');
-  const barH = 74; // px height container
-
-  barsEl.innerHTML = months.map((m, i) => {
-    const v   = vals[i];
-    const h   = Math.max(4, Math.round((v / maxV) * barH));
-    const isL = i === months.length - 1;
-    const prev = i > 0 ? vals[i-1] : null;
-    const pct  = _misMoM(v, prev);
-    const clr  = pct === null ? 'var(--gold-bar)'
-               : pct >= 0    ? '#0B7A45'
-               :                '#C0392B';
-    const bg   = isL ? clr : (pct !== null && pct < 0 ? '#FDECEA' : 'var(--gold-pale)');
-    const bc   = isL ? clr : (pct !== null && pct < 0 ? '#C0392B' : 'var(--gold-bar)');
-    return `<div title="${_misMonLabel(m)}: ${v.toLocaleString()} units" style="flex:1;min-width:28px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
-      <div style="width:100%;height:${h}px;background:${bg};border:1.5px solid ${bc};border-radius:2px 2px 0 0;transition:height .3s;"></div>
-    </div>`;
-  }).join('');
-
-  labelsEl.innerHTML = months.map((m, i) => {
-    const v   = vals[i];
-    const prev = i > 0 ? vals[i-1] : null;
-    const pct  = _misMoM(v, prev);
-    const clr  = pct === null ? 'var(--ink-light)'
-               : pct >= 0    ? '#0B7A45' : '#C0392B';
-    const arr  = pct === null ? '' : (pct >= 0 ? '▲' : '▼');
-    return `<div style="flex:1;min-width:28px;text-align:center;">
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:-.2px;color:var(--gold-bar);font-weight:600;">${_misMonLabel(m)}</div>
-      <div style="font-size:7.5px;color:${clr};font-weight:700;">${arr}${pct !== null ? Math.abs(pct).toFixed(0)+'%' : ''}</div>
-    </div>`;
-  }).join('');
-}
-
-// ── Region summary pivot
-function _misPivotRegion(rows, months) {
-  document.getElementById('mis-table-title').textContent = 'Sales by Region — Month on Month';
-
-  // aggregate per region per month
-  const regions = ['EPP','ASL','OMAN','KSA'];
-  const regionLabels = {EPP:'EPP UAE', ASL:'ASL UAE', OMAN:'Oman', KSA:'KSA'};
-  const regionColors = {EPP:'#1a2744', ASL:'#5B2D8E', OMAN:'#0B5C35', KSA:'#7A2C00'};
-  const data = {}; // data[region][month_year] = qty
-  regions.forEach(r => { data[r] = {}; months.forEach(m => { data[r][m] = 0; }); });
-  rows.forEach(r => {
-    const reg = getStore(r.store_code).region;
-    if (!data[reg]) return;
-    data[reg][r.month_year] = (data[reg][r.month_year] || 0) + r.qty_sold;
-  });
-
-  // totals per month
-  const totals = {};
-  months.forEach(m => { totals[m] = regions.reduce((s, r) => s + (data[r][m] || 0), 0); });
-
-  let th = '<thead><tr style="background:var(--gold-bar);color:#fff;">'
-    + '<th style="text-align:left;padding:9px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;width:150px;">REGION</th>';
-  months.forEach((m, i) => {
-    th += `<th colspan="2" style="text-align:center;padding:9px 8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;letter-spacing:.06em;border-left:1px solid rgba(255,255,255,.2);">${_misMonLabel(m)}</th>`;
-  });
-  th += '<th colspan="2" style="text-align:center;padding:9px 8px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:10px;background:rgba(0,0,0,.18);border-left:2px solid rgba(255,255,255,.3);">LATEST MoM</th>';
-  th += '</tr>';
-
-  // sub-header: Units | MoM
-  th += '<tr style="background:#4A3C22;color:rgba(255,255,255,.75);">'
-    + '<th></th>';
-  months.forEach((m, i) => {
-    th += `<th style="text-align:right;padding:5px 10px;font-size:9px;font-weight:600;letter-spacing:.05em;border-left:1px solid rgba(255,255,255,.12);">UNITS</th>`;
-    th += `<th style="text-align:center;padding:5px 8px;font-size:9px;font-weight:600;letter-spacing:.05em;">MoM Δ</th>`;
-  });
-  th += '<th style="text-align:right;padding:5px 10px;font-size:9px;font-weight:600;border-left:2px solid rgba(255,255,255,.2);">UNITS</th>';
-  th += '<th style="text-align:center;padding:5px 8px;font-size:9px;font-weight:600;">CHANGE %</th>';
-  th += '</tr></thead>';
-
-  let tb = '<tbody>';
-  const latestM = months[months.length - 1];
-  const prevM   = months.length >= 2 ? months[months.length - 2] : null;
-
-  regions.forEach((reg, ri) => {
-    const totalReg = months.reduce((s, m) => s + (data[reg][m] || 0), 0);
-    if (totalReg === 0) return; // skip regions with no data
-    const rowBg = ri % 2 === 0 ? '#fff' : 'var(--gold-pale)';
-    tb += `<tr style="background:${rowBg};">`;
-    tb += `<td style="padding:8px 14px;"><div style="display:flex;align-items:center;gap:7px;">
-      <span style="width:8px;height:8px;border-radius:50%;background:${regionColors[reg] || '#888'};display:inline-block;flex-shrink:0;"></span>
-      <span style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:11.5px;color:var(--ink);">${regionLabels[reg] || reg}</span>
-    </div></td>`;
-    months.forEach((m, i) => {
-      const v    = data[reg][m] || 0;
-      const prev = i > 0 ? (data[reg][months[i-1]] || 0) : null;
-      tb += _misNumCell(v, m === latestM);
-      tb += _misMoMCell(v, prev);
-    });
-    // Latest MoM
-    const lv = data[reg][latestM] || 0;
-    const pv = prevM ? (data[reg][prevM] || 0) : null;
-    tb += _misNumCell(lv, true);
-    tb += _misMoMCell(lv, pv);
-    tb += '</tr>';
-  });
-
-  // Grand total row
-  tb += `<tr style="background:var(--gold-bar);">
-    <td style="padding:9px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#fff;">GRAND TOTAL</td>`;
-  months.forEach((m, i) => {
-    const v    = totals[m] || 0;
-    const prev = i > 0 ? (totals[months[i-1]] || 0) : null;
-    const pct  = _misMoM(v, prev);
-    const arr  = pct === null ? '' : (pct >= 0 ? '▲' : '▼');
-    const clr  = pct === null ? '#fff' : (pct >= 0 ? '#90EE90' : '#FF9999');
-    tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;">${v.toLocaleString()}</td>`;
-    tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${clr};">${pct !== null ? arr+' '+Math.abs(pct).toFixed(1)+'%' : '—'}</td>`;
-  });
-  const lv  = totals[latestM] || 0;
-  const pv2 = prevM ? (totals[prevM] || 0) : null;
-  const fp  = _misMoM(lv, pv2);
-  const farr = fp === null ? '' : (fp >= 0 ? '▲' : '▼');
-  const fclr = fp === null ? '#fff' : (fp >= 0 ? '#90EE90' : '#FF9999');
-  tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#FFD700;">${lv.toLocaleString()}</td>`;
-  tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${fclr};">${fp !== null ? farr+' '+Math.abs(fp).toFixed(1)+'%' : '—'}</td>`;
-  tb += '</tr></tbody>';
-
-  document.getElementById('mis-pivot-table').innerHTML = th + tb;
-}
-
-// ── Store detail pivot
-function _misPivotStore(rows, months, regionFilter) {
-  document.getElementById('mis-table-title').textContent = 'Sales by Store — Month on Month';
-
-  // build store list from data (only stores that appear)
-  const storeSet = [...new Set(rows.map(r => r.store_code))].sort((a,b) => {
-    const ra = getStore(a).region, rb = getStore(b).region;
-    if (ra !== rb) return ra.localeCompare(rb);
-    return a.localeCompare(b);
-  });
-
-  // aggregate
-  const data = {};
-  storeSet.forEach(s => { data[s] = {}; months.forEach(m => { data[s][m] = 0; }); });
-  rows.forEach(r => {
-    if (!data[r.store_code]) return;
-    data[r.store_code][r.month_year] = (data[r.store_code][r.month_year] || 0) + r.qty_sold;
-  });
-
-  // totals per month
-  const totals = {};
-  months.forEach(m => { totals[m] = storeSet.reduce((s, c) => s + (data[c][m] || 0), 0); });
-
-  const regionColors = {EPP:'#1a2744', ASL:'#5B2D8E', OMAN:'#0B5C35', KSA:'#7A2C00'};
-  const latestM = months[months.length - 1];
-  const prevM   = months.length >= 2 ? months[months.length - 2] : null;
-
-  let th = '<thead><tr style="background:var(--gold-bar);color:#fff;">'
-    + '<th style="text-align:left;padding:9px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;min-width:160px;">STORE</th>'
-    + '<th style="text-align:left;padding:9px 8px;font-size:9px;font-weight:600;width:40px;letter-spacing:.04em;">RGN</th>';
-  months.forEach(m => {
-    th += `<th colspan="2" style="text-align:center;padding:9px 8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;letter-spacing:.06em;border-left:1px solid rgba(255,255,255,.2);">${_misMonLabel(m)}</th>`;
-  });
-  th += '<th colspan="2" style="text-align:center;padding:9px 8px;font-size:10px;font-weight:700;background:rgba(0,0,0,.18);border-left:2px solid rgba(255,255,255,.3);">LATEST MoM</th>'
-      + '</tr>';
-
-  th += '<tr style="background:#4A3C22;color:rgba(255,255,255,.75);"><th></th><th></th>';
-  months.forEach(() => {
-    th += '<th style="text-align:right;padding:5px 10px;font-size:9px;font-weight:600;border-left:1px solid rgba(255,255,255,.12);">UNITS</th>';
-    th += '<th style="text-align:center;padding:5px 8px;font-size:9px;font-weight:600;">MoM Δ</th>';
-  });
-  th += '<th style="text-align:right;padding:5px 10px;font-size:9px;border-left:2px solid rgba(255,255,255,.2);">UNITS</th>';
-  th += '<th style="text-align:center;padding:5px 8px;font-size:9px;">CHANGE %</th>';
-  th += '</tr></thead>';
-
-  let tb = '<tbody>';
-  let lastRegion = null;
-  storeSet.forEach((sc, ri) => {
-    const store = getStore(sc);
-    const reg   = store.region;
-    const storeTotal = months.reduce((s, m) => s + (data[sc][m] || 0), 0);
-    if (storeTotal === 0) return;
-
-    // Region separator row
-    if (reg !== lastRegion) {
-      const regLabel = {EPP:'EPP UAE', ASL:'ASL UAE', OMAN:'Oman', KSA:'KSA'}[reg] || reg;
-      const colspan  = 2 + months.length * 2 + 2;
-      tb += `<tr><td colspan="${colspan}" style="padding:7px 14px;background:#EDEBE6;font-family:'Montserrat',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--gold-bar);border-top:2px solid var(--gold);">
-        <span style="width:8px;height:8px;border-radius:50%;background:${regionColors[reg]||'#888'};display:inline-block;margin-right:6px;vertical-align:middle;"></span>
-        ${regLabel}
-      </td></tr>`;
-      lastRegion = reg;
-    }
-
-    const rowBg = ri % 2 === 0 ? '#fff' : 'var(--gold-pale)';
-    tb += `<tr style="background:${rowBg};">`;
-    tb += `<td style="padding:7px 14px;">
-      <div style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:var(--ink);">${store.name}</div>
-    </td>`;
-    tb += `<td style="padding:7px 8px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-dark);font-weight:600;">${sc}</td>`;
-
-    months.forEach((m, i) => {
-      const v    = data[sc][m] || 0;
-      const prev = i > 0 ? (data[sc][months[i-1]] || 0) : null;
-      tb += _misNumCell(v, m === latestM);
-      tb += _misMoMCell(v, prev);
-    });
-
-    const lv = data[sc][latestM] || 0;
-    const pv = prevM ? (data[sc][prevM] || 0) : null;
-    tb += _misNumCell(lv, true);
-    tb += _misMoMCell(lv, pv);
-    tb += '</tr>';
-  });
-
-  // Grand total row
-  tb += `<tr style="background:var(--gold-bar);">
-    <td colspan="2" style="padding:9px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;color:#fff;letter-spacing:.05em;">GRAND TOTAL</td>`;
-  months.forEach((m, i) => {
-    const v    = totals[m] || 0;
-    const prev = i > 0 ? (totals[months[i-1]] || 0) : null;
-    const pct  = _misMoM(v, prev);
-    const arr  = pct === null ? '' : (pct >= 0 ? '▲' : '▼');
-    const clr  = pct === null ? '#fff' : (pct >= 0 ? '#90EE90' : '#FF9999');
-    tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;">${v.toLocaleString()}</td>`;
-    tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${clr};">${pct !== null ? arr+' '+Math.abs(pct).toFixed(1)+'%' : '—'}</td>`;
-  });
-  const lv  = totals[latestM] || 0;
-  const pv2 = prevM ? (totals[prevM] || 0) : null;
-  const fp  = _misMoM(lv, pv2);
-  const farr = fp === null ? '' : (fp >= 0 ? '▲' : '▼');
-  const fclr = fp === null ? '#fff' : (fp >= 0 ? '#90EE90' : '#FF9999');
-  tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#FFD700;">${lv.toLocaleString()}</td>`;
-  tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${fclr};">${fp !== null ? farr+' '+Math.abs(fp).toFixed(1)+'%' : '—'}</td>`;
-  tb += '</tr></tbody>';
-
-  document.getElementById('mis-pivot-table').innerHTML = th + tb;
-}
-
-// ── Top SKUs pivot
-function _misPivotSku(rows, months) {
-  document.getElementById('mis-table-title').textContent = 'Top SKUs — Month on Month';
-
-  // aggregate per SKU per month
-  const skuData = {};
-  rows.forEach(r => {
-    if (!skuData[r.sku_code]) { skuData[r.sku_code] = {}; months.forEach(m => { skuData[r.sku_code][m] = 0; }); }
-    skuData[r.sku_code][r.month_year] = (skuData[r.sku_code][r.month_year] || 0) + r.qty_sold;
-  });
-
-  // sort by latest month total descending, take top 40
-  const latestM = months[months.length - 1];
-  const prevM   = months.length >= 2 ? months[months.length - 2] : null;
-
-  const skuList = Object.keys(skuData)
-    .sort((a, b) => (skuData[b][latestM] || 0) - (skuData[a][latestM] || 0))
-    .slice(0, 40);
-
-  // totals
-  const totals = {};
-  months.forEach(m => { totals[m] = Object.values(skuData).reduce((s, d) => s + (d[m] || 0), 0); });
-
-  let th = '<thead><tr style="background:var(--gold-bar);color:#fff;">'
-    + '<th style="text-align:left;padding:9px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;width:80px;">SKU</th>'
-    + '<th style="text-align:left;padding:9px 8px;font-size:10px;font-weight:700;letter-spacing:.04em;">PRODUCT</th>';
-  months.forEach(m => {
-    th += `<th colspan="2" style="text-align:center;padding:9px 8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;letter-spacing:.06em;border-left:1px solid rgba(255,255,255,.2);">${_misMonLabel(m)}</th>`;
-  });
-  th += '<th colspan="2" style="text-align:center;padding:9px 8px;font-size:10px;font-weight:700;background:rgba(0,0,0,.18);border-left:2px solid rgba(255,255,255,.3);">LATEST MoM</th></tr>';
-  th += '<tr style="background:#4A3C22;color:rgba(255,255,255,.75);"><th></th><th></th>';
-  months.forEach(() => {
-    th += '<th style="text-align:right;padding:5px 10px;font-size:9px;font-weight:600;border-left:1px solid rgba(255,255,255,.12);">UNITS</th>';
-    th += '<th style="text-align:center;padding:5px 8px;font-size:9px;font-weight:600;">MoM Δ</th>';
-  });
-  th += '<th style="text-align:right;padding:5px 10px;font-size:9px;border-left:2px solid rgba(255,255,255,.2);">UNITS</th>';
-  th += '<th style="text-align:center;padding:5px 8px;font-size:9px;">CHANGE %</th></tr></thead>';
-
-  // SKU catalogue lookup
-  const skuNameMap = {};
-  (typeof CATS !== 'undefined' ? CATS : []).forEach(s => { skuNameMap[s.code] = s.en; });
-  (typeof TESTERS !== 'undefined' ? TESTERS : []).forEach(s => { skuNameMap[s.code] = s.en; });
-
-  let tb = '<tbody>';
-  skuList.forEach((sku, ri) => {
-    const rowBg = ri % 2 === 0 ? '#fff' : 'var(--gold-pale)';
-    const name  = skuNameMap[sku] || sku;
-    tb += `<tr style="background:${rowBg};">`;
-    tb += `<td style="padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:var(--gold-dark);">${sku}</td>`;
-    tb += `<td style="padding:7px 8px;font-size:11.5px;color:var(--ink);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</td>`;
-    months.forEach((m, i) => {
-      const v    = skuData[sku][m] || 0;
-      const prev = i > 0 ? (skuData[sku][months[i-1]] || 0) : null;
-      tb += _misNumCell(v, m === latestM);
-      tb += _misMoMCell(v, prev);
-    });
-    const lv = skuData[sku][latestM] || 0;
-    const pv = prevM ? (skuData[sku][prevM] || 0) : null;
-    tb += _misNumCell(lv, true);
-    tb += _misMoMCell(lv, pv);
-    tb += '</tr>';
-  });
-
-  // totals
-  tb += `<tr style="background:var(--gold-bar);"><td colspan="2" style="padding:9px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;color:#fff;letter-spacing:.05em;">GRAND TOTAL (all SKUs)</td>`;
-  months.forEach((m, i) => {
-    const v    = totals[m] || 0;
-    const prev = i > 0 ? (totals[months[i-1]] || 0) : null;
-    const pct  = _misMoM(v, prev);
-    const arr  = pct === null ? '' : (pct >= 0 ? '▲' : '▼');
-    const clr  = pct === null ? '#fff' : (pct >= 0 ? '#90EE90' : '#FF9999');
-    tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;">${v.toLocaleString()}</td>`;
-    tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${clr};">${pct !== null ? arr+' '+Math.abs(pct).toFixed(1)+'%' : '—'}</td>`;
-  });
-  const lv  = totals[latestM] || 0;
-  const pv2 = prevM ? (totals[prevM] || 0) : null;
-  const fp  = _misMoM(lv, pv2);
-  const farr = fp === null ? '' : (fp >= 0 ? '▲' : '▼');
-  const fclr = fp === null ? '#fff' : (fp >= 0 ? '#90EE90' : '#FF9999');
-  tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#FFD700;">${lv.toLocaleString()}</td>`;
-  tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${fclr};">${fp !== null ? farr+' '+Math.abs(fp).toFixed(1)+'%' : '—'}</td>`;
-  tb += '</tr></tbody>';
-
-  document.getElementById('mis-pivot-table').innerHTML = th + tb;
-}
-
-// ── CSV export
-function misDlCsv() {
-  const region = document.getElementById('mis-region').value;
-  const year   = document.getElementById('mis-year').value;
-  const view   = document.getElementById('mis-view').value;
-
-  let rows = salesData.filter(r => {
-    if (region !== 'ALL' && getStore(r.store_code).region !== region) return false;
-    if (year !== 'ALL' && !r.month_year.startsWith(year)) return false;
-    if (year === '2026' && r.month_year < '2026-01') return false;
-    if (year === '2025' && r.month_year < '2025-01') return false;
-    return true;
-  });
-
-  const months = [...new Set(rows.map(r => r.month_year))].sort();
-
-  // Build aggregated data based on view
-  let agg = {};
-  const groupKey = view === 'sku' ? r => r.sku_code
-                 : view === 'store' ? r => r.store_code
-                 : r => getStore(r.store_code).region;
-  rows.forEach(r => {
-    const k = groupKey(r);
-    if (!agg[k]) { agg[k] = {}; months.forEach(m => agg[k][m] = 0); }
-    agg[k][r.month_year] = (agg[k][r.month_year] || 0) + r.qty_sold;
-  });
-
-  let csv = 'Emirates Pride Perfumes — Sales MIS Report\n';
-  csv += `Generated: ${new Date().toLocaleString('en-GB')}\n`;
-  csv += `Filters: Region=${region} | Year=${year} | View=${view}\n\n`;
-
-  // header
-  const dimLabel = view === 'sku' ? 'SKU Code'
-                 : view === 'store' ? 'Store Code,Store Name,Region'
-                 : 'Region';
-  csv += dimLabel;
-  months.forEach(m => { csv += `,${_misMonLabel(m)} Units,${_misMonLabel(m)} MoM%`; });
-  csv += ',Latest MoM Units,Latest MoM%\n';
-
-  const latestM = months[months.length - 1];
-  const prevM   = months.length >= 2 ? months[months.length - 2] : null;
-
-  Object.keys(agg).forEach(k => {
-    if (view === 'store') {
-      const s = getStore(k);
-      csv += `${k},"${s.name}",${s.region}`;
-    } else {
-      csv += k;
-    }
-    months.forEach((m, i) => {
-      const v    = agg[k][m] || 0;
-      const prev = i > 0 ? (agg[k][months[i-1]] || 0) : null;
-      const pct  = _misMoM(v, prev);
-      csv += `,${v},${pct !== null ? pct.toFixed(1)+'%' : '—'}`;
-    });
-    const lv  = agg[k][latestM] || 0;
-    const pv  = prevM ? (agg[k][prevM] || 0) : null;
-    const fp  = _misMoM(lv, pv);
-    csv += `,${lv},${fp !== null ? fp.toFixed(1)+'%' : '—'}\n`;
-  });
-
-  // totals row
-  const totals = {};
-  months.forEach(m => { totals[m] = Object.values(agg).reduce((s, d) => s + (d[m] || 0), 0); });
-  csv += 'GRAND TOTAL';
-  if (view === 'store') csv += ',,';
-  months.forEach((m, i) => {
-    const v    = totals[m] || 0;
-    const prev = i > 0 ? (totals[months[i-1]] || 0) : null;
-    const pct  = _misMoM(v, prev);
-    csv += `,${v},${pct !== null ? pct.toFixed(1)+'%' : '—'}`;
-  });
-  const lv = totals[latestM] || 0;
-  const pv = prevM ? (totals[prevM] || 0) : null;
-  const fp = _misMoM(lv, pv);
-  csv += `,${lv},${fp !== null ? fp.toFixed(1)+'%' : '—'}\n`;
-
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = `EP_SalesMIS_${year}_${region}_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
 
 </script>
 
@@ -12028,69 +11655,68 @@ function misDlCsv() {
 <div id="eidDrillOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:955;" onclick="closeEidStoreDrill()"></div>
 
 <!-- ══════════════════ SALES MIS REPORT PANEL ══════════════════ -->
-<div id="misPerfPanel" style="display:none;position:fixed;inset:0;background:#F5F2EC;z-index:950;font-family:'Montserrat',sans-serif;flex-direction:column;overflow:hidden;">
+<div id="misPerfPanel" style="display:none;position:fixed;inset:0;z-index:950;font-family:'Montserrat',sans-serif;flex-direction:column;overflow:hidden;background:#F5F2EC;">
 
-  <!-- Sticky Top Bar -->
-  <div style="background:#1a3a5c;padding:0 24px;height:60px;display:flex;align-items:center;gap:16px;flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,.25);position:relative;z-index:10;">
-    <button onclick="closeMISPanel()" title="Close" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">✕</button>
-    <div style="flex:1;">
-      <div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:700;">Emirates Pride · Sales Intelligence</div>
-      <div style="font-size:15px;font-weight:700;color:#fff;letter-spacing:.04em;">SALES MIS REPORT — MONTH ON MONTH</div>
+  <!-- Header -->
+  <div style="background:#0f2744;padding:0 20px;height:56px;display:flex;align-items:center;gap:12px;flex-shrink:0;box-shadow:0 2px 16px rgba(0,0,0,.35);">
+    <button onclick="closeMISPanel()" style="background:rgba(255,255,255,.14);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer;flex-shrink:0;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.26)'" onmouseout="this.style.background='rgba(255,255,255,.14)'">&#x2715;</button>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.45);font-weight:700;">Emirates Pride Perfumes &middot; Management Information System</div>
+      <div id="mis-header-period" style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">SALES MIS REPORT</div>
     </div>
-    <!-- Inline filters -->
-    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-      <select id="mis2-region" onchange="buildMISPanel()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 10px;border-radius:4px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;cursor:pointer;">
+    <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;">
+      <select id="mis-rgn" onchange="buildMIS()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#fff;padding:5px 9px;border-radius:3px;font-family:'Montserrat',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.05em;cursor:pointer;outline:none;">
         <option value="ALL">All Regions</option>
         <option value="EPP">EPP UAE</option>
         <option value="ASL">ASL UAE</option>
         <option value="OMAN">Oman</option>
         <option value="KSA">KSA</option>
       </select>
-      <select id="mis2-year" onchange="buildMISPanel()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 10px;border-radius:4px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;cursor:pointer;">
+      <select id="mis-yr" onchange="buildMIS()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#fff;padding:5px 9px;border-radius:3px;font-family:'Montserrat',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.05em;cursor:pointer;outline:none;">
         <option value="2026">2026</option>
         <option value="2025">2025</option>
         <option value="ALL">All Years</option>
       </select>
-      <input id="mis2-search" type="text" placeholder="🔍  Search…" oninput="_misFilterTable()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 12px;border-radius:4px;font-family:'Montserrat',sans-serif;font-size:10px;width:140px;outline:none;" placeholder="Search store / SKU…">
-      <button onclick="exportMISExcel()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.35);color:#fff;padding:7px 16px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">⬇ Excel (4 sheets)</button>
+      <button onclick="exportMISExcel()" style="background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.3);color:#fff;padding:6px 14px;border-radius:4px;font-family:'Montserrat',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='rgba(255,255,255,.24)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">&#x2B07; Download Excel</button>
     </div>
   </div>
 
-  <!-- Sub-tab nav -->
-  <div style="background:#122847;display:flex;flex-shrink:0;border-bottom:2px solid rgba(255,255,255,.08);overflow-x:auto;">
-    <button id="mis2-tab-store"  onclick="misPanelTab('store')"  class="mis2-tab active-mis2-tab"  style="padding:12px 22px;background:rgba(255,255,255,.12);border:none;color:#fff;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;border-bottom:3px solid #C9A84C;transition:all .2s;">📋 By Store — MoM</button>
-    <button id="mis2-tab-sku"    onclick="misPanelTab('sku')"    class="mis2-tab" style="padding:12px 22px;background:transparent;border:none;color:rgba(255,255,255,.6);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;">🏷 By SKU — MoM</button>
-    <button id="mis2-tab-detail" onclick="misPanelTab('detail')" class="mis2-tab" style="padding:12px 22px;background:transparent;border:none;color:rgba(255,255,255,.6);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;">🔬 Store × SKU Full Detail</button>
+  <!-- Sub-navigation -->
+  <div style="background:#fff;border-bottom:2px solid #E5E0D8;display:flex;align-items:stretch;flex-shrink:0;overflow-x:auto;">
+    <button id="mis-v-summary" onclick="misSetView('summary')" style="padding:12px 20px;background:#FAFAF8;border:none;border-bottom:3px solid #6B5B35;color:#6B5B35;font-family:'Montserrat',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;white-space:nowrap;">&#x1F4CB; Executive Summary</button>
+    <button id="mis-v-stores"  onclick="misSetView('stores')"  style="padding:12px 20px;background:transparent;border:none;border-bottom:3px solid transparent;color:#8A8278;font-family:'Montserrat',sans-serif;font-size:9.5px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;white-space:nowrap;">&#x1F3EA; Store Analysis</button>
+    <button id="mis-v-skus"    onclick="misSetView('skus')"    style="padding:12px 20px;background:transparent;border:none;border-bottom:3px solid transparent;color:#8A8278;font-family:'Montserrat',sans-serif;font-size:9.5px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;white-space:nowrap;">&#x1F3F7; SKU Analysis</button>
+    <button id="mis-v-matrix"  onclick="misSetView('matrix')"  style="padding:12px 20px;background:transparent;border:none;border-bottom:3px solid transparent;color:#8A8278;font-family:'Montserrat',sans-serif;font-size:9.5px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;white-space:nowrap;">&#x1F50D; Full Detail</button>
     <div style="flex:1;"></div>
-    <div id="mis2-row-count" style="display:flex;align-items:center;padding:0 18px;font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.08em;white-space:nowrap;"></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:0 14px;">
+      <input id="mis-search" type="text" oninput="_misRender()" placeholder="Search store / SKU / product&hellip;" style="padding:6px 11px;border:1px solid #E5E0D8;border-radius:3px;font-family:'Montserrat',sans-serif;font-size:10px;width:220px;outline:none;background:#FAFAF8;">
+      <span id="mis-row-count" style="font-size:9px;color:#8A8278;white-space:nowrap;letter-spacing:.05em;"></span>
+    </div>
   </div>
 
-  <!-- Month KPI strip (always visible) -->
-  <div id="mis2-kpi-strip" style="background:#fff;border-bottom:1px solid #E5E0D8;padding:10px 20px;display:flex;gap:8px;overflow-x:auto;flex-shrink:0;"></div>
-
-  <!-- Main scrollable content -->
-  <div style="flex:1;overflow-y:auto;overflow-x:auto;">
-    <div id="mis2-loading" style="text-align:center;padding:80px;color:#8A8278;">
+  <!-- Content -->
+  <div id="mis-body" style="flex:1;overflow-y:auto;overflow-x:auto;">
+    <div style="text-align:center;padding:80px;color:#8A8278;">
       <div class="spinner" style="margin:0 auto 16px;"></div>
-      <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Building MIS Report…</div>
-    </div>
-    <div id="mis2-content" style="display:none;">
-      <table id="mis2-table" style="width:100%;border-collapse:collapse;font-size:12px;"></table>
+      <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Building MIS Report&hellip;</div>
     </div>
   </div>
 
-  <!-- Legend bar at bottom -->
-  <div style="background:#fff;border-top:1px solid #E5E0D8;padding:8px 20px;display:flex;align-items:center;gap:20px;flex-shrink:0;font-size:10px;color:#8A8278;">
-    <span style="font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4A4540;">Legend:</span>
-    <span><span style="display:inline-block;width:10px;height:10px;background:#D4EDDA;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>▲ Growth</span>
-    <span><span style="display:inline-block;width:10px;height:10px;background:#FDECEA;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>▼ Decline</span>
-    <span><span style="display:inline-block;width:10px;height:10px;background:#FFF8E8;border:1px solid #C9A84C;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Latest Month</span>
-    <span style="margin-left:auto;font-style:italic;">Click any store row to drill into its SKU detail</span>
+  <!-- Legend -->
+  <div style="background:#fff;border-top:1px solid #E5E0D8;padding:7px 18px;display:flex;align-items:center;gap:16px;flex-shrink:0;font-size:9px;color:#8A8278;flex-wrap:wrap;">
+    <span style="font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#4A4540;">MoM Legend:</span>
+    <span><span style="display:inline-block;width:24px;height:10px;background:#155724;border-radius:2px;margin-right:4px;vertical-align:middle;"></span><span style="color:#155724;font-weight:700;">&ge;+20%</span></span>
+    <span><span style="display:inline-block;width:24px;height:10px;background:#D4EDDA;border-radius:2px;margin-right:4px;vertical-align:middle;"></span><span style="color:#155724;">+10&ndash;20%</span></span>
+    <span><span style="display:inline-block;width:24px;height:10px;background:#F0FBF2;border-radius:2px;margin-right:4px;vertical-align:middle;"></span><span style="color:#1A6A40;">0&ndash;+10%</span></span>
+    <span><span style="display:inline-block;width:24px;height:10px;background:#FEF0EF;border-radius:2px;margin-right:4px;vertical-align:middle;"></span><span style="color:#7B0000;">0&ndash;&minus;10%</span></span>
+    <span><span style="display:inline-block;width:24px;height:10px;background:#FDDBD9;border-radius:2px;margin-right:4px;vertical-align:middle;"></span><span style="color:#7B0000;">&minus;10&ndash;&minus;20%</span></span>
+    <span><span style="display:inline-block;width:24px;height:10px;background:#C0392B;border-radius:2px;margin-right:4px;vertical-align:middle;"></span><span style="color:#C0392B;font-weight:700;">&le;&minus;20%</span></span>
+    <span style="margin-left:auto;color:#C9A84C;font-style:italic;">&#9733; = latest month &nbsp;&nbsp; Click any row to drill down</span>
   </div>
 </div>
 
-<!-- MIS Store Drill-Down Panel -->
-<div id="misDrillPanel" style="display:none;position:fixed;right:0;top:0;bottom:0;width:600px;max-width:100vw;background:#fff;z-index:1000;overflow-y:auto;box-shadow:-8px 0 40px rgba(0,0,0,.22);font-family:'Montserrat',sans-serif;">
+<!-- Drill-down panel -->
+<div id="misDrillPanel" style="display:none;position:fixed;right:0;top:0;bottom:0;width:620px;max-width:100vw;background:#fff;z-index:1000;overflow-y:auto;box-shadow:-8px 0 40px rgba(0,0,0,.22);font-family:'Montserrat',sans-serif;">
   <div id="misDrillContent"></div>
 </div>
 <div id="misDrillOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:999;" onclick="closeMISDrill()"></div>
