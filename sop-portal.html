@@ -3994,27 +3994,8 @@ async async function exportMISTesterReport() {
         })
         .join(' ');
 
-      if (cfSqrefs) {
-        ws['!cf'] = [{
-          ref: cfSqrefs,
-          rules: [
-            {
-              type: 'cellIs', operator: 'greaterThan', formula: [0.2], priority: 1,
-              dxf: {
-                fill: { patternType:'solid', fgColor:{ rgb:'FFCCCC' } },
-                font: { color:{ rgb:'C00000' }, bold:true }
-              }
-            },
-            {
-              type: 'cellIs', operator: 'greaterThan', formula: [0.1], priority: 2,
-              dxf: {
-                fill: { patternType:'solid', fgColor:{ rgb:'FFF2CC' } },
-                font: { color:{ rgb:'7F6000' } }
-              }
-            }
-          ]
-        }];
-      }
+      // Note: SheetJS community edition does not support !cf (conditional formatting).
+      // Contrib% colour coding is handled by static cell styles above instead.
 
       return ws;
     } // end buildSheet
@@ -4034,7 +4015,7 @@ async async function exportMISTesterReport() {
 
     if (!doEPP && !doASL) { toast('No data found for selected period', 'warn'); return; }
 
-    const filename = `EP_MIS_Tester_Report_${reportMonth.replace('-','')}${reportMonth.slice(5)}.xlsx`;
+    const filename = `EP_MIS_Tester_Report_${reportMonth.replace('-','')}.xlsx`;
     XLSX.writeFile(wb, filename);
     const totalSkus = (doEPP?sortedEppSkus.length:0)+(doASL?sortedAslSkus.length:0);
     toast(`MIS Tester Report downloaded — ${totalSkus} SKUs · ${monthLabel}`);
