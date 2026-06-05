@@ -10786,7 +10786,604 @@ async function doExportDownload() {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// SALES MIS REPORT
+// SALES MIS PANEL (inside Sales tab)
+// ══════════════════════════════════════════════════════════════════
+
+let _misTab = 'store'; // current sub-tab
+let _misMonths = [];   // sorted month list
+let _misRows = [];     // filtered salesData rows
+let _misSkuMap = {};   // sku_code → product name
+
+function openMISPanel() {
+  const panel = document.getElementById('misPerfPanel');
+  panel.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  _misTab = 'store';
+  _misSyncTabButtons();
+  if (!salesLoaded) {
+    document.getElementById('mis2-loading').style.display = 'block';
+    document.getElementById('mis2-content').style.display = 'none';
+    const poll = setInterval(() => { if (salesLoaded) { clearInterval(poll); buildMISPanel(); } }, 200);
+  } else {
+    buildMISPanel();
+  }
+}
+
+function closeMISPanel() {
+  document.getElementById('misPerfPanel').style.display = 'none';
+  document.body.style.overflow = '';
+  closeMISDrill();
+}
+
+function misPanelTab(tab) {
+  _misTab = tab;
+  _misSyncTabButtons();
+  _misRenderCurrentTab();
+}
+
+function _misSyncTabButtons() {
+  ['store','sku','detail'].forEach(t => {
+    const btn = document.getElementById('mis2-tab-'+t);
+    if (!btn) return;
+    if (t === _misTab) {
+      btn.style.background = 'rgba(255,255,255,.12)';
+      btn.style.color = '#fff';
+      btn.style.borderBottomColor = '#C9A84C';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = 'rgba(255,255,255,.55)';
+      btn.style.borderBottomColor = 'transparent';
+    }
+  });
+}
+
+function buildMISPanel() {
+  const region = document.getElementById('mis2-region').value;
+  const year   = document.getElementById('mis2-year').value;
+
+  // Build SKU name map from CATS/TESTERS arrays
+  _misSkuMap = {};
+  if (typeof CATS !== 'undefined') CATS.forEach(s => { _misSkuMap[s.code] = s.en; });
+  if (typeof TESTERS !== 'undefined') TESTERS.forEach(s => { _misSkuMap[s.code] = s.en; });
+
+  // Filter data
+  _misRows = salesData.filter(r => {
+    const si = getStore(r.store_code);
+    if (region !== 'ALL' && si.region !== region) return false;
+    if (year === '2026' && !r.month_year.startsWith('2026')) return false;
+    if (year === '2025' && !r.month_year.startsWith('2025')) return false;
+    return true;
+  });
+
+  _misMonths = [...new Set(_misRows.map(r => r.month_year))].sort();
+
+  // KPI strip
+  _misRenderKpiStrip();
+
+  document.getElementById('mis2-loading').style.display = 'none';
+  document.getElementById('mis2-content').style.display  = 'block';
+
+  _misRenderCurrentTab();
+}
+
+function _misRenderCurrentTab() {
+  const search = (document.getElementById('mis2-search').value || '').toLowerCase().trim();
+  if (_misTab === 'store')  _misRenderStore(search);
+  else if (_misTab === 'sku')    _misRenderSku(search);
+  else                      _misRenderDetail(search);
+}
+
+function _misFilterTable() { _misRenderCurrentTab(); }
+
+// ── KPI strip
+function _misRenderKpiStrip() {
+  const totals = {};
+  _misMonths.forEach(m => { totals[m] = 0; });
+  _misRows.forEach(r => { totals[r.month_year] = (totals[r.month_year]||0) + r.qty_sold; });
+  const grandAll = Object.values(totals).reduce((s,v)=>s+v,0);
+  let html = `<div style="flex-shrink:0;background:var(--gold-bar);color:#fff;border-radius:4px;padding:9px 16px;min-width:110px;margin-right:4px;">
+    <div style="font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;font-weight:700;margin-bottom:2px;">GRAND TOTAL</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;line-height:1;">${grandAll.toLocaleString()}</div>
+    <div style="font-size:8px;opacity:.65;">${_misMonths.length} months</div>
+  </div>`;
+  _misMonths.forEach((m,i) => {
+    const v    = totals[m]||0;
+    const prev = i>0 ? (totals[_misMonths[i-1]]||0) : null;
+    const pct  = prev ? ((v-prev)/prev*100) : null;
+    const isL  = i===_misMonths.length-1;
+    const bg   = isL ? '#FFF8E8' : '#fff';
+    const bord = isL ? '2px solid #C9A84C' : '1px solid #E5E0D8';
+    let badge = '';
+    if (pct!==null) {
+      const c = pct>=0 ? '#0B7A45' : '#C0392B';
+      const a = pct>=0 ? '▲' : '▼';
+      badge = `<div style="font-size:8.5px;font-weight:700;color:${c};margin-top:2px;">${a} ${Math.abs(pct).toFixed(1)}%</div>`;
+    }
+    html += `<div style="flex-shrink:0;background:${bg};border:${bord};border-radius:4px;padding:8px 13px;min-width:90px;">
+      <div style="font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;font-weight:700;margin-bottom:2px;">${_misMoLbl(m)}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--gold-bar);line-height:1;">${v.toLocaleString()}</div>
+      ${badge}
+    </div>`;
+  });
+  document.getElementById('mis2-kpi-strip').innerHTML = html;
+}
+
+function _misMoLbl(my) {
+  const [y,m] = my.split('-');
+  return MONTH_SHORT[+m]+" '"+y.slice(2);
+}
+function _misPct(c,p) { return p ? ((c-p)/p*100) : null; }
+function _misMoMTd(v,prev,isLatest) {
+  const bg  = isLatest ? '#FFF8E8' : '';
+  const bs  = isLatest ? 'border-left:2px solid #C9A84C;' : '';
+  const pct = _misPct(v, prev);
+  const num = `<div style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;color:${isLatest?'#6B5B35':'#1A1A1A'};">${v?v.toLocaleString():'—'}</div>`;
+  let mom = '';
+  if (pct!==null && prev!==null) {
+    const pos = pct>=0;
+    const big = Math.abs(pct)>=20;
+    const clr = pos?(big?'#0B7A45':'#1A8A50'):(big?'#C0392B':'#C0392B');
+    const mbg = pos?(big?'#D4EDDA':'#EDF7EE'):(big?'#FDECEA':'#FEF3F2');
+    mom = `<div style="background:${mbg};color:${clr};font-size:9px;font-weight:700;text-align:center;padding:2px 4px;border-radius:2px;margin-top:2px;white-space:nowrap;">${pos?'▲':'▼'} ${Math.abs(pct).toFixed(1)}%</div>`;
+  } else if (prev===0&&v>0) {
+    mom = `<div style="background:#EDF7EE;color:#0B7A45;font-size:9px;font-weight:700;text-align:center;padding:2px 4px;border-radius:2px;margin-top:2px;">NEW</div>`;
+  }
+  return `<td style="padding:6px 10px;background:${bg};${bs}vertical-align:top;">${num}${mom}</td>`;
+}
+
+// ── Table header
+function _misTableHeader(dim1, dim2) {
+  const M = _misMonths;
+  let th = `<thead><tr style="background:#1a3a5c;color:#fff;position:sticky;top:0;z-index:5;">`;
+  th += `<th style="text-align:left;padding:10px 14px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;min-width:${dim2?'80px':'180px'};position:sticky;left:0;background:#1a3a5c;z-index:6;">${dim1}</th>`;
+  if (dim2) th += `<th style="text-align:left;padding:10px 8px;font-size:10px;font-weight:700;letter-spacing:.06em;min-width:160px;position:sticky;left:80px;background:#1a3a5c;z-index:6;">${dim2}</th>`;
+  M.forEach((m,i) => {
+    const isL = i===M.length-1;
+    const bg  = isL ? '#2563a8' : '#1a3a5c';
+    const bl  = isL ? 'border-left:2px solid #C9A84C;' : '';
+    th += `<th colspan="1" style="text-align:center;padding:10px 10px;font-size:10px;font-weight:700;background:${bg};${bl}white-space:nowrap;min-width:90px;">${_misMoLbl(m)}${isL?' ★':''}</th>`;
+  });
+  th += `<th style="text-align:center;padding:10px 10px;font-size:10px;font-weight:700;background:#0d2240;min-width:90px;white-space:nowrap;">TOTAL</th>`;
+  th += `</tr></thead>`;
+  return th;
+}
+
+// ── BY STORE
+function _misRenderStore(search) {
+  const M = _misMonths;
+
+  // aggregate per store per month
+  const storeData = {};
+  _misRows.forEach(r => {
+    if (!storeData[r.store_code]) storeData[r.store_code] = {};
+    storeData[r.store_code][r.month_year] = (storeData[r.store_code][r.month_year]||0)+r.qty_sold;
+  });
+
+  // sort stores: by region then by latest month desc
+  const latestM = M[M.length-1];
+  let stores = Object.keys(storeData).sort((a,b) => {
+    const ra = getStore(a).region, rb = getStore(b).region;
+    if (ra!==rb) return ra.localeCompare(rb);
+    return (storeData[b][latestM]||0)-(storeData[a][latestM]||0);
+  });
+
+  if (search) stores = stores.filter(sc => {
+    const s = getStore(sc);
+    return sc.toLowerCase().includes(search) || s.name.toLowerCase().includes(search) || s.region.toLowerCase().includes(search);
+  });
+
+  // grand totals per month
+  const totals = {};
+  M.forEach(m => { totals[m] = stores.reduce((s,sc)=>(s+(storeData[sc][m]||0)),0); });
+
+  const regionColors = {EPP:'#1a2744',ASL:'#5B2D8E',OMAN:'#0B5C35',KSA:'#7A2C00'};
+  const regionLabels = {EPP:'EPP UAE',ASL:'ASL UAE',OMAN:'Oman',KSA:'KSA'};
+
+  let html = _misTableHeader('STORE','');
+  html += '<tbody>';
+  let lastReg = null;
+
+  stores.forEach((sc, ri) => {
+    const s   = getStore(sc);
+    const reg = s.region;
+    if (reg !== lastReg) {
+      const colspan = 2 + M.length + 1;
+      html += `<tr><td colspan="${colspan}" style="padding:6px 14px;background:#EDEBE6;font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#6B5B35;border-top:2px solid #C9A84C;position:sticky;left:0;">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${regionColors[reg]||'#888'};margin-right:6px;vertical-align:middle;"></span>${regionLabels[reg]||reg}
+      </td></tr>`;
+      lastReg = reg;
+    }
+    const rowBg   = ri%2===0 ? '#fff' : '#FAFAF8';
+    const rowTotal = M.reduce((s,m)=>s+(storeData[sc][m]||0),0);
+    html += `<tr style="background:${rowBg};cursor:pointer;" onclick="openMISDrill('store','${sc}')" onmouseover="this.style.background='#EDF4FF'" onmouseout="this.style.background='${rowBg}'">`;
+    html += `<td style="padding:7px 14px;position:sticky;left:0;background:${rowBg};z-index:2;">
+      <div style="font-weight:600;font-size:11.5px;color:#1A1A1A;white-space:nowrap;">${s.name}</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#7A6525;margin-top:1px;">${sc}</div>
+    </td>`;
+    M.forEach((m,i) => {
+      const v    = storeData[sc][m]||0;
+      const prev = i>0 ? (storeData[sc][M[i-1]]||0) : null;
+      html += _misMoMTd(v, prev, i===M.length-1);
+    });
+    html += `<td style="padding:6px 10px;background:#F0EDE8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:#6B5B35;">${rowTotal.toLocaleString()}</td>`;
+    html += '</tr>';
+  });
+
+  // Totals row
+  html += `<tr style="background:#1a3a5c;position:sticky;bottom:0;z-index:4;">
+    <td style="padding:9px 14px;font-weight:700;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#fff;position:sticky;left:0;background:#1a3a5c;z-index:5;">GRAND TOTAL</td>`;
+  const grandAll = M.reduce((s,m)=>s+(totals[m]||0),0);
+  M.forEach((m,i) => {
+    const v    = totals[m]||0;
+    const prev = i>0 ? (totals[M[i-1]]||0) : null;
+    const pct  = _misPct(v,prev);
+    const isL  = i===M.length-1;
+    const clr  = pct===null ? '#fff' : (pct>=0?'#90EE90':'#FF9999');
+    html += `<td style="padding:7px 10px;text-align:center;${isL?'border-left:2px solid #C9A84C;background:#0d2240;':''}">
+      <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;text-align:right;">${v.toLocaleString()}</div>
+      ${pct!==null?`<div style="font-size:9px;font-weight:700;color:${clr};text-align:center;">${pct>=0?'▲':'▼'} ${Math.abs(pct).toFixed(1)}%</div>`:''}
+    </td>`;
+  });
+  html += `<td style="padding:7px 10px;background:#0d2240;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#FFD700;">${grandAll.toLocaleString()}</td>`;
+  html += '</tr></tbody>';
+
+  document.getElementById('mis2-table').innerHTML = html;
+  document.getElementById('mis2-row-count').textContent = `${stores.length} stores · ${M.length} months`;
+}
+
+// ── BY SKU
+function _misRenderSku(search) {
+  const M = _misMonths;
+  const skuData = {};
+  _misRows.forEach(r => {
+    if (!skuData[r.sku_code]) skuData[r.sku_code] = {};
+    skuData[r.sku_code][r.month_year] = (skuData[r.sku_code][r.month_year]||0)+r.qty_sold;
+  });
+  const latestM = M[M.length-1];
+  let skus = Object.keys(skuData).sort((a,b)=>(skuData[b][latestM]||0)-(skuData[a][latestM]||0));
+  if (search) skus = skus.filter(k => k.toLowerCase().includes(search)||(_misSkuMap[k]||'').toLowerCase().includes(search));
+
+  const totals = {};
+  M.forEach(m=>{ totals[m]=skus.reduce((s,k)=>s+(skuData[k][m]||0),0); });
+
+  let html = _misTableHeader('SKU CODE','PRODUCT NAME');
+  html += '<tbody>';
+  skus.forEach((sku,ri) => {
+    const rowBg = ri%2===0 ? '#fff' : '#FAFAF8';
+    const name  = _misSkuMap[sku]||sku;
+    const rowTotal = M.reduce((s,m)=>s+(skuData[sku][m]||0),0);
+    html += `<tr style="background:${rowBg};cursor:pointer;" onclick="openMISDrill('sku','${sku}')" onmouseover="this.style.background='#EDF4FF'" onmouseout="this.style.background='${rowBg}'">`;
+    html += `<td style="padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;color:#7A6525;white-space:nowrap;position:sticky;left:0;background:${rowBg};z-index:2;">${sku}</td>`;
+    html += `<td style="padding:7px 8px;font-size:11px;color:#1A1A1A;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;position:sticky;left:80px;background:${rowBg};z-index:2;">${name}</td>`;
+    M.forEach((m,i) => {
+      const v    = skuData[sku][m]||0;
+      const prev = i>0?(skuData[sku][M[i-1]]||0):null;
+      html += _misMoMTd(v,prev,i===M.length-1);
+    });
+    html += `<td style="padding:6px 10px;background:#F0EDE8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:#6B5B35;">${rowTotal.toLocaleString()}</td>`;
+    html += '</tr>';
+  });
+
+  // Totals
+  const grandAll = M.reduce((s,m)=>s+(totals[m]||0),0);
+  html += `<tr style="background:#1a3a5c;position:sticky;bottom:0;z-index:4;">
+    <td colspan="2" style="padding:9px 14px;font-weight:700;font-size:11px;text-transform:uppercase;color:#fff;letter-spacing:.05em;position:sticky;left:0;background:#1a3a5c;z-index:5;">GRAND TOTAL (all SKUs)</td>`;
+  M.forEach((m,i) => {
+    const v    = totals[m]||0;
+    const prev = i>0?(totals[M[i-1]]||0):null;
+    const pct  = _misPct(v,prev);
+    const isL  = i===M.length-1;
+    const clr  = pct===null?'#fff':(pct>=0?'#90EE90':'#FF9999');
+    html += `<td style="padding:7px 10px;${isL?'border-left:2px solid #C9A84C;background:#0d2240;':''}text-align:center;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;text-align:right;">${v.toLocaleString()}</div>
+      ${pct!==null?`<div style="font-size:9px;font-weight:700;color:${clr};text-align:center;">${pct>=0?'▲':'▼'} ${Math.abs(pct).toFixed(1)}%</div>`:''}
+    </td>`;
+  });
+  html += `<td style="padding:7px 10px;background:#0d2240;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#FFD700;">${grandAll.toLocaleString()}</td>`;
+  html += '</tr></tbody>';
+
+  document.getElementById('mis2-table').innerHTML = html;
+  document.getElementById('mis2-row-count').textContent = `${skus.length} SKUs · ${M.length} months`;
+}
+
+// ── STORE × SKU FULL DETAIL
+function _misRenderDetail(search) {
+  const M = _misMonths;
+  const latestM = M[M.length-1];
+
+  // group by store+sku
+  const data = {}; // data[store][sku][month] = qty
+  _misRows.forEach(r => {
+    if (!data[r.store_code]) data[r.store_code] = {};
+    if (!data[r.store_code][r.sku_code]) data[r.store_code][r.sku_code] = {};
+    data[r.store_code][r.sku_code][r.month_year] = (data[r.store_code][r.sku_code][r.month_year]||0)+r.qty_sold;
+  });
+
+  // build flat rows: {store, sku, months{}}
+  let flat = [];
+  Object.keys(data).sort().forEach(sc => {
+    const s = getStore(sc);
+    Object.keys(data[sc]).sort((a,b)=>(data[sc][b][latestM]||0)-(data[sc][a][latestM]||0)).forEach(sku => {
+      flat.push({ sc, s, sku, d: data[sc][sku] });
+    });
+  });
+
+  if (search) flat = flat.filter(r =>
+    r.sc.toLowerCase().includes(search) ||
+    r.s.name.toLowerCase().includes(search) ||
+    r.sku.toLowerCase().includes(search) ||
+    (_misSkuMap[r.sku]||'').toLowerCase().includes(search)
+  );
+
+  const regionColors = {EPP:'#1a2744',ASL:'#5B2D8E',OMAN:'#0B5C35',KSA:'#7A2C00'};
+  const regionLabels = {EPP:'EPP UAE',ASL:'ASL UAE',OMAN:'Oman',KSA:'KSA'};
+
+  let html = `<thead><tr style="background:#1a3a5c;color:#fff;position:sticky;top:0;z-index:5;">
+    <th style="text-align:left;padding:10px 14px;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;min-width:160px;position:sticky;left:0;background:#1a3a5c;z-index:6;">STORE</th>
+    <th style="text-align:left;padding:10px 8px;font-size:9.5px;font-weight:700;letter-spacing:.06em;min-width:75px;white-space:nowrap;">SKU</th>
+    <th style="text-align:left;padding:10px 8px;font-size:9.5px;font-weight:700;letter-spacing:.06em;min-width:160px;">PRODUCT</th>`;
+  M.forEach((m,i) => {
+    const isL = i===M.length-1;
+    const bg  = isL?'#2563a8':'#1a3a5c';
+    const bl  = isL?'border-left:2px solid #C9A84C;':'';
+    html += `<th style="text-align:center;padding:10px 10px;font-size:9.5px;font-weight:700;background:${bg};${bl}white-space:nowrap;min-width:90px;">${_misMoLbl(m)}${isL?' ★':''}</th>`;
+  });
+  html += `<th style="text-align:center;padding:10px 10px;font-size:9.5px;font-weight:700;background:#0d2240;min-width:70px;">TOTAL</th></tr></thead>`;
+
+  html += '<tbody>';
+  let lastStore = null;
+  flat.forEach((r, ri) => {
+    if (r.sc !== lastStore) {
+      const colspan = 3+M.length+1;
+      const reg = r.s.region;
+      html += `<tr><td colspan="${colspan}" style="padding:6px 14px;background:#EDEBE6;font-weight:700;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#6B5B35;border-top:2px solid #C9A84C;position:sticky;left:0;">
+        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${regionColors[reg]||'#888'};margin-right:5px;vertical-align:middle;"></span>
+        ${r.s.name} <span style="font-family:'IBM Plex Mono',monospace;color:#8A8278;font-size:8px;margin-left:6px;">${r.sc}</span>
+        <span style="margin-left:10px;background:${regionColors[reg]||'#888'};color:#fff;padding:1px 6px;border-radius:3px;font-size:7.5px;">${regionLabels[reg]||reg}</span>
+      </td></tr>`;
+      lastStore = r.sc;
+    }
+    const rowBg   = ri%2===0?'#fff':'#FAFAF8';
+    const name    = _misSkuMap[r.sku]||r.sku;
+    const rowTotal = M.reduce((s,m)=>s+(r.d[m]||0),0);
+    if (rowTotal===0) return;
+    html += `<tr style="background:${rowBg};" onmouseover="this.style.background='#F0F7FF'" onmouseout="this.style.background='${rowBg}'">`;
+    html += `<td style="padding:6px 14px;font-size:10px;color:#8A8278;font-style:italic;position:sticky;left:0;background:${rowBg};z-index:2;"></td>`;
+    html += `<td style="padding:6px 8px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:#7A6525;white-space:nowrap;">${r.sku}</td>`;
+    html += `<td style="padding:6px 8px;font-size:11px;color:#1A1A1A;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</td>`;
+    M.forEach((m,i) => {
+      const v    = r.d[m]||0;
+      const prev = i>0?(r.d[M[i-1]]||0):null;
+      html += _misMoMTd(v,prev,i===M.length-1);
+    });
+    html += `<td style="padding:6px 10px;background:#F0EDE8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:#6B5B35;">${rowTotal.toLocaleString()}</td>`;
+    html += '</tr>';
+  });
+  html += '</tbody>';
+
+  document.getElementById('mis2-table').innerHTML = html;
+  document.getElementById('mis2-row-count').textContent = `${flat.length} rows · ${M.length} months`;
+}
+
+// ── Store / SKU Drill-Down
+function openMISDrill(type, key) {
+  const M = _misMonths;
+  let html = '';
+
+  if (type==='store') {
+    const s = getStore(key);
+    // Get all SKUs for this store
+    const skuData = {};
+    _misRows.filter(r=>r.store_code===key).forEach(r=>{
+      if (!skuData[r.sku_code]) skuData[r.sku_code]={};
+      skuData[r.sku_code][r.month_year]=(skuData[r.sku_code][r.month_year]||0)+r.qty_sold;
+    });
+    const latestM = M[M.length-1];
+    const skus = Object.keys(skuData).sort((a,b)=>(skuData[b][latestM]||0)-(skuData[a][latestM]||0));
+    const storeTotal = {};
+    M.forEach(m=>{ storeTotal[m]=skus.reduce((t,k)=>t+(skuData[k][m]||0),0); });
+
+    html = `<div style="background:#1a3a5c;padding:18px 20px;display:flex;align-items:flex-start;gap:14px;position:sticky;top:0;z-index:5;">
+      <button onclick="closeMISDrill()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:14px;cursor:pointer;flex-shrink:0;">✕</button>
+      <div>
+        <div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:700;">Store Detail · All SKUs</div>
+        <div style="font-size:15px;font-weight:700;color:#fff;">${s.name}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(201,168,76,.9);margin-top:2px;">${key} · ${s.region} · ${s.city||'—'}</div>
+      </div>
+    </div>`;
+
+    // Month totals for this store
+    html += `<div style="padding:12px 16px;background:#F5F2EC;border-bottom:1px solid #E5E0D8;display:flex;gap:8px;overflow-x:auto;">`;
+    M.forEach((m,i) => {
+      const v    = storeTotal[m]||0;
+      const prev = i>0?(storeTotal[M[i-1]]||0):null;
+      const pct  = _misPct(v,prev);
+      const isL  = i===M.length-1;
+      let badge='';
+      if (pct!==null){const c=pct>=0?'#0B7A45':'#C0392B',a=pct>=0?'▲':'▼';badge=`<div style="font-size:8px;font-weight:700;color:${c};">${a} ${Math.abs(pct).toFixed(1)}%</div>`;}
+      html += `<div style="flex-shrink:0;background:#fff;border:${isL?'2px solid #C9A84C':'1px solid #E5E0D8'};border-radius:4px;padding:7px 12px;min-width:80px;">
+        <div style="font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;">${_misMoLbl(m)}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#1a3a5c;">${v.toLocaleString()}</div>
+        ${badge}
+      </div>`;
+    });
+    html += `</div>`;
+
+    // SKU table
+    html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+      <thead><tr style="background:#1a3a5c;color:#fff;position:sticky;top:74px;z-index:4;">
+        <th style="padding:8px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">SKU</th>
+        <th style="padding:8px 8px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;">Product</th>`;
+    M.forEach((m,i)=>{
+      const isL=i===M.length-1;
+      html+=`<th style="padding:8px 8px;text-align:center;font-size:9px;font-weight:700;${isL?'background:#2563a8;border-left:2px solid #C9A84C;':''}white-space:nowrap;">${_misMoLbl(m)}${isL?' ★':''}</th>`;
+    });
+    html+=`<th style="padding:8px 8px;text-align:right;font-size:9px;font-weight:700;background:#0d2240;">TOTAL</th></tr></thead><tbody>`;
+
+    skus.forEach((sku,ri)=>{
+      const rowTotal=M.reduce((s,m)=>s+(skuData[sku][m]||0),0);
+      if(!rowTotal) return;
+      const bg=ri%2===0?'#fff':'#FAFAF8';
+      html+=`<tr style="background:${bg};">
+        <td style="padding:6px 12px;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:10px;color:#7A6525;white-space:nowrap;">${sku}</td>
+        <td style="padding:6px 8px;font-size:11px;color:#1A1A1A;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_misSkuMap[sku]||sku}</td>`;
+      M.forEach((m,i)=>{
+        const v=skuData[sku][m]||0;
+        const prev=i>0?(skuData[sku][M[i-1]]||0):null;
+        html+=_misMoMTd(v,prev,i===M.length-1);
+      });
+      html+=`<td style="padding:6px 8px;background:#F0EDE8;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:11px;color:#6B5B35;">${rowTotal.toLocaleString()}</td>`;
+      html+='</tr>';
+    });
+    html+='</tbody></table></div>';
+
+  } else {
+    // SKU drill
+    const name = _misSkuMap[key]||key;
+    const storeData = {};
+    _misRows.filter(r=>r.sku_code===key).forEach(r=>{
+      if(!storeData[r.store_code]) storeData[r.store_code]={};
+      storeData[r.store_code][r.month_year]=(storeData[r.store_code][r.month_year]||0)+r.qty_sold;
+    });
+    const latestM = M[M.length-1];
+    const stores  = Object.keys(storeData).sort((a,b)=>(storeData[b][latestM]||0)-(storeData[a][latestM]||0));
+    const skuTotal= {};
+    M.forEach(m=>{ skuTotal[m]=stores.reduce((t,sc)=>t+(storeData[sc][m]||0),0); });
+
+    html=`<div style="background:#1a3a5c;padding:18px 20px;display:flex;align-items:flex-start;gap:14px;position:sticky;top:0;z-index:5;">
+      <button onclick="closeMISDrill()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:14px;cursor:pointer;flex-shrink:0;">✕</button>
+      <div>
+        <div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:700;">SKU Detail · All Stores</div>
+        <div style="font-size:15px;font-weight:700;color:#fff;">${name}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(201,168,76,.9);margin-top:2px;">${key}</div>
+      </div>
+    </div>`;
+    html+=`<div style="padding:12px 16px;background:#F5F2EC;border-bottom:1px solid #E5E0D8;display:flex;gap:8px;overflow-x:auto;">`;
+    M.forEach((m,i)=>{
+      const v=skuTotal[m]||0,prev=i>0?(skuTotal[M[i-1]]||0):null,pct=_misPct(v,prev),isL=i===M.length-1;
+      let badge='';if(pct!==null){const c=pct>=0?'#0B7A45':'#C0392B',a=pct>=0?'▲':'▼';badge=`<div style="font-size:8px;font-weight:700;color:${c};">${a} ${Math.abs(pct).toFixed(1)}%</div>`;}
+      html+=`<div style="flex-shrink:0;background:#fff;border:${isL?'2px solid #C9A84C':'1px solid #E5E0D8'};border-radius:4px;padding:7px 12px;min-width:80px;">
+        <div style="font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;">${_misMoLbl(m)}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#1a3a5c;">${v.toLocaleString()}</div>${badge}</div>`;
+    });
+    html+=`</div><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+      <thead><tr style="background:#1a3a5c;color:#fff;position:sticky;top:74px;z-index:4;">
+        <th style="padding:8px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">STORE</th>`;
+    M.forEach((m,i)=>{
+      const isL=i===M.length-1;
+      html+=`<th style="padding:8px 8px;text-align:center;font-size:9px;font-weight:700;${isL?'background:#2563a8;border-left:2px solid #C9A84C;':''}white-space:nowrap;">${_misMoLbl(m)}${isL?' ★':''}</th>`;
+    });
+    html+=`<th style="padding:8px 8px;text-align:right;font-size:9px;font-weight:700;background:#0d2240;">TOTAL</th></tr></thead><tbody>`;
+    stores.forEach((sc,ri)=>{
+      const s=getStore(sc),rowTotal=M.reduce((t,m)=>t+(storeData[sc][m]||0),0);
+      if(!rowTotal) return;
+      const bg=ri%2===0?'#fff':'#FAFAF8';
+      html+=`<tr style="background:${bg};"><td style="padding:6px 12px;"><div style="font-weight:600;font-size:11px;">${s.name}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#7A6525;">${sc}</div></td>`;
+      M.forEach((m,i)=>{
+        const v=storeData[sc][m]||0,prev=i>0?(storeData[sc][M[i-1]]||0):null;
+        html+=_misMoMTd(v,prev,i===M.length-1);
+      });
+      html+=`<td style="padding:6px 8px;background:#F0EDE8;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:11px;color:#6B5B35;">${rowTotal.toLocaleString()}</td></tr>`;
+    });
+    html+='</tbody></table></div>';
+  }
+
+  document.getElementById('misDrillContent').innerHTML = html;
+  document.getElementById('misDrillPanel').style.display  = 'block';
+  document.getElementById('misDrillOverlay').style.display = 'block';
+}
+
+function closeMISDrill() {
+  document.getElementById('misDrillPanel').style.display  = 'none';
+  document.getElementById('misDrillOverlay').style.display = 'none';
+}
+
+// ── Excel Export (SheetJS)
+function exportMISExcel() {
+  if (typeof XLSX === 'undefined') { alert('SheetJS not loaded yet — please wait a moment and try again.'); return; }
+  const M = _misMonths;
+  const wb = XLSX.utils.book_new();
+
+  const moHdrs = M.map(m=>_misMoLbl(m));
+  const momHdrs = M.map(m=>_misMoLbl(m)+' MoM%');
+  const allHdrs = [];
+  M.forEach((m,i)=>{ allHdrs.push(_misMoLbl(m)); if(i>0) allHdrs.push(_misMoLbl(m)+' MoM%'); });
+
+  // ── Sheet 1: Region Summary
+  const regData = {EPP:{},ASL:{},OMAN:{},KSA:{}};
+  _misRows.forEach(r=>{ const reg=getStore(r.store_code).region; if(!regData[reg]) return; regData[reg][r.month_year]=(regData[reg][r.month_year]||0)+r.qty_sold; });
+  const totals1={};
+  M.forEach(m=>{totals1[m]=Object.values(regData).reduce((s,d)=>s+(d[m]||0),0);});
+  const s1rows=[['EMIRATES PRIDE — SALES MIS REPORT'],[`Generated: ${new Date().toLocaleString('en-GB')}`],[]];
+  const s1hdr=['Region',...allHdrs,'TOTAL'];
+  s1rows.push(s1hdr);
+  const regLabels={EPP:'EPP UAE',ASL:'ASL UAE',OMAN:'Oman',KSA:'KSA'};
+  Object.keys(regData).forEach(reg=>{
+    const row=[regLabels[reg]||reg];
+    let total=0;
+    M.forEach((m,i)=>{ const v=regData[reg][m]||0; row.push(v); if(i>0){const p=regData[reg][M[i-1]]||0; row.push(p?+((v-p)/p*100).toFixed(1):null);} total+=v; });
+    row.push(total); s1rows.push(row);
+  });
+  const gtRow=['GRAND TOTAL']; let gt=0;
+  M.forEach((m,i)=>{ const v=totals1[m]||0; gtRow.push(v); if(i>0){const p=totals1[M[i-1]]||0; gtRow.push(p?+((v-p)/p*100).toFixed(1):null);} gt+=v; });
+  gtRow.push(gt); s1rows.push(gtRow);
+  const ws1=XLSX.utils.aoa_to_sheet(s1rows);
+  XLSX.utils.book_append_sheet(wb,ws1,'Region Summary');
+
+  // ── Sheet 2: By Store
+  const storeAgg={};
+  _misRows.forEach(r=>{ if(!storeAgg[r.store_code]) storeAgg[r.store_code]={}; storeAgg[r.store_code][r.month_year]=(storeAgg[r.store_code][r.month_year]||0)+r.qty_sold; });
+  const s2rows=[['Region','Store Code','Store Name','City',...allHdrs,'TOTAL']];
+  Object.keys(storeAgg).sort((a,b)=>getStore(a).region.localeCompare(getStore(b).region)||a.localeCompare(b)).forEach(sc=>{
+    const s=getStore(sc),row=[s.region,sc,s.name,s.city||'—'];
+    let total=0;
+    M.forEach((m,i)=>{ const v=storeAgg[sc][m]||0; row.push(v); if(i>0){const p=storeAgg[sc][M[i-1]]||0; row.push(p?+((v-p)/p*100).toFixed(1):null);} total+=v; });
+    row.push(total); s2rows.push(row);
+  });
+  const ws2=XLSX.utils.aoa_to_sheet(s2rows);
+  XLSX.utils.book_append_sheet(wb,ws2,'By Store');
+
+  // ── Sheet 3: By SKU
+  const skuAgg={};
+  _misRows.forEach(r=>{ if(!skuAgg[r.sku_code]) skuAgg[r.sku_code]={}; skuAgg[r.sku_code][r.month_year]=(skuAgg[r.sku_code][r.month_year]||0)+r.qty_sold; });
+  const latestM=M[M.length-1];
+  const s3rows=[['SKU Code','Product Name',...allHdrs,'TOTAL']];
+  Object.keys(skuAgg).sort((a,b)=>(skuAgg[b][latestM]||0)-(skuAgg[a][latestM]||0)).forEach(sku=>{
+    const row=[sku,_misSkuMap[sku]||sku];
+    let total=0;
+    M.forEach((m,i)=>{ const v=skuAgg[sku][m]||0; row.push(v); if(i>0){const p=skuAgg[sku][M[i-1]]||0; row.push(p?+((v-p)/p*100).toFixed(1):null);} total+=v; });
+    row.push(total); s3rows.push(row);
+  });
+  const ws3=XLSX.utils.aoa_to_sheet(s3rows);
+  XLSX.utils.book_append_sheet(wb,ws3,'By SKU');
+
+  // ── Sheet 4: Store × SKU Full Detail
+  const s4rows=[['Region','Store Code','Store Name','SKU Code','Product Name',...allHdrs,'TOTAL']];
+  const detAgg={};
+  _misRows.forEach(r=>{
+    const k=r.store_code+'||'+r.sku_code;
+    if(!detAgg[k]) detAgg[k]={sc:r.store_code,sku:r.sku_code,d:{}};
+    detAgg[k].d[r.month_year]=(detAgg[k].d[r.month_year]||0)+r.qty_sold;
+  });
+  Object.values(detAgg).sort((a,b)=>getStore(a.sc).region.localeCompare(getStore(b.sc).region)||a.sc.localeCompare(b.sc)||(detAgg[b.sc+'||'+b.sku]?.d[latestM]||0)-(detAgg[a.sc+'||'+a.sku]?.d[latestM]||0)).forEach(r=>{
+    const s=getStore(r.sc),row=[s.region,r.sc,s.name,r.sku,_misSkuMap[r.sku]||r.sku];
+    let total=0;
+    M.forEach((m,i)=>{ const v=r.d[m]||0; row.push(v); if(i>0){const p=r.d[M[i-1]]||0; row.push(p?+((v-p)/p*100).toFixed(1):null);} total+=v; });
+    row.push(total); s4rows.push(row);
+  });
+  const ws4=XLSX.utils.aoa_to_sheet(s4rows);
+  XLSX.utils.book_append_sheet(wb,ws4,'Store x SKU Detail');
+
+  // Column widths
+  [ws1,ws2,ws3,ws4].forEach(ws=>{ ws['!cols']=[{wch:18},{wch:14},{wch:26},{wch:14},...M.flatMap(()=>[{wch:10},{wch:9}]),{wch:10}]; });
+
+  const year=document.getElementById('mis2-year').value;
+  const reg =document.getElementById('mis2-region').value;
+  XLSX.writeFile(wb,`EP_SalesMIS_${year}_${reg}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SALES MIS REPORT (standalone tab — kept for nav tab)
 // ══════════════════════════════════════════════════════════════════
 
 let misLoaded = false;
