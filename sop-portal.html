@@ -743,6 +743,10 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
       Forecast
     </div>
+    <div class="nav-tab" data-tab="mis" onclick="switchTab('mis')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      Sales MIS
+    </div>
   </div>
 
   <!-- ══════════════════ TAB: SALES ══════════════════ -->
@@ -1328,6 +1332,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <button class="filter-btn-ghost" onclick="exportTesterCsv()" style="margin-left:auto;">↓ Export CSV</button>
       <button onclick="openTesterIntel()" style="background:linear-gradient(135deg,#1a3a5c,#2563a8);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(26,58,92,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#122840,#1a3a5c)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a5c,#2563a8)'">🧪 Tester Analytics Report</button>
       <button onclick="openAMTesterCheck()" style="background:linear-gradient(135deg,#5C4A1A,#8B6914);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(92,74,26,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#3D3010,#5C4A1A)'" onmouseout="this.style.background='linear-gradient(135deg,#5C4A1A,#8B6914)'">🔍 AM Tester Check</button>
+      <button onclick="exportMISTesterReport()" style="background:linear-gradient(135deg,#1C3B1C,#2D6A2D);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(28,59,28,.40);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#111F11,#1C3B1C)'" onmouseout="this.style.background='linear-gradient(135deg,#1C3B1C,#2D6A2D)'" title="Download SKU × Store tester matrix in Excel format">📥 MIS Tester Report</button>
     </div>
 
     <!-- KPI Row -->
@@ -2118,6 +2123,66 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
     </div>
 
   </div><!-- /tab-forecast -->
+
+  <!-- ══════════════════ TAB: SALES MIS ══════════════════ -->
+  <div id="tab-mis" class="tab-panel">
+
+    <!-- Filter bar -->
+    <div class="filter-bar" style="gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:#fff;">
+      <select class="sel" id="mis-region" onchange="misBuildAll()">
+        <option value="ALL">All Regions</option>
+        <option value="EPP">EPP UAE</option>
+        <option value="ASL">ASL UAE</option>
+        <option value="OMAN">Oman</option>
+        <option value="KSA">KSA</option>
+      </select>
+      <select class="sel" id="mis-year" onchange="misBuildAll()">
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+        <option value="ALL">All Years</option>
+      </select>
+      <select class="sel" id="mis-view" onchange="misBuildAll()">
+        <option value="region">Region Summary</option>
+        <option value="store">Store Detail</option>
+        <option value="sku">Top SKUs</option>
+      </select>
+      <button class="filter-btn-ghost" onclick="misRefresh()" style="margin-left:auto;">↺ Refresh</button>
+      <button class="filter-btn-ghost" onclick="misDlCsv()">↓ CSV</button>
+    </div>
+
+    <!-- Loading state -->
+    <div id="mis-loading" style="text-align:center;padding:60px;color:var(--ink-light);">
+      <div class="spinner" style="margin:0 auto 16px;"></div>
+      <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Compiling MIS Report…</div>
+    </div>
+
+    <!-- Main MIS content -->
+    <div id="mis-content" style="display:none;">
+
+      <!-- Month KPI strip -->
+      <div id="mis-kpi-strip" style="padding:14px 20px;background:var(--gold-pale);border-bottom:2px solid var(--border);overflow-x:auto;"></div>
+
+      <!-- Region / Store / SKU pivot table -->
+      <div style="padding:18px 20px 6px;">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+          <div id="mis-table-title" style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-bar);">Month-on-Month Sales</div>
+          <div id="mis-table-sub" style="font-size:11px;color:var(--ink-light);"></div>
+        </div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+          <table id="mis-pivot-table" style="width:100%;border-collapse:collapse;font-size:12px;min-width:700px;"></table>
+        </div>
+      </div>
+
+      <!-- MoM Trend mini-bars -->
+      <div style="padding:10px 20px 18px;" id="mis-trend-section">
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-light);margin-bottom:10px;">GRAND TOTAL — MONTHLY TREND</div>
+        <div id="mis-trend-bars" style="display:flex;gap:6px;align-items:flex-end;height:80px;"></div>
+        <div id="mis-trend-labels" style="display:flex;gap:6px;margin-top:4px;"></div>
+      </div>
+
+    </div>
+
+  </div><!-- /tab-mis -->
 
 </div><!-- /app -->
 <div id="toast"></div>
@@ -3580,6 +3645,404 @@ function exportTesterCsv() {
   });
   dlFile('Tester_Export_' + new Date().toISOString().slice(0,10) + '.csv', csv, 'text/csv');
   toast('Tester CSV exported — ' + filteredTesterSkus.length + ' SKU rows');
+}
+
+// ══════════════════════════════════════════════
+// MIS TESTER REPORT — Excel Matrix Export
+// ══════════════════════════════════════════════
+
+async function exportMISTesterReport() {
+  if (!testerLoaded) { toast('Load tester data first', 'warn'); return; }
+
+  const selMonth = document.getElementById('t-month').value;
+  const selDiv   = document.getElementById('t-division').value;
+  const selYear  = document.getElementById('t-year').value;
+
+  // Determine which month(s) to report
+  let months = [...new Set(testerRawRows.map(r => r.month_year))].sort().reverse();
+  if (selMonth !== 'ALL' && selYear !== 'ALL') {
+    const mm = selMonth.padStart(2,'0');
+    months = [`${selYear}-${mm}`];
+  } else if (selMonth !== 'ALL') {
+    months = months.filter(m => m.endsWith('-' + selMonth.padStart(2,'0')));
+  } else if (selYear !== 'ALL') {
+    months = months.filter(m => m.startsWith(selYear));
+  }
+  if (!months.length) { toast('No tester data for selected period', 'warn'); return; }
+
+  // If multiple months, use most recent
+  const reportMonth = months[0];
+  const [ry, rm] = reportMonth.split('-');
+  const MONTH_LABELS = {
+    '01':'January','02':'February','03':'March','04':'April','05':'May','06':'June',
+    '07':'July','08':'August','09':'September','10':'October','11':'November','12':'December'
+  };
+  const monthLabel = (MONTH_LABELS[rm] || rm).toUpperCase() + ' ' + ry;
+
+  toast('Building MIS Tester Report for ' + monthLabel + '…');
+
+  // Load per-SKU sales for this month from sales_history
+  const { data: salesRows, error: sErr } = await sb
+    .from('sales_history')
+    .select('store_code,sku_code,qty_sold')
+    .eq('month_year', reportMonth);
+  if (sErr) { toast('Sales load failed: ' + sErr.message, 'warn'); return; }
+
+  // Build sales lookup: sku → store → qty
+  const salesLookup = {}; // sku_code → { store_code: qty }
+  (salesRows || []).forEach(r => {
+    if (!salesLookup[r.sku_code]) salesLookup[r.sku_code] = {};
+    salesLookup[r.sku_code][r.store_code] = (salesLookup[r.sku_code][r.store_code] || 0) + r.qty_sold;
+  });
+
+  // Build tester lookup: normalized_sku → store → qty
+  const tLookup = {};
+  testerRawRows
+    .filter(r => r.month_year === reportMonth)
+    .forEach(r => {
+      const nsku = _normSku(r.sku_code);
+      if (!tLookup[nsku]) tLookup[nsku] = {};
+      tLookup[nsku][r.store_code] = (tLookup[nsku][r.store_code] || 0) + (r.testers_dispatched || 0);
+    });
+
+  // Sales aliases: some sheet codes differ from Supabase codes
+  const SALES_ALIAS = {
+    'B0001':'B00010', 'B0002':'B00020', 'C0001':'C00010', 'O0007':'O00007'
+  };
+
+  // ---------- EPP SHEET DEFINITION ----------
+  const EPP_COLS = [
+    // Abu Dhabi (AM Hessin)
+    { store:'A0002', label:'BAS-Kiosk',      city:'Abu Dhabi', am:'Mohamed Hessin' },
+    { store:'A0001', label:'BAS Shop',        city:'Abu Dhabi', am:'Mohamed Hessin' },
+    { store:'A0010', label:'BAS Shop 2',      city:'Abu Dhabi', am:'Mohamed Hessin' },
+    { store:'A0004', label:'Dalma Kiosk',     city:'Abu Dhabi', am:'Mohamed Hessin' },
+    { store:'A0003', label:'Dalma Shop',      city:'Abu Dhabi', am:'Mohamed Hessin' },
+    { store:'A0005', label:'Deerfield',       city:'Abu Dhabi', am:'Mohamed Hessin' },
+    { store:'A0009', label:'Yas Podium',      city:'Abu Dhabi', am:'Mohamed Hessin' },
+    { store:'A0007', label:'Yas Mall (2)',    city:'Abu Dhabi', am:'Mohamed Hessin' },
+    { store:'A0008', label:'Yas Mall (3)',    city:'Abu Dhabi', am:'Mohamed Hessin' },
+    { store:'A0011', label:'Marina',          city:'Abu Dhabi', am:'Mohamed Hessin' },
+    { store:null,    label:'Abu Dhabi\nSub-Total', city:'Abu Dhabi', am:'Mohamed Hessin', subTotal: true, subCodes:['A0002','A0001','A0010','A0004','A0003','A0005','A0009','A0007','A0008','A0011'] },
+    // Al Ain (AM Hessin)
+    { store:'AL001', label:'Al Ain Mall',     city:'Al Ain',    am:'Mohamed Hessin' },
+    { store:'AL002', label:'Bawadi (1)',      city:'Al Ain',    am:'Mohamed Hessin' },
+    { store:'AL003', label:'Bawadi (2)',      city:'Al Ain',    am:'Mohamed Hessin' },
+    { store:'AL004', label:'Jimi Shop',       city:'Al Ain',    am:'Mohamed Hessin' },
+    { store:'AL006', label:'Makani Shop',     city:'Al Ain',    am:'Mohamed Hessin' },
+    { store:null,    label:'Al Ain\nSub-Total', city:'Al Ain',  am:'Mohamed Hessin', subTotal: true, subCodes:['AL001','AL002','AL003','AL004','AL006'] },
+    // Hessin Total
+    { store:null,    label:'Hessin Total',    city:null, am:'Mohamed Hessin', amTotal: true, amCodes:['A0002','A0001','A0010','A0004','A0003','A0005','A0009','A0007','A0008','A0011','AL001','AL002','AL003','AL004','AL006'] },
+    // Dubai (AM Imad)
+    { store:'DX004', label:'Mall Of Emirates',city:'Dubai',     am:'Mohammed Imad' },
+    { store:'DX005', label:'Mirdif',          city:'Dubai',     am:'Mohammed Imad' },
+    { store:'DX006', label:'Dubai Hills',     city:'Dubai',     am:'Mohammed Imad' },
+    { store:'DX003', label:'Dubai Mall Kiosk',city:'Dubai',     am:'Mohammed Imad' },
+    { store:'DX001', label:'Dubai Mall Shop', city:'Dubai',     am:'Mohammed Imad' },
+    { store:'DX008', label:'Festival City',   city:'Dubai',     am:'Mohammed Imad' },
+    { store:null,    label:'Dubai\nSub-Total',city:'Dubai',     am:'Mohammed Imad', subTotal: true, subCodes:['DX004','DX005','DX006','DX003','DX001','DX008'] },
+    // Imad Total
+    { store:null,    label:'Imad Total',      city:null, am:'Mohammed Imad', amTotal: true, amCodes:['DX004','DX005','DX006','DX003','DX001','DX008'] },
+    // Other Emirates (AM Elmatloub)
+    { store:'RK002', label:'Manar Kiosk',     city:'Ras Al Khaimah', am:'Mohammed Elmatloub' },
+    { store:'RK001', label:'Manar Shop',      city:'Ras Al Khaimah', am:'Mohammed Elmatloub' },
+    { store:null,    label:'RAK Sub-Total',   city:'Ras Al Khaimah', am:'Mohammed Elmatloub', subTotal:true, subCodes:['RK002','RK001'] },
+    { store:'SH001', label:'Al Zahia',        city:'Sharjah',   am:'Mohammed Elmatloub' },
+    { store:null,    label:'Sharjah Sub-Total',city:'Sharjah',  am:'Mohammed Elmatloub', subTotal:true, subCodes:['SH001'] },
+    { store:'AJ001', label:'Ajman',           city:'Ajman',     am:'Mohammed Elmatloub' },
+    { store:null,    label:'Ajman Sub-Total', city:'Ajman',     am:'Mohammed Elmatloub', subTotal:true, subCodes:['AJ001'] },
+    { store:'FJ001', label:'Fujairah',        city:'Fujairah',  am:'Mohammed Elmatloub' },
+    { store:null,    label:'Fujairah Sub-Total',city:'Fujairah',am:'Mohammed Elmatloub', subTotal:true, subCodes:['FJ001'] },
+    // Elmatloub Total
+    { store:null,    label:'Elmatloub Total', city:null, am:'Mohammed Elmatloub', amTotal: true, amCodes:['RK002','RK001','SH001','AJ001','FJ001'] },
+  ];
+
+  const ASL_COLS = [
+    { store:'BAS001', label:'BAS Mall',     city:'Abu Dhabi' },
+    { store:'BAW001', label:'Bawadi Mall',  city:'Al Ain' },
+    { store:'FJ0001', label:'Fujairah',     city:'Fujairah' },
+    { store:'MAK001', label:'Makani Mall',  city:'Al Ain' },
+    { store:'YMK001', label:'Yas Mall',     city:'Abu Dhabi' },
+    { store:null,     label:'ASL Stores\nSub-Total', subTotal:true, subCodes:['BAS001','BAW001','FJ0001','MAK001','YMK001'] },
+  ];
+
+  // Get all EPP store codes (non-null, non-total)
+  const eppStoreCodes = EPP_COLS.filter(c => c.store).map(c => c.store);
+  const aslStoreCodes = ASL_COLS.filter(c => c.store).map(c => c.store);
+
+  // Collect all SKUs that have data in this month (testers or sales)
+  const allSkuSet = new Set();
+  Object.keys(tLookup).forEach(k => allSkuSet.add(k));
+  Object.keys(salesLookup).forEach(k => allSkuSet.add(k));
+
+  // Separate EPP vs ASL SKUs (by which stores have data)
+  const eppSkus = new Set(), aslSkus = new Set();
+  allSkuSet.forEach(sku => {
+    const tStores = Object.keys(tLookup[sku] || {});
+    const sStores = Object.keys((salesLookup[sku] || {}));
+    const allStores = [...tStores, ...sStores];
+    if (allStores.some(s => eppStoreCodes.includes(s))) eppSkus.add(sku);
+    if (allStores.some(s => aslStoreCodes.includes(s))) aslSkus.add(sku);
+  });
+
+  // Build sorted SKU list with product names
+  const skuNameMap = {};
+  testerRawRows.filter(r => r.month_year === reportMonth).forEach(r => {
+    const n = _normSku(r.sku_code);
+    if (!skuNameMap[n] && r.product_name) {
+      skuNameMap[n] = _testerBaseName(r.product_name);
+    }
+  });
+  (salesRows || []).forEach(r => {
+    if (!skuNameMap[r.sku_code]) skuNameMap[r.sku_code] = r.sku_code;
+  });
+
+  const sortedEppSkus = [...eppSkus].sort((a,b) => (skuNameMap[a]||a).localeCompare(skuNameMap[b]||b));
+  const sortedAslSkus = [...aslSkus].sort((a,b) => (skuNameMap[a]||a).localeCompare(skuNameMap[b]||b));
+
+  // ---------- BUILD SHEET (generic for EPP or ASL) ----------
+  function buildSheet(brand, label, storeCols, skuList) {
+    const storeCodes = storeCols.filter(c => c.store).map(c => c.store);
+
+    // Helper: get T for sku+store
+    const getT = (sku, store) => {
+      const alias = SALES_ALIAS[sku] || sku;
+      return (tLookup[alias] || tLookup[sku] || {})[store] || 0;
+    };
+    // Helper: get S for sku+store
+    const getS = (sku, store) => {
+      const alias = SALES_ALIAS[sku] || sku;
+      return ((salesLookup[alias] || salesLookup[sku] || {})[store] || 0);
+    };
+    // Helper: get sub-total T or S for sku + list of stores
+    const subT = (sku, codes) => codes.reduce((s,c) => s + getT(sku,c), 0);
+    const subS = (sku, codes) => codes.reduce((s,c) => s + getS(sku,c), 0);
+
+    // Column structure: fixed 6 + (storeCols.length × 3)
+    const fixedCols = 6;  // #, SKU, Name, Grand T, Grand S, Grand Contrib%
+    const totalCols = fixedCols + storeCols.length * 3;
+
+    const rows = []; // array of arrays
+    const merges = [];
+
+    const addMerge = (r, c, re, ce) => merges.push({ s:{r,c}, e:{r:re,c:ce} });
+
+    // ── Row 0: spacer
+    rows.push(Array(totalCols).fill(null));
+
+    // ── Row 1: Title
+    const titleRow = Array(totalCols).fill(null);
+    titleRow[0] = `${brand}  —  SKU × STORE TESTER CONSUMPTION MATRIX  |  ${monthLabel}`;
+    rows.push(titleRow);
+    addMerge(1, 0, 1, totalCols - 1);
+
+    // ── Row 2: Legend
+    const legRow = Array(totalCols).fill(null);
+    legRow[0] = 'T=Testers Dispatched  |  S=Sales Generated  |  Contrib%=T÷S  |  ≤10% Efficient  |  10-20% Monitor  |  >20% High Use';
+    rows.push(legRow);
+    addMerge(2, 0, 2, totalCols - 1);
+
+    // ── Row 3: AM headers (EPP) or blank (ASL)
+    const amRow = Array(totalCols).fill(null);
+    amRow[0] = '#'; amRow[1] = 'SKU\nCode'; amRow[2] = 'Product Name';
+    amRow[3] = 'Grand\nTotal\nTesters'; amRow[4] = 'Grand\nTotal\nSales'; amRow[5] = 'Grand\nSales\nContrib%';
+    // Group AM headers
+    const amGroups = {}; // am → [colStart, colEnd]
+    let ci = fixedCols;
+    storeCols.forEach(col => {
+      if (col.am) {
+        if (!amGroups[col.am]) amGroups[col.am] = { start: ci, end: ci + 2 };
+        else amGroups[col.am].end = ci + 2;
+      }
+      ci += 3;
+    });
+    ci = fixedCols;
+    storeCols.forEach(col => {
+      if (col.amTotal) {
+        amRow[ci] = `Area Manager: ${col.am}`;
+        addMerge(3, ci, 3, ci + 2);
+      }
+      ci += 3;
+    });
+    rows.push(amRow);
+    // Fixed col merges row 3: A-F span rows 3-6
+    addMerge(3, 0, 6, 0); // #
+    addMerge(3, 1, 6, 1); // SKU
+    addMerge(3, 2, 6, 2); // Product Name
+    addMerge(3, 3, 6, 3); // Grand T
+    addMerge(3, 4, 6, 4); // Grand S
+    addMerge(3, 5, 6, 5); // Grand Contrib%
+
+    // ── Row 4: City / AM group labels
+    const cityRow = Array(totalCols).fill(null);
+    ci = fixedCols;
+    const cityGroups = {};
+    storeCols.forEach(col => {
+      const key = col.amTotal ? null : (col.city || col.label);
+      if (key && !col.subTotal && !col.amTotal) {
+        if (!cityGroups[key]) cityGroups[key] = { start: ci, end: ci + 2 };
+        else cityGroups[key].end = ci + 2;
+      }
+      ci += 3;
+    });
+    // Write city labels and merge
+    ci = fixedCols;
+    const writtenCities = new Set();
+    storeCols.forEach(col => {
+      if (!col.subTotal && !col.amTotal && col.city && !writtenCities.has(col.city + '|' + col.am)) {
+        const cg = cityGroups[col.city];
+        if (cg) { cityRow[cg.start] = col.city; addMerge(4, cg.start, 4, cg.end); writtenCities.add(col.city + '|' + col.am); }
+      }
+      ci += 3;
+    });
+    rows.push(cityRow);
+
+    // ── Row 5: Store names
+    const storeRow = Array(totalCols).fill(null);
+    ci = fixedCols;
+    storeCols.forEach(col => {
+      storeRow[ci] = col.label;
+      addMerge(5, ci, 5, ci + 2);
+      ci += 3;
+    });
+    rows.push(storeRow);
+
+    // ── Row 6: T / S / Contrib% sub-headers
+    const tscRow = Array(totalCols).fill(null);
+    ci = fixedCols;
+    storeCols.forEach(() => {
+      tscRow[ci] = 'T'; tscRow[ci+1] = 'S'; tscRow[ci+2] = 'Contrib%';
+      ci += 3;
+    });
+    rows.push(tscRow);
+
+    // ── Row 7: MONTHLY COLUMN TOTALS
+    const totRow = Array(totalCols).fill(null);
+    totRow[0] = 'MONTHLY COLUMN TOTALS';
+    addMerge(7, 0, 7, 2);
+
+    let grandT = 0, grandS = 0;
+    ci = fixedCols;
+    storeCols.forEach(col => {
+      if (col.store) {
+        const tSum = skuList.reduce((s,sku) => s + getT(sku, col.store), 0);
+        const sSum = skuList.reduce((s,sku) => s + getS(sku, col.store), 0);
+        totRow[ci] = tSum; totRow[ci+1] = sSum;
+        totRow[ci+2] = sSum > 0 ? tSum / sSum : 0;
+        grandT += tSum; grandS += sSum;
+      } else if (col.subTotal || col.amTotal) {
+        const codes = col.subCodes || col.amCodes || [];
+        const tSum = skuList.reduce((s,sku) => s + subT(sku,codes), 0);
+        const sSum = skuList.reduce((s,sku) => s + subS(sku,codes), 0);
+        totRow[ci] = tSum; totRow[ci+1] = sSum;
+        totRow[ci+2] = sSum > 0 ? tSum / sSum : 0;
+      }
+      ci += 3;
+    });
+    totRow[3] = grandT; totRow[4] = grandS;
+    totRow[5] = grandS > 0 ? grandT / grandS : 0;
+    rows.push(totRow);
+
+    // ── Data rows
+    skuList.forEach((sku, idx) => {
+      const dataRow = Array(totalCols).fill(null);
+      dataRow[0] = idx + 1;
+      dataRow[1] = sku;
+      dataRow[2] = skuNameMap[sku] || sku;
+
+      let rowT = 0, rowS = 0;
+      ci = fixedCols;
+      storeCols.forEach(col => {
+        if (col.store) {
+          const t = getT(sku, col.store);
+          const s = getS(sku, col.store);
+          dataRow[ci] = t; dataRow[ci+1] = s;
+          dataRow[ci+2] = (t === 0 && s === 0) ? '-' : (s > 0 ? t/s : 0);
+          rowT += t; rowS += s;
+        } else if (col.subTotal || col.amTotal) {
+          const codes = col.subCodes || col.amCodes || [];
+          const t = subT(sku, codes);
+          const s = subS(sku, codes);
+          dataRow[ci] = t; dataRow[ci+1] = s;
+          dataRow[ci+2] = (t === 0 && s === 0) ? '-' : (s > 0 ? t/s : 0);
+        }
+        ci += 3;
+      });
+
+      dataRow[3] = rowT; dataRow[4] = rowS;
+      dataRow[5] = (rowT === 0 && rowS === 0) ? '-' : (rowS > 0 ? rowT/rowS : 0);
+      rows.push(dataRow);
+    });
+
+    // Build sheet from AOA
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 4 },   // #
+      { wch: 12 },  // SKU
+      { wch: 32 },  // Product Name
+      { wch: 8 },   // Grand T
+      { wch: 8 },   // Grand S
+      { wch: 9 },   // Contrib%
+      ...storeCols.flatMap(() => [{ wch: 7 }, { wch: 7 }, { wch: 9 }])
+    ];
+
+    // Row heights
+    ws['!rows'] = [
+      { hpt: 6 },   // row 0 spacer
+      { hpt: 34 },  // row 1 title
+      { hpt: 18 },  // row 2 legend
+      { hpt: 38 },  // row 3 headers
+      { hpt: 18 },  // row 4 city
+      { hpt: 28 },  // row 5 store names
+      { hpt: 14 },  // row 6 T/S/Contrib%
+      { hpt: 18 },  // row 7 totals
+    ];
+
+    // Freeze panes (freeze first 8 rows + 3 cols)
+    ws['!freeze'] = { xSplit: 3, ySplit: 8, topLeftCell: 'D9', activeCell: 'D9', sqref: 'D9' };
+
+    // Apply merges
+    ws['!merges'] = merges;
+
+    // Format Contrib% cells as percentages
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let R = 7; R <= range.e.r; R++) {
+      // Contrib% cols: every 3rd starting from col 8 (fixedCols + 2 = 8)
+      [5, ...storeCols.map((_, i) => fixedCols + i*3 + 2)].forEach(C => {
+        const addr = XLSX.utils.encode_cell({ r: R, c: C });
+        if (ws[addr] && typeof ws[addr].v === 'number') {
+          ws[addr].z = '0.0%';
+        }
+      });
+    }
+
+    return ws;
+  }
+
+  // ---------- BUILD WORKBOOK ----------
+  const wb = XLSX.utils.book_new();
+
+  // Determine which divisions to include
+  const doEPP = (selDiv === 'ALL' || selDiv === 'EPP') && sortedEppSkus.length > 0;
+  const doASL = (selDiv === 'ALL' || selDiv === 'ASL') && sortedAslSkus.length > 0;
+
+  if (doEPP) {
+    const ws = buildSheet('EMIRATES PRIDE PERFUMES', monthLabel, EPP_COLS, sortedEppSkus);
+    XLSX.utils.book_append_sheet(wb, ws, `EPP ${monthLabel.slice(0,3)} ${ry}`);
+  }
+  if (doASL) {
+    const ws = buildSheet('AROMATIC SCENTS LAB (ASL)', monthLabel, ASL_COLS, sortedAslSkus);
+    XLSX.utils.book_append_sheet(wb, ws, `ASL ${monthLabel.slice(0,3)} ${ry}`);
+  }
+
+  if (!doEPP && !doASL) { toast('No data found for selected period', 'warn'); return; }
+
+  const filename = `EP_MIS_Tester_Report_${reportMonth.replace('-','')}.xlsx`;
+  XLSX.writeFile(wb, filename);
+  const totalSkus = (doEPP ? sortedEppSkus.length : 0) + (doASL ? sortedAslSkus.length : 0);
+  toast(`MIS Tester Report downloaded — ${totalSkus} SKUs · ${monthLabel}`);
 }
 
 // ══════════════════════════════════════════════
@@ -5626,6 +6089,7 @@ function switchTab(id){
   if(id==='intelligence') loadIntelligenceTab();
   if(id==='campaigns')   loadCampaignsTab();
   if(id==='forecast')    loadForecastTab();
+  if(id==='mis')         loadMISTab();
   // close Intelligence chat overlay when switching away
   if(id!=='intelligence') closeIntelChat();
 }
@@ -10303,6 +10767,568 @@ async function doExportDownload() {
     btn.textContent = '↓ Download Report';
     btn.disabled = false;
   }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SALES MIS REPORT
+// ══════════════════════════════════════════════════════════════════
+
+let misLoaded = false;
+
+function loadMISTab() {
+  if (!salesLoaded) {
+    // Sales not loaded yet — show spinner and wait
+    document.getElementById('mis-loading').style.display = 'block';
+    document.getElementById('mis-content').style.display  = 'none';
+    const poll = setInterval(() => {
+      if (salesLoaded) { clearInterval(poll); misBuildAll(); }
+    }, 200);
+    return;
+  }
+  misBuildAll();
+}
+
+function misRefresh() { misLoaded = false; misBuildAll(); }
+
+function misBuildAll() {
+  document.getElementById('mis-loading').style.display = 'none';
+  document.getElementById('mis-content').style.display  = 'block';
+
+  const region = document.getElementById('mis-region').value;
+  const year   = document.getElementById('mis-year').value;
+  const view   = document.getElementById('mis-view').value;
+
+  // ── filter data
+  let rows = salesData.filter(r => {
+    if (region !== 'ALL' && getStore(r.store_code).region !== region) return false;
+    if (year !== 'ALL' && !r.month_year.startsWith(year)) return false;
+    // MIS: Jan 2026 onwards by default
+    if (year === '2026' && r.month_year < '2026-01') return false;
+    if (year === '2025' && r.month_year < '2025-01') return false;
+    return true;
+  });
+
+  // ── derive sorted month list
+  const allMonths = [...new Set(rows.map(r => r.month_year))].sort();
+
+  if (!allMonths.length) {
+    document.getElementById('mis-kpi-strip').innerHTML =
+      '<div style="color:var(--ink-light);font-size:12px;padding:8px;">No data available for selected filters.</div>';
+    document.getElementById('mis-pivot-table').innerHTML = '';
+    document.getElementById('mis-trend-bars').innerHTML = '';
+    document.getElementById('mis-trend-labels').innerHTML = '';
+    return;
+  }
+
+  const latestMo = allMonths[allMonths.length - 1];
+  const prevMo   = allMonths.length >= 2 ? allMonths[allMonths.length - 2] : null;
+
+  // ── compute grand totals per month
+  const grandTotal = {};
+  allMonths.forEach(m => { grandTotal[m] = 0; });
+  rows.forEach(r => { grandTotal[r.month_year] = (grandTotal[r.month_year] || 0) + r.qty_sold; });
+
+  // ── KPI strip
+  _misRenderKpi(allMonths, grandTotal, latestMo, prevMo);
+
+  // ── trend bars
+  _misTrendBars(allMonths, grandTotal);
+
+  // ── pivot table
+  if (view === 'region')  _misPivotRegion(rows, allMonths);
+  else if (view === 'store') _misPivotStore(rows, allMonths, region);
+  else                    _misPivotSku(rows, allMonths);
+
+  // subtitle
+  const subtitle = allMonths.length + ' months · ' + _misMonLabel(allMonths[0]) + ' → ' + _misMonLabel(latestMo);
+  document.getElementById('mis-table-sub').textContent = subtitle;
+
+  misLoaded = true;
+}
+
+function _misMonLabel(my) {
+  if (!my) return '—';
+  const [y, m] = my.split('-');
+  return MONTH_SHORT[+m] + " '" + y.slice(2);
+}
+
+function _misMoM(curr, prev) {
+  if (!prev || prev === 0) return null;
+  return ((curr - prev) / prev) * 100;
+}
+
+function _misMoMCell(curr, prev, compact) {
+  const pct = _misMoM(curr, prev);
+  if (pct === null) return '<td style="text-align:center;color:#ccc;font-size:10px;">—</td>';
+  const pos = pct >= 0;
+  const big = Math.abs(pct) >= 20;
+  const bg  = pos ? (big ? '#D4EDDA' : '#EDF7EE') : (big ? '#FDECEA' : '#FEF3F2');
+  const clr = pos ? '#0B7A45' : '#C0392B';
+  const arrow = pos ? '▲' : '▼';
+  const val = compact ? arrow + ' ' + Math.abs(pct).toFixed(1) + '%'
+                      : arrow + ' ' + Math.abs(pct).toFixed(1) + '%';
+  return `<td style="text-align:center;background:${bg};color:${clr};font-weight:700;font-size:11px;padding:5px 8px;white-space:nowrap;">${val}</td>`;
+}
+
+function _misNumCell(n, highlight) {
+  const style = highlight
+    ? 'text-align:right;font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:12px;padding:5px 10px;color:var(--gold-bar);'
+    : 'text-align:right;font-family:"IBM Plex Mono",monospace;font-size:12px;padding:5px 10px;color:var(--ink);';
+  return `<td style="${style}">${n ? n.toLocaleString() : '—'}</td>`;
+}
+
+// ── KPI strip: one card per month + overall MoM badge
+function _misRenderKpi(months, totals, latest, prev) {
+  const latestTotal = totals[latest] || 0;
+  const prevTotal   = prev ? (totals[prev] || 0) : null;
+  const overallPct  = _misMoM(latestTotal, prevTotal);
+  const grandAll    = Object.values(totals).reduce((s, v) => s + v, 0);
+
+  let html = '<div style="display:flex;gap:10px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;">';
+
+  // Grand total card
+  html += `
+    <div style="flex-shrink:0;background:var(--gold-bar);color:#fff;border-radius:4px;padding:12px 18px;min-width:120px;">
+      <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.8;margin-bottom:4px;">TOTAL ALL MONTHS</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;line-height:1;">${grandAll.toLocaleString()}</div>
+      <div style="font-size:9px;opacity:.7;margin-top:2px;">units</div>
+    </div>`;
+
+  // Per-month cards
+  months.forEach((m, i) => {
+    const v    = totals[m] || 0;
+    const prev = i > 0 ? (totals[months[i-1]] || 0) : null;
+    const pct  = _misMoM(v, prev);
+    const isLatest = m === months[months.length - 1];
+    const bg   = isLatest ? '#FFF8E8' : '#fff';
+    const bord = isLatest ? '2px solid var(--gold)' : '1px solid var(--border)';
+    let momBadge = '';
+    if (pct !== null) {
+      const pos = pct >= 0;
+      const clr = pos ? '#0B7A45' : '#C0392B';
+      const arr = pos ? '▲' : '▼';
+      momBadge = `<div style="font-size:9px;font-weight:700;color:${clr};margin-top:3px;">${arr} ${Math.abs(pct).toFixed(1)}% MoM</div>`;
+    }
+    html += `
+      <div style="flex-shrink:0;background:${bg};border:${bord};border-radius:4px;padding:10px 14px;min-width:105px;">
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light);margin-bottom:4px;">${_misMonLabel(m)}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--gold-bar);line-height:1;">${v.toLocaleString()}</div>
+        ${momBadge}
+      </div>`;
+  });
+
+  html += '</div>';
+  document.getElementById('mis-kpi-strip').innerHTML = html;
+}
+
+// ── trend bars (CSS bar chart)
+function _misTrendBars(months, totals) {
+  const vals = months.map(m => totals[m] || 0);
+  const maxV = Math.max(...vals, 1);
+
+  const barsEl   = document.getElementById('mis-trend-bars');
+  const labelsEl = document.getElementById('mis-trend-labels');
+  const barH = 74; // px height container
+
+  barsEl.innerHTML = months.map((m, i) => {
+    const v   = vals[i];
+    const h   = Math.max(4, Math.round((v / maxV) * barH));
+    const isL = i === months.length - 1;
+    const prev = i > 0 ? vals[i-1] : null;
+    const pct  = _misMoM(v, prev);
+    const clr  = pct === null ? 'var(--gold-bar)'
+               : pct >= 0    ? '#0B7A45'
+               :                '#C0392B';
+    const bg   = isL ? clr : (pct !== null && pct < 0 ? '#FDECEA' : 'var(--gold-pale)');
+    const bc   = isL ? clr : (pct !== null && pct < 0 ? '#C0392B' : 'var(--gold-bar)');
+    return `<div title="${_misMonLabel(m)}: ${v.toLocaleString()} units" style="flex:1;min-width:28px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
+      <div style="width:100%;height:${h}px;background:${bg};border:1.5px solid ${bc};border-radius:2px 2px 0 0;transition:height .3s;"></div>
+    </div>`;
+  }).join('');
+
+  labelsEl.innerHTML = months.map((m, i) => {
+    const v   = vals[i];
+    const prev = i > 0 ? vals[i-1] : null;
+    const pct  = _misMoM(v, prev);
+    const clr  = pct === null ? 'var(--ink-light)'
+               : pct >= 0    ? '#0B7A45' : '#C0392B';
+    const arr  = pct === null ? '' : (pct >= 0 ? '▲' : '▼');
+    return `<div style="flex:1;min-width:28px;text-align:center;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:-.2px;color:var(--gold-bar);font-weight:600;">${_misMonLabel(m)}</div>
+      <div style="font-size:7.5px;color:${clr};font-weight:700;">${arr}${pct !== null ? Math.abs(pct).toFixed(0)+'%' : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Region summary pivot
+function _misPivotRegion(rows, months) {
+  document.getElementById('mis-table-title').textContent = 'Sales by Region — Month on Month';
+
+  // aggregate per region per month
+  const regions = ['EPP','ASL','OMAN','KSA'];
+  const regionLabels = {EPP:'EPP UAE', ASL:'ASL UAE', OMAN:'Oman', KSA:'KSA'};
+  const regionColors = {EPP:'#1a2744', ASL:'#5B2D8E', OMAN:'#0B5C35', KSA:'#7A2C00'};
+  const data = {}; // data[region][month_year] = qty
+  regions.forEach(r => { data[r] = {}; months.forEach(m => { data[r][m] = 0; }); });
+  rows.forEach(r => {
+    const reg = getStore(r.store_code).region;
+    if (!data[reg]) return;
+    data[reg][r.month_year] = (data[reg][r.month_year] || 0) + r.qty_sold;
+  });
+
+  // totals per month
+  const totals = {};
+  months.forEach(m => { totals[m] = regions.reduce((s, r) => s + (data[r][m] || 0), 0); });
+
+  let th = '<thead><tr style="background:var(--gold-bar);color:#fff;">'
+    + '<th style="text-align:left;padding:9px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;width:150px;">REGION</th>';
+  months.forEach((m, i) => {
+    th += `<th colspan="2" style="text-align:center;padding:9px 8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;letter-spacing:.06em;border-left:1px solid rgba(255,255,255,.2);">${_misMonLabel(m)}</th>`;
+  });
+  th += '<th colspan="2" style="text-align:center;padding:9px 8px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:10px;background:rgba(0,0,0,.18);border-left:2px solid rgba(255,255,255,.3);">LATEST MoM</th>';
+  th += '</tr>';
+
+  // sub-header: Units | MoM
+  th += '<tr style="background:#4A3C22;color:rgba(255,255,255,.75);">'
+    + '<th></th>';
+  months.forEach((m, i) => {
+    th += `<th style="text-align:right;padding:5px 10px;font-size:9px;font-weight:600;letter-spacing:.05em;border-left:1px solid rgba(255,255,255,.12);">UNITS</th>`;
+    th += `<th style="text-align:center;padding:5px 8px;font-size:9px;font-weight:600;letter-spacing:.05em;">MoM Δ</th>`;
+  });
+  th += '<th style="text-align:right;padding:5px 10px;font-size:9px;font-weight:600;border-left:2px solid rgba(255,255,255,.2);">UNITS</th>';
+  th += '<th style="text-align:center;padding:5px 8px;font-size:9px;font-weight:600;">CHANGE %</th>';
+  th += '</tr></thead>';
+
+  let tb = '<tbody>';
+  const latestM = months[months.length - 1];
+  const prevM   = months.length >= 2 ? months[months.length - 2] : null;
+
+  regions.forEach((reg, ri) => {
+    const totalReg = months.reduce((s, m) => s + (data[reg][m] || 0), 0);
+    if (totalReg === 0) return; // skip regions with no data
+    const rowBg = ri % 2 === 0 ? '#fff' : 'var(--gold-pale)';
+    tb += `<tr style="background:${rowBg};">`;
+    tb += `<td style="padding:8px 14px;"><div style="display:flex;align-items:center;gap:7px;">
+      <span style="width:8px;height:8px;border-radius:50%;background:${regionColors[reg] || '#888'};display:inline-block;flex-shrink:0;"></span>
+      <span style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:11.5px;color:var(--ink);">${regionLabels[reg] || reg}</span>
+    </div></td>`;
+    months.forEach((m, i) => {
+      const v    = data[reg][m] || 0;
+      const prev = i > 0 ? (data[reg][months[i-1]] || 0) : null;
+      tb += _misNumCell(v, m === latestM);
+      tb += _misMoMCell(v, prev);
+    });
+    // Latest MoM
+    const lv = data[reg][latestM] || 0;
+    const pv = prevM ? (data[reg][prevM] || 0) : null;
+    tb += _misNumCell(lv, true);
+    tb += _misMoMCell(lv, pv);
+    tb += '</tr>';
+  });
+
+  // Grand total row
+  tb += `<tr style="background:var(--gold-bar);">
+    <td style="padding:9px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#fff;">GRAND TOTAL</td>`;
+  months.forEach((m, i) => {
+    const v    = totals[m] || 0;
+    const prev = i > 0 ? (totals[months[i-1]] || 0) : null;
+    const pct  = _misMoM(v, prev);
+    const arr  = pct === null ? '' : (pct >= 0 ? '▲' : '▼');
+    const clr  = pct === null ? '#fff' : (pct >= 0 ? '#90EE90' : '#FF9999');
+    tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;">${v.toLocaleString()}</td>`;
+    tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${clr};">${pct !== null ? arr+' '+Math.abs(pct).toFixed(1)+'%' : '—'}</td>`;
+  });
+  const lv  = totals[latestM] || 0;
+  const pv2 = prevM ? (totals[prevM] || 0) : null;
+  const fp  = _misMoM(lv, pv2);
+  const farr = fp === null ? '' : (fp >= 0 ? '▲' : '▼');
+  const fclr = fp === null ? '#fff' : (fp >= 0 ? '#90EE90' : '#FF9999');
+  tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#FFD700;">${lv.toLocaleString()}</td>`;
+  tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${fclr};">${fp !== null ? farr+' '+Math.abs(fp).toFixed(1)+'%' : '—'}</td>`;
+  tb += '</tr></tbody>';
+
+  document.getElementById('mis-pivot-table').innerHTML = th + tb;
+}
+
+// ── Store detail pivot
+function _misPivotStore(rows, months, regionFilter) {
+  document.getElementById('mis-table-title').textContent = 'Sales by Store — Month on Month';
+
+  // build store list from data (only stores that appear)
+  const storeSet = [...new Set(rows.map(r => r.store_code))].sort((a,b) => {
+    const ra = getStore(a).region, rb = getStore(b).region;
+    if (ra !== rb) return ra.localeCompare(rb);
+    return a.localeCompare(b);
+  });
+
+  // aggregate
+  const data = {};
+  storeSet.forEach(s => { data[s] = {}; months.forEach(m => { data[s][m] = 0; }); });
+  rows.forEach(r => {
+    if (!data[r.store_code]) return;
+    data[r.store_code][r.month_year] = (data[r.store_code][r.month_year] || 0) + r.qty_sold;
+  });
+
+  // totals per month
+  const totals = {};
+  months.forEach(m => { totals[m] = storeSet.reduce((s, c) => s + (data[c][m] || 0), 0); });
+
+  const regionColors = {EPP:'#1a2744', ASL:'#5B2D8E', OMAN:'#0B5C35', KSA:'#7A2C00'};
+  const latestM = months[months.length - 1];
+  const prevM   = months.length >= 2 ? months[months.length - 2] : null;
+
+  let th = '<thead><tr style="background:var(--gold-bar);color:#fff;">'
+    + '<th style="text-align:left;padding:9px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;min-width:160px;">STORE</th>'
+    + '<th style="text-align:left;padding:9px 8px;font-size:9px;font-weight:600;width:40px;letter-spacing:.04em;">RGN</th>';
+  months.forEach(m => {
+    th += `<th colspan="2" style="text-align:center;padding:9px 8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;letter-spacing:.06em;border-left:1px solid rgba(255,255,255,.2);">${_misMonLabel(m)}</th>`;
+  });
+  th += '<th colspan="2" style="text-align:center;padding:9px 8px;font-size:10px;font-weight:700;background:rgba(0,0,0,.18);border-left:2px solid rgba(255,255,255,.3);">LATEST MoM</th>'
+      + '</tr>';
+
+  th += '<tr style="background:#4A3C22;color:rgba(255,255,255,.75);"><th></th><th></th>';
+  months.forEach(() => {
+    th += '<th style="text-align:right;padding:5px 10px;font-size:9px;font-weight:600;border-left:1px solid rgba(255,255,255,.12);">UNITS</th>';
+    th += '<th style="text-align:center;padding:5px 8px;font-size:9px;font-weight:600;">MoM Δ</th>';
+  });
+  th += '<th style="text-align:right;padding:5px 10px;font-size:9px;border-left:2px solid rgba(255,255,255,.2);">UNITS</th>';
+  th += '<th style="text-align:center;padding:5px 8px;font-size:9px;">CHANGE %</th>';
+  th += '</tr></thead>';
+
+  let tb = '<tbody>';
+  let lastRegion = null;
+  storeSet.forEach((sc, ri) => {
+    const store = getStore(sc);
+    const reg   = store.region;
+    const storeTotal = months.reduce((s, m) => s + (data[sc][m] || 0), 0);
+    if (storeTotal === 0) return;
+
+    // Region separator row
+    if (reg !== lastRegion) {
+      const regLabel = {EPP:'EPP UAE', ASL:'ASL UAE', OMAN:'Oman', KSA:'KSA'}[reg] || reg;
+      const colspan  = 2 + months.length * 2 + 2;
+      tb += `<tr><td colspan="${colspan}" style="padding:7px 14px;background:#EDEBE6;font-family:'Montserrat',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--gold-bar);border-top:2px solid var(--gold);">
+        <span style="width:8px;height:8px;border-radius:50%;background:${regionColors[reg]||'#888'};display:inline-block;margin-right:6px;vertical-align:middle;"></span>
+        ${regLabel}
+      </td></tr>`;
+      lastRegion = reg;
+    }
+
+    const rowBg = ri % 2 === 0 ? '#fff' : 'var(--gold-pale)';
+    tb += `<tr style="background:${rowBg};">`;
+    tb += `<td style="padding:7px 14px;">
+      <div style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:var(--ink);">${store.name}</div>
+    </td>`;
+    tb += `<td style="padding:7px 8px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-dark);font-weight:600;">${sc}</td>`;
+
+    months.forEach((m, i) => {
+      const v    = data[sc][m] || 0;
+      const prev = i > 0 ? (data[sc][months[i-1]] || 0) : null;
+      tb += _misNumCell(v, m === latestM);
+      tb += _misMoMCell(v, prev);
+    });
+
+    const lv = data[sc][latestM] || 0;
+    const pv = prevM ? (data[sc][prevM] || 0) : null;
+    tb += _misNumCell(lv, true);
+    tb += _misMoMCell(lv, pv);
+    tb += '</tr>';
+  });
+
+  // Grand total row
+  tb += `<tr style="background:var(--gold-bar);">
+    <td colspan="2" style="padding:9px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;color:#fff;letter-spacing:.05em;">GRAND TOTAL</td>`;
+  months.forEach((m, i) => {
+    const v    = totals[m] || 0;
+    const prev = i > 0 ? (totals[months[i-1]] || 0) : null;
+    const pct  = _misMoM(v, prev);
+    const arr  = pct === null ? '' : (pct >= 0 ? '▲' : '▼');
+    const clr  = pct === null ? '#fff' : (pct >= 0 ? '#90EE90' : '#FF9999');
+    tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;">${v.toLocaleString()}</td>`;
+    tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${clr};">${pct !== null ? arr+' '+Math.abs(pct).toFixed(1)+'%' : '—'}</td>`;
+  });
+  const lv  = totals[latestM] || 0;
+  const pv2 = prevM ? (totals[prevM] || 0) : null;
+  const fp  = _misMoM(lv, pv2);
+  const farr = fp === null ? '' : (fp >= 0 ? '▲' : '▼');
+  const fclr = fp === null ? '#fff' : (fp >= 0 ? '#90EE90' : '#FF9999');
+  tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#FFD700;">${lv.toLocaleString()}</td>`;
+  tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${fclr};">${fp !== null ? farr+' '+Math.abs(fp).toFixed(1)+'%' : '—'}</td>`;
+  tb += '</tr></tbody>';
+
+  document.getElementById('mis-pivot-table').innerHTML = th + tb;
+}
+
+// ── Top SKUs pivot
+function _misPivotSku(rows, months) {
+  document.getElementById('mis-table-title').textContent = 'Top SKUs — Month on Month';
+
+  // aggregate per SKU per month
+  const skuData = {};
+  rows.forEach(r => {
+    if (!skuData[r.sku_code]) { skuData[r.sku_code] = {}; months.forEach(m => { skuData[r.sku_code][m] = 0; }); }
+    skuData[r.sku_code][r.month_year] = (skuData[r.sku_code][r.month_year] || 0) + r.qty_sold;
+  });
+
+  // sort by latest month total descending, take top 40
+  const latestM = months[months.length - 1];
+  const prevM   = months.length >= 2 ? months[months.length - 2] : null;
+
+  const skuList = Object.keys(skuData)
+    .sort((a, b) => (skuData[b][latestM] || 0) - (skuData[a][latestM] || 0))
+    .slice(0, 40);
+
+  // totals
+  const totals = {};
+  months.forEach(m => { totals[m] = Object.values(skuData).reduce((s, d) => s + (d[m] || 0), 0); });
+
+  let th = '<thead><tr style="background:var(--gold-bar);color:#fff;">'
+    + '<th style="text-align:left;padding:9px 14px;font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;width:80px;">SKU</th>'
+    + '<th style="text-align:left;padding:9px 8px;font-size:10px;font-weight:700;letter-spacing:.04em;">PRODUCT</th>';
+  months.forEach(m => {
+    th += `<th colspan="2" style="text-align:center;padding:9px 8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;letter-spacing:.06em;border-left:1px solid rgba(255,255,255,.2);">${_misMonLabel(m)}</th>`;
+  });
+  th += '<th colspan="2" style="text-align:center;padding:9px 8px;font-size:10px;font-weight:700;background:rgba(0,0,0,.18);border-left:2px solid rgba(255,255,255,.3);">LATEST MoM</th></tr>';
+  th += '<tr style="background:#4A3C22;color:rgba(255,255,255,.75);"><th></th><th></th>';
+  months.forEach(() => {
+    th += '<th style="text-align:right;padding:5px 10px;font-size:9px;font-weight:600;border-left:1px solid rgba(255,255,255,.12);">UNITS</th>';
+    th += '<th style="text-align:center;padding:5px 8px;font-size:9px;font-weight:600;">MoM Δ</th>';
+  });
+  th += '<th style="text-align:right;padding:5px 10px;font-size:9px;border-left:2px solid rgba(255,255,255,.2);">UNITS</th>';
+  th += '<th style="text-align:center;padding:5px 8px;font-size:9px;">CHANGE %</th></tr></thead>';
+
+  // SKU catalogue lookup
+  const skuNameMap = {};
+  (typeof CATS !== 'undefined' ? CATS : []).forEach(s => { skuNameMap[s.code] = s.en; });
+  (typeof TESTERS !== 'undefined' ? TESTERS : []).forEach(s => { skuNameMap[s.code] = s.en; });
+
+  let tb = '<tbody>';
+  skuList.forEach((sku, ri) => {
+    const rowBg = ri % 2 === 0 ? '#fff' : 'var(--gold-pale)';
+    const name  = skuNameMap[sku] || sku;
+    tb += `<tr style="background:${rowBg};">`;
+    tb += `<td style="padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:var(--gold-dark);">${sku}</td>`;
+    tb += `<td style="padding:7px 8px;font-size:11.5px;color:var(--ink);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</td>`;
+    months.forEach((m, i) => {
+      const v    = skuData[sku][m] || 0;
+      const prev = i > 0 ? (skuData[sku][months[i-1]] || 0) : null;
+      tb += _misNumCell(v, m === latestM);
+      tb += _misMoMCell(v, prev);
+    });
+    const lv = skuData[sku][latestM] || 0;
+    const pv = prevM ? (skuData[sku][prevM] || 0) : null;
+    tb += _misNumCell(lv, true);
+    tb += _misMoMCell(lv, pv);
+    tb += '</tr>';
+  });
+
+  // totals
+  tb += `<tr style="background:var(--gold-bar);"><td colspan="2" style="padding:9px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;color:#fff;letter-spacing:.05em;">GRAND TOTAL (all SKUs)</td>`;
+  months.forEach((m, i) => {
+    const v    = totals[m] || 0;
+    const prev = i > 0 ? (totals[months[i-1]] || 0) : null;
+    const pct  = _misMoM(v, prev);
+    const arr  = pct === null ? '' : (pct >= 0 ? '▲' : '▼');
+    const clr  = pct === null ? '#fff' : (pct >= 0 ? '#90EE90' : '#FF9999');
+    tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;">${v.toLocaleString()}</td>`;
+    tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${clr};">${pct !== null ? arr+' '+Math.abs(pct).toFixed(1)+'%' : '—'}</td>`;
+  });
+  const lv  = totals[latestM] || 0;
+  const pv2 = prevM ? (totals[prevM] || 0) : null;
+  const fp  = _misMoM(lv, pv2);
+  const farr = fp === null ? '' : (fp >= 0 ? '▲' : '▼');
+  const fclr = fp === null ? '#fff' : (fp >= 0 ? '#90EE90' : '#FF9999');
+  tb += `<td style="text-align:right;padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#FFD700;">${lv.toLocaleString()}</td>`;
+  tb += `<td style="text-align:center;padding:5px 8px;font-size:11px;font-weight:700;color:${fclr};">${fp !== null ? farr+' '+Math.abs(fp).toFixed(1)+'%' : '—'}</td>`;
+  tb += '</tr></tbody>';
+
+  document.getElementById('mis-pivot-table').innerHTML = th + tb;
+}
+
+// ── CSV export
+function misDlCsv() {
+  const region = document.getElementById('mis-region').value;
+  const year   = document.getElementById('mis-year').value;
+  const view   = document.getElementById('mis-view').value;
+
+  let rows = salesData.filter(r => {
+    if (region !== 'ALL' && getStore(r.store_code).region !== region) return false;
+    if (year !== 'ALL' && !r.month_year.startsWith(year)) return false;
+    if (year === '2026' && r.month_year < '2026-01') return false;
+    if (year === '2025' && r.month_year < '2025-01') return false;
+    return true;
+  });
+
+  const months = [...new Set(rows.map(r => r.month_year))].sort();
+
+  // Build aggregated data based on view
+  let agg = {};
+  const groupKey = view === 'sku' ? r => r.sku_code
+                 : view === 'store' ? r => r.store_code
+                 : r => getStore(r.store_code).region;
+  rows.forEach(r => {
+    const k = groupKey(r);
+    if (!agg[k]) { agg[k] = {}; months.forEach(m => agg[k][m] = 0); }
+    agg[k][r.month_year] = (agg[k][r.month_year] || 0) + r.qty_sold;
+  });
+
+  let csv = 'Emirates Pride Perfumes — Sales MIS Report\n';
+  csv += `Generated: ${new Date().toLocaleString('en-GB')}\n`;
+  csv += `Filters: Region=${region} | Year=${year} | View=${view}\n\n`;
+
+  // header
+  const dimLabel = view === 'sku' ? 'SKU Code'
+                 : view === 'store' ? 'Store Code,Store Name,Region'
+                 : 'Region';
+  csv += dimLabel;
+  months.forEach(m => { csv += `,${_misMonLabel(m)} Units,${_misMonLabel(m)} MoM%`; });
+  csv += ',Latest MoM Units,Latest MoM%\n';
+
+  const latestM = months[months.length - 1];
+  const prevM   = months.length >= 2 ? months[months.length - 2] : null;
+
+  Object.keys(agg).forEach(k => {
+    if (view === 'store') {
+      const s = getStore(k);
+      csv += `${k},"${s.name}",${s.region}`;
+    } else {
+      csv += k;
+    }
+    months.forEach((m, i) => {
+      const v    = agg[k][m] || 0;
+      const prev = i > 0 ? (agg[k][months[i-1]] || 0) : null;
+      const pct  = _misMoM(v, prev);
+      csv += `,${v},${pct !== null ? pct.toFixed(1)+'%' : '—'}`;
+    });
+    const lv  = agg[k][latestM] || 0;
+    const pv  = prevM ? (agg[k][prevM] || 0) : null;
+    const fp  = _misMoM(lv, pv);
+    csv += `,${lv},${fp !== null ? fp.toFixed(1)+'%' : '—'}\n`;
+  });
+
+  // totals row
+  const totals = {};
+  months.forEach(m => { totals[m] = Object.values(agg).reduce((s, d) => s + (d[m] || 0), 0); });
+  csv += 'GRAND TOTAL';
+  if (view === 'store') csv += ',,';
+  months.forEach((m, i) => {
+    const v    = totals[m] || 0;
+    const prev = i > 0 ? (totals[months[i-1]] || 0) : null;
+    const pct  = _misMoM(v, prev);
+    csv += `,${v},${pct !== null ? pct.toFixed(1)+'%' : '—'}`;
+  });
+  const lv = totals[latestM] || 0;
+  const pv = prevM ? (totals[prevM] || 0) : null;
+  const fp = _misMoM(lv, pv);
+  csv += `,${lv},${fp !== null ? fp.toFixed(1)+'%' : '—'}\n`;
+
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `EP_SalesMIS_${year}_${region}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 
