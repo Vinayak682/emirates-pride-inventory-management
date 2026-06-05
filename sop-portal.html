@@ -797,6 +797,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       </select>
       <button class="filter-btn-ghost" onclick="openExportModal('sales')" style="margin-left:auto;">↓ Export</button>
       <button onclick="openEidPerf()" style="margin-left:8px;background:linear-gradient(135deg,#6B5B35,#8A7440);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(107,91,53,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#5C4A1A,#6B5B35)'" onmouseout="this.style.background='linear-gradient(135deg,#6B5B35,#8A7440)'">⚡ May 2026 — Eid Performance</button>
+      <button onclick="openMISPanel()" style="margin-left:8px;background:linear-gradient(135deg,#1a3a5c,#2563a8);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(26,58,92,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#122847,#1a3a5c)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a5c,#2563a8)'">📊 Sales MIS Report</button>
     </div>
 
     <!-- DATA STATUS BAR — SALES -->
@@ -3681,34 +3682,56 @@ async function exportMISTesterReport() {
 
   toast('Building MIS Tester Report for ' + monthLabel + '…');
 
-  // Load per-SKU sales for this month from sales_history
-  const { data: salesRows, error: sErr } = await sb
-    .from('sales_history')
-    .select('store_code,sku_code,qty_sold')
-    .eq('month_year', reportMonth);
-  if (sErr) { toast('Sales load failed: ' + sErr.message, 'warn'); return; }
+  // Load BOTH tester and sales data fresh from Supabase for this specific month.
+  // Tester query: do NOT filter out AC (accessories) — monthly workbooks include them.
+  // Only exclude EPT/EPTP/ASLT/ASLTP (paper testers / cards) which are logistics items, not bottle testers.
+  // Use range(0,4999) on both queries — Supabase default cap is 1000 rows which is not enough
+  // for sales_history (May 2026 has 1622 rows across all regions).
+  const [
+    { data: tRaw,    error: tErr },
+    { data: sPage1,  error: sErr1 },
+    { data: sPage2,  error: sErr2 }
+  ] = await Promise.all([
+    sb.from('tester_history')
+      .select('sku_code,product_name,store_code,testers_dispatched')
+      .eq('month_year', reportMonth)
+      .range(0, 4999),
+    sb.from('sales_history')
+      .select('store_code,sku_code,qty_sold')
+      .eq('month_year', reportMonth)
+      .range(0, 999),
+    sb.from('sales_history')
+      .select('store_code,sku_code,qty_sold')
+      .eq('month_year', reportMonth)
+      .range(1000, 4999)
+  ]);
+  if (tErr)  { toast('Tester load failed: ' + tErr.message,  'warn'); return; }
+  if (sErr1) { toast('Sales load failed: '  + sErr1.message, 'warn'); return; }
+  const salesRows = [...(sPage1 || []), ...(sPage2 || [])];
 
-  // Build sales lookup: sku → store → qty
-  const salesLookup = {}; // sku_code → { store_code: qty }
+  // Paper exclusion: only strip EPT/EPTP/ASLT/ASLTP — AC (accessories) are real bottle items
+  const _isPaper = sku => {
+    const s = (sku || '').toUpperCase();
+    return s.startsWith('EPT') || s.startsWith('EPTP') || s.startsWith('ASLT') || s.startsWith('ASLTP');
+  };
+
+  // Build tester lookup: normalized_sku → store → qty  (includes AC, excludes paper)
+  const tLookup = {};
+  const skuProductNames = {};
+  (tRaw || []).forEach(r => {
+    if (_isPaper(r.sku_code)) return;
+    const nsku = _normSku(r.sku_code);
+    if (!tLookup[nsku]) tLookup[nsku] = {};
+    tLookup[nsku][r.store_code] = (tLookup[nsku][r.store_code] || 0) + (r.testers_dispatched || 0);
+    if (!skuProductNames[nsku] && r.product_name) skuProductNames[nsku] = r.product_name;
+  });
+
+  // Build sales lookup: sku_code → store → qty
+  const salesLookup = {};
   (salesRows || []).forEach(r => {
     if (!salesLookup[r.sku_code]) salesLookup[r.sku_code] = {};
     salesLookup[r.sku_code][r.store_code] = (salesLookup[r.sku_code][r.store_code] || 0) + r.qty_sold;
   });
-
-  // Build tester lookup: normalized_sku → store → qty
-  const tLookup = {};
-  testerRawRows
-    .filter(r => r.month_year === reportMonth)
-    .forEach(r => {
-      const nsku = _normSku(r.sku_code);
-      if (!tLookup[nsku]) tLookup[nsku] = {};
-      tLookup[nsku][r.store_code] = (tLookup[nsku][r.store_code] || 0) + (r.testers_dispatched || 0);
-    });
-
-  // Sales aliases: some sheet codes differ from Supabase codes
-  const SALES_ALIAS = {
-    'B0001':'B00010', 'B0002':'B00020', 'C0001':'C00010', 'O0007':'O00007'
-  };
 
   // ---------- EPP SHEET DEFINITION ----------
   const EPP_COLS = [
@@ -3785,14 +3808,13 @@ async function exportMISTesterReport() {
     if (allStores.some(s => aslStoreCodes.includes(s))) aslSkus.add(sku);
   });
 
-  // Build sorted SKU list with product names
+  // Build sorted SKU list with product names — use fresh tRaw (includes AC), clean tester names
   const skuNameMap = {};
-  testerRawRows.filter(r => r.month_year === reportMonth).forEach(r => {
-    const n = _normSku(r.sku_code);
-    if (!skuNameMap[n] && r.product_name) {
-      skuNameMap[n] = _testerBaseName(r.product_name);
-    }
+  // From fresh tester query (already normalized into skuProductNames above)
+  Object.entries(skuProductNames).forEach(([sku, name]) => {
+    skuNameMap[sku] = _testerBaseName(name);
   });
+  // Fill any gaps from sales data (SKUs with sales but no tester history)
   (salesRows || []).forEach(r => {
     if (!skuNameMap[r.sku_code]) skuNameMap[r.sku_code] = r.sku_code;
   });
@@ -3804,16 +3826,10 @@ async function exportMISTesterReport() {
   function buildSheet(brand, label, storeCols, skuList) {
     const storeCodes = storeCols.filter(c => c.store).map(c => c.store);
 
-    // Helper: get T for sku+store
-    const getT = (sku, store) => {
-      const alias = SALES_ALIAS[sku] || sku;
-      return (tLookup[alias] || tLookup[sku] || {})[store] || 0;
-    };
-    // Helper: get S for sku+store
-    const getS = (sku, store) => {
-      const alias = SALES_ALIAS[sku] || sku;
-      return ((salesLookup[alias] || salesLookup[sku] || {})[store] || 0);
-    };
+    // Helper: get T for sku+store (tLookup keyed by normalized SKU from fresh query)
+    const getT = (sku, store) => (tLookup[sku] || {})[store] || 0;
+    // Helper: get S for sku+store (salesLookup keyed by sales_history sku_code)
+    const getS = (sku, store) => (salesLookup[sku] || {})[store] || 0;
     // Helper: get sub-total T or S for sku + list of stores
     const subT = (sku, codes) => codes.reduce((s,c) => s + getT(sku,c), 0);
     const subS = (sku, codes) => codes.reduce((s,c) => s + getS(sku,c), 0);
@@ -11429,6 +11445,74 @@ function misDlCsv() {
   <div id="eidDrillContent"></div>
 </div>
 <div id="eidDrillOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:955;" onclick="closeEidStoreDrill()"></div>
+
+<!-- ══════════════════ SALES MIS REPORT PANEL ══════════════════ -->
+<div id="misPerfPanel" style="display:none;position:fixed;inset:0;background:#F5F2EC;z-index:950;font-family:'Montserrat',sans-serif;flex-direction:column;overflow:hidden;">
+
+  <!-- Sticky Top Bar -->
+  <div style="background:#1a3a5c;padding:0 24px;height:60px;display:flex;align-items:center;gap:16px;flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,.25);position:relative;z-index:10;">
+    <button onclick="closeMISPanel()" title="Close" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">✕</button>
+    <div style="flex:1;">
+      <div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:700;">Emirates Pride · Sales Intelligence</div>
+      <div style="font-size:15px;font-weight:700;color:#fff;letter-spacing:.04em;">SALES MIS REPORT — MONTH ON MONTH</div>
+    </div>
+    <!-- Inline filters -->
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <select id="mis2-region" onchange="buildMISPanel()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 10px;border-radius:4px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;cursor:pointer;">
+        <option value="ALL">All Regions</option>
+        <option value="EPP">EPP UAE</option>
+        <option value="ASL">ASL UAE</option>
+        <option value="OMAN">Oman</option>
+        <option value="KSA">KSA</option>
+      </select>
+      <select id="mis2-year" onchange="buildMISPanel()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 10px;border-radius:4px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;cursor:pointer;">
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+        <option value="ALL">All Years</option>
+      </select>
+      <input id="mis2-search" type="text" placeholder="🔍  Search…" oninput="_misFilterTable()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 12px;border-radius:4px;font-family:'Montserrat',sans-serif;font-size:10px;width:140px;outline:none;" placeholder="Search store / SKU…">
+      <button onclick="exportMISExcel()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.35);color:#fff;padding:7px 16px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">⬇ Excel (4 sheets)</button>
+    </div>
+  </div>
+
+  <!-- Sub-tab nav -->
+  <div style="background:#122847;display:flex;flex-shrink:0;border-bottom:2px solid rgba(255,255,255,.08);overflow-x:auto;">
+    <button id="mis2-tab-store"  onclick="misPanelTab('store')"  class="mis2-tab active-mis2-tab"  style="padding:12px 22px;background:rgba(255,255,255,.12);border:none;color:#fff;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;border-bottom:3px solid #C9A84C;transition:all .2s;">📋 By Store — MoM</button>
+    <button id="mis2-tab-sku"    onclick="misPanelTab('sku')"    class="mis2-tab" style="padding:12px 22px;background:transparent;border:none;color:rgba(255,255,255,.6);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;">🏷 By SKU — MoM</button>
+    <button id="mis2-tab-detail" onclick="misPanelTab('detail')" class="mis2-tab" style="padding:12px 22px;background:transparent;border:none;color:rgba(255,255,255,.6);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;">🔬 Store × SKU Full Detail</button>
+    <div style="flex:1;"></div>
+    <div id="mis2-row-count" style="display:flex;align-items:center;padding:0 18px;font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.08em;white-space:nowrap;"></div>
+  </div>
+
+  <!-- Month KPI strip (always visible) -->
+  <div id="mis2-kpi-strip" style="background:#fff;border-bottom:1px solid #E5E0D8;padding:10px 20px;display:flex;gap:8px;overflow-x:auto;flex-shrink:0;"></div>
+
+  <!-- Main scrollable content -->
+  <div style="flex:1;overflow-y:auto;overflow-x:auto;">
+    <div id="mis2-loading" style="text-align:center;padding:80px;color:#8A8278;">
+      <div class="spinner" style="margin:0 auto 16px;"></div>
+      <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Building MIS Report…</div>
+    </div>
+    <div id="mis2-content" style="display:none;">
+      <table id="mis2-table" style="width:100%;border-collapse:collapse;font-size:12px;"></table>
+    </div>
+  </div>
+
+  <!-- Legend bar at bottom -->
+  <div style="background:#fff;border-top:1px solid #E5E0D8;padding:8px 20px;display:flex;align-items:center;gap:20px;flex-shrink:0;font-size:10px;color:#8A8278;">
+    <span style="font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4A4540;">Legend:</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#D4EDDA;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>▲ Growth</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#FDECEA;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>▼ Decline</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#FFF8E8;border:1px solid #C9A84C;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Latest Month</span>
+    <span style="margin-left:auto;font-style:italic;">Click any store row to drill into its SKU detail</span>
+  </div>
+</div>
+
+<!-- MIS Store Drill-Down Panel -->
+<div id="misDrillPanel" style="display:none;position:fixed;right:0;top:0;bottom:0;width:600px;max-width:100vw;background:#fff;z-index:1000;overflow-y:auto;box-shadow:-8px 0 40px rgba(0,0,0,.22);font-family:'Montserrat',sans-serif;">
+  <div id="misDrillContent"></div>
+</div>
+<div id="misDrillOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:999;" onclick="closeMISDrill()"></div>
 
 <!-- ═══════════════════════════════════════════════════════
      TESTER INTELLIGENCE PANEL
