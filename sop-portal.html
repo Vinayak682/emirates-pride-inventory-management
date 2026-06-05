@@ -3678,56 +3678,76 @@ async function exportMISTesterReport() {
 
   toast('Building MIS Tester Report for ' + monthLabel + '…');
 
-  // Load BOTH tester and sales data fresh from Supabase for this specific month.
-  // Tester query: do NOT filter out AC (accessories) — monthly workbooks include them.
-  // Only exclude EPT/EPTP/ASLT/ASLTP (paper testers / cards) which are logistics items, not bottle testers.
-  // Use range(0,4999) on both queries — Supabase default cap is 1000 rows which is not enough
-  // for sales_history (May 2026 has 1622 rows across all regions).
-  const [
-    { data: tRaw,    error: tErr },
-    { data: sPage1,  error: sErr1 },
-    { data: sPage2,  error: sErr2 }
-  ] = await Promise.all([
-    sb.from('tester_history')
-      .select('sku_code,product_name,store_code,testers_dispatched')
-      .eq('month_year', reportMonth)
-      .range(0, 4999),
-    sb.from('sales_history')
-      .select('store_code,sku_code,qty_sold')
-      .eq('month_year', reportMonth)
-      .range(0, 999),
-    sb.from('sales_history')
-      .select('store_code,sku_code,qty_sold')
-      .eq('month_year', reportMonth)
-      .range(1000, 4999)
-  ]);
-  if (tErr)  { toast('Tester load failed: ' + tErr.message,  'warn'); return; }
-  if (sErr1) { toast('Sales load failed: '  + sErr1.message, 'warn'); return; }
-  const salesRows = [...(sPage1 || []), ...(sPage2 || [])];
-
-  // Paper exclusion: only strip EPT/EPTP/ASLT/ASLTP — AC (accessories) are real bottle items
+  // ── Data loading: use count-first + paginate pattern (same as loadTesterData)
+  // This is the proven approach that works reliably with Supabase JS.
+  // Paper exclusion: EPT/EPTP/ASLT/ASLTP only — AC accessories ARE real tester items
   const _isPaper = sku => {
     const s = (sku || '').toUpperCase();
     return s.startsWith('EPT') || s.startsWith('EPTP') || s.startsWith('ASLT') || s.startsWith('ASLTP');
   };
 
-  // Build tester lookup: normalized_sku → store → qty  (includes AC, excludes paper)
-  const tLookup = {};
-  const skuProductNames = {};
-  (tRaw || []).forEach(r => {
-    if (_isPaper(r.sku_code)) return;
-    const nsku = _normSku(r.sku_code);
-    if (!tLookup[nsku]) tLookup[nsku] = {};
-    tLookup[nsku][r.store_code] = (tLookup[nsku][r.store_code] || 0) + (r.testers_dispatched || 0);
-    if (!skuProductNames[nsku] && r.product_name) skuProductNames[nsku] = r.product_name;
-  });
+  try {
+    // Get counts first
+    const [{ count: tCount, error: tcErr }, { count: sCount, error: scErr }] = await Promise.all([
+      sb.from('tester_history').select('*', { count:'exact', head:true }).eq('month_year', reportMonth),
+      sb.from('sales_history').select('*',  { count:'exact', head:true }).eq('month_year', reportMonth)
+    ]);
+    if (tcErr) throw new Error('Tester count: ' + tcErr.message);
+    if (scErr) throw new Error('Sales count: '  + scErr.message);
 
-  // Build sales lookup: sku_code → store → qty
-  const salesLookup = {};
-  (salesRows || []).forEach(r => {
-    if (!salesLookup[r.sku_code]) salesLookup[r.sku_code] = {};
-    salesLookup[r.sku_code][r.store_code] = (salesLookup[r.sku_code][r.store_code] || 0) + r.qty_sold;
-  });
+    const PAGE = 1000;
+    // Build paginated fetch arrays
+    const tFetches = Array.from({ length: Math.ceil((tCount||0)/PAGE) }, (_, i) =>
+      sb.from('tester_history')
+        .select('sku_code,product_name,store_code,testers_dispatched')
+        .eq('month_year', reportMonth)
+        .range(i*PAGE, (i+1)*PAGE-1)
+    );
+    const sFetches = Array.from({ length: Math.ceil((sCount||0)/PAGE) }, (_, i) =>
+      sb.from('sales_history')
+        .select('store_code,sku_code,qty_sold')
+        .eq('month_year', reportMonth)
+        .range(i*PAGE, (i+1)*PAGE-1)
+    );
+
+    const [tResults, sResults] = await Promise.all([
+      Promise.all(tFetches),
+      Promise.all(sFetches)
+    ]);
+    for (const { error } of [...tResults, ...sResults]) {
+      if (error) throw new Error('Page fetch: ' + error.message);
+    }
+
+    const tRaw    = tResults.flatMap(r => r.data || []);
+    const salesRows = sResults.flatMap(r => r.data || []);
+
+    // Fallback: if fresh query is empty but testerRawRows has data for this month
+    // (can happen with Supabase project pauses — use already-loaded data)
+    const tSource = tRaw.length > 0 ? tRaw
+      : testerRawRows.filter(r => r.month_year === reportMonth);
+
+    if (!tSource.length && !salesRows.length) {
+      toast('No data found for ' + monthLabel + ' — try reloading the tab', 'warn');
+      return;
+    }
+
+    // Build tester lookup: normalized_sku → store → qty  (includes AC, excludes paper only)
+    const tLookup = {};
+    const skuProductNames = {};
+    tSource.forEach(r => {
+      if (_isPaper(r.sku_code)) return;
+      const nsku = _normSku(r.sku_code);
+      if (!tLookup[nsku]) tLookup[nsku] = {};
+      tLookup[nsku][r.store_code] = (tLookup[nsku][r.store_code] || 0) + (r.testers_dispatched || 0);
+      if (!skuProductNames[nsku] && r.product_name) skuProductNames[nsku] = r.product_name;
+    });
+
+    // Build sales lookup: sku_code → store → qty
+    const salesLookup = {};
+    salesRows.forEach(r => {
+      if (!salesLookup[r.sku_code]) salesLookup[r.sku_code] = {};
+      salesLookup[r.sku_code][r.store_code] = (salesLookup[r.sku_code][r.store_code] || 0) + r.qty_sold;
+    });
 
   // ---------- EPP SHEET DEFINITION ----------
   const EPP_COLS = [
@@ -3818,244 +3838,196 @@ async function exportMISTesterReport() {
   const sortedEppSkus = [...eppSkus].sort((a,b) => (skuNameMap[a]||a).localeCompare(skuNameMap[b]||b));
   const sortedAslSkus = [...aslSkus].sort((a,b) => (skuNameMap[a]||a).localeCompare(skuNameMap[b]||b));
 
-  // ---------- BUILD SHEET (generic for EPP or ASL) ----------
-  function buildSheet(brand, label, storeCols, skuList) {
-    const storeCodes = storeCols.filter(c => c.store).map(c => c.store);
+    // ---------- BUILD SHEET ----------
+    function buildSheet(brand, storeCols, skuList) {
+      const getT = (sku, store) => (tLookup[sku] || {})[store] || 0;
+      const getS = (sku, store) => (salesLookup[sku] || {})[store] || 0;
+      const subT = (sku, codes) => codes.reduce((a,c) => a + getT(sku,c), 0);
+      const subS = (sku, codes) => codes.reduce((a,c) => a + getS(sku,c), 0);
 
-    // Helper: get T for sku+store (tLookup keyed by normalized SKU from fresh query)
-    const getT = (sku, store) => (tLookup[sku] || {})[store] || 0;
-    // Helper: get S for sku+store (salesLookup keyed by sales_history sku_code)
-    const getS = (sku, store) => (salesLookup[sku] || {})[store] || 0;
-    // Helper: get sub-total T or S for sku + list of stores
-    const subT = (sku, codes) => codes.reduce((s,c) => s + getT(sku,c), 0);
-    const subS = (sku, codes) => codes.reduce((s,c) => s + getS(sku,c), 0);
+      const FX = 6; // fixed left cols: #, SKU, Name, Grand T, Grand S, Grand Contrib%
+      const totalCols = FX + storeCols.length * 3;
+      const rows = [], merges = [];
+      const mrg = (r,c,re,ce) => merges.push({s:{r,c},e:{r:re,c:ce}});
 
-    // Column structure: fixed 6 + (storeCols.length × 3)
-    const fixedCols = 6;  // #, SKU, Name, Grand T, Grand S, Grand Contrib%
-    const totalCols = fixedCols + storeCols.length * 3;
+      // Row 0 – spacer
+      rows.push(Array(totalCols).fill(null));
 
-    const rows = []; // array of arrays
-    const merges = [];
+      // Row 1 – title
+      const r1 = Array(totalCols).fill(null);
+      r1[0] = `${brand}  —  SKU × STORE TESTER CONSUMPTION MATRIX  |  ${monthLabel}`;
+      rows.push(r1); mrg(1,0,1,totalCols-1);
 
-    const addMerge = (r, c, re, ce) => merges.push({ s:{r,c}, e:{r:re,c:ce} });
+      // Row 2 – legend
+      const r2 = Array(totalCols).fill(null);
+      r2[0] = 'T = Testers Dispatched  |  S = Sales Generated  |  Contrib% = T ÷ S  |  GREEN ≤10% Efficient  |  AMBER 10–20% Monitor  |  RED >20% High Use';
+      rows.push(r2); mrg(2,0,2,totalCols-1);
 
-    // ── Row 0: spacer
-    rows.push(Array(totalCols).fill(null));
-
-    // ── Row 1: Title
-    const titleRow = Array(totalCols).fill(null);
-    titleRow[0] = `${brand}  —  SKU × STORE TESTER CONSUMPTION MATRIX  |  ${monthLabel}`;
-    rows.push(titleRow);
-    addMerge(1, 0, 1, totalCols - 1);
-
-    // ── Row 2: Legend
-    const legRow = Array(totalCols).fill(null);
-    legRow[0] = 'T=Testers Dispatched  |  S=Sales Generated  |  Contrib%=T÷S  |  ≤10% Efficient  |  10-20% Monitor  |  >20% High Use';
-    rows.push(legRow);
-    addMerge(2, 0, 2, totalCols - 1);
-
-    // ── Row 3: AM headers (EPP) or blank (ASL)
-    const amRow = Array(totalCols).fill(null);
-    amRow[0] = '#'; amRow[1] = 'SKU\nCode'; amRow[2] = 'Product Name';
-    amRow[3] = 'Grand\nTotal\nTesters'; amRow[4] = 'Grand\nTotal\nSales'; amRow[5] = 'Grand\nSales\nContrib%';
-    // Group AM headers
-    const amGroups = {}; // am → [colStart, colEnd]
-    let ci = fixedCols;
-    storeCols.forEach(col => {
-      if (col.am) {
-        if (!amGroups[col.am]) amGroups[col.am] = { start: ci, end: ci + 2 };
-        else amGroups[col.am].end = ci + 2;
-      }
-      ci += 3;
-    });
-    ci = fixedCols;
-    storeCols.forEach(col => {
-      if (col.amTotal) {
-        amRow[ci] = `Area Manager: ${col.am}`;
-        addMerge(3, ci, 3, ci + 2);
-      }
-      ci += 3;
-    });
-    rows.push(amRow);
-    // Fixed col merges row 3: A-F span rows 3-6
-    addMerge(3, 0, 6, 0); // #
-    addMerge(3, 1, 6, 1); // SKU
-    addMerge(3, 2, 6, 2); // Product Name
-    addMerge(3, 3, 6, 3); // Grand T
-    addMerge(3, 4, 6, 4); // Grand S
-    addMerge(3, 5, 6, 5); // Grand Contrib%
-
-    // ── Row 4: City / AM group labels
-    const cityRow = Array(totalCols).fill(null);
-    ci = fixedCols;
-    const cityGroups = {};
-    storeCols.forEach(col => {
-      const key = col.amTotal ? null : (col.city || col.label);
-      if (key && !col.subTotal && !col.amTotal) {
-        if (!cityGroups[key]) cityGroups[key] = { start: ci, end: ci + 2 };
-        else cityGroups[key].end = ci + 2;
-      }
-      ci += 3;
-    });
-    // Write city labels and merge
-    ci = fixedCols;
-    const writtenCities = new Set();
-    storeCols.forEach(col => {
-      if (!col.subTotal && !col.amTotal && col.city && !writtenCities.has(col.city + '|' + col.am)) {
-        const cg = cityGroups[col.city];
-        if (cg) { cityRow[cg.start] = col.city; addMerge(4, cg.start, 4, cg.end); writtenCities.add(col.city + '|' + col.am); }
-      }
-      ci += 3;
-    });
-    rows.push(cityRow);
-
-    // ── Row 5: Store names
-    const storeRow = Array(totalCols).fill(null);
-    ci = fixedCols;
-    storeCols.forEach(col => {
-      storeRow[ci] = col.label;
-      addMerge(5, ci, 5, ci + 2);
-      ci += 3;
-    });
-    rows.push(storeRow);
-
-    // ── Row 6: T / S / Contrib% sub-headers
-    const tscRow = Array(totalCols).fill(null);
-    ci = fixedCols;
-    storeCols.forEach(() => {
-      tscRow[ci] = 'T'; tscRow[ci+1] = 'S'; tscRow[ci+2] = 'Contrib%';
-      ci += 3;
-    });
-    rows.push(tscRow);
-
-    // ── Row 7: MONTHLY COLUMN TOTALS
-    const totRow = Array(totalCols).fill(null);
-    totRow[0] = 'MONTHLY COLUMN TOTALS';
-    addMerge(7, 0, 7, 2);
-
-    let grandT = 0, grandS = 0;
-    ci = fixedCols;
-    storeCols.forEach(col => {
-      if (col.store) {
-        const tSum = skuList.reduce((s,sku) => s + getT(sku, col.store), 0);
-        const sSum = skuList.reduce((s,sku) => s + getS(sku, col.store), 0);
-        totRow[ci] = tSum; totRow[ci+1] = sSum;
-        totRow[ci+2] = sSum > 0 ? tSum / sSum : 0;
-        grandT += tSum; grandS += sSum;
-      } else if (col.subTotal || col.amTotal) {
-        const codes = col.subCodes || col.amCodes || [];
-        const tSum = skuList.reduce((s,sku) => s + subT(sku,codes), 0);
-        const sSum = skuList.reduce((s,sku) => s + subS(sku,codes), 0);
-        totRow[ci] = tSum; totRow[ci+1] = sSum;
-        totRow[ci+2] = sSum > 0 ? tSum / sSum : 0;
-      }
-      ci += 3;
-    });
-    totRow[3] = grandT; totRow[4] = grandS;
-    totRow[5] = grandS > 0 ? grandT / grandS : 0;
-    rows.push(totRow);
-
-    // ── Data rows
-    skuList.forEach((sku, idx) => {
-      const dataRow = Array(totalCols).fill(null);
-      dataRow[0] = idx + 1;
-      dataRow[1] = sku;
-      dataRow[2] = skuNameMap[sku] || sku;
-
-      let rowT = 0, rowS = 0;
-      ci = fixedCols;
+      // Row 3 – column headers + AM banners
+      const r3 = Array(totalCols).fill(null);
+      r3[0]='#'; r3[1]='SKU\nCode'; r3[2]='Product Name';
+      r3[3]='Grand\nTotal\nTesters'; r3[4]='Grand\nTotal\nSales'; r3[5]='Grand\nContrib%';
+      mrg(3,0,6,0); mrg(3,1,6,1); mrg(3,2,6,2); mrg(3,3,6,3); mrg(3,4,6,4); mrg(3,5,6,5);
+      let ci = FX;
       storeCols.forEach(col => {
-        if (col.store) {
-          const t = getT(sku, col.store);
-          const s = getS(sku, col.store);
-          dataRow[ci] = t; dataRow[ci+1] = s;
-          dataRow[ci+2] = (t === 0 && s === 0) ? '-' : (s > 0 ? t/s : 0);
-          rowT += t; rowS += s;
-        } else if (col.subTotal || col.amTotal) {
-          const codes = col.subCodes || col.amCodes || [];
-          const t = subT(sku, codes);
-          const s = subS(sku, codes);
-          dataRow[ci] = t; dataRow[ci+1] = s;
-          dataRow[ci+2] = (t === 0 && s === 0) ? '-' : (s > 0 ? t/s : 0);
+        if (col.amTotal) { r3[ci] = `Area Manager: ${col.am}`; mrg(3,ci,3,ci+2); }
+        ci += 3;
+      });
+      rows.push(r3);
+
+      // Row 4 – city group headers
+      const r4 = Array(totalCols).fill(null);
+      const citySpan = {}; ci = FX;
+      storeCols.forEach(col => {
+        if (!col.subTotal && !col.amTotal && col.city) {
+          const k = (col.am||'') + '|' + col.city;
+          if (!citySpan[k]) citySpan[k] = { start:ci, end:ci+2 };
+          else citySpan[k].end = ci+2;
         }
         ci += 3;
       });
-
-      dataRow[3] = rowT; dataRow[4] = rowS;
-      dataRow[5] = (rowT === 0 && rowS === 0) ? '-' : (rowS > 0 ? rowT/rowS : 0);
-      rows.push(dataRow);
-    });
-
-    // Build sheet from AOA
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    // Set column widths
-    ws['!cols'] = [
-      { wch: 4 },   // #
-      { wch: 12 },  // SKU
-      { wch: 32 },  // Product Name
-      { wch: 8 },   // Grand T
-      { wch: 8 },   // Grand S
-      { wch: 9 },   // Contrib%
-      ...storeCols.flatMap(() => [{ wch: 7 }, { wch: 7 }, { wch: 9 }])
-    ];
-
-    // Row heights
-    ws['!rows'] = [
-      { hpt: 6 },   // row 0 spacer
-      { hpt: 34 },  // row 1 title
-      { hpt: 18 },  // row 2 legend
-      { hpt: 38 },  // row 3 headers
-      { hpt: 18 },  // row 4 city
-      { hpt: 28 },  // row 5 store names
-      { hpt: 14 },  // row 6 T/S/Contrib%
-      { hpt: 18 },  // row 7 totals
-    ];
-
-    // Freeze panes (freeze first 8 rows + 3 cols)
-    ws['!freeze'] = { xSplit: 3, ySplit: 8, topLeftCell: 'D9', activeCell: 'D9', sqref: 'D9' };
-
-    // Apply merges
-    ws['!merges'] = merges;
-
-    // Format Contrib% cells as percentages
-    const range = XLSX.utils.decode_range(ws['!ref']);
-    for (let R = 7; R <= range.e.r; R++) {
-      // Contrib% cols: every 3rd starting from col 8 (fixedCols + 2 = 8)
-      [5, ...storeCols.map((_, i) => fixedCols + i*3 + 2)].forEach(C => {
-        const addr = XLSX.utils.encode_cell({ r: R, c: C });
-        if (ws[addr] && typeof ws[addr].v === 'number') {
-          ws[addr].z = '0.0%';
-        }
+      Object.values(citySpan).forEach(({start,end}) => {
+        // Extract city name from first matching col
+        const col = storeCols.find((_,i) => (FX + i*3) === start);
+        if (col) { r4[start] = col.city; mrg(4,start,4,end); }
       });
-    }
+      rows.push(r4);
 
-    return ws;
+      // Row 5 – store names
+      const r5 = Array(totalCols).fill(null); ci = FX;
+      storeCols.forEach(col => { r5[ci]=col.label; mrg(5,ci,5,ci+2); ci+=3; });
+      rows.push(r5);
+
+      // Row 6 – T / S / Contrib% sub-headers
+      const r6 = Array(totalCols).fill(null); ci = FX;
+      storeCols.forEach(() => { r6[ci]='T'; r6[ci+1]='S'; r6[ci+2]='Contrib%'; ci+=3; });
+      rows.push(r6);
+
+      // Row 7 – MONTHLY COLUMN TOTALS
+      const r7 = Array(totalCols).fill(null);
+      r7[0]='MONTHLY COLUMN TOTALS'; mrg(7,0,7,2);
+      let grandT=0, grandS=0; ci=FX;
+      storeCols.forEach(col => {
+        const codes = col.subCodes || col.amCodes || (col.store ? [col.store] : []);
+        const tSum = skuList.reduce((a,sku)=>a+subT(sku,codes),0);
+        const sSum = skuList.reduce((a,sku)=>a+subS(sku,codes),0);
+        r7[ci]=tSum; r7[ci+1]=sSum; r7[ci+2]=sSum>0?tSum/sSum:0;
+        if (col.store) { grandT+=tSum; grandS+=sSum; }
+        ci+=3;
+      });
+      r7[3]=grandT; r7[4]=grandS; r7[5]=grandS>0?grandT/grandS:0;
+      rows.push(r7);
+
+      // Data rows (row 8+)
+      const dataStartRow = 8; // 0-indexed
+      skuList.forEach((sku, idx) => {
+        const dr = Array(totalCols).fill(null);
+        dr[0]=idx+1; dr[1]=sku; dr[2]=skuNameMap[sku]||sku;
+        let rowT=0, rowS=0; ci=FX;
+        storeCols.forEach(col => {
+          const codes = col.subCodes || col.amCodes || (col.store ? [col.store] : []);
+          const t=subT(sku,codes), s=subS(sku,codes);
+          dr[ci]=t; dr[ci+1]=s;
+          dr[ci+2] = (t===0&&s===0) ? null : (s>0 ? t/s : null);
+          if (col.store) { rowT+=t; rowS+=s; }
+          ci+=3;
+        });
+        dr[3]=rowT; dr[4]=rowS;
+        dr[5] = (rowT===0&&rowS===0) ? null : (rowS>0 ? rowT/rowS : null);
+        rows.push(dr);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+
+      // ── Column widths
+      ws['!cols'] = [
+        {wch:4},{wch:13},{wch:34},{wch:8},{wch:8},{wch:9},
+        ...storeCols.flatMap(()=>[{wch:6},{wch:6},{wch:9}])
+      ];
+
+      // ── Row heights
+      ws['!rows'] = [
+        {hpt:5},{hpt:36},{hpt:20},{hpt:40},{hpt:18},{hpt:30},{hpt:14},{hpt:18}
+      ];
+
+      // ── Freeze: first 8 rows + first 3 cols
+      ws['!freeze'] = {xSplit:3, ySplit:8, topLeftCell:'D9', activeCell:'D9', sqref:'D9'};
+
+      // ── Merges
+      ws['!merges'] = merges;
+
+      // ── Number format: Contrib% columns as percentage (0-indexed cols)
+      const contribCols = [5, ...storeCols.map((_,i)=>FX+i*3+2)];
+      const wsRange = XLSX.utils.decode_range(ws['!ref']);
+      for (let R=7; R<=wsRange.e.r; R++) {
+        contribCols.forEach(C => {
+          const addr = XLSX.utils.encode_cell({r:R,c:C});
+          if (ws[addr] && typeof ws[addr].v === 'number') ws[addr].z = '0.0%';
+        });
+      }
+
+      // ── Conditional formatting: colour-code Contrib% by severity
+      // GREEN  ≤10% (efficient) — no fill
+      // AMBER  >10% and ≤20%  — yellow bg, dark-gold font
+      // RED    >20%            — light red bg, dark-red font, bold
+      const dataEndRow = dataStartRow + skuList.length; // exclusive, 1-indexed Excel
+      const cfSqrefs = contribCols
+        .map(C => {
+          const col = XLSX.utils.encode_col(C);
+          return `${col}${dataStartRow+1}:${col}${dataEndRow}`;
+        })
+        .join(' ');
+
+      if (cfSqrefs) {
+        ws['!cf'] = [{
+          ref: cfSqrefs,
+          rules: [
+            {
+              type: 'cellIs', operator: 'greaterThan', formula: [0.2], priority: 1,
+              dxf: {
+                fill: { patternType:'solid', fgColor:{ rgb:'FFCCCC' } },
+                font: { color:{ rgb:'C00000' }, bold:true }
+              }
+            },
+            {
+              type: 'cellIs', operator: 'greaterThan', formula: [0.1], priority: 2,
+              dxf: {
+                fill: { patternType:'solid', fgColor:{ rgb:'FFF2CC' } },
+                font: { color:{ rgb:'7F6000' } }
+              }
+            }
+          ]
+        }];
+      }
+
+      return ws;
+    } // end buildSheet
+
+    // ---------- BUILD WORKBOOK ----------
+    const wb = XLSX.utils.book_new();
+    const doEPP = (selDiv==='ALL'||selDiv==='EPP') && sortedEppSkus.length>0;
+    const doASL = (selDiv==='ALL'||selDiv==='ASL') && sortedAslSkus.length>0;
+
+    if (doEPP) XLSX.utils.book_append_sheet(wb,
+      buildSheet('EMIRATES PRIDE PERFUMES', EPP_COLS, sortedEppSkus),
+      `EPP ${monthLabel.slice(0,3)} ${ry}`);
+
+    if (doASL) XLSX.utils.book_append_sheet(wb,
+      buildSheet('AROMATIC SCENTS LAB (ASL)', ASL_COLS, sortedAslSkus),
+      `ASL ${monthLabel.slice(0,3)} ${ry}`);
+
+    if (!doEPP && !doASL) { toast('No data found for selected period', 'warn'); return; }
+
+    const filename = `EP_MIS_Tester_Report_${reportMonth.replace('-','')}${reportMonth.slice(5)}.xlsx`;
+    XLSX.writeFile(wb, filename);
+    const totalSkus = (doEPP?sortedEppSkus.length:0)+(doASL?sortedAslSkus.length:0);
+    toast(`MIS Tester Report downloaded — ${totalSkus} SKUs · ${monthLabel}`);
+
+  } catch(e) {
+    console.error('MIS Tester Report error:', e);
+    toast('Report failed: ' + e.message, 'warn');
   }
-
-  // ---------- BUILD WORKBOOK ----------
-  const wb = XLSX.utils.book_new();
-
-  // Determine which divisions to include
-  const doEPP = (selDiv === 'ALL' || selDiv === 'EPP') && sortedEppSkus.length > 0;
-  const doASL = (selDiv === 'ALL' || selDiv === 'ASL') && sortedAslSkus.length > 0;
-
-  if (doEPP) {
-    const ws = buildSheet('EMIRATES PRIDE PERFUMES', monthLabel, EPP_COLS, sortedEppSkus);
-    XLSX.utils.book_append_sheet(wb, ws, `EPP ${monthLabel.slice(0,3)} ${ry}`);
-  }
-  if (doASL) {
-    const ws = buildSheet('AROMATIC SCENTS LAB (ASL)', monthLabel, ASL_COLS, sortedAslSkus);
-    XLSX.utils.book_append_sheet(wb, ws, `ASL ${monthLabel.slice(0,3)} ${ry}`);
-  }
-
-  if (!doEPP && !doASL) { toast('No data found for selected period', 'warn'); return; }
-
-  const filename = `EP_MIS_Tester_Report_${reportMonth.replace('-','')}.xlsx`;
-  XLSX.writeFile(wb, filename);
-  const totalSkus = (doEPP ? sortedEppSkus.length : 0) + (doASL ? sortedAslSkus.length : 0);
-  toast(`MIS Tester Report downloaded — ${totalSkus} SKUs · ${monthLabel}`);
-}
+} // end exportMISTesterReport
 
 // ══════════════════════════════════════════════
 // TESTER INTELLIGENCE DASHBOARD
