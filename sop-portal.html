@@ -3655,19 +3655,35 @@ async function exportMISTesterReport() {
   const selDiv   = document.getElementById('t-division').value;
   const selYear  = document.getElementById('t-year').value;
 
-  // Determine which month(s) to report
-  let months = [...new Set(testerRawRows.map(r => r.month_year))].sort().reverse();
-  if (selMonth !== 'ALL' && selYear !== 'ALL') {
-    const mm = selMonth.padStart(2,'0');
-    months = [`${selYear}-${mm}`];
-  } else if (selMonth !== 'ALL') {
-    months = months.filter(m => m.endsWith('-' + selMonth.padStart(2,'0')));
-  } else if (selYear !== 'ALL') {
-    months = months.filter(m => m.startsWith(selYear));
-  }
-  if (!months.length) { toast('No tester data for selected period', 'warn'); return; }
+  // Determine which month to report.
+  // IMPORTANT: Use testerData (not testerRawRows) to derive available months because
+  // testerData.sales_generated comes from sales_history — so only months with actual
+  // uploaded sales data will have sales_generated > 0.  This prevents defaulting to a
+  // partial month like 2026-06 that has a few tester rows but zero sales rows.
+  const monthsWithSales = [...new Set(
+    testerData.filter(r => (r.sales_generated || 0) > 0).map(r => r.month_year)
+  )].sort().reverse();
 
-  // If multiple months, use most recent
+  // All months that appear in testerRawRows (fallback list)
+  const allTesterMonths = [...new Set(testerRawRows.map(r => r.month_year))].sort().reverse();
+
+  let months;
+  if (selMonth !== 'ALL' && selYear !== 'ALL') {
+    // User picked an explicit year+month — honour it exactly
+    months = [`${selYear}-${selMonth.padStart(2,'0')}`];
+  } else if (selMonth !== 'ALL') {
+    months = (monthsWithSales.length ? monthsWithSales : allTesterMonths)
+      .filter(m => m.endsWith('-' + selMonth.padStart(2,'0')));
+  } else if (selYear !== 'ALL') {
+    months = (monthsWithSales.length ? monthsWithSales : allTesterMonths)
+      .filter(m => m.startsWith(selYear));
+  } else {
+    // Default: most recent month that has BOTH tester dispatches AND sales data
+    months = monthsWithSales.length ? monthsWithSales : allTesterMonths;
+  }
+  if (!months.length) { toast('No complete data found — select a specific month', 'warn'); return; }
+
+  // Use most recent qualifying month
   const reportMonth = months[0];
   const [ry, rm] = reportMonth.split('-');
   const MONTH_LABELS = {
