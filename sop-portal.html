@@ -11104,7 +11104,7 @@ function _misStores(q){
     const ytd=storeYTD[sc]||0,lv=byStore[sc][latestM]||0,pv=prevM?(byStore[sc][prevM]||0):null;
     const d=_misDelta(lv,pv),p=_misPct(lv,pv),ms=_misMoMSt(p);
     const share=gTotYTD?(ytd/gTotYTD*100):0,rb=rank%2===0?'#FAFAF8':'#fff';
-    H+='<tr style="background:'+rb+';cursor:pointer;" onclick="openMISDrill(\'store\',\''+sc+'\')" onmouseover="this.style.background=\'#EDF4FF\'" onmouseout="this.style.background=\''+rb+'\'">`;
+    H+='<tr style="background:'+rb+';cursor:pointer;" onclick="openMISDrill(\'store\',\''+sc+'\')" onmouseover="this.style.background=\'#EDF4FF\'" onmouseout="this.style.background=\''+rb+'\'">';
     H+='<td style="padding:8px 10px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#8A8278;text-align:center;position:sticky;left:0;background:'+rb+';z-index:2;">'+rank+'</td>';
     H+='<td style="padding:8px 10px;position:sticky;left:36px;background:'+rb+';z-index:2;"><div style="font-weight:600;font-size:11.5px;color:#1A1A1A;">'+s.name+'</div><div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:#7A6525;margin-top:1px;">'+sc+'</div></td>';
     H+='<td style="padding:8px 10px;font-size:11px;color:#4A4540;">'+(s.city||'—')+'</td>';
@@ -11283,7 +11283,7 @@ function _misMatrix(q){
     const d=_misDelta(lv,pv),p=_misPct(lv,pv),ms=_misMoMSt(p);
     const ytd=months.reduce((s,m)=>s+(r.d[m]||0),0),share=gYTD?(ytd/gYTD*100):0;
     const name=_misSkuName(r.sku),rb=ri%2===0?'#fff':'#FAFAF8';
-    H+='<tr style="background:'+rb+';" onmouseover="this.style.background=\'#F0F7FF\'" onmouseout="this.style.background=\''+rb+'\'">`;
+    H+='<tr style="background:'+rb+';" onmouseover="this.style.background=\'#F0F7FF\'" onmouseout="this.style.background=\''+rb+'\'">';
     H+='<td style="padding:6px 10px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;font-weight:600;color:'+(RC[reg]||'#888')+';position:sticky;left:0;background:'+rb+';z-index:2;">'+(RL[reg]||reg)+'</td>';
     H+='<td style="padding:6px 8px;font-size:10.5px;color:#4A4540;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">'+s.name+'</td>';
     H+='<td style="padding:6px 8px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;font-weight:700;color:#7A6525;white-space:nowrap;">'+r.sku+'</td>';
