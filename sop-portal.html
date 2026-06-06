@@ -611,6 +611,17 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
 .repl-hm-table th.row-hdr{left:0;z-index:3;background:var(--cream);min-width:140px;text-align:left;}
 .repl-hm-table td{padding:5px 7px;text-align:center;border:1px solid #fff;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;}
 .repl-hm-table td.row-hdr{text-align:left;background:var(--cream-mid);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;color:var(--ink);position:sticky;left:0;z-index:1;min-width:140px;}
+/* Heat Map fullscreen */
+#repl-hm-fullscreen{display:none;position:fixed;inset:0;z-index:1100;background:#fff;flex-direction:column;}
+#repl-hm-fullscreen.active{display:flex;}
+#repl-hm-fullscreen .repl-hm-wrap{flex:1;max-height:none;overflow:auto;}
+#repl-hm-fullscreen .repl-hm-table th{font-size:10px;padding:8px 10px;}
+#repl-hm-fullscreen .repl-hm-table td{padding:7px 10px;font-size:10px;}
+#repl-hm-fullscreen .repl-hm-table td.row-hdr{min-width:180px;font-size:11px;}
+/* Rotated header text for compact view */
+.repl-hm-table th.sku-hdr{max-width:110px;min-width:80px;}
+.repl-hm-table th.sku-hdr .sku-name{display:block;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;color:var(--ink);letter-spacing:0.02em;text-transform:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;}
+.repl-hm-table th.sku-hdr .sku-code{display:block;font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--gold-dark);font-weight:600;letter-spacing:0.04em;margin-top:2px;}
 .hm-over    {background:#FFE0E0;color:#990000;}
 .hm-slight  {background:#FFF3CD;color:#7D4E00;}
 .hm-good    {background:#E2EFDA;color:#1E5E2A;}
@@ -13533,22 +13544,20 @@ function _buildHeatMap() {
     return          { cls:'hm-crit',    label: Math.round(abs)+'%' };
   }
 
-  return `
-  <div style="margin-bottom:12px;display:flex;gap:16px;font-size:10px;flex-wrap:wrap;align-items:center;">
-    <strong style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mid);">Absorption Rate Legend:</strong>
-    <span class="hm-over" style="padding:2px 8px;border-radius:2px;">&lt;60% Overstocked</span>
-    <span class="hm-slight" style="padding:2px 8px;border-radius:2px;">60–80% Slight Over</span>
-    <span class="hm-good" style="padding:2px 8px;border-radius:2px;">80–115% Optimal ✓</span>
-    <span class="hm-deficit" style="padding:2px 8px;border-radius:2px;">115–150% Under-Dispatched</span>
-    <span class="hm-crit" style="padding:2px 8px;border-radius:2px;">&gt;150% Critical Deficit</span>
-    <span class="hm-none" style="padding:2px 8px;border-radius:2px;">No Dispatch</span>
-  </div>
-  <div class="repl-hm-wrap">
+  // Build the shared table HTML (used in both normal + fullscreen views)
+  const tableHTML = `
     <table class="repl-hm-table">
       <thead><tr>
         <th class="row-hdr">Store</th>
-        ${topSkus.map(s => `<th title="${SKU_NAMES[s]||s}" style="max-width:60px;overflow:hidden;text-overflow:ellipsis;">${s}</th>`).join('')}
-        <th>Total Abs.</th>
+        ${topSkus.map(s => {
+          const fullName = SKU_NAMES[s] || s;
+          const shortName = fullName.length > 18 ? fullName.slice(0,16)+'…' : fullName;
+          return `<th class="sku-hdr" title="${fullName} (${s})">
+            <span class="sku-name">${shortName}</span>
+            <span class="sku-code">${s}</span>
+          </th>`;
+        }).join('')}
+        <th style="min-width:70px;">Total Abs.</th>
       </tr></thead>
       <tbody>
         ${stores.map(sc => {
@@ -13557,18 +13566,60 @@ function _buildHeatMap() {
           const totalS = topSkus.reduce((s,k)=>(salesMap[sc+'|'+k]||0)+s,0);
           const totalAbs = totalD > 0 ? Math.round(totalS/totalD*100) : 0;
           return `<tr>
-            <td class="row-hdr" title="${st.name}" style="cursor:pointer;" onclick="openReplStoreDrill('${sc}')">${st.name.length>22?st.name.slice(0,20)+'…':st.name}</td>
+            <td class="row-hdr" title="${st.name}" style="cursor:pointer;" onclick="openReplStoreDrill('${sc}')">${st.name.length>24?st.name.slice(0,22)+'…':st.name}</td>
             ${topSkus.map(sku => {
               const d = dispMap[sc+'|'+sku]||0;
               const s2 = salesMap[sc+'|'+sku]||0;
               const cs = cellStyle(d, s2);
-              return `<td class="${cs.cls}" title="Dispatched:${d} Sold:${s2}">${cs.label}</td>`;
+              const pname = SKU_NAMES[sku]||sku;
+              return `<td class="${cs.cls}" title="${pname} (${sku}) — Dispatched: ${d} | Sold: ${s2}">${cs.label}</td>`;
             }).join('')}
-            <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;background:${totalAbs<70?'#FFE0E0':totalAbs>120?'#FFF0D0':'#E2EFDA'};color:${totalAbs<70?'#990000':totalAbs>120?'#884400':'#1E5E2A'};">${totalD>0?totalAbs+'%':'—'}</td>
+            <td style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;min-width:70px;background:${totalAbs<70?'#FFE0E0':totalAbs>120?'#FFF0D0':'#E2EFDA'};color:${totalAbs<70?'#990000':totalAbs>120?'#884400':'#1E5E2A'};">${totalD>0?totalAbs+'%':'—'}</td>
           </tr>`;
         }).join('')}
       </tbody>
-    </table>
+    </table>`;
+
+  const legendHTML = `
+  <div style="display:flex;gap:12px;font-size:10px;flex-wrap:wrap;align-items:center;">
+    <strong style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mid);">Legend:</strong>
+    <span class="hm-over" style="padding:2px 8px;border-radius:2px;">&lt;60% Overstocked</span>
+    <span class="hm-slight" style="padding:2px 8px;border-radius:2px;">60–80% Slight Over</span>
+    <span class="hm-good" style="padding:2px 8px;border-radius:2px;">80–115% Optimal ✓</span>
+    <span class="hm-deficit" style="padding:2px 8px;border-radius:2px;">115–150% Under</span>
+    <span class="hm-crit" style="padding:2px 8px;border-radius:2px;">&gt;150% Critical</span>
+    <span class="hm-none" style="padding:2px 8px;border-radius:2px;">No Dispatch</span>
+  </div>`;
+
+  return `
+  <div style="margin-bottom:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+    ${legendHTML}
+    <button onclick="openHeatMapFullscreen()" style="background:var(--gold-bar);color:#fff;border:none;border-radius:4px;padding:7px 16px;font-size:11px;font-weight:700;letter-spacing:0.06em;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;flex-shrink:0;">
+      ⛶ Full Screen
+    </button>
+  </div>
+  <div class="repl-hm-wrap" id="repl-hm-inner">
+    ${tableHTML}
+  </div>
+
+  <!-- Fullscreen overlay -->
+  <div id="repl-hm-fullscreen">
+    <!-- Fullscreen header bar -->
+    <div style="background:#6B5B35;padding:13px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff;flex:1;">
+        Absorption Heat Map
+        <span style="font-size:11px;font-weight:400;color:rgba(255,255,255,.55);margin-left:12px;font-family:'Montserrat',sans-serif;">
+          Sold ÷ Dispatched · ${stores.length} stores · Top ${topSkus.length} SKUs by dispatch volume
+        </span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        ${legendHTML.replace(/font-size:10px/g,'font-size:9px')}
+      </div>
+      <button onclick="closeHeatMapFullscreen()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;line-height:1;flex-shrink:0;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">✕</button>
+    </div>
+    <div class="repl-hm-wrap" id="repl-hm-fs-inner" style="flex:1;max-height:none;overflow:auto;padding:0;">
+      ${tableHTML}
+    </div>
   </div>`;
 }
 
@@ -13849,6 +13900,24 @@ function _buildOptimizerMatrix() {
     <div style="overflow-x:auto;margin-top:10px;"><table class="repl-sched-tbl">${tableHead}<tbody>${buildRows(ok)}</tbody></table></div>
   </details>`;
 }
+
+// ── Heat Map Fullscreen ───────────────────────
+function openHeatMapFullscreen() {
+  const fs = document.getElementById('repl-hm-fullscreen');
+  if(!fs) return;
+  fs.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeHeatMapFullscreen() {
+  const fs = document.getElementById('repl-hm-fullscreen');
+  if(!fs) return;
+  fs.classList.remove('active');
+  document.body.style.overflow = '';
+}
+// Close on Escape key
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeHeatMapFullscreen();
+});
 
 // ── Store Drill-Down ──────────────────────────
 function openReplStoreDrill(storeCode) {
