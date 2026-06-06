@@ -13302,7 +13302,7 @@ function renderReplView() {
   if(!el) return;
   // Destroy any existing Leaflet map instance
   if(window._replMap) { try{ window._replMap.remove(); }catch(e){} window._replMap = null; }
-  if(view === 'map')      { el.innerHTML = _buildMapView(); _initReplMap(); }
+  if(view === 'map')      { el.innerHTML = _buildMapView(); requestAnimationFrame(() => requestAnimationFrame(() => _initReplMap())); }
   else if(view === 'overview')  el.innerHTML = _buildOverview();
   else if(view === 'heatmap')   el.innerHTML = _buildHeatMap();
   else if(view === 'schedule')  el.innerHTML = _buildSchedule();
@@ -13426,9 +13426,10 @@ function _initReplMap() {
     zoomControl: true,
   });
   window._replMap = map;
-  // Force size recalc after container becomes visible
-  setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 150);
-  setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 400);
+  // Force size recalc — multiple passes to ensure tiles paint after container layout settles
+  setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 200);
+  setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 600);
+  setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 1200);
 
   // Clean minimal tile layer
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
