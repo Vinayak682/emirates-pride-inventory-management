@@ -5598,7 +5598,12 @@ function buildDayTabs(){
     t.className='dtab'+(i===curDay?' active':'')+(hasData&&i!==curDay?' has-data':'')+(i<DAY_PAST&&!hasData?' past-empty':'');
     t.onclick=()=>{
       if(mgrOverrideActive&&mgrOverrideDay!==i){mgrOverrideActive=false;mgrOverrideDay=null;mgrOverrideStore=null;}
-      curDay=i;buildDayTabs();buildGrid();buildFooter();renderConsSection();
+      curDay=i; dashDay=i;
+      buildDayTabs();buildGrid();
+      // Refresh Finance panel first (before buildFooter which may throw on edge cases)
+      const fp=document.getElementById('dashFinancePanel');
+      if(fp&&fp.style.display!=='none') openFinanceTab();
+      buildFooter();renderConsSection();
       t.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
     };
     t.innerHTML=
