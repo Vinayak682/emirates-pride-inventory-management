@@ -2244,6 +2244,48 @@ Never use `#1a2744` navy or `#0D0D0D` black anywhere in the app — including th
 
 ---
 
+### Session — 6 Jun 2026 (Session 34 — Finance Tab Audit + Bug Fixes + Dummy Data)
+**Files changed**: `stock-register.html`
+**Commit**: `c364bfd` → pushed to `main` → GitHub Pages live
+
+#### What was audited and fixed:
+
+**Finance tab audit triggered by: field not working in Finance tab (reported by user)**
+
+**Bug 1 — BNPL missing from Week view totals (FIXED)**
+- `renderFinWeek()` calculated `total = cash + cc + cred` — omitted BNPL (tabby + tamara)
+- Month view `renderFinMonth()` already included BNPL correctly — inconsistency between views
+- Fix: added `const bnpl = (+d.tabby||0)+(+d.tamara||0)` and included in total
+- Also added conditional BNPL column to week view rows (shows purple value when > 0)
+- Week Totals row now reflects accurate totals including BNPL
+
+**Bug 2 — `finData` global declaration missing fields (FIXED)**
+- Global `let finData = {...}` was missing: `tabby`, `tamara`, `bankReceiptPhoto`, `expenseReceiptPhoto`, `bnplRows`, `expenseRows`
+- These fields existed in `loadFinanceData()` reset but not in the global init
+- Fix: aligned global declaration with the full field set
+
+**Bug 3 — Opening Cash (E) not auto-carrying without stock lock (FIXED)**
+- `carryFinanceForward()` only runs inside `lockDay()` — if stock day never locked, Opening Cash for next day stays 0
+- Stores that don't lock stock daily saw Opening Cash as 0 every day — had to enter manually
+- Fix: added auto-carry logic to `loadFinanceData()` — when `openCash === 0`, reads previous day's closing balance and pre-populates
+
+**Dummy data seeded (4 days):**
+- `seedFinanceTestData()` function added — populates days 2–5 (Wed–Sat) with realistic data:
+  - Wed 3/6: Cash 1850, CC 1150, BNPL Tabby 200 → Total 3200, Closing 585
+  - Thu 4/6: Cash 2100, CC 1290, BNPL Tamara 350, Credit 150 → Total 3890, Closing 1035
+  - Fri 5/6: Cash 1620, CC 1100, BNPL Tabby 275 → Total 2995, Closing 535
+  - Sat 6/6: Cash 2340, CC 1540, Credit 200 → Total 4080, Closing 875
+- All entries include CC approval codes, director names, bank slip refs, prepared by "Amal K"
+- `🧪 Seed Test Data` button added to Finance action bar (MGR-only, shown when `mgrOverrideActive`)
+
+**Verified in browser:**
+- Day view: Cash 2,340 | Card 1,540 | Total 4,080 ✅
+- Week view: All 4 days showing with BNPL column ✅ (Wed–Sat 3–6 Jun)
+- Week totals: Cash 7910 | Card 5080 | Total 14165 ✅
+- Auto-carry: Opening Cash pre-populates from previous day closing ✅
+
+---
+
 ### Session — 22 May 2026 (Session 19 — Tester Inventory Excel: 10 Store Columns + 3 SKUs)
 **Files changed**: `FG & Testers SOH 22-05-2026.xlsx` (modified)
 **Commit**: Not pushed (local Excel work file)
