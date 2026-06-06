@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js" defer></script>
 <style>
 /* ══════════════════════════════════════════════
@@ -688,6 +688,12 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
      MAIN APP
      ══════════════════════════════════════════════ -->
 <div id="app">
+
+  <!-- Supabase loading fallback (shown only if CDN is very slow) -->
+  <div id="app-loading-msg" style="display:none;position:fixed;inset:0;z-index:9999;background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+    <div style="font-family:'Montserrat',sans-serif;font-size:13px;color:#6B5B35;font-weight:600;letter-spacing:1px;">CONNECTING TO DATA…</div>
+    <div style="width:40px;height:40px;border:3px solid #E5E0D8;border-top-color:#C9A84C;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  </div>
 
   <!-- Top Bar -->
   <div class="topbar">
@@ -2468,13 +2474,26 @@ function doLogout() {
 let salesLoaded = false;
 
 function initApp() {
-  sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
+  // If Supabase CDN hasn't finished loading yet, wait and retry
+  if (!window.supabase || !window.supabase.createClient) {
+    const loadingEl = document.getElementById('app-loading-msg');
+    if (loadingEl) { loadingEl.style.display = 'block'; }
+    setTimeout(initApp, 300);
+    return;
+  }
+  try {
+    sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
+  } catch(e) {
+    console.error('Supabase init failed:', e);
+    alert('Connection error. Please refresh the page.');
+    return;
+  }
+  const loadingEl = document.getElementById('app-loading-msg');
+  if (loadingEl) { loadingEl.style.display = 'none'; }
   populateStoreDropdowns();
   setInvDefaultDate();
   refreshWhBadge();
   checkNavDotOnLoad();
-  // Defer sales fetch so the app renders immediately on login
-  // Sales tab is default, so load it after a short yield to let UI paint first
   setTimeout(() => loadSalesData(), 50);
 }
 
