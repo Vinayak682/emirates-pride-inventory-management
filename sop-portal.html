@@ -13539,39 +13539,119 @@ function _replSalesInRange() {
 
 // ── KPI Strip ─────────────────────────────────
 function _renderReplKPIs() {
-  const fd = _replFilteredData();
+  const fd = _replFilteredData().filter(r => !_isMiscSku(r.sku_code));
   const sd = _replSalesInRange();
+  const months = Math.max(new Set(fd.map(r => r.month_year)).size, 1);
 
-  const totalDisp = fd.reduce((s,r) => s + (r.qty_dispatched||0), 0);
-  const totalSold = sd.reduce((s,r) => s + (r.qty_sold||0), 0);
-  const absorption = totalDisp > 0 ? Math.round(totalSold / totalDisp * 100) : 0;
+  // Store-level aggregation
+  const dispByStore = {}, soldByStore = {};
+  fd.forEach(r => { dispByStore[r.store_code] = (dispByStore[r.store_code]||0) + (r.qty_dispatched||0); });
+  sd.forEach(r => { soldByStore[r.store_code] = (soldByStore[r.store_code]||0) + (r.qty_sold||0); });
 
-  // Count store×SKU combos
-  const combos = {};
-  fd.forEach(r => { const k = r.store_code+'|'+r.sku_code; combos[k] = (combos[k]||0) + (r.qty_dispatched||0); });
-  const salesMap = {};
-  sd.forEach(r => { const k = r.store_code+'|'+r.sku_code; salesMap[k] = (salesMap[k]||0) + (r.qty_sold||0); });
+  // SKU×Store aggregation for gap analysis
+  const dispCombo = {}, soldCombo = {};
+  fd.forEach(r => { const k=r.store_code+'|'+r.sku_code; dispCombo[k]=(dispCombo[k]||0)+(r.qty_dispatched||0); });
+  sd.forEach(r => { const k=r.store_code+'|'+r.sku_code; soldCombo[k]=(soldCombo[k]||0)+(r.qty_sold||0); });
 
-  let over = 0, deficit = 0;
-  Object.keys(combos).forEach(k => {
-    const d = combos[k], s = salesMap[k]||0;
-    if(d > 0 && s/d < 0.70) over++;
-    if(d > 0 && s/d > 1.20) deficit++;
+  // KPI 1: Stores that need replenishment (sold outpacing dispatch)
+  const storesSelling = Object.keys(soldByStore).filter(s => soldByStore[s] > 0);
+  const storesNeedingRepl = storesSelling.filter(s => {
+    const d = dispByStore[s]||0, sv = soldByStore[s];
+    return d === 0 || sv/d > 1.15;
   });
 
-  const uniqueDNs = new Set(fd.filter(r=>r.dispatch_ref).map(r=>r.dispatch_ref)).size;
-
-  const _set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
-  _set('rk-total-disp', totalDisp.toLocaleString());
-  _set('rk-total-sold', totalSold.toLocaleString());
-  const absEl = document.getElementById('rk-absorption');
-  if(absEl) {
-    absEl.textContent = absorption + '%';
-    absEl.style.color = absorption < 70 ? '#C0392B' : absorption > 110 ? '#E67E22' : '#27AE60';
+  // KPI 2: Biggest deficit SKU×Store
+  let topDeficitGap = 0, topDeficitKey = null;
+  Object.keys(soldCombo).forEach(k => {
+    const gap = (soldCombo[k]||0) - (dispCombo[k]||0);
+    if(gap > topDeficitGap && (dispCombo[k]||0) > 0) { topDeficitGap = gap; topDeficitKey = k; }
+  });
+  let topDeficitLabel = '—';
+  if(topDeficitKey) {
+    const [sc, sku] = topDeficitKey.split('|');
+    topDeficitLabel = (SKU_NAMES[sku]||sku).slice(0,16) + ' @ ' + (getStore(sc).name||sc).split(' ')[0];
   }
-  _set('rk-overstocked', over.toLocaleString());
-  _set('rk-deficit', deficit.toLocaleString());
-  _set('rk-dispatch-count', uniqueDNs > 0 ? uniqueDNs.toLocaleString() : fd.length > 0 ? '—' : '0');
+
+  // KPI 3: Stores overstocked (<60% absorption)
+  const storesOverstocked = Object.keys(dispByStore).filter(s => {
+    const d = dispByStore[s], sv = soldByStore[s]||0;
+    return d > 0 && sv/d < 0.60;
+  });
+
+  // KPI 4: Avg weeks of cover = total dispatched ÷ (sold/months/4.33)
+  const totalDispFG = Object.values(dispByStore).reduce((a,b)=>a+b,0);
+  const totalSoldFG = Object.values(soldByStore).reduce((a,b)=>a+b,0);
+  const weeklyVel = totalSoldFG / months / 4.33;
+  const avgWeeksCover = weeklyVel > 0 ? (totalDispFG / weeklyVel).toFixed(1) : '—';
+  const coverColor = weeklyVel > 0
+    ? (totalDispFG/weeklyVel < 2 ? '#C0392B' : totalDispFG/weeklyVel > 8 ? '#E67E22' : '#27AE60')
+    : '#8A8278';
+
+  // KPI 5: Highest surplus SKU×Store (lowest absorption, min 10 units dispatched)
+  let lowestAbs = 999, surplusK = null;
+  Object.keys(dispCombo).forEach(k => {
+    const d = dispCombo[k], sv = soldCombo[k]||0;
+    if(d >= 10) { const a = sv/d; if(a < lowestAbs){ lowestAbs=a; surplusK=k; } }
+  });
+  let topSurplusLabel = '—';
+  if(surplusK) {
+    const [sc, sku] = surplusK.split('|');
+    topSurplusLabel = (SKU_NAMES[sku]||sku).slice(0,16) + ' @ ' + (getStore(sc).name||sc).split(' ')[0];
+  }
+
+  // KPI 6: % SKU-stores moving well (sold >= 80% of dispatched)
+  const combosWithDisp = Object.keys(dispCombo).filter(k => dispCombo[k] > 0);
+  const movingWell = combosWithDisp.filter(k => (soldCombo[k]||0)/dispCombo[k] >= 0.80).length;
+  const moveRate = combosWithDisp.length > 0 ? Math.round(movingWell/combosWithDisp.length*100) : 0;
+
+  const el = document.getElementById('repl-kpi-strip');
+  if(!el) return;
+  el.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff;">
+
+    <div style="padding:14px 16px;border-right:1px solid var(--border);">
+      <div style="font-size:9px;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;margin-bottom:4px;">Stores Need Repl.</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:${storesNeedingRepl.length>3?'#C0392B':storesNeedingRepl.length>0?'#E67E22':'#27AE60'};line-height:1;">${storesNeedingRepl.length}</div>
+      <div style="font-size:10px;color:#666;margin-top:3px;">of ${storesSelling.length} active stores</div>
+      <div style="font-size:9px;color:#C0392B;margin-top:2px;font-weight:600;">→ dispatch more stock</div>
+    </div>
+
+    <div style="padding:14px 16px;border-right:1px solid var(--border);background:#FEF9F9;">
+      <div style="font-size:9px;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;margin-bottom:4px;">Biggest Gap — Act Now</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:#C0392B;line-height:1.4;">${topDeficitLabel}</div>
+      <div style="font-size:10px;color:#888;margin-top:3px;">${topDeficitGap>0?'+'+topDeficitGap.toLocaleString()+' units undersupplied':'No deficit'}</div>
+      <div style="font-size:9px;color:#C0392B;margin-top:2px;font-weight:600;">→ prioritise next WH run</div>
+    </div>
+
+    <div style="padding:14px 16px;border-right:1px solid var(--border);">
+      <div style="font-size:9px;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;margin-bottom:4px;">Redistribute From</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:${storesOverstocked.length>5?'#E67E22':'#1A7A3C'};line-height:1;">${storesOverstocked.length}</div>
+      <div style="font-size:10px;color:#666;margin-top:3px;">stores overstocked</div>
+      <div style="font-size:9px;color:#E67E22;margin-top:2px;font-weight:600;">→ move to deficit stores</div>
+    </div>
+
+    <div style="padding:14px 16px;border-right:1px solid var(--border);">
+      <div style="font-size:9px;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;margin-bottom:4px;">Avg Weeks Cover</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:${coverColor};line-height:1;">${avgWeeksCover}</div>
+      <div style="font-size:10px;color:#666;margin-top:3px;">weeks of stock at velocity</div>
+      <div style="font-size:9px;color:#8A8278;margin-top:2px;">target: 3–6 weeks</div>
+    </div>
+
+    <div style="padding:14px 16px;border-right:1px solid var(--border);background:#FFFBF5;">
+      <div style="font-size:9px;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;margin-bottom:4px;">Highest Surplus</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:#E67E22;line-height:1.4;">${topSurplusLabel}</div>
+      <div style="font-size:10px;color:#888;margin-top:3px;">${surplusK?Math.round(lowestAbs*100)+'% sold — excess sitting idle':'No surplus found'}</div>
+      <div style="font-size:9px;color:#E67E22;margin-top:2px;font-weight:600;">→ redeploy or return to WH</div>
+    </div>
+
+    <div style="padding:14px 16px;">
+      <div style="font-size:9px;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8278;margin-bottom:4px;">SKUs Moving Well</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:${moveRate>=70?'#27AE60':moveRate>=50?'#E67E22':'#C0392B'};line-height:1;">${moveRate}%</div>
+      <div style="font-size:10px;color:#666;margin-top:3px;">${movingWell} of ${combosWithDisp.length} SKU-stores</div>
+      <div style="font-size:9px;color:#8A8278;margin-top:2px;">≥80% absorption rate</div>
+    </div>
+
+  </div>`;
 }
 
 // ══ VIEW 1: OVERVIEW DASHBOARD ════════════════
