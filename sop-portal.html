@@ -13359,7 +13359,7 @@ const STORE_COORDS = {
 function _buildMapView() {
   return `
   <div style="position:relative;">
-    <div id="repl-map-container"></div>
+    <div id="repl-map-container" style="width:100%;height:calc(100vh - 280px);min-height:520px;border-radius:8px;overflow:hidden;"></div>
 
     <!-- Legend overlay -->
     <div class="repl-map-legend">
@@ -13426,6 +13426,9 @@ function _initReplMap() {
     zoomControl: true,
   });
   window._replMap = map;
+  // Force size recalc after container becomes visible
+  setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 150);
+  setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 400);
 
   // Clean minimal tile layer
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
