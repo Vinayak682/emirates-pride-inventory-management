@@ -2600,6 +2600,11 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <button class="fin-act-btn save" id="fin-save-btn" onclick="saveFinanceData()">💾 Save Report</button>
       <button class="fin-act-btn pdf"  onclick="exportFinancePDF('day')">📤 Share PDF</button>
       <button class="fin-act-btn lock" id="fin-lock-btn" onclick="openFinLockModal()">🔒 Lock Finance</button>
+      <button id="fin-seed-btn" onclick="seedFinanceTestData()"
+        style="display:none;padding:8px 12px;background:#E8F0FF;border:1px dashed #9AB;border-radius:8px;
+               font-family:var(--f-body);font-size:11px;color:#1A3A7A;cursor:pointer;white-space:nowrap;">
+        🧪 Seed Test Data
+      </button>
     </div>
 
     <!-- Week / Month views -->
@@ -7217,11 +7222,12 @@ const FIN_FIELDS = {
 };
 
 let finData = {
-  cash:0, credit:0, openCash:0, debtors:0,
+  cash:0, tabby:0, tamara:0, credit:0, openCash:0, debtors:0,
   directorAmt:0, bankAmt:0, expenses:0,
   directorName:'', bankSlip:'',
   preparedBy:'', checkedBy:'',
-  ccRows:[]
+  bankReceiptPhoto:'', expenseReceiptPhoto:'',
+  ccRows:[], bnplRows:[], expenseRows:[]
 };
 
 // ── Calc derived fields ──────────────────────────────
@@ -7742,6 +7748,44 @@ function carryFinanceForward(storeCode, fromDay){
   saveDB();
 }
 
+// ── Seed dummy finance data (3-4 days) for testing ──
+function seedFinanceTestData(){
+  if(!me){ toast('Login to a store first'); return; }
+  const entries = [
+    { day: DAY_PAST-3, cash:1850, cc:[{code:'MC-4421',amt:720},{code:'VISA-8812',amt:430}], credit:0, openCash:320, debtors:0, directorAmt:500, bankAmt:1000, expenses:85, expenseDesc:'Cleaning supplies', preparedBy:'Amal K', tabby:200, tamara:0 },
+    { day: DAY_PAST-2, cash:2100, cc:[{code:'VISA-3391',amt:980},{code:'AMEX-7712',amt:310}], credit:150, openCash:585, debtors:150, directorAmt:600, bankAmt:1200, expenses:0, expenseDesc:'', preparedBy:'Amal K', tabby:0, tamara:350 },
+    { day: DAY_PAST-1, cash:1620, cc:[{code:'MC-9921',amt:1100}], credit:0, openCash:435, debtors:0, directorAmt:400, bankAmt:1000, expenses:120, expenseDesc:'Bags restock', preparedBy:'Amal K', tabby:275, tamara:0 },
+    { day: DAY_PAST,   cash:2340, cc:[{code:'VISA-1144',amt:890},{code:'MC-5523',amt:650}], credit:200, openCash:535, debtors:200, directorAmt:700, bankAmt:1500, expenses:0, expenseDesc:'', preparedBy:'Amal K', tabby:0, tamara:0 },
+  ];
+  if(!db.finance) db.finance={};
+  if(!db.finance[me.code]) db.finance[me.code]={};
+  entries.forEach(e=>{
+    const ccRows = e.cc.map(r=>({code:r.code,amt:r.amt}));
+    const bnplRows = [];
+    if(e.tabby > 0) bnplRows.push({type:'tabby',code:'TABBY',amt:e.tabby});
+    if(e.tamara > 0) bnplRows.push({type:'tamara',code:'TAMARA',amt:e.tamara});
+    const expenseRows = e.expenses > 0 ? [{desc:e.expenseDesc,amt:e.expenses,photo:''}] : [];
+    const ccTotal = e.cc.reduce((s,r)=>s+r.amt,0);
+    const tCash = e.openCash + e.cash + e.debtors;
+    const closing = tCash - e.directorAmt - e.bankAmt - e.expenses;
+    db.finance[me.code][e.day] = {
+      cash:e.cash, tabby:e.tabby, tamara:e.tamara, credit:e.credit,
+      openCash:e.openCash, debtors:e.debtors,
+      directorAmt:e.directorAmt, bankAmt:e.bankAmt, expenses:e.expenses,
+      directorName:'Management', bankSlip:'DEP-'+e.day+'-2026',
+      preparedBy:e.preparedBy, checkedBy:'MGR',
+      ccRows, bnplRows, expenseRows,
+      _ccTotal:ccTotal, _bnplTotal:e.tabby+e.tamara,
+      _total:e.cash+ccTotal+e.tabby+e.tamara+e.credit,
+      _totalCash:tCash, _closing:closing,
+      savedAt: new Date().toLocaleString('en-GB')
+    };
+  });
+  saveDB();
+  loadFinanceData(typeof dashDay!=='undefined'?dashDay:DAY_PAST);
+  toast('✅ Dummy finance data seeded for 4 days — check Day / Week / Month views');
+}
+
 // ── Save finance data ────────────────────────────────
 function saveFinanceData(){
   if(!me) return;
@@ -7792,6 +7836,15 @@ function loadFinanceData(finDay){
     finBNPL     = (d.bnplRows  ||[]).map(r=>({type:r.type||'tabby',code:r.code||'',amt:r.amt||0}));
     finExpenses = (d.expenseRows||[]).map(r=>({desc:r.desc||'',amt:r.amt||0,photo:r.photo||''}));
     finDaySaved[me.code+'_'+finDay] = true;
+  }
+  // Auto-carry opening cash from previous day closing if not already set
+  if(me && finDay > 0 && !(finData.openCash > 0)){
+    const prev = db.finance?.[me.code]?.[finDay-1];
+    if(prev){
+      const prevCash = (parseFloat(prev.cash)||0) + (parseFloat(prev.openCash)||0) + (parseFloat(prev.debtors)||0);
+      const prevClose = prevCash - (parseFloat(prev.directorAmt)||0) - (parseFloat(prev.bankAmt)||0) - (parseFloat(prev.expenses)||0);
+      if(prevClose > 0) finData.openCash = prevClose;
+    }
   }
   finRender();
   // Restore photo thumbnails
@@ -7875,6 +7928,9 @@ function openFinanceTab(){
   const dv = document.getElementById('finDateVal');    if(dv) dv.textContent = dl ? dl.full+' '+dl.date : '—';
   const hd = document.getElementById('fin-hdr-date');  if(hd) hd.textContent = dl ? dl.date+'/'+new Date().getFullYear() : '—';
   const ho = document.getElementById('fin-hdr-outlet'); if(ho) ho.textContent = me ? me.name : '—';
+  // Show seed button for MGR only
+  const sb = document.getElementById('fin-seed-btn');
+  if(sb) sb.style.display = mgrOverrideActive ? '' : 'none';
   loadFinanceData(finDay);
   finSelectPeriod('day');
 }
@@ -7899,8 +7955,9 @@ function renderFinWeek(){
     const d = db.finance?.[me.code]?.[di]; if(!d) return;
     const cash  = parseFloat(d.cash)||0;
     const cc    = (d.ccRows||[]).reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
+    const bnpl  = (+d.tabby||0)+(+d.tamara||0);
     const cred  = parseFloat(d.credit)||0;
-    const total = cash + cc + cred;
+    const total = cash + cc + bnpl + cred;
     const tCash = (parseFloat(d.openCash)||0) + cash + (parseFloat(d.debtors)||0);
     const close = tCash-(parseFloat(d.directorAmt)||0)-(parseFloat(d.bankAmt)||0)-(parseFloat(d.expenses)||0);
     totCash+=cash; totCard+=cc; totTotal+=total;
@@ -7913,6 +7970,7 @@ function renderFinWeek(){
       <div class="fin-period-day-vals">
         <div class="fin-period-val"><span class="fin-period-val-n" style="color:#1A6040;">${cash||'—'}</span><span class="fin-period-val-l">Cash</span></div>
         <div class="fin-period-val"><span class="fin-period-val-n" style="color:#1A3A7A;">${cc||'—'}</span><span class="fin-period-val-l">Card</span></div>
+        ${bnpl?`<div class="fin-period-val"><span class="fin-period-val-n" style="color:#5A2A8A;">${bnpl}</span><span class="fin-period-val-l">BNPL</span></div>`:''}
         <div class="fin-period-val"><span class="fin-period-val-n" style="color:#C9A44E;">${total||'—'}</span><span class="fin-period-val-l">Total</span></div>
         <div class="fin-period-val"><span class="fin-period-val-n" style="font-size:12px;color:${close<0?'#E87070':'#1A6040'};">${close}</span><span class="fin-period-val-l">Closing</span></div>
       </div>
