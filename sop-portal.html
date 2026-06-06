@@ -13575,14 +13575,29 @@ function _renderReplKPIs() {
 }
 
 // ══ VIEW 1: OVERVIEW DASHBOARD ════════════════
+// Misc/supply SKU prefixes — excluded from all absorption analysis
+function _isMiscSku(code) {
+  if(!code) return false;
+  const c = code.toUpperCase();
+  // Paper bags, tester papers, e-comm boxes, charcoal/lighter accessories, misc supplies
+  return /^(EPBA|EPT|EPEC|EPTP|EPMC|AC0|ASLT|ASLTP|ACA|ACL|EPG|EPCB|EPC|EPP_|MEDKHAN|SUPP)/.test(c)
+    || /^AC\d/.test(c)   // AC accessories (charcoal, lighter etc)
+    || /TESTER.PAPER|PAPER.BAG|CARTON.BOX|SHOPPING.BAG/i.test(
+        (typeof replData !== 'undefined' ? (replData.find(r=>r.sku_code===code)||{}).product_name : '') || ''
+       );
+}
+
 function _buildOverview() {
   const fd = _replFilteredData();
   const sd = _replSalesInRange();
   if(fd.length === 0) return _replNoData();
 
-  // ── By Store aggregation ──
+  // FG-only rows (exclude misc supplies from absorption analysis)
+  const fdFG = fd.filter(r => !_isMiscSku(r.sku_code));
+
+  // ── By Store aggregation (FG only) ──
   const byStore = {};
-  fd.forEach(r => {
+  fdFG.forEach(r => {
     if(!byStore[r.store_code]) byStore[r.store_code] = { disp:0, skus:new Set() };
     byStore[r.store_code].disp += (r.qty_dispatched||0);
     byStore[r.store_code].skus.add(r.sku_code);
@@ -13599,9 +13614,9 @@ function _buildOverview() {
     })
     .sort((a,b) => a.abs - b.abs);
 
-  // ── By SKU aggregation ──
+  // ── By SKU aggregation (FG only) ──
   const bySku = {};
-  fd.forEach(r => {
+  fdFG.forEach(r => {
     if(!bySku[r.sku_code]) bySku[r.sku_code] = { disp:0, name:r.product_name||SKU_NAMES[r.sku_code]||r.sku_code };
     bySku[r.sku_code].disp += (r.qty_dispatched||0);
   });
@@ -13753,7 +13768,7 @@ function _buildOverview() {
 
 // ══ VIEW 2: ABSORPTION HEAT MAP ═══════════════
 function _buildHeatMap() {
-  const fd = _replFilteredData();
+  const fd = _replFilteredData().filter(r => !_isMiscSku(r.sku_code));
   if(fd.length === 0) return _replNoData();
 
   // Top 25 dispatched SKUs
@@ -13927,7 +13942,7 @@ function _buildSchedule() {
 
 // ══ VIEW 4: SKU DEEP DIVE ═════════════════════
 function _buildSkuDive() {
-  const fd = _replFilteredData();
+  const fd = _replFilteredData().filter(r => !_isMiscSku(r.sku_code));
   const sd = _replSalesInRange();
   if(fd.length === 0) return _replNoData();
 
