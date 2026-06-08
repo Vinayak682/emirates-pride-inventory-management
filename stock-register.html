@@ -21,7 +21,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* -- EMIRATES PRIDE — Exact Brand Tokens (matched to emiratespride.com) -- */
+  /* ══ EMIRATES PRIDE — Exact Brand Tokens (matched to emiratespride.com) ══ */
 
   /* Primary Gold — logo color #C9A84C */
   --gold:#C9A84C; --gold2:#C9A84C;
@@ -38,14 +38,14 @@
   /* Border — subtle warm separator */
   --gold-border:#E5E0D8; --border:#E5E0D8; --border-dark:#D0C8B8;
 
-  /* -- Ink / Text -- */
+  /* ── Ink / Text ── */
   --ink:#1A1A1A; --ink2:#1A1A1A; --ink-mid:#4A4540; --ink-light:#8A8278;
   --muted:#8A8278; --muted2:#B0A898;
 
-  /* -- Page & Surfaces — pure white like the website -- */
+  /* ── Page & Surfaces — pure white like the website ── */
   --white:#FFFFFF; --page:#FFFFFF; --sheet:#FAFAF8; --row-alt:#F5F2EC;
 
-  /* -- Column Group Colours -- */
+  /* ── Column Group Colours ── */
   --c-open-h:#EAF1F8; --c-open:#F4F8FC; --c-open-t:#1A4A7A;
   --c-wh-h:#E4F2DA;   --c-wh:#F0F9E8;   --c-wh-t:#2A5C14;
   --c-in-h:#E0F2E8;   --c-in:#EDFAF3;   --c-in-t:#1A6640;
@@ -55,10 +55,10 @@
   --c-out-h:#FAEAEA;  --c-out:#FDF5F5;  --c-out-t:#8B1A1A;
   --c-bal-h:#FBF6E0;  --c-bal:#FDFAEA;  --c-bal-t:#7A5200;
 
-  /* -- Navy aliases → mapped to olive-gold bar for uniform dark-header palette -- */
+  /* ── Navy aliases → mapped to olive-gold bar for uniform dark-header palette ── */
   --navy:#6B5B35; --navy-mid:#5C4A1A; --navy-light:#7A6830;
 
-  /* -- Fonts — Montserrat (geometric sans like website), Cormorant for serif accent -- */
+  /* ── Fonts — Montserrat (geometric sans like website), Cormorant for serif accent ── */
   --f-body:'Montserrat',sans-serif;
   --f-serif:'Cormorant Garamond',serif;
   --f-mono:'IBM Plex Mono',monospace;
@@ -69,7 +69,7 @@
 html,body{height:100%;overflow:hidden;background:var(--page);}
 body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 
-/* --- LOGIN — Executive Dark Theme --- */
+/* ─── LOGIN — Executive Dark Theme ─── */
 #loginScreen{
   position:fixed;inset:0;
   display:flex;align-items:center;justify-content:center;
@@ -203,7 +203,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   margin-top:8px;min-height:16px;font-family:var(--f-mono);letter-spacing:0.3px;
 }
 
-/* --- APP CHROME --- */
+/* ─── APP CHROME ─── */
 #appShell{display:none;flex-direction:column;height:100vh;height:100dvh;background:var(--page);overflow:hidden;}
 
 .app-topbar{
@@ -239,7 +239,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   height:100vh;height:100dvh;
 }
 
-/* --- DAY TABS --- */
+/* ─── DAY TABS ─── */
 .day-tabs{
   background:#FFFFFF;border-bottom:2px solid var(--border);
   display:flex;gap:0;flex-shrink:0;overflow-x:auto;scrollbar-width:none;
@@ -258,24 +258,24 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dtab .day-date{display:block;font-size:9px;color:var(--ink-light);margin-top:3px;letter-spacing:0.5px;font-weight:400;}
 .dtab.active .day-date{color:var(--gold-dark);font-weight:600;}
 
-/* --- GRID WRAPPER --- */
+/* ─── GRID WRAPPER ─── */
 .grid-outer{
   flex:1;overflow:hidden;display:flex;flex-direction:column;background:var(--sheet);
 }
 
-/* --- FIXED COLUMN HEADER (the Opening/In/Out/Balance group row) --- */
+/* ─── FIXED COLUMN HEADER (the Opening/In/Out/Balance group row) ─── */
 .col-header-wrap{
   overflow:hidden;flex-shrink:0;
   border-bottom:2px solid var(--border-dark);
   background:var(--white);
 }
 
-/* --- SCROLLABLE AREA --- */
+/* ─── SCROLLABLE AREA ─── */
 .scroll-area{
   flex:1;overflow:auto;-webkit-overflow-scrolling:touch;
 }
 
-/* --- ACTUAL TABLE --- */
+/* ─── ACTUAL TABLE ─── */
 .sgrid{
   border-collapse:collapse;width:100%;
   table-layout:fixed;
@@ -474,7 +474,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   cursor:default;pointer-events:none;opacity:0.85;
 }
 
-/* --- TOTALS ROW --- */
+/* ─── TOTALS ROW ─── */
 .sgrid tr.totals-row td{
   font-family:var(--f-mono);font-size:13px;font-weight:600;
   padding:8px 4px;text-align:center;border-top:2px solid var(--border-dark);
@@ -493,7 +493,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .totals-row td.out{background:#F5CECE;color:var(--c-out-t);}
 .totals-row td.bal{background:#F5E8A8;color:var(--c-bal-t);}
 
-/* --- FOOTER BAR --- */
+/* ─── FOOTER BAR ─── */
 .footer-bar{
   background:#111;border-top:1px solid #2A2A2A;
   padding:6px 14px;display:flex;align-items:center;gap:16px;
@@ -519,7 +519,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   box-shadow:0 2px 6px rgba(176,48,32,0.4);}
 .lock-btn:active:not(.locked){opacity:0.85;}
 
-/* --- ALL-STORES PANEL --- */
+/* ─── ALL-STORES PANEL ─── */
 #storesPanel{
   position:fixed;inset:0;background:#FFFFFF;z-index:800;
   display:none;flex-direction:column;overflow:hidden;
@@ -576,7 +576,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sc-bal.ok{color:#1A6A40;}.sc-bal.low{color:#9A7B4F;}.sc-bal.zero{color:#555;}
 .sc-empty{color:#444;font-size:12px;text-align:center;padding:16px 0;}
 
-/* --- CONSUMABLES SECTION --- */
+/* ─── CONSUMABLES SECTION ─── */
 #consumableSection{margin-top:0;border-top:3px solid var(--gold);}
 .cons-hdr{background:var(--navy);padding:8px 14px;display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--gold);flex-shrink:0;position:sticky;top:0;z-index:12;}
 .cons-alert-badge{background:#C0392B;color:#fff;font-family:var(--f-mono);font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;letter-spacing:0.5px;}
@@ -601,7 +601,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .cons-status.empty{color:#EB5757;}
 .cons-tap{font-family:var(--f-mono);font-size:8px;color:#444;margin-top:2px;text-align:right;}
 
-/* --- NUMPAD OVERLAY --- */
+/* ─── NUMPAD OVERLAY ─── */
 #numpad{
   position:fixed;inset:0;background:rgba(26,39,68,0.6);
   display:none;align-items:flex-end;justify-content:center;
@@ -666,7 +666,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 }
 .np-confirm:active{opacity:0.85;}
 
-/* --- TOAST --- */
+/* ─── TOAST ─── */
 #toast{
   position:fixed;bottom:calc(58px + env(safe-area-inset-bottom,0px));left:50%;
   transform:translateX(-50%) translateY(10px);
@@ -677,7 +677,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* -- PRODUCT-FIRST AVAILABILITY VIEW -- */
+/* ── PRODUCT-FIRST AVAILABILITY VIEW ── */
 .sp-mode-bar{
   background:#FFFFFF;border-bottom:2px solid #E8E4DC;
   display:flex;gap:0;flex-shrink:0;
@@ -830,7 +830,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .req-confirm:disabled{background:var(--gold-pale);color:var(--ink-light);cursor:not-allowed;border:1px solid var(--gold-border);}
 
 
-/* --------------- DASHBOARD --------------- */
+/* ═══════════════ DASHBOARD ═══════════════ */
 #dashPanel{
   position:fixed;inset:0;background:#F5F8FF;z-index:850;
   display:none;flex-direction:column;
@@ -959,7 +959,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dash-empty-icon{font-size:32px;display:block;margin-bottom:10px;}
 
 
-/* -- LOCKED DAY VISUAL HARDENING -- */
+/* ── LOCKED DAY VISUAL HARDENING ── */
 .day-locked-banner{background:#EAF5EA;border-bottom:1px solid #C8E6C9;padding:7px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .dlb-icon{font-size:13px;}
 .dlb-text{font-family:var(--f-mono);font-size:11px;color:#2A6A2A;flex:1;}
@@ -988,18 +988,18 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .mgr-pin-confirm:active{opacity:0.85;}
 .mgr-pin-cancel{width:100%;background:#FFFFFF;border:1.5px solid var(--gold-border);color:var(--ink-mid);font-family:var(--f-body);font-size:14px;padding:10px;border-radius:10px;cursor:pointer;margin-top:8px;}
 
-/* -- 15-DAY TABS -- */
+/* ── 15-DAY TABS ── */
 .dtab{min-width:68px;flex-shrink:0;}
 .dtab.past-empty{opacity:0.35;}
 .today-dot{display:block;width:5px;height:5px;border-radius:50%;background:var(--gold);margin:2px auto 0;}
 .data-dot{display:block;width:4px;height:4px;border-radius:50%;background:#6FCF97;margin:2px auto 0;}
-/* -- BILINGUAL HEADERS -- */
+/* ── BILINGUAL HEADERS ── */
 .hdr-en{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;line-height:1.3;color:inherit;}
 .hdr-ar{font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;font-size:9px;font-weight:500;direction:rtl;margin-top:3px;opacity:0.70;}
 .hdr-sub-lbl{font-size:8px;font-weight:700;opacity:0.60;margin-top:2px;font-family:var(--f-body);letter-spacing:0.5px;text-transform:uppercase;}
 .sgrid thead tr.hdr-group th{padding:9px 6px 7px;vertical-align:middle;}
 .prod-th{min-width:200px!important;background:var(--navy)!important;text-align:center!important;padding:8px 12px!important;vertical-align:middle!important;border-right:2px solid var(--gold)!important;}
-/* -- FROZEN SUMMARY -- */
+/* ── FROZEN SUMMARY ── */
 .summary-frozen{background:var(--navy);border-bottom:2px solid var(--gold);padding:7px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0;overflow-x:auto;scrollbar-width:none;}
 .summary-frozen::-webkit-scrollbar{display:none;}
 .sf-item{display:flex;flex-direction:column;align-items:center;flex-shrink:0;min-width:54px;}
@@ -1009,14 +1009,14 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .sf-val.fo{color:#8ABFE0;}.sf-val.wh{color:#82D46A;}.sf-val.inn{color:#68C9A8;}
 .sf-val.sold{color:#F08080;}.sf-val.trf{color:#C89ADD;}.sf-val.bal{color:var(--gold);}
 .sf-div{width:1px;height:34px;background:rgba(255,255,255,0.18);flex-shrink:0;}
-/* -- CELL NOTE — see grid CSS section above for full definition -- */
-/* -- HIDE OLD FOOTER -- */
+/* ── CELL NOTE — see grid CSS section above for full definition ── */
+/* ── HIDE OLD FOOTER ── */
 .footer-bar{display:none!important;}
-/* -- REGION HEADER -- */
+/* ── REGION HEADER ── */
 .region-header{padding:9px 14px;background:var(--gold-pale);font-family:var(--f-body);font-size:10px;font-weight:700;color:var(--ink-mid);letter-spacing:1.2px;text-transform:uppercase;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;margin-top:0;}
 .region-mgr{font-size:9px;color:var(--ink-light);font-weight:400;margin-left:auto;letter-spacing:0.5px;}
 
-/* -- TOTALS SUB-HEADER ROW -- */
+/* ── TOTALS SUB-HEADER ROW ── */
 .hdr-totals-row th{
   padding:5px 4px!important;
   border-top:1px solid rgba(255,255,255,0.15)!important;
@@ -1038,7 +1038,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .tot-num.zero{color:#444;}
 .tot-label{display:none;}
 
-/* -- EXPORT PANEL -- */
+/* ── EXPORT PANEL ── */
 #exportPanel{
   position:fixed;inset:0;background:rgba(20,16,12,0.75);
   display:none;align-items:flex-end;justify-content:center;
@@ -1097,7 +1097,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dd-chip-date{display:block;font-size:9px;color:#555;margin-top:1px;}
 .dd-chip{min-width:52px;text-align:center;flex-shrink:0;}
 
-/* -- DASHBOARD TABS -- */
+/* ── DASHBOARD TABS ── */
 .dash-tab-bar{
   display:flex;flex-shrink:0;
   border-bottom:2px solid #D0D8F0;background:#FFFFFF;
@@ -1112,7 +1112,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dash-tab:active{background:#EEF3FF;}
 .dash-tab.active{color:#1A3A7A;border-bottom:2px solid #1A4AAA;font-weight:800;}
 
-/* -- TESTER PANEL -- */
+/* ── TESTER PANEL ── */
 #dashTesterPanel{background:#FFFFFF;}
 .tstr-topbar{
   background:var(--navy);border-bottom:3px solid var(--gold);
@@ -1299,7 +1299,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 }
 .tstr-empty-state .tes-icon{font-size:36px;margin-bottom:12px;}
 
-/* -- TESTER GRID columns -- */
+/* ── TESTER GRID columns ── */
 :root{
   --c-trec:#E8F5EE; --c-trec-h:#C8EDD8; --c-trec-t:#1A5A30;
   --c-tuse:#EEF0FF; --c-tuse-h:#D0D8FF; --c-tuse-t:#2A2A8B;
@@ -1335,7 +1335,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .tstr-day-dot.logged{background:#2A8A4A;}
 .tstr-day-dot.today{background:var(--gold);outline:2px solid var(--gold-dark);}
 
-/* -- TRACKER -- */
+/* ── TRACKER ── */
 .tracker-sku-header{
   background:#FFFFFF;border:none;border-bottom:2px solid #D0D8F0;
   padding:12px 14px;margin:0;
@@ -1393,7 +1393,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .tracker-sum-val{font-family:var(--f-mono);font-size:16px;font-weight:800;display:block;}
 .tracker-sum-label{font-size:8px;color:#8090B0;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-top:3px;}
 
-/* -- DAILY VIEW improvements -- */
+/* ── DAILY VIEW improvements ── */
 .dash-day-kpi{
   display:grid;grid-template-columns:repeat(3,1fr);gap:0;
   background:#FFFFFF;border-bottom:2px solid #D0D8F0;flex-shrink:0;
@@ -1407,7 +1407,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dkpi-label{font-size:8px;color:#8090B0;text-transform:uppercase;font-family:var(--f-mono);margin-top:3px;letter-spacing:0.8px;font-weight:600;}
 
 
-/* -- FINANCE TAB -- */
+/* ── FINANCE TAB ── */
 .fin-topbar{display:flex;align-items:center;justify-content:space-between;
   padding:7px 14px;border-bottom:2px solid var(--gold);flex-shrink:0;background:var(--navy);}
 .fin-store-name{font-family:var(--f-serif);font-size:13px;color:#FFFFFF;font-weight:600;}
@@ -1431,12 +1431,12 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .fin-meta-val{font-family:var(--f-mono);font-size:11px;font-weight:700;color:#FFFFFF;}
 
 /* Section title bar */
-/* -- BNPL payment rows (Tabby / Tamara) -- */
+/* ── BNPL payment rows (Tabby / Tamara) ── */
 .fin-row-bnpl{background:#F8F8FF;}
 .fin-bnpl-tag{font-family:var(--f-mono);font-size:9px;background:#E8E0FF;color:#5A2A8A;
   border-radius:3px;padding:1px 5px;margin-left:4px;font-weight:700;letter-spacing:0.3px;}
 
-/* -- Receipt upload -- */
+/* ── Receipt upload ── */
 .fin-receipt-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
 .fin-receipt-btn{
   display:inline-flex;align-items:center;gap:5px;
@@ -1450,20 +1450,20 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
   background-size:cover;background-position:center;cursor:pointer;flex-shrink:0;
 }
 
-/* -- Multi-transfer cell indicator -- */
+/* ── Multi-transfer cell indicator ── */
 .dcell.inn.dcell-has-note .dcell-val,
 .dcell.trf.dcell-has-note .dcell-val{font-weight:700;}
 .mtd-hint{font-family:var(--f-mono);font-size:8px;color:#AAA;display:block;padding-bottom:3px;letter-spacing:0.3px;}
 
-/* -- Adjustment badge on locked cells -- */
+/* ── Adjustment badge on locked cells ── */
 .dcell-adj-badge{
   display:inline-block;font-size:8px;font-family:var(--f-mono);
   background:#3A1A00;color:#E87070;border-radius:3px;padding:1px 4px;
   margin-top:2px;font-weight:700;
 }
 
-/* ---------------------------------------------------------------- */
-/* -- END NEW FEATURE CSS ---------------------------------------- */
+/* ════════════════════════════════════════════════════════════════ */
+/* ══ END NEW FEATURE CSS ════════════════════════════════════════ */
 
 /* TOP BAR wordmark — dark background context */
 .brand-wordmark-topbar{
@@ -1569,7 +1569,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .fin-banner-lock{background:var(--gold-pale);border-bottom:2px solid var(--gold);color:var(--gold-dark);}
 .fin-banner-unsaved{background:#FFF0F0;border-bottom:2px solid #E87070;color:#C0392B;}
 
-/* -- Finance row — core building block -- */
+/* ── Finance row — core building block ── */
 .fin-row{
   display:flex;align-items:center;justify-content:space-between;
   padding:10px 14px 10px 10px;
@@ -1738,7 +1738,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .fin-grid-row td{height:50px;}
 .fin-grid-row.fin-subtotal td,.fin-grid-row.fin-closing td{height:54px;}
 
-/* -- Transfer cell: compact fixed-height note rows -- */
+/* ── Transfer cell: compact fixed-height note rows ── */
 .trf-note-block{padding:0 4px 3px;display:block;width:100%;box-sizing:border-box;}
 .trf-note-row{
   display:flex;align-items:center;gap:2px;margin-bottom:1px;
@@ -1776,7 +1776,7 @@ body{font-family:var(--f-body);font-size:14px;color:var(--ink);}
 .dcell.trf .trf-note-row{color:#5A2A7A;}
 .dcell.trf .trf-note-qty{background:#DFC8F8;color:#3A0A5A;}
 
-/* -- Export Panel — new 3-step design -- */
+/* ── Export Panel — new 3-step design ── */
 .exp-type-btn{
   display:flex;flex-direction:column;align-items:center;gap:4px;
   background:#FAFAF8;border:1.5px solid #E8E4DC;border-radius:12px;
@@ -1827,7 +1827,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 </head>
 <body>
 
-<!-- ---------- LOGIN ---------- -->
+<!-- ══════════ LOGIN ══════════ -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">
@@ -1910,7 +1910,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- OPERATIONS HUB (intermediate screen after login) ---------- -->
+<!-- ══════════ OPERATIONS HUB (intermediate screen after login) ══════════ -->
 <div id="hubScreen" style="display:none;position:fixed;inset:0;background:#FAFAF8;z-index:600;overflow-y:auto;font-family:'Montserrat',sans-serif;">
 
   <!-- Hub Topbar -->
@@ -2127,7 +2127,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div><!-- /grid -->
 </div><!-- /hubScreen -->
 
-<!-- ---------- APP ---------- -->
+<!-- ══════════ APP ══════════ -->
 <div id="appShell">
   <!-- Top bar -->
   <div class="app-topbar">
@@ -2190,7 +2190,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         <tbody id="sgridBody"></tbody>
       </table>
 
-      <!-- -- TESTER SECTION — same scroll as stock grid -- -->
+      <!-- ══ TESTER SECTION — same scroll as stock grid ══ -->
       <div id="testerSection" style="margin-top:0;border-top:3px solid var(--gold);">
         <!-- Section header -->
         <div style="background:#6B5B35;padding:8px 14px;display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--gold);flex-shrink:0;">
@@ -2204,9 +2204,9 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
           <tbody id="tstrGridBody"></tbody>
         </table>
       </div>
-      <!-- -- END TESTER SECTION -- -->
+      <!-- ══ END TESTER SECTION ══ -->
 
-      <!-- -- STORE SUPPLIES SECTION -- -->
+      <!-- ══ STORE SUPPLIES SECTION ══ -->
       <div id="consumableSection" style="margin-top:0;border-top:3px solid var(--gold);">
         <div style="background:#6B5B35;padding:8px 14px;display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--gold);flex-shrink:0;">
           <span style="font-family:var(--f-mono);font-size:10px;font-weight:800;color:#FFFFFF;letter-spacing:2px;text-transform:uppercase;">🛍️ STORE SUPPLIES</span>
@@ -2235,7 +2235,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
           </tfoot>
         </table>
       </div>
-      <!-- -- END STORE SUPPLIES SECTION -- -->
+      <!-- ══ END STORE SUPPLIES SECTION ══ -->
 
     </div>
   </div>
@@ -2261,7 +2261,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 </div>
 
 
-<!-- --------------- STORE SUPPLIES PANEL --------------- -->
+<!-- ═══════════════ STORE SUPPLIES PANEL ═══════════════ -->
 <div id="suppliesPanel" style="display:none;position:fixed;inset:0;z-index:820;background:#FFFFFF;flex-direction:column;overflow:hidden;">
   <!-- Header -->
   <div style="background:#6B5B35;padding:0 16px;display:flex;align-items:center;gap:12px;height:54px;flex-shrink:0;border-bottom:2px solid var(--gold);">
@@ -2299,7 +2299,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- --------------- DASHBOARD PANEL --------------- -->
+<!-- ═══════════════ DASHBOARD PANEL ═══════════════ -->
 <div id="dashPanel">
   <!-- Top bar -->
   <div class="dash-topbar">
@@ -2347,7 +2347,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       </div>
     </div>
 
-    <!-- -- DAY VIEW -- -->
+    <!-- ══ DAY VIEW ══ -->
     <div id="fin-day-view" style="flex:1;overflow-y:auto;padding-bottom:80px;">
 
       <!-- DSR header -->
@@ -2370,7 +2370,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <div id="fin-stock-lock-warn" class="fin-banner fin-banner-lock" style="display:none;background:#FFF0F0;border-color:#E87070;color:#8B1A1A;">⚠ Sales day is also locked — stock data is finalised.</div>
       <div id="fin-unsaved-warn" class="fin-banner fin-banner-unsaved" style="display:none;">⚠ Unsaved changes — tap Save Report before locking the day</div>
 
-      <!-- -- SECTION 1: SALES SUMMARY -- -->
+      <!-- ══ SECTION 1: SALES SUMMARY ══ -->
       <div class="fin-section-hdr">
         <span>SALES SUMMARY</span>
         <span class="fin-section-ar">ملخص المبيعات</span>
@@ -2438,7 +2438,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         <div class="fin-row-amount fin-amt-total" id="famt-total">—</div>
       </div>
 
-      <!-- -- SECTION 2: CREDIT CARD TRANSACTIONS -- -->
+      <!-- ══ SECTION 2: CREDIT CARD TRANSACTIONS ══ -->
       <div class="fin-section-hdr">
         <span>CREDIT CARD DETAILS</span>
         <span class="fin-section-ar">تفاصيل البطاقة</span>
@@ -2456,7 +2456,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         <span class="fin-cc-total-val" id="famt-cc-total">0</span>
       </div>
 
-      <!-- -- SECTION 3: CASH RECONCILIATION -- -->
+      <!-- ══ SECTION 3: CASH RECONCILIATION ══ -->
       <div class="fin-section-hdr">
         <span>CASH RECONCILIATION</span>
         <span class="fin-section-ar">تسوية النقدية</span>
@@ -2595,7 +2595,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
     </div><!-- end fin-day-view -->
 
-    <!-- -- Sticky action bar -- -->
+    <!-- ── Sticky action bar ── -->
     <div class="fin-actions">
       <button class="fin-act-btn save" id="fin-save-btn" onclick="saveFinanceData()">💾 Save Report</button>
       <button class="fin-act-btn pdf"  onclick="exportFinancePDF('day')">📤 Share PDF</button>
@@ -2636,7 +2636,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- EXPORT PANEL ---------- -->
+<!-- ══════════ EXPORT PANEL ══════════ -->
 <div id="exportPanel">
   <div class="exp-sheet">
 
@@ -2649,7 +2649,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <button onclick="closeExport()" style="background:var(--gold-pale);border:1px solid var(--border);border-radius:50%;width:30px;height:30px;color:var(--ink-mid);font-size:15px;cursor:pointer;">✕</button>
     </div>
 
-    <!-- -- STEP 1: Report Type -- -->
+    <!-- ── STEP 1: Report Type ── -->
     <div class="exp-section-title">① Report Type</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
       <button class="exp-type-btn active" id="expType-stock" onclick="expSetType('stock')">
@@ -2664,7 +2664,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       </button>
     </div>
 
-    <!-- -- STEP 2: Date Range -- -->
+    <!-- ── STEP 2: Date Range ── -->
     <div class="exp-section-title">② Date Range</div>
 
     <!-- Quick presets -->
@@ -2715,7 +2715,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
         color:var(--gold-dark);text-align:center;min-height:16px;font-weight:600;"></div>
     </div>
 
-    <!-- -- STEP 3: Download -- -->
+    <!-- ── STEP 3: Download ── -->
     <div class="exp-section-title">③ Download</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
       <button class="exp-btn csv" onclick="expDownload('csv')">
@@ -2741,7 +2741,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- ALL STORES ---------- -->
+<!-- ══════════ ALL STORES ══════════ -->
 <div id="storesPanel">
   <div class="sp-header">
     <span style="font-size:18px;">🏪</span>
@@ -2819,7 +2819,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- MANAGER PIN OVERRIDE MODAL ---------- -->
+<!-- ══════════ MANAGER PIN OVERRIDE MODAL ══════════ -->
 <div id="mgrPinModal">
   <div class="mgr-pin-sheet">
     <div class="mgr-pin-title">🔐 Manager Override</div>
@@ -2842,7 +2842,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- LOCK MODAL ---------- -->
+<!-- ══════════ LOCK MODAL ══════════ -->
 <div id="lockModal" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);display:none;align-items:flex-end;justify-content:center;z-index:950;padding-bottom:env(safe-area-inset-bottom,0px);">
   <div style="background:#FFFFFF;border-radius:20px 20px 0 0;border-top:3px solid var(--gold);width:100%;max-width:460px;padding:22px 20px 24px;box-shadow:0 -4px 24px rgba(26,39,68,0.12);">
     <div style="font-size:17px;font-weight:700;color:var(--gold-dark);margin-bottom:8px;font-family:'Cormorant Garamond',serif;">🔒 Lock <span id="lockModalDay"></span>?</div>
@@ -2863,7 +2863,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- FINANCE LOCK MODAL ---------- -->
+<!-- ══════════ FINANCE LOCK MODAL ══════════ -->
 <div id="finLockModal" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);display:none;align-items:flex-end;justify-content:center;z-index:960;padding-bottom:env(safe-area-inset-bottom,0px);">
   <div style="background:#FFFFFF;border-radius:20px 20px 0 0;border-top:3px solid var(--gold);width:100%;max-width:460px;padding:22px 20px 28px;box-shadow:0 -4px 24px rgba(26,39,68,0.12);">
 
@@ -2879,7 +2879,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- MULTI-TRANSFER DRAWER ---------- -->
+<!-- ══════════ MULTI-TRANSFER DRAWER ══════════ -->
 <div id="multiTrfDrawer" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);display:none;align-items:flex-end;justify-content:center;z-index:970;padding-bottom:env(safe-area-inset-bottom,0px);">
   <div style="background:#FFFFFF;border-radius:20px 20px 0 0;border-top:3px solid var(--gold);width:100%;max-width:500px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 -4px 32px rgba(201,168,76,0.12);">
     <div style="padding:16px 18px 10px;border-bottom:1px solid var(--border);">
@@ -2914,7 +2914,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- ADJUSTMENT MODAL ---------- -->
+<!-- ══════════ ADJUSTMENT MODAL ══════════ -->
 <div id="adjModal" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);display:none;align-items:flex-end;justify-content:center;z-index:975;padding-bottom:env(safe-area-inset-bottom,0px);">
   <div style="background:#FFFFFF;border-radius:20px 20px 0 0;border-top:3px solid var(--gold);width:100%;max-width:500px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 -4px 32px rgba(201,168,76,0.12);">
     <div style="padding:16px 18px 10px;border-bottom:1px solid var(--border);">
@@ -2973,7 +2973,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   <div style="font-family:var(--f-mono);font-size:11px;color:#666;">Tap anywhere to close</div>
 </div>
 
-<!-- ---------- MANAGER DASHBOARD PANEL ---------- -->
+<!-- ══════════ MANAGER DASHBOARD PANEL ══════════ -->
 <div id="mgrDashPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:800;display:none;flex-direction:column;">
   <div style="background:#FFFFFF;border-bottom:3px solid var(--gold);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(201,168,76,0.08);">
     <div>
@@ -2992,7 +2992,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       <button onclick="closeMgrDashboard()" style="background:var(--gold-dark);border:none;border-radius:6px;color:#FFFFFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;">✕ Close</button>
     </div>
   </div>
-  <!-- -- Quick Instruction Strip -- -->
+  <!-- ── Quick Instruction Strip ── -->
   <div style="background:#FFFDF9;border-bottom:1px solid #E5E0D8;flex-shrink:0;">
     <div onclick="toggleMgrInstructPanel()" id="mgrInstructToggle" style="cursor:pointer;padding:9px 16px;display:flex;align-items:center;justify-content:space-between;user-select:none;">
       <div style="display:flex;align-items:center;gap:8px;">
@@ -3031,7 +3031,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   <div id="mgrDashBody" style="flex:1;overflow-y:auto;background:#FAFAF8;"></div>
 </div>
 
-<!-- ---------- COMPLAINTS PANEL ---------- -->
+<!-- ══════════ COMPLAINTS PANEL ══════════ -->
 <div id="complaintsPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:820;display:none;flex-direction:column;font-family:var(--f-body);">
   <div style="background:#fff;border-bottom:3px solid #C0392B;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(192,57,43,0.08);">
     <div>
@@ -3049,7 +3049,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- SECURITY AUDIT DASHBOARD ---------- -->
+<!-- ══════════ SECURITY AUDIT DASHBOARD ══════════ -->
 <div id="secDashPanel" style="position:fixed;inset:0;background:#F8F6F4;z-index:850;display:none;flex-direction:column;">
 
   <!-- Header -->
@@ -3085,7 +3085,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
 </div>
 
-<!-- ---------- AM FEEDBACK HUB PANEL ---------- -->
+<!-- ══════════ AM FEEDBACK HUB PANEL ══════════ -->
 <style>
 #amHubPanel{position:fixed;inset:0;background:#F5F2EC;z-index:825;display:none;flex-direction:column;}
 .amhub-topbar{background:#FFFFFF;border-bottom:3px solid #059669;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(5,150,105,0.10);}
@@ -3153,7 +3153,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 .approve-fq-inp::-webkit-outer-spin-button,.approve-fq-inp::-webkit-inner-spin-button{-webkit-appearance:none;}
 .approve-fq-inp:focus{outline:none;border-color:var(--gold-bar);background:#FFF;}
 
-/* -- REQUEST DETAIL VIEW -- */
+/* ── REQUEST DETAIL VIEW ── */
 .rdet-hdr{position:sticky;top:0;z-index:10;background:#FFF;border-bottom:2px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .rdet-back{background:var(--gold-pale);border:1.5px solid var(--border);border-radius:7px;color:var(--ink-mid);font-family:var(--f-body);font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer;flex-shrink:0;}
 .rdet-ref{font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--gold-dark);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -3266,7 +3266,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   <div class="amhub-modal-card" id="amHubModalCard"></div>
 </div>
 
-<!-- ---------- AREA MANAGER STOCK GUIDE / MIN-MAX PANEL ---------- -->
+<!-- ══════════ AREA MANAGER STOCK GUIDE / MIN-MAX PANEL ══════════ -->
 <style>
 #amPanel{position:fixed;inset:0;background:#F5F5F0;z-index:820;display:none;flex-direction:column;}
 .am-tbl{width:100%;border-collapse:collapse;font-size:12px;}
@@ -3342,7 +3342,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- DEMAND PLANNING PANEL ---------- -->
+<!-- ══════════ DEMAND PLANNING PANEL ══════════ -->
 <div id="dpPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:810;display:none;flex-direction:column;">
   <div style="background:#FFFFFF;border-bottom:3px solid var(--gold);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(201,168,76,0.08);">
     <div>
@@ -3371,7 +3371,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   <div id="dpBody" style="flex:1;overflow-y:auto;padding:16px;"></div>
 </div>
 
-<!-- ---------- WAREHOUSE PANEL (Tester Tracker) ---------- -->
+<!-- ══════════ WAREHOUSE PANEL (Tester Tracker) ══════════ -->
 <style>
 .wh-tbl{width:100%;border-collapse:collapse;font-size:11px;min-width:1300px;}
 .wh-tbl th{padding:5px 8px;text-align:left;white-space:nowrap;position:sticky;z-index:2;border-right:1px solid rgba(255,255,255,0.15);}
@@ -3506,7 +3506,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
 
 
-<!-- ---------- TRANSFER DRAWER ---------- -->
+<!-- ══════════ TRANSFER DRAWER ══════════ -->
 <div id="trfDrawer" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);
   display:none;align-items:flex-end;justify-content:center;z-index:960;
   padding-bottom:env(safe-area-inset-bottom,0px);">
@@ -3514,7 +3514,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     width:100%;max-width:540px;max-height:92vh;display:flex;flex-direction:column;
     box-shadow:0 -4px 32px rgba(201,168,76,0.12);">
 
-    <!-- -- Header -- -->
+    <!-- ── Header ── -->
     <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;">
         <div style="flex:1;min-width:0;">
@@ -3544,10 +3544,10 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
       </div>
     </div>
 
-    <!-- -- Existing splits list -- -->
+    <!-- ── Existing splits list ── -->
     <div id="trfDrawerList" style="flex:1;overflow-y:auto;padding:6px 0;min-height:60px;"></div>
 
-    <!-- -- ADD NEW SPLIT — inline form -- -->
+    <!-- ── ADD NEW SPLIT — inline form ── -->
     <div id="trfDrawerAddSection" style="border-top:2px solid var(--border);flex-shrink:0;background:var(--gold-pale);padding:12px 14px;">
 
       <div style="font-family:var(--f-mono);font-size:9px;font-weight:800;color:#0B7A45;
@@ -3627,7 +3627,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- NUMPAD ---------- -->
+<!-- ══════════ NUMPAD ══════════ -->
 <div id="numpad">
   <div class="np-sheet">
     <div class="np-top">
@@ -3673,7 +3673,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 
 <div id="toast"></div>
 
-<!-- ---------- FG TESTER REQUEST PANEL (Store Staff) ---------- -->
+<!-- ══════════ FG TESTER REQUEST PANEL (Store Staff) ══════════ -->
 <div id="fgRequestPanel" style="position:fixed;inset:0;background:rgba(26,39,68,0.55);z-index:900;display:none;align-items:center;justify-content:center;padding:20px;">
   <div style="background:#FAFAF8;border-radius:12px;border-top:3px solid var(--gold);max-width:500px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(201,168,76,0.15);">
     <div style="background:var(--gold-pale);border-bottom:2px solid var(--border);padding:14px 18px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
@@ -3699,7 +3699,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   </div>
 </div>
 
-<!-- ---------- FG APPROVAL PANEL (Manager) ---------- -->
+<!-- ══════════ FG APPROVAL PANEL (Manager) ══════════ -->
 <div id="fgApprovalPanel" style="position:fixed;inset:0;background:#FAFAF8;z-index:820;display:none;flex-direction:column;">
   <div style="background:#FFFFFF;border-bottom:3px solid var(--gold);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(201,168,76,0.08);">
     <div>
@@ -3715,7 +3715,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
   <div id="fgApprovalBody" style="flex:1;overflow-y:auto;padding:16px;"></div>
 </div>
 
-<!-- ---------- FG CONFIRM MODAL ---------- -->
+<!-- ══════════ FG CONFIRM MODAL ══════════ -->
 <div id="fgModal" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(26,26,26,0.55);backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:20px;">
   <div style="background:#FFFFFF;border-radius:14px;padding:28px 24px 22px;max-width:400px;width:100%;box-shadow:0 12px 48px rgba(26,26,26,0.22);border:1.5px solid var(--border);">
     <div id="fgModalIcon" style="font-size:28px;margin-bottom:10px;"></div>
@@ -3730,9 +3730,9 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
 </div>
 
 <script>
-// ------------------------------------------
+// ══════════════════════════════════════════
 // DATA
-// ------------------------------------------
+// ══════════════════════════════════════════
 // PINs removed from code — stored securely in Supabase store_pins table
 // Verified server-side via verify_store_pin() RPC — never exposed in source
 const STORES=[
@@ -3763,7 +3763,7 @@ const STORES=[
   {code:'FJ001A',name:'Fujairah City Centre ASL',     city:'Fujairah',  region:'Fujairah',   mgr:'Mohammed Elmatloub'},
   {code:'SH001', name:'Zahia City Centre Kiosk',      city:'Sharjah',   region:'Sharjah',    mgr:'Mohammed Elmatloub'},
   {code:'AJ001', name:'Ajman City Centre Kiosk',      city:'Ajman',     region:'Ajman',      mgr:'Mohammed Elmatloub'},
-  // -- Area Manager logins ---------------------------------------
+  // ── Area Manager logins ───────────────────────────────────────
   {code:'AM_HESSIN', name:'Area Manager — Mohamed Hessin',     city:'Head Office', region:'AM', mgr:'',
    amStores:['A0001','A0002','BAS001','A0003','A0004','A0005','A0009','A0007','A0008','YMK001','AL001','AL002','AL003','BAW001','AL004','AL006','MAK001']},
   {code:'AM_IMAD',   name:'Area Manager — Mohammed Imad',      city:'Head Office', region:'AM', mgr:'',
@@ -3974,7 +3974,7 @@ function getDayLabels(){ const a=[]; for(let i=-DAY_PAST;i<DAY_WINDOW-DAY_PAST;i
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const DAY_FULL=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-// -- STATE --
+// ── STATE ──
 let me = null;
 let curDay = 0;
 let pinBuf = '';
@@ -4058,11 +4058,11 @@ function lockDay(store,day){
     _sbRpc('save_stock_batch', {p_rows: carryBatch.map(w=>({store:w.store,date:w.date,prod:w.prod,field:w.field,value:w.value,by:'carry-forward'}))})
       .catch(e=>console.warn('carry-forward sync:',e.message));
   }
-  // -- Finance carry-forward: closing balance → next day opening cash --
+  // ── Finance carry-forward: closing balance → next day opening cash ──
   if(day < DAY_WINDOW-1) carryFinanceForward(store, day);
-  // -- Tester carry-forward: closing → next day opening --
+  // ── Tester carry-forward: closing → next day opening ──
   _tbCarryForward(store);
-  // -- Auto-lock Finance too if it was saved but not yet finance-locked --
+  // ── Auto-lock Finance too if it was saved but not yet finance-locked ──
   if(db.finance?.[store]?.[day] && !isFinanceLocked(store, day)){
     db.finance[store][day].finLocked = true;
     db.finance[store][day].finLockedAt = new Date().toLocaleString('en-GB') + ' (auto with stock lock)';
@@ -4073,7 +4073,7 @@ function bal(store,day,code){
   return dbGet(store,day,code,'open')+dbGet(store,day,code,'wh')+dbGet(store,day,code,'inn')-dbGet(store,day,code,'sold')-dbGet(store,day,code,'trf')-dbGet(store,day,code,'wrh');
 }
 
-// -- LOGIN PARTICLES --
+// ── LOGIN PARTICLES ──
 (function(){
   const screen=document.getElementById('loginScreen');
   if(!screen)return;
@@ -4086,7 +4086,7 @@ function bal(store,day,code){
   }
 })();
 
-// -- LOGIN --
+// ── LOGIN ──
 function buildStoreSelect(){
   const sel=document.getElementById('storeSelect');
   sel.innerHTML='<option value="">— Select your store —</option>';
@@ -4105,14 +4105,14 @@ function buildStoreSelect(){
       sel.appendChild(og);
     });
   });
-  const ogAM=document.createElement('optgroup'); ogAM.label='-- Area Managers --';
+  const ogAM=document.createElement('optgroup'); ogAM.label='── Area Managers ──';
   STORES.filter(s=>s.code.startsWith('AM_')).forEach(s=>{
     const o=document.createElement('option');
     o.value=s.code; o.textContent=s.name;
     ogAM.appendChild(o);
   });
   sel.appendChild(ogAM);
-  const og2=document.createElement('optgroup'); og2.label='-- Head Office --';
+  const og2=document.createElement('optgroup'); og2.label='── Head Office ──';
   const o2=document.createElement('option'); o2.value='MGR'; o2.textContent='Manager (All Access)';
   og2.appendChild(o2);
   const oWH=document.createElement('option'); oWH.value='WH001'; oWH.textContent='Warehouse';
@@ -4143,7 +4143,7 @@ async function doLogin(){
   if(!store){err.textContent='Store not found.';return;}
   if(!pinBuf){err.textContent='Please enter your PIN.';return;}
 
-  // -- Verify PIN via Supabase RPC (PIN never leaves the database)
+  // ── Verify PIN via Supabase RPC (PIN never leaves the database)
   err.textContent=''; err.style.color='';
   const loginGoBtn=document.getElementById('loginGoBtn');
   if(loginGoBtn){loginGoBtn.disabled=true; loginGoBtn.textContent='Verifying…';}
@@ -4177,7 +4177,7 @@ async function doLogin(){
   const _loginType = code==='MGR'?'mgr': code==='WH001'?'wh': code.startsWith('AM_')?'am':'store';
   _secCreateSession(code, _loginType);
 
-  // -- WAREHOUSE LOGIN → show warehouse panel directly (no hub)
+  // ── WAREHOUSE LOGIN → show warehouse panel directly (no hub)
   if(store.code==='WH001'){
     me=store; curDay=DAY_PAST;
     document.getElementById('loginScreen').style.display='none';
@@ -4186,7 +4186,7 @@ async function doLogin(){
     return;
   }
 
-  // -- MGR / AM LOGINS → bypass hub, go straight to app (original flow)
+  // ── MGR / AM LOGINS → bypass hub, go straight to app (original flow)
   if(store.code==='MGR' || store.code.startsWith('AM_')){
     me=store; curDay=DAY_PAST;
     document.getElementById('loginScreen').style.display='none';
@@ -4233,12 +4233,12 @@ async function doLogin(){
     return;
   }
 
-  // -- STORE STAFF → go through Operations Hub
+  // ── STORE STAFF → go through Operations Hub
   openHubScreen(store);
 }
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 //  OPERATIONS HUB — intermediate screen after login
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 let _hubStore = null;
 
 function _hubSeedDummyNotifs() {
@@ -4419,7 +4419,7 @@ function _hubLaunchApp(store, mode) {
   }
 }
 
-// -- Direct Finance button ----------------------------------
+// ── Direct Finance button ──────────────────────────────────
 function openFinanceDirect() {
   // Open the dashboard panel and switch straight to Finance tab
   const dp = document.getElementById('dashPanel');
@@ -4427,7 +4427,7 @@ function openFinanceDirect() {
   if (typeof switchDashTab === 'function') switchDashTab('finance');
 }
 
-// -- Direct Testers button ----------------------------------
+// ── Direct Testers button ──────────────────────────────────
 function openTestersDirect() {
   // testerSection lives inside #scrollArea — scroll that container directly
   const tstr = document.getElementById('testerSection');
@@ -4444,7 +4444,7 @@ function openTestersDirect() {
   setTimeout(() => { tstr.style.outline = ''; }, 1800);
 }
 
-// -- Topbar Notification Bell -------------------------------
+// ── Topbar Notification Bell ───────────────────────────────
 const TOP_NOTIF_READ_KEY = 'ep_notif_read_ids';
 
 function _topGetReadIds() {
@@ -4547,9 +4547,9 @@ function returnToHub() {
   _hubRenderNotifs();
 }
 
-// ------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════
 // COMPLAINTS PANEL (Manager Dashboard)
-// ------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════
 const SB_URL_CC  = 'https://ncszurcrkngjcjqsowln.supabase.co';
 const SB_ANON_CC = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
 
@@ -4591,7 +4591,7 @@ async function refreshComplaintsPanel() {
   }
 }
 
-// --- COMPLAINTS PANEL — inline review, approve, repair, reject -------
+// ─── COMPLAINTS PANEL — inline review, approve, repair, reject ───────
 let _ccData = [];
 let _ccSelDec = null;
 const _CTYPE = {pump_issue:'Pump Issue',fragrance_issue:'Fragrance Issue',leakage:'Leakage',broken_cap:'Broken Cap/Nozzle',cosmetic_damage:'Cosmetic Damage',wrong_product:'Wrong Product',other:'Other'};
@@ -4750,7 +4750,7 @@ function _ccRenderList(bodyEl) {
     </table>
   </div>`;
 
-  // -- Closed Cases (collapsed) --------------------------------------
+  // ── Closed Cases (collapsed) ──────────────────────────────────────
   const closed = data.filter(c=>['closed','delivered','rejected'].includes(c.status));
   if(closed.length){
     const avgDays = closed.filter(c=>c.submitted_at&&c.resolved_at).reduce((s,c)=>{
@@ -5294,7 +5294,7 @@ function _ccPrintDoc(id, tlEntry, prebuiltC){
   w.document.close();
 }
 
-// -- Manager Dashboard — Quick Instruction -------------------------
+// ── Manager Dashboard — Quick Instruction ─────────────────────────
 function toggleMgrInstructPanel() {
   const area  = document.getElementById('mgrInstructCompose');
   const arrow = document.getElementById('mgrInstructArrow');
@@ -5337,7 +5337,7 @@ function mgrSendInstruction() {
   toast('✓ Instruction sent to ' + dest);
 }
 
-// -- Hub helpers ----------------------------------------------------
+// ── Hub helpers ────────────────────────────────────────────────────
 let _pendingScrollSupplies = false;
 function openSuppliesDirect() {
   openSuppliesPanel();
@@ -5425,7 +5425,7 @@ function hubLogout() {
   pc();
 }
 
-// -- Notifications (localStorage) ---------------------------
+// ── Notifications (localStorage) ───────────────────────────
 const HUB_NOTIF_KEY = 'ep_hub_notifications';
 
 function _hubGetNotifs() {
@@ -5586,7 +5586,7 @@ function doLogout(){
   if(amDashBtn) amDashBtn.remove();
 }
 
-// -- DAY TABS --
+// ── DAY TABS ──
 function buildDayTabs(){
   const bar=document.getElementById('dayTabs');
   bar.innerHTML='';
@@ -5618,7 +5618,7 @@ function buildDayTabs(){
   setTimeout(()=>{const a=bar.querySelector('.dtab.active');if(a)a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});},80);
 }
 
-// -- GRID --
+// ── GRID ──
 function buildGrid(){
   const locked=me&&isLocked(me.code,curDay);
   const mgrActive=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
@@ -5840,7 +5840,7 @@ function buildGrid(){
   lb.className='lock-btn'+(locked?' locked':'');
 }
 
-// -- Build compact multi-transfer chips for inn/trf cells ----------
+// ── Build compact multi-transfer chips for inn/trf cells ──────────
 function buildTrfNote(entries, type) {
   if (!entries.length) return '';
   const total = entries.reduce((s,e)=>s+(e.qty||0), 0);
@@ -5894,7 +5894,7 @@ function buildTrfNote(entries, type) {
   return html;
 }
 
-// -- FOOTER --
+// ── FOOTER ──
 function buildFooter(){
   let totO=0,totW=0,totI=0,totS=0,totT=0,totB=0;
   PRODUCTS.forEach(p=>{
@@ -5963,7 +5963,7 @@ function confirmLock(){
   toast('🔒 Locked by ' + lockedBy + ' — opening carried to tomorrow');
 }
 
-// -- NUMPAD --
+// ── NUMPAD ──
 let npCtx=null,npBuf='';
 function openNP(code,field){
   if(!me) return;
@@ -6160,8 +6160,8 @@ function updateNpProj(){
 }
 // nk/nc/nd defined in Finance section below (finance-aware)
 
-// -- ALL STORES PANEL --
-// --- ALL STORES PANEL ---
+// ── ALL STORES PANEL ──
+// ─── ALL STORES PANEL ───
 let spMode='product'; // 'product' | 'store'
 let reqCtx=null;
 let selectedQty=0;
@@ -6183,7 +6183,7 @@ function buildSpSkuSel(){
   sel.innerHTML='<option value="">— Select a product to check availability —</option>';
   CATS.forEach(cat=>{
     const og=document.createElement('optgroup');
-    og.label='-- '+cat.cat+' --';
+    og.label='── '+cat.cat+' ──';
     cat.products.forEach(p=>{
       const o=document.createElement('option');
       o.value=p.code;
@@ -6242,7 +6242,7 @@ function renderStores(){
   else renderStoreMode(body);
 }
 
-// --- PRODUCT MODE: side-by-side AM panels, no scroll ------------
+// ─── PRODUCT MODE: side-by-side AM panels, no scroll ────────────
 function renderProductMode(body){
   const skuF=document.getElementById('spSku').value;
   const q=(document.getElementById('spSearch').value||'').toLowerCase();
@@ -6346,7 +6346,7 @@ function renderProductMode(body){
     <div class="sp-am-panels">${panelsHTML}</div>
   </div>`;
 }
-// --- STORE MODE: cards per store ---
+// ─── STORE MODE: cards per store ───
 function renderStoreMode(body){
   const q=(document.getElementById('spSearch').value||'').toLowerCase();
 
@@ -6596,22 +6596,22 @@ function confirmReq(){
   const {prod,store,avail}=reqCtx;
   const note=document.getElementById('reqNote').value.trim();
 
-  // -- GUARD: source must still have enough stock --
+  // ── GUARD: source must still have enough stock ──
   const sourceNow=bal(store.code,curDay,prod.code);
   if(selectedQty>sourceNow){
     toast('⚠ Source only has '+sourceNow+' now — refresh and try again');
     closeReq(); return;
   }
 
-  // -- DEDUCT from source store (Stock OUT) --
+  // ── DEDUCT from source store (Stock OUT) ──
   const srcTrf=dbGet(store.code,curDay,prod.code,'trf');
   dbSet(store.code,curDay,prod.code,'trf',srcTrf+selectedQty);
 
-  // -- ADD to requesting store (Store IN) --
+  // ── ADD to requesting store (Store IN) ──
   const myInn=dbGet(me.code,curDay,prod.code,'inn');
   dbSet(me.code,curDay,prod.code,'inn',myInn+selectedQty);
 
-  // -- Log the movement --
+  // ── Log the movement ──
   const now=new Date();
   const ts=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+
     ' '+now.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
@@ -6634,7 +6634,7 @@ function confirmReq(){
 
   saveDB();
 
-  // -- Rebuild grid (preserve scroll) --
+  // ── Rebuild grid (preserve scroll) ──
   const scrollEl=document.getElementById('scrollArea');
   const st=scrollEl?scrollEl.scrollTop:0;
   buildGrid();buildFooter();buildDayTabs();
@@ -6644,10 +6644,10 @@ function confirmReq(){
   toast('✅ '+selectedQty+'× '+prod.en+' transferred — deducted from '+store.name);
 }
 
-// -- TRANSFER LOG --
+// ── TRANSFER LOG ──
 let movLogOpen=true;
 
-// --- MANAGER OVERRIDE ---
+// ─── MANAGER OVERRIDE ───
 let mgrPinBuf='';
 // MGR_PIN removed — PIN verified via Supabase RPC (verify_store_pin)
 function requestMgrOverride(){
@@ -6749,9 +6749,9 @@ function renderMovLog(){
 }
 
 
-// -----------------------------------------------------------
+// ═══════════════════════════════════════════════════════════
 // DASHBOARD
-// -----------------------------------------------------------
+// ═══════════════════════════════════════════════════════════
 let dashDay = 0;
 
 function openDash(){
@@ -6805,7 +6805,7 @@ function renderDash(){
   // Enable/disable download buttons based on lock
   ['dlDaySales','dlDayFull'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=!locked;});
 
-  // -- TOTALS FOR THIS DAY --
+  // ── TOTALS FOR THIS DAY ──
   let totO=0,totSold=0,totTrf=0,totIn=0,totWh=0,totBal=0;
   PRODUCTS.forEach(p=>{
     totO    +=dbGet(me.code,dashDay,p.code,'open');
@@ -6816,7 +6816,7 @@ function renderDash(){
     totBal  +=bal(me.code,dashDay,p.code);
   });
 
-  // -- ACTIVITIES for THIS day only (not leaking to other days) --
+  // ── ACTIVITIES for THIS day only (not leaking to other days) ──
   const activities = [];
   PRODUCTS.forEach(p=>{
     const o=dbGet(me.code,dashDay,p.code,'open');
@@ -6839,10 +6839,10 @@ function renderDash(){
 
   const dayTransfers = getTransferLog().filter(t=>t.day===dashDay);
 
-  // -- CLEAR + BUILD --
+  // ── CLEAR + BUILD ──
   body.innerHTML = '';
 
-  // -- KPI STRIP --
+  // ── KPI STRIP ──
   const kpiEl = document.createElement('div');
   kpiEl.className = 'dash-day-kpi';
   kpiEl.innerHTML = `
@@ -6854,7 +6854,7 @@ function renderDash(){
     <div class="dkpi"><span class="dkpi-val bal">${totBal}</span><div class="dkpi-label">Balance</div></div>`;
   body.appendChild(kpiEl);
 
-  // -- STATUS BADGE --
+  // ── STATUS BADGE ──
   const statusDiv = document.createElement('div');
   statusDiv.style.cssText = 'padding:8px 14px;display:flex;align-items:center;gap:8px;background:#FFFFFF;border-bottom:1px solid #E8EEFF;';
   statusDiv.innerHTML = locked
@@ -6862,7 +6862,7 @@ function renderDash(){
     : `<span style="background:#FEF9E7;border:1px solid #FAD7A0;color:#7D6608;font-size:11px;font-family:var(--f-mono);padding:6px 14px;border-radius:6px;font-weight:700;">⚠ ${dl.full} ${dl.date} — Not yet locked</span>`;
   body.appendChild(statusDiv);
 
-  // -- ACTIVITY LOG --
+  // ── ACTIVITY LOG ──
   const logSection = document.createElement('div');
   logSection.style.cssText='background:#FFFFFF;';
   const logTitle = document.createElement('div');
@@ -6935,7 +6935,7 @@ function renderDash(){
   }
   body.appendChild(logSection);
 
-  // -- SKU SNAPSHOT — only products with movement ON THIS DAY --
+  // ── SKU SNAPSHOT — only products with movement ON THIS DAY ──
   const activeProds = PRODUCTS.filter(p=>
     dbGet(me.code,dashDay,p.code,'wh')>0 ||
     dbGet(me.code,dashDay,p.code,'inn')>0 ||
@@ -7019,12 +7019,12 @@ function renderDash(){
     body.appendChild(snapSection);
   }
 
-  // ------------------------------------------------------------
+  // ════════════════════════════════════════════════════════════
   // MANAGER-ONLY INTELLIGENCE SECTIONS (isMgrSession only)
-  // ------------------------------------------------------------
+  // ════════════════════════════════════════════════════════════
   if(isMgrSession){
 
-    // -- 1. DAY vs YESTERDAY COMPARISON ----------------------
+    // ── 1. DAY vs YESTERDAY COMPARISON ──────────────────────
     const prevDay = dashDay > 0 ? dashDay - 1 : null;
     if(prevDay !== null){
       const yO    = PRODUCTS.reduce((a,p)=>a+dbGet(me.code,prevDay,p.code,'open'),0);
@@ -7074,7 +7074,7 @@ function renderDash(){
       body.appendChild(cmpSection);
     }
 
-    // -- 2. LOW BALANCE ALERTS --------------------------------
+    // ── 2. LOW BALANCE ALERTS ────────────────────────────────
     const LOW_THRESH = 5;
     const lowProds = PRODUCTS.filter(p => {
       const b = bal(me.code, dashDay, p.code);
@@ -7114,7 +7114,7 @@ function renderDash(){
       body.appendChild(lowSection);
     }
 
-    // -- 3. DEAD STOCK — Products with NO movement ------------
+    // ── 3. DEAD STOCK — Products with NO movement ────────────
     // Time brackets: 3wk, 1m, 2m, 6m, 1y (in day-indices)
     // DAY_WINDOW=15, DAY_PAST=5 → today=index 5
     // We scan BACKWARDS from today across all days in the rolling window
@@ -7205,9 +7205,9 @@ function renderDash(){
 
 }
 
-// ------------------------------------------
+// ══════════════════════════════════════════
 // FINANCE — CLEAN REWRITE
-// ------------------------------------------
+// ══════════════════════════════════════════
 let finCC = [];
 let finPeriod = 'day';  // finBNPL & finExpenses declared below with their section
 let finNPCtx  = null;  // 'cash' | 'credit' | 'openCash' | 'debtors' | 'directorAmt' | 'bankAmt' | 'expenses' | '__cc__N'
@@ -7235,7 +7235,7 @@ let finData = {
   ccRows:[], bnplRows:[], expenseRows:[]
 };
 
-// -- Calc derived fields ------------------------------
+// ── Calc derived fields ──────────────────────────────
 function finCalc(){
   const cc = finCC.reduce((s,r)=>s+(parseFloat(r.amt)||0),0);
   finData._ccTotal    = cc;
@@ -7248,7 +7248,7 @@ function finCalc(){
                        - (finData.expenses||0);
 }
 
-// -- Format helpers -----------------------------------
+// ── Format helpers ───────────────────────────────────
 function fmtAmt(n){
   const v = parseFloat(n)||0;
   return v === 0 ? '—' : v.toLocaleString('en-US', {maximumFractionDigits:0});
@@ -7258,7 +7258,7 @@ function fmtDeduct(n){
   return v === 0 ? '—' : '(' + v.toLocaleString('en-US', {maximumFractionDigits:0}) + ')';
 }
 
-// -- Render all Finance amounts -----------------------
+// ── Render all Finance amounts ───────────────────────
 function finRender(){
   finCalc();
   const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
@@ -7299,7 +7299,7 @@ function finRender(){
   renderExpenseList();
 }
 
-// -- Render CC transaction list -----------------------
+// ── Render CC transaction list ───────────────────────
 function renderCCList(){
   const list    = document.getElementById('fin-cc-list');
   const emptyMsg= document.getElementById('fin-cc-empty-msg');
@@ -7358,7 +7358,7 @@ function renderCCList(){
   if(ccEl) ccEl.textContent = fmtAmt(ccTotal);
 }
 
-// -- Unsaved state ------------------------------------
+// ── Unsaved state ────────────────────────────────────
 function finMarkUnsaved(){
   const btn = document.getElementById('fin-save-btn');
   if(btn) btn.classList.add('unsaved');
@@ -7371,7 +7371,7 @@ function finMarkSaved(){
   const w = document.getElementById('fin-unsaved-warn');
   if(w) w.style.display='none';
 }
-// -- Finance lock helpers -----------------------------
+// ── Finance lock helpers ─────────────────────────────
 function isFinanceLocked(storeCode, dayIdx){
   if(isMgrSession) return false; // MGR has full finance access — never locked
   return !!(db.finance?.[storeCode]?.[dayIdx]?.finLocked);
@@ -7435,12 +7435,12 @@ function mgrUnlockFinance(){
   toast('🔓 Finance unlocked by Manager Override');
 }
 
-// -- Finance lock helpers -----------------------------
+// ── Finance lock helpers ─────────────────────────────
 function isFinanceSaved(storeCode, dayIdx){
   return !!(finDaySaved[storeCode+'_'+dayIdx]);
 }
 
-// -- OPEN NUMPAD for finance row ----------------------
+// ── OPEN NUMPAD for finance row ──────────────────────
 function finTap(field){
   const finDay = typeof dashDay !== 'undefined' ? dashDay : DAY_PAST;
   if(isFinanceLocked(me?.code, finDay)){
@@ -7466,7 +7466,7 @@ function finTap(field){
   document.getElementById('numpad').classList.add('show');
 }
 
-// -- OPEN NUMPAD for CC amount ------------------------
+// ── OPEN NUMPAD for CC amount ────────────────────────
 function finTapCC(i){
   const finDay = typeof dashDay !== 'undefined' ? dashDay : DAY_PAST;
   if(isFinanceLocked(me?.code, finDay)){
@@ -7493,7 +7493,7 @@ function finTapCC(i){
   document.getElementById('numpad').classList.add('show');
 }
 
-// -- UNIFIED confirmNP (stock + finance) -------------
+// ── UNIFIED confirmNP (stock + finance) ─────────────
 function confirmNP(){
   // Supplies numpad
   if(npCtx && npCtx.type === 'supplies'){
@@ -7611,7 +7611,7 @@ function confirmNP(){
       const pp = PRODUCTS.find(x=>x.code===npCtx.code);
       const remarkVal = (document.getElementById('npRemark')?.value||'').trim();
       if(!db.transferLog) db.transferLog=[];
-      // -- ADD as new split (never remove existing splits for other stores) --
+      // ── ADD as new split (never remove existing splits for other stores) ──
       // Only remove if same store already has an entry for this SKU/day/direction
       db.transferLog = db.transferLog.filter(t=>!(
         t.day===curDay && t.prodCode===npCtx.code &&
@@ -7672,7 +7672,7 @@ function confirmNP(){
   toast('✓ Saved');
 }
 
-// -- Numpad key handlers (finance-aware) -------------
+// ── Numpad key handlers (finance-aware) ─────────────
 function nk(k){
   if(finNPCtx !== null && !npCtx){
     if(finNPBuf==='' || finNPBuf==='0') finNPBuf = k;
@@ -7707,7 +7707,7 @@ function nd(){
   updateNpProj();
 }
 
-// -- CC row management --------------------------------
+// ── CC row management ────────────────────────────────
 function addCCRow(){
   const finDay = typeof dashDay !== 'undefined' ? dashDay : DAY_PAST;
   if(isFinanceLocked(me?.code, finDay)){ toast('🔒 Finance locked'); return; }
@@ -7728,7 +7728,7 @@ function delCCRow(i){
   finRender();
 }
 
-// -- Finance carry-forward ----------------------------
+// ── Finance carry-forward ────────────────────────────
 function carryFinanceForward(storeCode, fromDay){
   if(fromDay >= DAY_WINDOW-1) return;
   const saved = db.finance?.[storeCode]?.[fromDay];
@@ -7753,7 +7753,7 @@ function carryFinanceForward(storeCode, fromDay){
   saveDB();
 }
 
-// -- Seed dummy finance data (3-4 days) for testing --
+// ── Seed dummy finance data (3-4 days) for testing ──
 function seedFinanceTestData(){
   if(!me){ toast('Login to a store first'); return; }
   const entries = [
@@ -7791,7 +7791,7 @@ function seedFinanceTestData(){
   toast('✅ Dummy finance data seeded for 4 days — check Day / Week / Month views');
 }
 
-// -- Save finance data --------------------------------
+// ── Save finance data ────────────────────────────────
 function saveFinanceData(){
   if(!me) return;
   const finDay = typeof dashDay !== 'undefined' ? dashDay : DAY_PAST;
@@ -7825,7 +7825,7 @@ function saveFinanceData(){
   toast('💾 Finance saved — ' + (dl ? dl.full+' '+dl.date : ''));
 }
 
-// -- Load finance data --------------------------------
+// ── Load finance data ────────────────────────────────
 function loadFinanceData(finDay){
   finCC = []; finBNPL = []; finExpenses = [];
   finData = {
@@ -7925,7 +7925,7 @@ function loadFinanceData(finDay){
   }
 }
 
-// -- Open finance tab ---------------------------------
+// ── Open finance tab ─────────────────────────────────
 function openFinanceTab(){
   const finDay = typeof dashDay !== 'undefined' ? dashDay : DAY_PAST;
   const dl     = getDayLabels()[finDay];
@@ -7950,7 +7950,7 @@ function finSelectPeriod(p){
   if(p==='month') renderFinMonth();
 }
 
-// -- Week summary view --------------------------------
+// ── Week summary view ────────────────────────────────
 function renderFinWeek(){
   const body = document.getElementById('fin-week-view');
   if(!body || !me) return;
@@ -8102,7 +8102,7 @@ function renderFinMonth(){
     </div>`;
 }
 
-// -- Finance PDF: last N days ---------------------------------------
+// ── Finance PDF: last N days ───────────────────────────────────────
 function exportFinanceRangePDF(days){
   if(!me){ toast('Login first'); return; }
   const today = new Date(); today.setHours(0,0,0,0);
@@ -8213,7 +8213,7 @@ function _exportFinancePDFRange(fromDate, toDate, label){
   toast(`📋 ${label} Finance PDF ready`);
 }
 
-// -- Finance PDF --------------------------------------
+// ── Finance PDF ──────────────────────────────────────
 function exportFinancePDF(period){
   if(!me){ toast('Please log in'); return; }
   if(period==='week'||period==='month'){ exportFinanceWeekPDF(); return; }
@@ -8395,9 +8395,9 @@ function updateFinTotalsRow(){}
 function openFinNP(f){ finTap(f); }
 function openFinCCNP(i){ finTapCC(i); }
 
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 // TRANSFER DRAWER — Self-contained: breakdown + inline add form
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 let _trfCtx  = null; // {code, type:'inn'|'trf'}
 let _trfQty  = 0;
 let _trfQBuf = '';
@@ -8727,9 +8727,9 @@ function finTapBNPL(i){
   document.getElementById('numpad').classList.add('show');
 }
 
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 // EXPENSES — multi-line with description + photo receipt
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 let finExpenses = []; // [{desc:'', amt:0, photo:''}]
 
 function addExpenseRow(){
@@ -8827,9 +8827,9 @@ function finExpensePhoto(i,input){
   r.readAsDataURL(file);
 }
 
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 // MANAGER DASHBOARD — All Stores Analytics
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 let mgrDashStore = null; // currently selected store in MGR view
 
 function openTrainingGuide(){
@@ -8858,7 +8858,7 @@ async function openMgrDashboard(){
   renderMgrDashboard();
 }
 
-// -- Load stock_cells for ALL stores in one Supabase query ---------
+// ── Load stock_cells for ALL stores in one Supabase query ─────────
 // Populates db[storeCode][dayIdx][prodCode] so balance / Low Balance
 // Alerts / Dead Stock work cross-store in the Manager Dashboard.
 async function _sbLoadAllStoresCells() {
@@ -8888,9 +8888,9 @@ function closeMgrDashboard(){
   }
 }
 
-// ---------------------------------------------------------------
-// -- DEMAND PLANNING PANEL (embedded, uses existing _SBC) ------
-// ---------------------------------------------------------------
+// ═══════════════════════════════════════════════════════════════
+// ── DEMAND PLANNING PANEL (embedded, uses existing _SBC) ──────
+// ═══════════════════════════════════════════════════════════════
 let _dpBenchmarks=null;
 
 async function openDPPanel(){
@@ -8945,7 +8945,7 @@ function _dpStoreInfo(code){
   return s?{name:s.name,mgr:s.mgr}:{name:code,mgr:'—'};
 }
 
-// -- Eid / Event Calendar -----------------------------------------------------
+// ── Eid / Event Calendar ─────────────────────────────────────────────────────
 // Prep window = weeks BEFORE the event peak where stock should already be built
 // Multipliers explanation:
 //   Seasonal  — uses peak_month_avg as baseline during event window.
@@ -8989,7 +8989,7 @@ function _weeksUntilEidPeak() {
   }
   return nearest ? { window: nearest, weeks: +(minDays / 7).toFixed(1) } : null;
 }
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Get benchmark Min/Max for a specific SKU at a specific store
 function _dpGetBenchmark(storeCode, skuCode){
@@ -9002,10 +9002,10 @@ function _dpGetBenchmark(storeCode, skuCode){
   const peakAvg  = bench.peak_month_avg || 0;
   const eidWin   = _activeEidWindow();
 
-  // -- Dead Stock: always zero -----------------------------------------------
+  // ── Dead Stock: always zero ───────────────────────────────────────────────
   if (cat === 'DeadStock') return { min:0, max:0, weeklyAvg:0, label:'Dead Stock', cat, abc };
 
-  // -- Gift-set / Dakhoon families: always use peak_month_avg during ANY event --
+  // ── Gift-set / Dakhoon families: always use peak_month_avg during ANY event ──
   const _GIFT_PREFIXES = ['BX','AG'];
   const _GIFT_EXACT    = new Set(['SP0009','SP0029','SP0037','SP0038','SP0039',
     'SP0013','SP0012','SP0030','SP0031','D00001','D00002','D00003','D00004',
@@ -9015,7 +9015,7 @@ function _dpGetBenchmark(storeCode, skuCode){
   // December Tourist window: use peak for ALL Seasonal (all perfumes spike in Dec)
   const isDecWindow = !!(eidWin && eidWin.name.includes('December'));
 
-  // -- Baseline weekly rate ---------------------------------------------------
+  // ── Baseline weekly rate ───────────────────────────────────────────────────
   let weeklyAvg;
   if (cat === 'FastMover' && bench.l90d_avg) {
     // FastMover always uses recent 90-day rate — most accurate for current velocity
@@ -9033,7 +9033,7 @@ function _dpGetBenchmark(storeCode, skuCode){
     weeklyAvg = bench.weekly_avg || 0;
   }
 
-  // -- Event multiplier -------------------------------------------------------
+  // ── Event multiplier ───────────────────────────────────────────────────────
   let eventMult = 1;
   let eventLabel = null;
   if (eidWin) {
@@ -9041,7 +9041,7 @@ function _dpGetBenchmark(storeCode, skuCode){
     eventLabel = eidWin.name;
   }
   
-  // -- Region shipment-frequency multipliers --------------------------------
+  // ── Region shipment-frequency multipliers ────────────────────────────────
   let minMult, maxMult;
   if (['RK001','RK002','FJ001','FJ001A','SH001','AJ001'].includes(storeCode)) {
     minMult = 1.5; maxMult = 4.0;   // 1×/week — Northern Emirates
@@ -9051,11 +9051,11 @@ function _dpGetBenchmark(storeCode, skuCode){
     minMult = 1.0; maxMult = 2.0;   // 2×/week — Abu Dhabi / Al Ain default
   }
 
-  // -- ABC safety buffer (A items get tighter max, C items looser) -----------
+  // ── ABC safety buffer (A items get tighter max, C items looser) ───────────
   const abcMaxAdj = abc === 'A' ? 1.0 : abc === 'B' ? 1.2 : 1.5;
   maxMult = maxMult * abcMaxAdj;
 
-  // -- Apply event multiplier to both min and max ----------------------------
+  // ── Apply event multiplier to both min and max ────────────────────────────
   const min = Math.max(1, Math.ceil(weeklyAvg * minMult * eventMult));
   const max = Math.max(min, Math.ceil(weeklyAvg * maxMult * eventMult));
 
@@ -9064,9 +9064,9 @@ function _dpGetBenchmark(storeCode, skuCode){
 }
 
 
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 // MIN/MAX DIAGNOSTIC & OVERRIDE SYSTEM
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 
 // Helper: Get sales for last 90 days at THIS store
 function getSalesLast90Days(skuCode, storeCode) {
@@ -9513,8 +9513,8 @@ function showDeadStockOptions(skuCode) {
     `${p.en} (${skuCode})\n\n` +
     `⚠️ No sales in 90+ days\n\n` +
     `Options:\n` +
-    `- OK → Set promo MIN/MAX (clearance)\n` +
-    `- Cancel → Keep at 0 (discontinue)`
+    `• OK → Set promo MIN/MAX (clearance)\n` +
+    `• Cancel → Keep at 0 (discontinue)`
   );
   
   if (choice) {
@@ -9529,9 +9529,9 @@ function renderDPOverview(){
   if(!_dpBenchmarks||!_dpBenchmarks.length) return;
   const b=_dpBenchmarks;
   
-  // ---------------------------------------------------------------
+  // ═══════════════════════════════════════════════════════════════
   // INTELLIGENT ANALYSIS — 30 Years Demand Planning Experience
-  // ---------------------------------------------------------------
+  // ═══════════════════════════════════════════════════════════════
   
   const criticalAlerts=[];
   const opportunities=[];
@@ -9617,7 +9617,7 @@ function renderDPOverview(){
       });
     }
     
-    // -- MANAGEMENT INTELLIGENCE METRICS --
+    // ── MANAGEMENT INTELLIGENCE METRICS ──
     
     // 1. VELOCITY DROP: Sales declining — needs investigation
     if(r.l30d_qty>0 && r.l90d_avg>0 && (r.l30d_qty/r.l90d_avg)<0.5){
@@ -9686,7 +9686,7 @@ function renderDPOverview(){
     // 5. IMBALANCED NETWORK: Same SKU overstocked in one store, understocked in another
   });
   
-  // -- BUILD IMBALANCED NETWORK ALERTS (cross-store comparison) --
+  // ── BUILD IMBALANCED NETWORK ALERTS (cross-store comparison) ──
   const skuByStore={};
   b.forEach(r=>{
     if(!skuByStore[r.sku_code]) skuByStore[r.sku_code]=[];
@@ -10139,7 +10139,7 @@ function renderDPStores(){
   `;
 }
 
-// -- NEW: Inventory Management Tab ----------------------------------
+// ── NEW: Inventory Management Tab ──────────────────────────────────
 function renderDPInventory(){
   if(!_dpBenchmarks||!_dpBenchmarks.length){
     document.getElementById('dpBody').innerHTML='<div style="padding:40px;text-align:center;color:#888;">No benchmark data available</div>';
@@ -10316,16 +10316,16 @@ function renderDPInventory(){
           <div><strong style="color:#1A1A1A;">Current:</strong> Simulated stock (L30D × 3)</div>
         </div>
         <div style="margin-top:8px;font-size:9px;color:#999;font-style:italic;">
-          Based on actual UAE shipment frequency: Remote stores 1x/wk - ABD/AIN 2x/wk - Dubai 2-3x/wk
+          Based on actual UAE shipment frequency: Remote stores 1x/wk • ABD/AIN 2x/wk • Dubai 2-3x/wk
         </div>
       </div>
     </div>
   `;
 }
 
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 // EXPORT DEMAND PLANNING REPORTS (Weekly/Monthly, Excel/PDF)
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 function exportDPReport(period,format){
   if(!_dpBenchmarks||!_dpBenchmarks.length){
     toast('⚠ No benchmark data loaded — open Demand Planning first');
@@ -10333,7 +10333,7 @@ function exportDPReport(period,format){
   }
   
   try{
-    // -- BUILD ALL DATA FROM BENCHMARKS (same logic as tabs) --
+    // ── BUILD ALL DATA FROM BENCHMARKS (same logic as tabs) ──
     const criticalAlerts=[];
     const overstockItems=[];
     const reorderItems=[];
@@ -10438,7 +10438,7 @@ function _exportDPExcel(period,criticalAlerts,overstockItems,reorderItems,storeH
   
   let csv='\ufeff'; // BOM for Excel UTF-8
   
-  // --- 1. EXECUTIVE SUMMARY ---
+  // ═══ 1. EXECUTIVE SUMMARY ═══
   csv+=`EMIRATES PRIDE PERFUMES — ${period.toUpperCase()} DEMAND PLANNING REPORT\n`;
   csv+=`Date,${dateStr}\n`;
   csv+=`Period,${period==='weekly'?'Last 7 Days':'Last 30 Days'}\n\n`;
@@ -10450,7 +10450,7 @@ function _exportDPExcel(period,criticalAlerts,overstockItems,reorderItems,storeH
   csv+=`Total SKUs Tracked,${inventoryAll.length}\n`;
   csv+=`Total Stores,${storeHealth.length}\n\n\n`;
   
-  // --- 2. CRITICAL ALERTS (Overview tab) ---
+  // ═══ 2. CRITICAL ALERTS (Overview tab) ═══
   csv+=`CRITICAL ALERTS — ${criticalAlerts.length} ITEMS\n`;
   csv+=`SKU,Product,Store,City,Current Stock,Weekly Avg,Cover (wks),Alert Type,Recommended Action\n`;
   criticalAlerts.forEach(a=>{
@@ -10458,7 +10458,7 @@ function _exportDPExcel(period,criticalAlerts,overstockItems,reorderItems,storeH
   });
   csv+=`\n\n`;
   
-  // --- 3. REORDER PRIORITY (Reorder tab) ---
+  // ═══ 3. REORDER PRIORITY (Reorder tab) ═══
   csv+=`REORDER PRIORITY — ${reorderItems.length} FAST MOVERS (<4 weeks cover)\n`;
   csv+=`#,SKU,Product,Store,City,Current Stock,Weekly Avg,Cover (wks),Suggested Order Qty\n`;
   reorderItems.forEach((r,i)=>{
@@ -10466,7 +10466,7 @@ function _exportDPExcel(period,criticalAlerts,overstockItems,reorderItems,storeH
   });
   csv+=`\n\n`;
   
-  // --- 4. OVERSTOCK (Overstock tab) ---
+  // ═══ 4. OVERSTOCK (Overstock tab) ═══
   csv+=`OVERSTOCK — ${overstockItems.length} ITEMS (>12 weeks cover)\n`;
   csv+=`SKU,Product,Store,City,Current Stock,Weekly Avg,L30D Sales,L90D Avg,Cover (wks),Severity\n`;
   overstockItems.forEach(o=>{
@@ -10474,7 +10474,7 @@ function _exportDPExcel(period,criticalAlerts,overstockItems,reorderItems,storeH
   });
   csv+=`\n\n`;
   
-  // --- 5. STORE HEALTH (Stores tab) ---
+  // ═══ 5. STORE HEALTH (Stores tab) ═══
   csv+=`STORE HEALTH SCORECARD — ${storeHealth.length} STORES\n`;
   csv+=`Store,City,Health Score,Critical,Urgent,Overstock,Dead Stock,Healthy,Total SKUs,Avg Weekly Velocity\n`;
   storeHealth.forEach(s=>{
@@ -10482,7 +10482,7 @@ function _exportDPExcel(period,criticalAlerts,overstockItems,reorderItems,storeH
   });
   csv+=`\n\n`;
   
-  // --- 6. FULL INVENTORY (Inventory tab — ALL SKUs) ---
+  // ═══ 6. FULL INVENTORY (Inventory tab — ALL SKUs) ═══
   csv+=`COMPLETE INVENTORY — ALL ${inventoryAll.length} SKUs (sorted by Store then Status)\n`;
   csv+=`Store,City,SKU,Product,Category,Current Stock,MIN,MAX,Weekly Avg,Cover (wks),Status,L30D Sales,L90D Avg\n`;
   
@@ -10497,7 +10497,7 @@ function _exportDPExcel(period,criticalAlerts,overstockItems,reorderItems,storeH
   });
   csv+=`\n\n`;
   
-  // --- 7. LEGEND ---
+  // ═══ 7. LEGEND ═══
   csv+=`BENCHMARK METHODOLOGY\n`;
   csv+=`Region,Shipment Frequency,MIN (weeks of cover),MAX (weeks of cover)\n`;
   csv+=`Dubai (DX stores),2-3x per week,0.5,1.5\n`;
@@ -10609,9 +10609,9 @@ ${storeHealth.map(s=>{
   w.document.close();
 }
 
-// ---------------------------------------------------------------
-// -- WAREHOUSE TESTER TRACKER ----------------------------------------------
-// ---------------------------------------------------------------
+// ═══════════════════════════════════════════════════════════════
+// ── WAREHOUSE TESTER TRACKER ──────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
 let _whData=[];
 let _whReturnId=null;
 let _whOutRowN=0;
@@ -10640,7 +10640,7 @@ function whInit(){
     ];
     RGNS.forEach(rgn=>{
       const og=document.createElement('optgroup');
-      og.label='-- '+rgn.label+' --';
+      og.label='── '+rgn.label+' ──';
       rgn.codes.forEach(code=>{
         const s=STORES.find(x=>x.code===code);
         if(s){const o=document.createElement('option');o.value=s.name;o.textContent=s.name;og.appendChild(o);}
@@ -10955,7 +10955,7 @@ function renderMgrDashboard(){
   const labels=getDayLabels();
   const sm=db._mgrSummary||{soldMap:{},lockSet:{},finSet:{},todayStr:'',loadedAt:null};
 
-  // -- Build per-store data --------------------------------------
+  // ── Build per-store data ──────────────────────────────────────
   const allStores=STORES.filter(s=>{
     if(s.code==='MGR'||s.code==='WH001'||s.code.startsWith('AM_')) return false;
     if(isAmSession) return amManagedStores.includes(s.code);
@@ -11019,7 +11019,7 @@ function renderMgrDashboard(){
   }).sort((a,b)=>b.total6d-a.total6d);
 
   body.innerHTML=`
-  <!-- -- TOP KPI STRIP — today's snapshot ------------------- -->
+  <!-- ── TOP KPI STRIP — today's snapshot ─────────────────── -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:0;background:#FFFFFF;border-bottom:2px solid #E8E4DC;">
 
     <div style="background:#FFFFFF;border:none;border-right:1px solid #E8E4DC;padding:16px 14px;border-left:4px solid #1A6A40;">
@@ -11084,7 +11084,7 @@ function renderMgrDashboard(){
 
   </div>
 
-  <!-- -- WEEK AT A GLANCE — 7-day date strip ---------------- -->
+  <!-- ── WEEK AT A GLANCE — 7-day date strip ──────────────── -->
   <div style="padding:0;background:#FFFFFF;border-bottom:2px solid #E8E4DC;">
     <div style="font-family:var(--f-mono);font-size:10px;color:var(--gold-dark);font-weight:800;text-transform:uppercase;letter-spacing:1.5px;padding:10px 14px;background:var(--gold-pale);border-bottom:1px solid var(--border);">📅 Week at a Glance — Last 7 Days</div><div style="padding:12px 14px;">
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
@@ -11112,7 +11112,7 @@ function renderMgrDashboard(){
     </div>
   </div>
 
-  <!-- -- SECTION 1: STOCK STATUS — last 7 days -------------- -->
+  <!-- ── SECTION 1: STOCK STATUS — last 7 days ────────────── -->
   <div style="padding:0;background:#FAFAF8;">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--gold-pale);border-bottom:1px solid var(--border);">
       <div style="font-family:var(--f-mono);font-size:10px;color:var(--gold-dark);font-weight:800;text-transform:uppercase;letter-spacing:1.5px;">📦 Stock Status — Last 7 Days</div>
@@ -11146,7 +11146,7 @@ function renderMgrDashboard(){
     }).join('')}
   </div>
 
-  <!-- -- SECTION 2: FINANCE STATUS — last 6 days ------------ -->
+  <!-- ── SECTION 2: FINANCE STATUS — last 6 days ──────────── -->
   <div style="padding:14px;border-bottom:1px solid var(--border);">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
       <div style="font-family:var(--f-mono);font-size:11px;color:#BB88DD;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">💰 Finance Status — Last 7 Days</div>
@@ -11179,7 +11179,7 @@ function renderMgrDashboard(){
     }).join('')}
   </div>
 
-  <!-- -- SECTION 3: STORE RANKINGS — by 6-day units --------- -->
+  <!-- ── SECTION 3: STORE RANKINGS — by 6-day units ───────── -->
   <div style="padding:14px;border-bottom:1px solid var(--border);">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
       <div style="font-family:var(--f-mono);font-size:11px;color:#C9A44E;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;">🏆 Store Rankings — Last 7 Days</div>
@@ -11201,7 +11201,7 @@ function renderMgrDashboard(){
     }).join('')}
   </div>
 
-  <!-- -- KEPT: Manager Exports -------------------------------- -->
+  <!-- ── KEPT: Manager Exports ──────────────────────────────── -->
   <div style="padding:14px;border-bottom:1px solid var(--border);">
     <div style="font-family:var(--f-mono);font-size:10px;color:var(--gold-dark);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">📥 Manager Exports — No Lock Required</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -11220,7 +11220,7 @@ function renderMgrDashboard(){
     </div>
   </div>
 
-  <!-- -- KEPT: Store Selector --------------------------------- -->
+  <!-- ── KEPT: Store Selector ───────────────────────────────── -->
   <div style="padding:12px 14px;background:var(--gold-pale);border-bottom:1px solid var(--border);">
     <div style="font-family:var(--f-mono);font-size:9px;color:var(--ink-mid);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">View / Edit a Specific Store — Full Access, No Lock Restrictions</div>
     <div style="display:flex;gap:8px;">
@@ -11233,7 +11233,7 @@ function renderMgrDashboard(){
     </div>
   </div>
 
-  <!-- -- Footer with data freshness --------------------------- -->
+  <!-- ── Footer with data freshness ─────────────────────────── -->
   <div style="padding:8px 14px;background:var(--gold-pale);text-align:center;font-family:var(--f-mono);font-size:9px;color:var(--ink-light);border-top:1px solid var(--border);">
     Data refreshed: ${loadedAgo} · Total 7-day units: ${total7dUnits} across ${allStores.length} stores
   </div>`;
@@ -11243,7 +11243,7 @@ function renderMgrDashboard(){
   }
 }
 
-// -- MGR Export Functions -----------------------------------------
+// ── MGR Export Functions ─────────────────────────────────────────
 function mgrExportAllStocksCSV(){
   if(!db._mgrSummary){toast('⚠ Open dashboard first to load data');return;}
   const sm=db._mgrSummary;
@@ -11438,9 +11438,9 @@ async function mgrSwitchToStore(){
 }
 
 
-// ----------------------------------------------------------
+// ══════════════════════════════════════════════════════════
 // MULTI-STORE TRANSFER DRAWER
-// ----------------------------------------------------------
+// ══════════════════════════════════════════════════════════
 let _mtdCtx = null; // {prodCode, prodEn, day, field:'inn'|'trf'}
 let _mtdQty = 0;
 
@@ -11581,9 +11581,9 @@ function closeMtdDrawer(){
   _mtdCtx = null; _mtdQty = 0;
 }
 
-// ----------------------------------------------------------
+// ══════════════════════════════════════════════════════════
 // ADJUSTMENT SYSTEM — Locked Day Corrections
-// ----------------------------------------------------------
+// ══════════════════════════════════════════════════════════
 let _adjCtx = null; // {prodCode, day}
 let _adjNewVal = null;
 let _adjPadOpen = false;
@@ -11668,7 +11668,7 @@ function confirmAdj(){
   dbSet(me.code, day, prodCode, field, newVal, true);
   saveDB();
 
-  // -- Sync adjustment to Supabase adjustments table --------------
+  // ── Sync adjustment to Supabase adjustments table ──────────────
   const adjRow = {
     store_code: me.code,
     day_date:   _idx2date(day),
@@ -11695,9 +11695,9 @@ function confirmAdj(){
   toast(`⚖ Adjusted ${field}: ${origVal} → ${newVal} (${delta>=0?'+':''}${delta})`);
 }
 
-// ----------------------------------------------------------
+// ══════════════════════════════════════════════════════════
 // PHOTO RECEIPT UPLOAD (Finance Tab)
-// ----------------------------------------------------------
+// ══════════════════════════════════════════════════════════
 function finUploadReceipt(type, input){
   const file = input.files[0];
   if(!file) return;
@@ -11705,7 +11705,7 @@ function finUploadReceipt(type, input){
   const reader = new FileReader();
   reader.onload = async e => {
     const b64 = e.target.result;
-    // -- Show immediately from base64 while upload happens ------
+    // ── Show immediately from base64 while upload happens ──────
     if(type==='bank'){
       finData.bankReceiptPhoto = b64;
       const thumb = document.getElementById('fin-bank-receipt-thumb');
@@ -11721,7 +11721,7 @@ function finUploadReceipt(type, input){
     }
     finMarkUnsaved();
 
-    // -- Upload to Supabase Storage ------------------------------
+    // ── Upload to Supabase Storage ──────────────────────────────
     try {
       const ext   = file.type.includes('png') ? 'png' : 'jpg';
       const store = me ? me.code : 'UNKNOWN';
@@ -11839,7 +11839,7 @@ function closeReceiptLightbox(){
   if(lb) lb.style.display='none';
 }
 
-// -- Update confirmNP to handle __mtd__ and __adj__ contexts --
+// ── Update confirmNP to handle __mtd__ and __adj__ contexts ──
 // (Patched into the existing nk/nc/nd flow)
 const _origNK = nk;
 window.nk = function(k){
@@ -11908,7 +11908,7 @@ window.confirmNP = function(){
   _origConfirmNP();
 };
 
-// -- Add long-press on transfer cells to open multi-transfer drawer --
+// ── Add long-press on transfer cells to open multi-transfer drawer ──
 // And long-press on any locked-day cell to offer adjustment
 (function patchBuildGrid(){
   const _origBuild = buildGrid;
@@ -11937,7 +11937,7 @@ window.confirmNP = function(){
   };
 })();
 
-// -- SWITCH DASHBOARD TABS --
+// ── SWITCH DASHBOARD TABS ──
 function switchDashTab(tab){
   document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('dtab-'+tab).classList.add('active');
@@ -11948,7 +11948,7 @@ function switchDashTab(tab){
   if(tab==='finance') openFinanceTab();
 }
 
-// -- POPULATE TRACKER DROPDOWN with active SKUs from last 15 days --
+// ── POPULATE TRACKER DROPDOWN with active SKUs from last 15 days ──
 function populateTrackerDropdown(){
   const sel=document.getElementById('trackerSkuSelect');
   if(!sel||!me) return;
@@ -11998,7 +11998,7 @@ function populateTrackerDropdown(){
   if(prev&&activeCodes.has(prev)) sel.value=prev;
 }
 
-// -- RENDER TRACKER for selected SKU --
+// ── RENDER TRACKER for selected SKU ──
 function renderTracker(){
   const sel=document.getElementById('trackerSkuSelect');
   const body=document.getElementById('trackerBody');
@@ -12013,7 +12013,7 @@ function renderTracker(){
 
   body.innerHTML='';
 
-  // -- SKU HEADER --
+  // ── SKU HEADER ──
   const labels=getDayLabels();
   let totalSold=0,totalWh=0,totalIn=0,totalTrf=0;
   for(let di=0;di<DAY_WINDOW;di++){
@@ -12038,7 +12038,7 @@ function renderTracker(){
     </div>`;
   body.appendChild(skuHdr);
 
-  // -- 15-DAY SUMMARY STRIP --
+  // ── 15-DAY SUMMARY STRIP ──
   const strip=document.createElement('div');
   strip.className='tracker-summary-strip';
   strip.innerHTML=`
@@ -12048,7 +12048,7 @@ function renderTracker(){
     <div class="tracker-sum-item"><span class="tracker-sum-val" style="color:#BB88DD;">${totalTrf||'—'}</span><div class="tracker-sum-label">Total Sent Out</div></div>`;
   body.appendChild(strip);
 
-  // -- PER-DAY MOVEMENT BLOCKS --
+  // ── PER-DAY MOVEMENT BLOCKS ──
   // Only render days that have any data
   let hasAnyData=false;
   for(let di=0;di<DAY_WINDOW;di++){
@@ -12168,9 +12168,9 @@ function renderTracker(){
 }
 
 
-// -----------------------------------------------------------
+// ═══════════════════════════════════════════════════════════
 // EXCEL / CSV EXPORT
-// -----------------------------------------------------------
+// ═══════════════════════════════════════════════════════════
 
 // Convert array-of-arrays to CSV string
 function toCSV(rows){
@@ -12191,7 +12191,7 @@ function downloadCSV(filename, rows){
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
 }
 
-// -- Associate download: what THEY sold today (locked only) --
+// ── Associate download: what THEY sold today (locked only) ──
 function downloadDaySales(){
   if(!me) return;
   if(typeof dashDay==='undefined'||dashDay===null) dashDay=curDay;
@@ -12245,7 +12245,7 @@ function downloadDaySales(){
   toast('📥 Downloaded: '+fname);
 }
 
-// -- Full day download (all stores visible to manager) --
+// ── Full day download (all stores visible to manager) ──
 function downloadDayFull(){
   if(!me) return;
   if(typeof dashDay==='undefined'||dashDay===null) dashDay=curDay;
@@ -12274,7 +12274,7 @@ function downloadDayFull(){
   toast('📥 Downloaded: '+fname);
 }
 
-// -- Full week download (manager use) --
+// ── Full week download (manager use) ──
 function downloadWeek(){
   if(!me) return;
   const rows = [];
@@ -12330,20 +12330,20 @@ function downloadWeek(){
 }
 
 
-// -----------------------------------------------------------
+// ═══════════════════════════════════════════════════════════
 // EXPORT PANEL
-// -----------------------------------------------------------
+// ═══════════════════════════════════════════════════════════
 let expPeriod='day';
 
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 // EXPORT CENTER — Calendar-based, Stock + Finance, CSV + PDF
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 let _expType    = 'stock'; // 'stock' | 'finance'
 let _expPreset  = 'today';
 let _expFromDate = null;   // Date objects
 let _expToDate   = null;
 
-// -- Helpers -------------------------------------------------
+// ── Helpers ─────────────────────────────────────────────────
 function _dateStr(d){ // YYYY-MM-DD from Date
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
@@ -12361,7 +12361,7 @@ function _daysBetween(from,to){
   return Math.round((to-from)/86400000)+1;
 }
 
-// -- Open / Close --------------------------------------------
+// ── Open / Close ────────────────────────────────────────────
 function openExport(){
   _expType='stock'; _expPreset='today';
   const t=new Date(); t.setHours(0,0,0,0);
@@ -12378,7 +12378,7 @@ function selectPeriod(p){ if(p==='day')expSetPreset('today'); else if(p==='week'
 function doExport(fmt){ expDownload(fmt); }
 function updateExpUI(){ _expRefreshSummary(); }
 
-// -- Init UI -------------------------------------------------
+// ── Init UI ─────────────────────────────────────────────────
 function _expInitUI(){
   // Store name
   const sn=document.getElementById('expStoreName');
@@ -12411,7 +12411,7 @@ function _expInitUI(){
 
 function _setEl(id,txt){const e=document.getElementById(id);if(e)e.textContent=txt;}
 
-// -- Type selector --------------------------------------------
+// ── Type selector ────────────────────────────────────────────
 function expSetType(type){
   _expType=type;
   ['stock','finance'].forEach(t=>{
@@ -12421,7 +12421,7 @@ function expSetType(type){
   _expRefreshSummary();
 }
 
-// -- Preset selector ------------------------------------------
+// ── Preset selector ──────────────────────────────────────────
 function expSetPreset(p){
   _expPreset=p;
   const t=new Date(); t.setHours(0,0,0,0);
@@ -12444,7 +12444,7 @@ function expSetPreset(p){
   _expRefreshSummary();
 }
 
-// -- Custom date picker changed -------------------------------
+// ── Custom date picker changed ───────────────────────────────
 function expCustomDateChanged(){
   const fv=document.getElementById('expDateFrom')?.value;
   const tv=document.getElementById('expDateTo')?.value;
@@ -12459,7 +12459,7 @@ function expCustomDateChanged(){
   _expRefreshSummary();
 }
 
-// -- Refresh summary bar --------------------------------------
+// ── Refresh summary bar ──────────────────────────────────────
 function _expRefreshSummary(){
   if(!_expFromDate||!_expToDate) return;
   const days=_daysBetween(_expFromDate,_expToDate);
@@ -12479,9 +12479,9 @@ function _expRefreshSummary(){
   }
 }
 
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 // MAIN DOWNLOAD DISPATCHER
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 function expDownload(fmt){
   if(!me){ toast('⚠ Please log in first'); return; }
   if(!_expFromDate||!_expToDate){ toast('⚠ Select a date range first'); return; }
@@ -12508,9 +12508,9 @@ function expDownload(fmt){
   }
 }
 
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 // STOCK EXPORTS — Day, Range (CSV + PDF)
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 
 function _dateToIdx(dateObj){
   const today=new Date(); today.setHours(0,0,0,0);
@@ -12760,9 +12760,9 @@ ${fullHTML}
   openPrintWindow(html);
 }
 
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 // FINANCE EXPORTS — Range (CSV + PDF)
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 
 function _expFinanceCSV(from,to){
   const rows=[];
@@ -12889,9 +12889,9 @@ function _expFinancePDF(from,to){
   openPrintWindow(html);
 }
 
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 // CSV DOWNLOAD HELPER
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 function _downloadCSV(rows, filename){
   const csv=rows.map(r=>r.map(v=>{
     const s=String(v??'');
@@ -12923,14 +12923,14 @@ function openPrintWindow(html){
   setTimeout(()=>w.print(),600);
 }
 
-// -- TOAST --
+// ── TOAST ──
 function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);
 }
 
-// -- BOOT --
+// ── BOOT ──
 loadDB();
 buildStoreSelect();
 try{
@@ -12947,7 +12947,7 @@ try{
   }
 }catch(e){}
 
-// -- GLOBAL KEYBOARD SUPPORT ----------------------------------------
+// ── GLOBAL KEYBOARD SUPPORT ────────────────────────────────────────
 // Handles ALL numpad contexts: Login PIN, Stock Numpad, Finance Numpad,
 // Transfer Drawer Numpad — plus Escape to close panels.
 document.addEventListener('keydown', function(e){
@@ -12957,7 +12957,7 @@ document.addEventListener('keydown', function(e){
               : (key.startsWith('Numpad') && key.length === 7) ? key[6]
               : null;
 
-  // -- 1. LOGIN SCREEN ---------------------------------------------
+  // ── 1. LOGIN SCREEN ─────────────────────────────────────────────
   const ls = document.getElementById('loginScreen');
   const loginVisible = ls && ls.style.display !== 'none';
   if(loginVisible){
@@ -12971,7 +12971,7 @@ document.addEventListener('keydown', function(e){
     return; // don't fall through when login is showing
   }
 
-  // -- 2. STOCK / FINANCE NUMPAD (shared panel #numpad) ------------
+  // ── 2. STOCK / FINANCE NUMPAD (shared panel #numpad) ────────────
   const npPanel = document.getElementById('numpad');
   const npVisible = npPanel && npPanel.classList.contains('show');
   if(npVisible){
@@ -12982,7 +12982,7 @@ document.addEventListener('keydown', function(e){
     return;
   }
 
-  // -- 3. TRANSFER DRAWER NUMPAD ------------------------------------
+  // ── 3. TRANSFER DRAWER NUMPAD ────────────────────────────────────
   const trfDrawer = document.getElementById('trfDrawer');
   const trfNP     = document.getElementById('trfDrawerNumpad');
   const trfDrawerVisible = trfDrawer && trfDrawer.style.display !== 'none';
@@ -13001,7 +13001,7 @@ document.addEventListener('keydown', function(e){
     return;
   }
 
-  // -- 4. GLOBAL ESCAPE — close any open panel ----------------------
+  // ── 4. GLOBAL ESCAPE — close any open panel ──────────────────────
   if(key==='Escape'){
     // Export panel
     const expPanel = document.getElementById('exportPanel');
@@ -13014,11 +13014,11 @@ document.addEventListener('keydown', function(e){
     if(storesPanel && storesPanel.style.display!=='none'){ storesPanel.style.display='none'; return; }
   }
 });
-// --------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────────────
 
 
 // EMIRATES PRIDE — SYNC ENGINE v4 (FINAL)
-// --------------------------------------------------------------------
+// ════════════════════════════════════════════════════════════════════
 const _SB_URL = 'https://ncszurcrkngjcjqsowln.supabase.co';
 const _SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
 const _SBH = {
@@ -13032,7 +13032,7 @@ let _syncTmr  = null;
 let _rtCh     = null;
 let _syncOk   = false;
 
-// -- Status indicator ---------------------------------------------
+// ── Status indicator ─────────────────────────────────────────────
 function _sb_badge(state, msg) {
   let b = document.getElementById('_sbb');
   if (!b) {
@@ -13056,7 +13056,7 @@ function _sb_badge(state, msg) {
   if (state === 'ok') setTimeout(() => { if (b) b.style.opacity = '0.3'; }, 3000);
 }
 
-// -- FIX: Local date (not UTC) for consistency across timezones ---
+// ── FIX: Local date (not UTC) for consistency across timezones ───
 function _localDateStr(d) {
   // Returns YYYY-MM-DD using LOCAL timezone — not UTC
   const y = d.getFullYear();
@@ -13078,7 +13078,7 @@ function _date2idx(dateStr) {
   return DAY_PAST + Math.round((dateMs - todayMs) / msPerDay);
 }
 
-// -- API helpers --------------------------------------------------
+// ── API helpers ──────────────────────────────────────────────────
 async function _sbRpc(fn, params) {
   const r = await fetch(_SB_URL + '/rest/v1/rpc/' + fn, {
     method: 'POST', headers: _SBH, body: JSON.stringify(params)
@@ -13095,7 +13095,7 @@ async function _sbGet(table, query) {
   return r.json();
 }
 
-// -- Write queue + batch flush ------------------------------------
+// ── Write queue + batch flush ────────────────────────────────────
 function _qWrite(store, dayIdx, prod, field, value) {
   const date = _idx2date(dayIdx);
   const by   = me ? me.name : store;
@@ -13133,7 +13133,7 @@ async function _sbFlush() {
   }
 }
 
-// -- Load ALL data for store --------------------------------------
+// ── Load ALL data for store ──────────────────────────────────────
 async function _sbLoadMgrSummary() {
   try {
     const today = new Date(); today.setHours(0,0,0,0);
@@ -13243,7 +13243,7 @@ async function _sbLoad(store) {
   }
 }
 
-// -- Real-time subscription ---------------------------------------
+// ── Real-time subscription ───────────────────────────────────────
 function _sbSubscribe(store) {
   if (!window._SBC) return;
   if (_rtCh) { try { _rtCh.unsubscribe(); } catch(e){} }
@@ -13313,14 +13313,14 @@ function _sbSubscribe(store) {
     });
 }
 
-// -- Patch dbSet --------------------------------------------------
+// ── Patch dbSet ──────────────────────────────────────────────────
 const _ORIG_dbSet = dbSet;
 window.dbSet = function(store, day, code, field, value, force) {
   _ORIG_dbSet(store, day, code, field, value, force);
   _qWrite(store, day, code, field, value);
 };
 
-// -- Patch lockDay ------------------------------------------------
+// ── Patch lockDay ────────────────────────────────────────────────
 const _ORIG_lockDay = lockDay;
 window.lockDay = function(store, day) {
   _ORIG_lockDay(store, day);
@@ -13330,7 +13330,7 @@ window.lockDay = function(store, day) {
     .catch(e => console.error('[Sync] lock:', e.message));
 };
 
-// -- Patch saveFinanceData ----------------------------------------
+// ── Patch saveFinanceData ────────────────────────────────────────
 const _ORIG_saveFinance = saveFinanceData;
 window.saveFinanceData = function() {
   _ORIG_saveFinance();
@@ -13352,9 +13352,9 @@ window.saveFinanceData = function() {
   }).catch(e => console.error('[Sync] finance:', e.message));
 };
 
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 // SECURITY MODULE — Session tracking, anomaly detection, audit log
-// --------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════
 
 let _sessionId       = null;   // UUID assigned on login, null on logout
 let _auditQ          = [];     // pending audit log entries
@@ -13372,7 +13372,7 @@ const _SEC = {
   ALERT_COOLDOWN_MS  : 5 * 60 * 1000  // 5 min between WhatsApp alerts
 };
 
-// -- Create session row on login ------------------------------
+// ── Create session row on login ──────────────────────────────
 async function _secCreateSession(storeCode, loginType) {
   if (!window._SBC) { setTimeout(() => _secCreateSession(storeCode, loginType), 800); return; }
   try {
@@ -13399,7 +13399,7 @@ async function _secCreateSession(storeCode, loginType) {
   } catch(e) { console.warn('[Sec] create session:', e.message); }
 }
 
-// -- Close session row on logout ------------------------------
+// ── Close session row on logout ──────────────────────────────
 async function _secCloseSession() {
   if (!_SBC) return;
   const sid = _sessionId;
@@ -13418,7 +13418,7 @@ async function _secCloseSession() {
   }
 }
 
-// -- Queue an audit entry + check anomalies -------------------
+// ── Queue an audit entry + check anomalies ───────────────────
 function _secQAudit(op, storeCode, tableN, recKey, oldVal, newVal, meta) {
   const now = new Date();
   // Get UAE local hour for off-hours detection
@@ -13468,7 +13468,7 @@ function _secQAudit(op, storeCode, tableN, recKey, oldVal, newVal, meta) {
   _auditFlushTmr = setTimeout(_secFlushAudit, 1500);
 }
 
-// -- Flush audit queue to Supabase ----------------------------
+// ── Flush audit queue to Supabase ────────────────────────────
 async function _secFlushAudit() {
   if (!_SBC || !_auditQ.length) return;
   const batch = _auditQ.splice(0, 100);
@@ -13486,7 +13486,7 @@ async function _secFlushAudit() {
   }
 }
 
-// -- Send WhatsApp alert via Edge Function --------------------
+// ── Send WhatsApp alert via Edge Function ────────────────────
 async function _secSendWhatsApp(entry) {
   await fetch(_SB_URL + '/functions/v1/security-alert', {
     method  : 'POST',
@@ -13502,7 +13502,7 @@ async function _secSendWhatsApp(entry) {
   });
 }
 
-// -- Track failed login attempts ------------------------------
+// ── Track failed login attempts ──────────────────────────────
 function _secTrackFailedLogin(storeCode) {
   _failedLoginCount[storeCode] = (_failedLoginCount[storeCode] || 0) + 1;
   const count = _failedLoginCount[storeCode];
@@ -13527,7 +13527,7 @@ function _secTrackFailedLogin(storeCode) {
   }
 }
 
-// -- Security Dashboard ----------------------------------------
+// ── Security Dashboard ────────────────────────────────────────
 
 async function openSecurityDashboard() {
   if (!isMgrSession) return;
@@ -13594,7 +13594,7 @@ async function renderSecurityLog() {
     const sessCount = (sessions||[]).length;
     const logCount  = (logs||[]).length;
 
-    // -- Stats bar ---------------------------------------------
+    // ── Stats bar ─────────────────────────────────────────────
     statsBar.innerHTML = `
       <div style="display:flex;border-bottom:1px solid var(--border);">
         <div style="flex:1;padding:14px 20px;border-right:1px solid var(--border);text-align:center;">
@@ -13616,7 +13616,7 @@ async function renderSecurityLog() {
       return;
     }
 
-    // -- Active sessions ---------------------------------------
+    // ── Active sessions ───────────────────────────────────────
     let sessHtml = '';
     if (sessions && sessions.length > 0) {
       const chips = sessions.map(s => {
@@ -13639,7 +13639,7 @@ async function renderSecurityLog() {
         </div>`;
     }
 
-    // -- Log rows ----------------------------------------------
+    // ── Log rows ──────────────────────────────────────────────
     const rows = (logs||[]).map(l => {
       const dt = new Date(l.changed_at);
       const tStr = dt.toLocaleString('en-GB',{timeZone:'Asia/Dubai',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -13702,7 +13702,7 @@ async function renderSecurityLog() {
   }
 }
 
-// -- Load Supabase SDK --------------------------------------------
+// ── Load Supabase SDK ────────────────────────────────────────────
 (function() {
   const s = document.createElement('script');
   s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
@@ -13715,9 +13715,9 @@ async function renderSecurityLog() {
   document.head.appendChild(s);
 })();
 
-// -- Main entry: called after login -------------------------------
+// ── Main entry: called after login ───────────────────────────────
 // Shows loading overlay, loads from server, then shows app
-// -- COUNT how many local cells exist for a store -----------------
+// ── COUNT how many local cells exist for a store ─────────────────
 function _countLocalCells(store) {
   let count = 0;
   for (let d = 0; d < DAY_WINDOW; d++) {
@@ -13733,7 +13733,7 @@ function _countLocalCells(store) {
   return count;
 }
 
-// -- UPLOAD all local data to Supabase -----------------------------
+// ── UPLOAD all local data to Supabase ─────────────────────────────
 async function _uploadLocalData(store, setMsg) {
   setMsg('Scanning local data…', 5);
 
@@ -13873,7 +13873,7 @@ async function _uploadLocalData(store, setMsg) {
 }
 
 async function startSync(store) {
-  // -- Create overlay ------------------------------------------
+  // ── Create overlay ──────────────────────────────────────────
   let overlay = document.getElementById('_syncOverlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -13914,7 +13914,7 @@ async function startSync(store) {
     if (sbEl) sbEl.textContent = sub || '';
   };
 
-  // -- EVERYTHING inside try/finally so overlay ALWAYS hides --
+  // ── EVERYTHING inside try/finally so overlay ALWAYS hides ──
   try {
     setMsg('Loading…', 20);
 
@@ -13993,7 +13993,7 @@ async function startSync(store) {
   _addManualSyncBtn(store);
 }
 
-// -- Manual sync button in top bar --------------------------------
+// ── Manual sync button in top bar ────────────────────────────────
 function _addManualSyncBtn(store) {
   if (document.getElementById('_manualSyncBtn')) return;
   const btn = document.createElement('button');
@@ -14025,15 +14025,15 @@ function _addManualSyncBtn(store) {
   if (topBar && logoutBtn) topBar.insertBefore(btn, logoutBtn);
 }
 // END SYNC ENGINE v4
-// --------------------------------------------------------------------
+// ════════════════════════════════════════════════════════════════════
 
-// --------------------------------------------------------------------
-// ----------------------------------------------------------------
+// ════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
 // TESTER GRID — v3: frozen totals + opening creates bottles + lock carry-forward
 // Data model: db.testerBottles[storeCode][skuCode] = [
 //   { id, receivedDate, openedDate, status:'sealed'|'full'|'half'|'empty', returnedDate }
 // ]
-// ----------------------------------------------------------------
+// ════════════════════════════════════════════════════════════════
 
 function _tbStore(){
   if(!db.testerBottles) db.testerBottles={};
@@ -14196,7 +14196,7 @@ function _tbOpenBottle(skuCode, bottleId){
 }
 
 
-// -- Tester RTW numpad — manual Return to Warehouse entry ---------
+// ── Tester RTW numpad — manual Return to Warehouse entry ─────────
 function openTstrRTW(skuCode){
   if(!me) return;
   if(isLocked(me.code,curDay)){
@@ -14244,7 +14244,7 @@ function buildTesterGrid(){
   var mgrActive=mgrOverrideActive&&mgrOverrideDay===curDay&&mgrOverrideStore===me.code;
   var canEdit=!locked||mgrActive;
 
-  // -- Compute grand totals across all tester SKUs --
+  // ── Compute grand totals across all tester SKUs ──
   var grandOpen=0, grandRec=0, grandUse=0, grandReturn=0, grandClose=0;
   var today=_localDateStr(new Date());
   CATS.forEach(function(cat){
@@ -14261,7 +14261,7 @@ function buildTesterGrid(){
     });
   });
 
-  // -- Frozen totals bar --
+  // ── Frozen totals bar ──
   if(totalsBar){
     totalsBar.innerHTML=''
       +'<div style="display:flex;align-items:center;gap:0;background:#FFFFFF;border-bottom:2px solid #E8E4DC;border-top:1px solid #E8E4DC;font-family:var(--f-mono);">'
@@ -14301,7 +14301,7 @@ function buildTesterGrid(){
       +'</div>';
   }
 
-  // -- Header --
+  // ── Header ──
   head.innerHTML=''
     +'<tr class="hdr-group">'
     +'<th class="prod-th" rowspan="2" style="background:#F5EDD8;min-width:200px;width:200px;max-width:200px;border-right:2px solid var(--gold);">'
@@ -14428,15 +14428,15 @@ function _tbCountByStatus(status){
 }
 
 // END TESTER GRID
-// ----------------------------------------------------------------
+// ════════════════════════════════════════════════════════════════
 
 
 
 
 
-// ------------------------------------------
+// ══════════════════════════════════════════
 // FG TESTER REQUEST MODULE
-// ------------------------------------------
+// ══════════════════════════════════════════
 const FG_PRODUCTS=[
   {en:"White 100ml",ar:"وايت 100 مل"},{en:"Maroon 100ml",ar:"مارون 100 مل"},{en:"Navy 100ml",ar:"نيفي 100 مل"},
   {en:"Violet 100ml",ar:"فيوليت 100 مل"},{en:"Maroon Intense",ar:"مارون انتنس"},{en:"No.4",ar:"رقم 4"},
@@ -14767,9 +14767,9 @@ function generateFGApprovalPDF(rec){
   </div></body></html>`;
   openPrintWindow(html);
 }
-// ------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════
 // CONSUMABLES & PACKING MATERIALS
-// ------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════
 
 const CONSUMABLES = [
   {code:'bag-sm',  en:'Shopping Bag — Small',   ar:'كيس تسوق صغير',  icon:'🛍️'},
@@ -14780,9 +14780,9 @@ const CONSUMABLES = [
   {code:'bag-gift',en:'Gift Bag',                ar:'كيس هدية',        icon:'🎁'},
 ];
 
-// ------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════
 // STORE SUPPLIES — Daily tracking (Opening / Received / Used / Balance)
-// ------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════
 
 // Storage: per store, per day, per item, per field
 function suppKey(storeCode, dayIdx, itemCode, field){
@@ -14802,7 +14802,7 @@ function suppBal(storeCode, dayIdx, itemCode){
   return o + r - u;
 }
 
-// -- Refresh only the tbody rows + totals — table shell is static HTML --
+// ── Refresh only the tbody rows + totals — table shell is static HTML ──
 function renderConsSection(){
   refreshConsTable();
 }
@@ -14861,7 +14861,7 @@ function refreshConsTable(){
   if(_pendingScrollSupplies){ _pendingScrollSupplies=false; setTimeout(openSuppliesDirect,80); }
 }
 
-// -- Open numpad for a supplies field ------------------------------
+// ── Open numpad for a supplies field ──────────────────────────────
 function openSuppNP(itemCode, field){
   if(!me) return;
   const item = CONSUMABLES.find(x => x.code === itemCode);
@@ -14887,9 +14887,9 @@ function openSuppNP(itemCode, field){
 function openConsNP(code){ openSuppNP(code, 'open'); }
 function checkConsAlerts(){ renderConsSection && me && renderConsSection(); }
 
-// ------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════
 // AM FEEDBACK HUB
-// ------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════
 const _AM_HUB_AMs=[
   {code:'AM_HESSIN',name:'Mohamed Hessin',nameAr:'محمد حسين',region:'Abu Dhabi & Al Ain'},
   {code:'AM_IMAD',  name:'Mohammed Imad',  nameAr:'محمد عماد', region:'Dubai'},
@@ -14981,7 +14981,7 @@ function renderAMHubTab(){
   else if(_amHubTab==='issues')   body.innerHTML=renderIssuesTab();
 }
 
-// -- TODO TAB --
+// ── TODO TAB ──
 function renderTodoTab(){
   const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const done=Object.values(_amHubTodo).filter(Boolean).length;
@@ -15021,7 +15021,7 @@ function toggleTodo(key){
   renderAMHubTab();
 }
 
-// -- SESSIONS TAB --
+// ── SESSIONS TAB ──
 function renderSessionsTab(){
   let html=`<div class="am-seg">
     ${_AM_HUB_AMs.map(a=>`<div class="am-seg-btn${_amHubAMSeg===a.code?' on':''}" onclick="setAMSeg('${a.code}')">${a.name.split(' ')[0]}</div>`).join('')}
@@ -15061,7 +15061,7 @@ function renderSessionsTab(){
 
 function setAMSeg(code){_amHubAMSeg=code;renderAMHubTab();}
 
-// -- REQUESTS TAB --
+// ── REQUESTS TAB ──
 let _amReqF={period:'all',amCode:'',storeCode:''};
 
 function _getReqDateRange(period){
@@ -15471,9 +15471,9 @@ async function _doDispatchRequest(ref){
   }catch(e){showToastHub('Error: '+e.message);btn.disabled=false;btn.textContent='🚚 Confirm Dispatch';}
 }
 
-/* ----------------------------------
+/* ══════════════════════════════════
    REQUEST DETAIL VIEW
----------------------------------- */
+══════════════════════════════════ */
 function viewAMRequest(ref){
   _viewingReq=_amHubData.requests.find(r=>r.request_ref===ref);
   if(!_viewingReq)return;
@@ -15505,7 +15505,7 @@ function _renderReqDetail(){
   const totalFul=_viewEditItems.reduce((s,i)=>s+(i.qty||0),0);
   const totalDiff=totalFul-totalReq;
 
-  /* -- Item rows -- */
+  /* ── Item rows ── */
   const itemRows=origItems.map((item,idx)=>{
     const wq=_viewEditItems[idx]?.qty??item.qty;
     const diff=wq-item.qty;
@@ -15530,7 +15530,7 @@ function _renderReqDetail(){
     </tr>`;
   }).join('');
 
-  /* -- Timeline -- */
+  /* ── Timeline ── */
   const tlRows=[
     {icon:'📥',label:'Received',active:true,color:'var(--ink)',
       sub:fmtDT(r.submitted_at),extra:''},
@@ -15551,7 +15551,7 @@ function _renderReqDetail(){
     </div>
   </div>`).join('');
 
-  /* -- Edit history -- */
+  /* ── Edit history ── */
   const hist=Array.isArray(r.edit_history)?r.edit_history:[];
   const histHtml=hist.length?[...hist].reverse().map(h=>{
     const typeLabel=h.type==='approved'?'<span style="color:#2563EB;font-weight:700;">✓ Approved</span>'
@@ -15572,18 +15572,18 @@ function _renderReqDetail(){
   }).join('')
   :`<div style="padding:16px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:12px;">No edits recorded yet · لا توجد تعديلات بعد</div>`;
 
-  /* -- Totals diff display -- */
+  /* ── Totals diff display ── */
   const tDiffHtml=totalDiff===0?`<span class="rdet-diff-nil">—</span>`
     :totalDiff>0?`<span class="rdet-diff-plus">+${totalDiff}</span>`
     :`<span class="rdet-diff-minus">${totalDiff}</span>`;
 
-  /* -- AM original notes -- */
+  /* ── AM original notes ── */
   const amNotesHtml=r.notes?`<div class="rdet-section">
     <div class="rdet-sec-hdr">AM Notes (from original request)</div>
     <div style="padding:12px 16px;font-family:var(--f-body);font-size:12px;color:var(--ink-mid);font-style:italic;">"${r.notes}"</div>
   </div>`:'';
 
-  /* -- Action bar -- */
+  /* ── Action bar ── */
   const rJ=JSON.stringify(r).replace(/"/g,'&quot;');
   let actionWrap='';
   if(r.status==='pending'){
@@ -15942,7 +15942,7 @@ function printAMRequest(r){
   w.document.close();
 }
 
-// -- ISSUES TAB --
+// ── ISSUES TAB ──
 function renderIssuesTab(){
   const issues=_amHubData.issues;
   const open=issues.filter(i=>i.status==='Open'||i.status==='In Progress');
@@ -15986,7 +15986,7 @@ async function resolveIssue(id){
   }catch(e){showToastHub('Error: '+e.message);}
 }
 
-// -- MODAL --
+// ── MODAL ──
 function openAMHubModal(type){
   _amHubModalType=type;
   const card=document.getElementById('amHubModalCard');
@@ -16147,9 +16147,9 @@ function showToastHub(msg){
   if(typeof showToast==='function')showToast(msg);
 }
 
-// ------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════
 // AREA MANAGER STOCK GUIDE — MIN/MAX BULK FORM
-// ------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════
 
 let _amCurrentStore = null;   // store code currently loaded in AM panel
 let _amDirty        = false;  // any unsaved changes?

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -22,7 +22,7 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 .screen{display:none;flex-direction:column;min-height:100vh;}
 .screen.active{display:flex;}
 
-/* -- SCREEN 1: IDENTITY -- */
+/* ── SCREEN 1: IDENTITY ── */
 .s1-hero{background:var(--gold-bar);padding:32px 20px 24px;}
 .s1-sub{font-family:var(--f-mono);font-size:10px;color:rgba(255,255,255,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
 .s1-title{font-family:var(--f-serif);font-size:28px;font-weight:600;color:#FFF;letter-spacing:0.5px;}
@@ -40,7 +40,7 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 .btn-primary:active{opacity:0.85;}
 .err-box{display:none;color:#C0392B;font-size:12px;font-weight:600;padding:10px 14px;background:#FFF0EE;border-radius:7px;border:1px solid #F5C6C2;margin-bottom:12px;font-family:var(--f-body);}
 
-/* -- SCREEN 2: BROWSE -- */
+/* ── SCREEN 2: BROWSE ── */
 .browse-bar{background:#FFF;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:40;}
 .browse-am{font-family:var(--f-body);font-size:12px;font-weight:700;color:var(--gold-dark);text-transform:uppercase;letter-spacing:0.5px;}
 .browse-store{font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);margin-top:2px;}
@@ -85,7 +85,7 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 .cart-float.show{display:flex;}
 .cbadge{background:var(--gold);color:var(--gold-dark);border-radius:20px;padding:2px 10px;font-size:13px;font-weight:800;}
 
-/* -- SCREEN 3: REVIEW -- */
+/* ── SCREEN 3: REVIEW ── */
 .rev-hdr{background:var(--gold-pale);border-bottom:2px solid var(--border);padding:12px 16px;flex-shrink:0;position:sticky;top:0;z-index:40;}
 .rev-meta{font-family:var(--f-mono);font-size:11px;color:var(--ink-mid);margin-bottom:3px;}
 .rev-meta span{color:var(--gold-dark);font-weight:700;}
@@ -105,7 +105,7 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 .submit-bar{padding:16px;background:#FFF;border-top:2px solid var(--border);flex-shrink:0;}
 .btn-sec{display:block;width:100%;padding:13px;background:var(--gold-pale);border:1.5px solid var(--border);border-radius:8px;color:var(--ink-mid);font-family:var(--f-body);font-size:13px;font-weight:600;cursor:pointer;text-align:center;margin-top:8px;}
 
-/* -- SCREEN 4: CONFIRM -- */
+/* ── SCREEN 4: CONFIRM ── */
 .confirm-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;}
 .confirm-icon{font-size:58px;margin-bottom:16px;}
 .confirm-title{font-family:var(--f-serif);font-size:30px;font-weight:600;color:var(--gold-dark);}
@@ -115,7 +115,7 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 .btn-dl{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:340px;padding:15px;background:var(--gold-bar);border:none;border-radius:10px;color:#FFF;font-family:var(--f-body);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;}
 .btn-again{display:block;width:100%;max-width:340px;padding:14px;background:var(--gold-pale);border:1.5px solid var(--border);border-radius:10px;color:var(--ink-mid);font-family:var(--f-body);font-size:14px;font-weight:600;cursor:pointer;text-align:center;}
 
-/* -- PRINT -- */
+/* ── PRINT ── */
 @media print{
   .screen,.cart-float{display:none!important;}
   #printDoc{display:block!important;}
@@ -145,7 +145,7 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 /* Empty state */
 .empty-state{padding:40px 24px;text-align:center;color:var(--ink-light);font-family:var(--f-body);font-size:13px;}
 
-/* -- PHONE UX -- */
+/* ── PHONE UX ── */
 /* Prevent iOS Safari auto-zoom (needs ≥16px on focus) */
 .form-sel,.form-inp,.search-inp,.notes-ta{font-size:16px;}
 .qis,.qinp{font-size:16px!important;font-weight:700;}
@@ -163,7 +163,7 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 </head>
 <body>
 
-<!-- -- SCREEN 1: IDENTITY -- -->
+<!-- ══ SCREEN 1: IDENTITY ══ -->
 <div id="s1" class="screen active">
   <div class="s1-hero">
     <div class="s1-sub">Emirates Pride · فخر الإمارات</div>
@@ -203,7 +203,7 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
   </div>
 </div>
 
-<!-- -- SCREEN 2: BROWSE -- -->
+<!-- ══ SCREEN 2: BROWSE ══ -->
 <div id="s2" class="screen">
   <div class="browse-bar">
     <div>
@@ -227,7 +227,7 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
   </button>
 </div>
 
-<!-- -- SCREEN 3: REVIEW -- -->
+<!-- ══ SCREEN 3: REVIEW ══ -->
 <div id="s3" class="screen">
   <div class="rev-hdr">
     <div class="rev-title">Review Request <span class="rev-title-ar">مراجعة الطلب</span></div>
@@ -246,7 +246,7 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
   </div>
 </div>
 
-<!-- -- SCREEN 4: CONFIRM -- -->
+<!-- ══ SCREEN 4: CONFIRM ══ -->
 <div id="s4" class="screen">
   <div class="confirm-wrap">
     <div class="confirm-icon">✅</div>
@@ -259,7 +259,7 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
   </div>
 </div>
 
-<!-- -- PRINT DOCUMENT -- -->
+<!-- ══ PRINT DOCUMENT ══ -->
 <div id="printDoc">
   <div class="p-hdr">
     <div class="p-brand">Emirates Pride Perfumes</div>
@@ -280,17 +280,17 @@ body{font-family:var(--f-body);background:var(--page);color:var(--ink);min-heigh
 <div class="toast" id="toast"></div>
 
 <script>
-/* ----------------------------------
+/* ══════════════════════════════════
    SUPABASE
----------------------------------- */
+══════════════════════════════════ */
 const _SURL='https://ncszurcrkngjcjqsowln.supabase.co';
 const _SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
 const {createClient}=supabase;
 const _SBC=createClient(_SURL,_SKEY);
 
-/* ----------------------------------
+/* ══════════════════════════════════
    DATA
----------------------------------- */
+══════════════════════════════════ */
 const AM_LIST=[
   {code:'AM_HESSIN',name:'Mohamed Hessin',nameAr:'محمد حسين',region:'Abu Dhabi & Al Ain',
    stores:['A0001','A0002','BAS001','A0003','A0004','A0005','A0009','A0007','A0008','YMK001','AL001','AL002','AL003','BAW001','AL004','AL006','MAK001']},
@@ -462,17 +462,17 @@ const SUPPLIES=[
   {code:'TIS-001',en:'Tissue Paper Roll',ar:'ورق مناديل',cat:'Supplies'},
 ];
 
-/* ----------------------------------
+/* ══════════════════════════════════
    STATE
----------------------------------- */
+══════════════════════════════════ */
 let _am=null, _store=null, _week=null;
 let _cart={};
 let _catF='All', _q='';
 let _lastRef=null, _lastPayload=null;
 
-/* ----------------------------------
+/* ══════════════════════════════════
    INIT
----------------------------------- */
+══════════════════════════════════ */
 (function init(){
   const d=new Date();
   const day=d.getDay();
@@ -482,9 +482,9 @@ let _lastRef=null, _lastPayload=null;
   buildCatPills();
 })();
 
-/* ----------------------------------
+/* ══════════════════════════════════
    SCREEN SWITCHING
----------------------------------- */
+══════════════════════════════════ */
 function showScreen(id){
   ['s1','s2','s3','s4'].forEach(s=>document.getElementById(s).classList.toggle('active',s===id));
 }
@@ -523,9 +523,9 @@ function goReview(){
 
 function showErr(el,msg){el.textContent=msg;el.style.display='block';}
 
-/* ----------------------------------
+/* ══════════════════════════════════
    AM CHANGE
----------------------------------- */
+══════════════════════════════════ */
 function onAMChange(){
   const code=document.getElementById('selAM').value;
   const sel=document.getElementById('selStore');
@@ -536,9 +536,9 @@ function onAMChange(){
   sel.disabled=false;
 }
 
-/* ----------------------------------
+/* ══════════════════════════════════
    BROWSE / PRODUCTS
----------------------------------- */
+══════════════════════════════════ */
 function buildCatPills(){
   const allCats=[
     {cat:'All',catAr:'الكل'},
@@ -640,9 +640,9 @@ function prodRow(p,isTester,type){
   </div>`;
 }
 
-/* ----------------------------------
+/* ══════════════════════════════════
    CART
----------------------------------- */
+══════════════════════════════════ */
 function toggleCart(code,en,ar,cat){
   _cart[code]={qty:1,en,ar,cat};
   _refreshRow(code);
@@ -738,9 +738,9 @@ function removeItem(code){
   if(!Object.keys(_cart).length)showScreen('s2');
 }
 
-/* ----------------------------------
+/* ══════════════════════════════════
    SUBMIT
----------------------------------- */
+══════════════════════════════════ */
 async function submitRequest(){
   const items=Object.entries(_cart);
   if(!items.length)return;
@@ -789,9 +789,9 @@ function resetForm(){
   showScreen('s1');
 }
 
-/* ----------------------------------
+/* ══════════════════════════════════
    PRINT
----------------------------------- */
+══════════════════════════════════ */
 function buildPrintDoc(p){
   const wd=new Date(p.week_starting+'T00:00:00');
   const wdStr=wd.getDate()+'/'+(wd.getMonth()+1)+'/'+wd.getFullYear();
@@ -833,9 +833,9 @@ function buildPrintDoc(p){
 }
 function triggerPrint(){window.print();}
 
-/* ----------------------------------
+/* ══════════════════════════════════
    TOAST
----------------------------------- */
+══════════════════════════════════ */
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
@@ -844,4 +844,3 @@ function showToast(msg){
 </script>
 </body>
 </html>
-
