@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -53,9 +53,9 @@ select.inp option{background:#1f2937}
 <body class="min-h-screen text-white select-none">
 <div id="app"></div>
 <script>
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // CONSTANTS
-// ═══════════════════════════════════════════
+// -------------------------------------------
 const PRODUCTS=[
   {sku:"C00002",name:"White 100ml Perfume",nameAr:"وايت 100 مل",price:245,size:"100",brand:"Emirates Pride Perfumes"},
   {sku:"C00013",name:"White overdose",nameAr:"وايت أوفردوز ١٠٠مل",price:385,size:"100",brand:"Emirates Pride Perfumes"},
@@ -225,9 +225,9 @@ const ADJ_REASONS=[
 ];
 const TC=3.5; // tester conversion target
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // UTILS
-// ═══════════════════════════════════════════
+// -------------------------------------------
 const todayKey=()=>{const d=new Date().getDay();return DAYS[d===0?6:d-1];};
 const weekMon=()=>{const d=new Date(),day=d.getDay(),diff=d.getDate()-day+(day===0?-6:1);return new Date(new Date(d).setDate(diff)).toISOString().split("T")[0];};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
@@ -236,14 +236,14 @@ const fDT=iso=>iso?new Date(iso).toLocaleString("en-AE",{day:"2-digit",month:"sh
 const fD=iso=>iso?new Date(iso).toLocaleDateString("en-AE",{day:"2-digit",month:"short",year:"numeric"}):"—";
 const aed=n=>"AED "+Number(n).toLocaleString();
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // STATE
-// ═══════════════════════════════════════════
+// -------------------------------------------
 const S={view:"login",outlet:null,staffTab:"dashboard",mgrTab:"dashboard",activeDay:todayKey(),dashDay:todayKey(),modal:null,weekStart:weekMon()};
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // STORAGE
-// ═══════════════════════════════════════════
+// -------------------------------------------
 const loadAll=()=>{try{return JSON.parse(localStorage.getItem("ep2")||"{}")}catch{return{}}};
 const saveAll=d=>localStorage.setItem("ep2",JSON.stringify(d));
 
@@ -276,9 +276,9 @@ function addAudit(outletId,action,detail,utype="staff"){
   });
 }
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // COMPUTED
-// ═══════════════════════════════════════════
+// -------------------------------------------
 const grnTotal=(od,sku)=>(od.grn_records||[]).reduce((s,g)=>s+(g.items[sku]||0),0);
 const txIn=(od,sku)=>(od.transfers_in||[]).filter(t=>t.sku===sku).reduce((s,t)=>s+t.qty,0);
 const txOut=(od,sku)=>(od.transfers_out||[]).filter(t=>t.sku===sku).reduce((s,t)=>s+t.qty,0);
@@ -300,9 +300,9 @@ function stockSt(c,sold){
 }
 const convSt=r=>r===0?{label:"ZERO SALES ⚠",cls:"sc"}:r>=TC?{label:"ON TARGET ✓",cls:"sh"}:r>=2?{label:"BELOW TARGET",cls:"sl"}:{label:"POOR CONVERSION",cls:"sc"};
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // RENDER ROUTER
-// ═══════════════════════════════════════════
+// -------------------------------------------
 function render(){
   document.getElementById("app").innerHTML=
     S.view==="login"?loginV():S.view==="staff"?staffV():mgrV();
@@ -310,9 +310,9 @@ function render(){
   bindAll();
 }
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // LOGIN
-// ═══════════════════════════════════════════
+// -------------------------------------------
 function loginV(){
   // Build outlet options grouped by city
   const cities=[...new Set(OUTLETS.map(o=>o.loc))];
@@ -385,9 +385,9 @@ function loginV(){
   <div style="position:fixed;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#B8892A,#E8C97A,#B8892A)"></div>
 </div>`;}
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // STAFF VIEW
-// ═══════════════════════════════════════════
+// -------------------------------------------
 function staffV(){
   const o=OUTLETS.find(x=>x.id===S.outlet)||{name:"",loc:""};
   const od=outletData(S.outlet);
@@ -425,7 +425,7 @@ function staffV(){
     </div>
   </div>`;}
 
-// ─── SALES TAB ───────────────────────────────
+// --- SALES TAB -------------------------------
 function salesT(od){
   const day=S.activeDay;
   const locked=isLocked(od,day);
@@ -586,7 +586,7 @@ function salesT(od){
     </div>`:""}
   </div>`;}
 
-// ─── STORE DASHBOARD ────────────────────────
+// --- STORE DASHBOARD ------------------------
 function dashT(od){
   const todayD=todayKey();
   const selDay=S.dashDay||todayD;
@@ -694,7 +694,7 @@ function dashT(od){
     </div>
   </div>`;}
 
-// ─── GRN TAB ─────────────────────────────────
+// --- GRN TAB ---------------------------------
 function grnT(od){
   const recs=(od.grn_records||[]).slice().sort((a,b)=>new Date(b.enteredAt)-new Date(a.enteredAt));
   return`<div class="fade">
@@ -752,7 +752,7 @@ function grnT(od){
     </div>
   </div>`;}
 
-// ─── TRANSFER TAB ────────────────────────────
+// --- TRANSFER TAB ----------------------------
 function transferT(od){
   const all=[...(od.transfers_out||[]).map(t=>({...t,dir:"OUT"})),...(od.transfers_in||[]).map(t=>({...t,dir:"IN"}))]
     .sort((a,b)=>new Date(b.date)-new Date(a.date));
@@ -786,7 +786,7 @@ function transferT(od){
     </div>
   </div>`;}
 
-// ─── TESTER TAB ──────────────────────────────
+// --- TESTER TAB ------------------------------
 function testerT(od){
   return`<div class="fade">
     <div class="flex items-center justify-between mb-1">
@@ -829,7 +829,7 @@ function testerT(od){
     </div>
   </div>`;}
 
-// ─── ADJUST TAB ──────────────────────────────
+// --- ADJUST TAB ------------------------------
 function adjustT(od){
   const adjs=(od.adjustments||[]).slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
   return`<div class="fade">
@@ -888,9 +888,9 @@ function adjustT(od){
     </div>
   </div>`;}
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // MANAGER VIEW
-// ═══════════════════════════════════════════
+// -------------------------------------------
 function mgrV(){
   const wd=weekData();
   const tabs=[{id:"dashboard",ic:"📊",lb:"Overview"},{id:"outlets",ic:"🏬",lb:"Outlets"},{id:"stock",ic:"📦",lb:"Stock"},{id:"movements",ic:"🔄",lb:"Movements"},{id:"testers",ic:"🌸",lb:"Testers"},{id:"audit",ic:"🔍",lb:"Audit"},{id:"adjust",ic:"🔧",lb:"Adjust"},{id:"export",ic:"📥",lb:"Export"}];
@@ -961,9 +961,9 @@ function mgrDash(wd){
     </div>
     ${(neg>0||crit>0)?`<div class="card-r rounded-2xl p-4">
       <div class="font-bold text-red-300 mb-2">⚠️ URGENT ALERTS</div>
-      ${neg>0?`<div class="text-sm text-red-200 mb-1">• ${neg} negative stock entries — data error, investigate immediately</div>`:""}
-      ${crit>0?`<div class="text-sm text-red-200 mb-1">• ${crit} SKU-outlet combos critically low (&lt;7 days supply)</div>`:""}
-      ${dead>0?`<div class="text-sm text-yellow-200">• ${dead} dead stock SKUs — no sales, clearance needed</div>`:""}
+      ${neg>0?`<div class="text-sm text-red-200 mb-1">- ${neg} negative stock entries — data error, investigate immediately</div>`:""}
+      ${crit>0?`<div class="text-sm text-red-200 mb-1">- ${crit} SKU-outlet combos critically low (&lt;7 days supply)</div>`:""}
+      ${dead>0?`<div class="text-sm text-yellow-200">- ${dead} dead stock SKUs — no sales, clearance needed</div>`:""}
     </div>`:`<div class="card-g rounded-2xl p-4"><div class="font-bold text-green-300">✓ No critical stock alerts</div></div>`}
     <div>
       <h3 class="text-gray-400 text-xs font-bold tracking-widest mb-2">OUTLET REVENUE RANKING</h3>
@@ -1132,7 +1132,7 @@ function mgrAudit(wd){
     </div>`}
   </div>`;}
 
-// ─── MANAGER ADJUST TAB ──────────────────────
+// --- MANAGER ADJUST TAB ----------------------
 function mgrAdjust(wd){
   const selId=S.adjOutlet||OUTLETS[0].id;
   const od=wd[selId]||initOutlet();
@@ -1203,7 +1203,7 @@ function mgrAdjust(wd){
     </div>
   </div>`;}
 
-// ─── EXPORT TAB ──────────────────────────────
+// --- EXPORT TAB ------------------------------
 function mgrExport(wd){
   return`<div class="fade">
     <h2 class="text-white font-bold text-lg mb-1">Export Reports</h2>
@@ -1243,9 +1243,9 @@ function mgrExport(wd){
     </div>
   </div>`;}
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // MODALS
-// ═══════════════════════════════════════════
+// -------------------------------------------
 function showModal(){
   const m=S.modal;if(!m)return;
   const wrap=document.createElement("div");
@@ -1391,9 +1391,9 @@ function pinM(m){
     <button id="btn-pin-ok" class="g w-full py-4 rounded-xl font-bold text-lg">CONFIRM</button>
   </div>`;}
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // EVENT BINDING
-// ═══════════════════════════════════════════
+// -------------------------------------------
 function bindAll(){
   // Login — staff
   q("btn-sl")?.addEventListener("click",()=>{
@@ -1642,9 +1642,9 @@ function bindModal(){
   q("pin-inp")?.addEventListener("keydown",e=>{if(e.key==="Enter")q("btn-pin-ok")?.click();});
 }
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // EXCEL EXPORT ENGINE
-// ═══════════════════════════════════════════
+// -------------------------------------------
 function exportReport(type){
   try{
     if(typeof XLSX==="undefined"){toast("Excel library loading... try again in a moment");return;}
@@ -1738,13 +1738,13 @@ function addMoversSheet(wb,wd,W,N,H){
     return{p,tS,tC,rev:tS*p.price};
   }).sort((a,b)=>b.tS-a.tS);
   const rows=[["EMIRATES PRIDE — Top & Slow Movers"],["Week:",S.weekStart],[""],
-    ["── TOP 5 MOVERS (by units sold) ──"],
+    ["-- TOP 5 MOVERS (by units sold) --"],
     ["Rank","SKU","Product","Units Sold","Revenue (AED)","Closing Stock"],
     ...skuData.slice(0,5).map((x,i)=>[i+1,x.p.sku,x.p.name,x.tS,x.rev,x.tC]),
-    [""],["── SLOW MOVERS (< 10 units) ──"],
+    [""],["-- SLOW MOVERS (< 10 units) --"],
     ["SKU","Product","Units Sold","Closing Stock","DOS","Recommendation"],
     ...skuData.filter(x=>x.tS<10).map(x=>[x.p.sku,x.p.name,x.tS,x.tC,x.tS>0?(x.tC/(x.tS/7)).toFixed(0):"∞",x.tS===0&&x.tC>0?"CLEARANCE — no sales":"Order only when needed"]),
-    [""],["── DEAD STOCK (zero sales) ──"],
+    [""],["-- DEAD STOCK (zero sales) --"],
     ["SKU","Product","Closing Stock","Stock Value (AED)","Recommendation"],
     ...skuData.filter(x=>x.tS===0&&x.tC>0).map(x=>[x.p.sku,x.p.name,x.tC,x.tC*x.p.price,"Clearance / liquidate / consolidate"]),
   ];
@@ -1902,9 +1902,9 @@ function addIntegritySheet(wb,wd,W,N,H){
   XLSX.utils.book_append_sheet(wb,ws,"Integrity Flags");
 }
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // UTILS
-// ═══════════════════════════════════════════
+// -------------------------------------------
 const q=id=>document.getElementById(id);
 const qAll=sel=>document.querySelectorAll(sel);
 function toast(msg,dur=3000){
@@ -1917,10 +1917,11 @@ function toast(msg,dur=3000){
   setTimeout(()=>{el.style.transition="opacity .35s";el.style.opacity="0";setTimeout(()=>el.remove(),400);},dur);
 }
 
-// ═══════════════════════════════════════════
+// -------------------------------------------
 // INIT
-// ═══════════════════════════════════════════
+// -------------------------------------------
 render();
 </script>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -31,7 +31,7 @@
       min-height: 100vh;
     }
 
-    /* ── TOP BAR ── */
+    /* -- TOP BAR -- */
     .topbar {
       background: var(--olive);
       color: var(--gold);
@@ -70,7 +70,7 @@
       border-radius: 20px;
     }
 
-    /* ── NAV TABS ── */
+    /* -- NAV TABS -- */
     .nav-tabs {
       display: flex;
       gap: 4px;
@@ -100,7 +100,7 @@
       font-weight: 600;
     }
 
-    /* ── LAYOUT ── */
+    /* -- LAYOUT -- */
     .page-layout {
       display: grid;
       grid-template-columns: 1fr 380px;
@@ -108,7 +108,7 @@
       height: calc(100vh - 110px);
     }
 
-    /* ── DASHBOARD PANEL ── */
+    /* -- DASHBOARD PANEL -- */
     .dashboard-panel {
       padding: 20px 24px;
       overflow-y: auto;
@@ -218,7 +218,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── CHAT PANEL ── */
+    /* -- CHAT PANEL -- */
     .chat-panel {
       border-left: 1px solid var(--border);
       background: var(--white);
@@ -560,10 +560,10 @@
       <div class="msg assistant">
         Hello! I'm your Emirates Pride Intelligence Assistant. I have live access to your sales history, inventory benchmarks, transfer records, and AM requests.<br><br>
         You can ask me things like:<br>
-        • "Which stores are at risk of stockout this week?"<br>
-        • "What are the top 5 SKUs by velocity in Dubai?"<br>
-        • "Show me Ramadan demand trends for EP001"<br>
-        • "Which SKUs haven't moved in 60+ days?"
+        - "Which stores are at risk of stockout this week?"<br>
+        - "What are the top 5 SKUs by velocity in Dubai?"<br>
+        - "Show me Ramadan demand trends for EP001"<br>
+        - "Which SKUs haven't moved in 60+ days?"
         <div class="msg-time" id="welcome-time"></div>
       </div>
     </div>
@@ -587,17 +587,17 @@
 </div>
 
 <script>
-  // ── CONFIG ─────────────────────────────────────────────────────
+  // -- CONFIG -----------------------------------------------------
   // Replace these with your actual values from Supabase dashboard
   const SUPABASE_URL = 'https://ncszurcrkngjcjqsowln.supabase.co'
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM'
   const EDGE_FN_URL = `${SUPABASE_URL}/functions/v1/intelligence-chat`
-  // ───────────────────────────────────────────────────────────────
+  // ---------------------------------------------------------------
 
   let conversationHistory = []
   let cachedData = {}
 
-  // ── INIT ──
+  // -- INIT --
   document.getElementById('welcome-time').textContent = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 
   async function fetchSupabase(table, params = '') {
@@ -638,7 +638,7 @@
     }
   }
 
-  // ── ALERTS ──
+  // -- ALERTS --
   function renderAlerts(benchmarks) {
     const criticals = benchmarks.filter(b => b.weekly_avg > 8 && b.l30d_qty < b.weekly_avg * 2)
     const warnings = benchmarks.filter(b => b.weekly_avg > 3 && b.l30d_qty < b.weekly_avg * 4 && !criticals.includes(b))
@@ -672,7 +672,7 @@
     `).join('')
   }
 
-  // ── REPLENISHMENT ──
+  // -- REPLENISHMENT --
   function renderReplenishment(benchmarks) {
     const rows = benchmarks
       .filter(b => b.weekly_avg > 0)
@@ -693,7 +693,7 @@
     }).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#999">No data</td></tr>'
   }
 
-  // ── COVERAGE ──
+  // -- COVERAGE --
   function renderCoverage(benchmarks) {
     document.getElementById('coverage-body').innerHTML = benchmarks.slice(0, 80).map(b => {
       const wks = b.weekly_avg > 0 ? ((b.l90d_avg || 0) / +b.weekly_avg).toFixed(1) : '—'
@@ -709,7 +709,7 @@
     }).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#999">No data</td></tr>'
   }
 
-  // ── FAST MOVERS ──
+  // -- FAST MOVERS --
   function renderFastMovers(benchmarks) {
     const top30 = [...benchmarks].sort((a, b) => (+b.weekly_avg - +a.weekly_avg)).slice(0, 30)
     document.getElementById('fast-movers-body').innerHTML = top30.map((b, i) => `
@@ -725,7 +725,7 @@
     `).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:#999">No data</td></tr>'
   }
 
-  // ── SLOW MOVERS ──
+  // -- SLOW MOVERS --
   function renderSlowMovers(benchmarks) {
     const slow = benchmarks.filter(b => +b.weekly_avg < 1 || !b.last_sale_month)
       .sort((a, b) => (+a.weekly_avg - +b.weekly_avg))
@@ -744,7 +744,7 @@
     }).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#999">No slow movers detected</td></tr>'
   }
 
-  // ── HISTORY ──
+  // -- HISTORY --
   function renderHistory(transfers) {
     document.getElementById('history-body').innerHTML = transfers.slice(0, 100).map(t => `
       <tr>
@@ -757,7 +757,7 @@
     `).join('') || '<tr><td colspan="5" style="text-align:center;padding:20px;color:#999">No transfer records</td></tr>'
   }
 
-  // ── SALES ──
+  // -- SALES --
   function renderSales(sales) {
     document.getElementById('sales-body').innerHTML = sales.slice(0, 120).map(s => `
       <tr>
@@ -769,7 +769,7 @@
     `).join('') || '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999">No sales data</td></tr>'
   }
 
-  // ── AM REQUESTS ──
+  // -- AM REQUESTS --
   function renderAMRequests(amRequests) {
     const container = document.getElementById('am-requests-content')
     if (!amRequests.length) {
@@ -787,7 +787,7 @@
       </div>`
   }
 
-  // ── TAB SWITCHING ──
+  // -- TAB SWITCHING --
   function showTab(id) {
     document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('active'))
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
@@ -795,7 +795,7 @@
     event.target.classList.add('active')
   }
 
-  // ── CHAT ──
+  // -- CHAT --
   async function sendMessage() {
     const input = document.getElementById('chat-input')
     const msg = input.value.trim()
@@ -870,7 +870,7 @@
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\n/g, '<br>')
-      .replace(/•/g, '&bull;')
+      .replace(/-/g, '&bull;')
   }
 
   function handleKey(e) {
@@ -882,8 +882,9 @@
     el.style.height = Math.min(el.scrollHeight, 120) + 'px'
   }
 
-  // ── START ──
+  // -- START --
   loadDashboardData()
 </script>
 </body>
 </html>
+

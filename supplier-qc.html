@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -23,7 +23,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Montserrat',sans-serif;background:var(--page);color:var(--ink);min-height:100vh}
 
-/* ── LOGIN ── */
+/* -- LOGIN -- */
 #loginOverlay{position:fixed;inset:0;background:var(--page);z-index:9999;display:flex;align-items:center;justify-content:center}
 .login-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:48px 40px;width:360px;text-align:center;box-shadow:0 8px 40px rgba(107,91,53,0.12)}
 .login-logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;letter-spacing:6px;color:var(--gold-bar);margin-bottom:4px}
@@ -36,7 +36,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--page);color:var(--ink)
 .login-btn:hover{background:var(--gold-deeper)}
 .login-err{color:var(--fail);font-size:12px;margin-top:8px;display:none}
 
-/* ── APP SHELL ── */
+/* -- APP SHELL -- */
 #app{display:none}
 .topbar{background:var(--gold-bar);padding:0 24px;height:56px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
 .topbar-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#fff;letter-spacing:1px}
@@ -45,7 +45,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--page);color:var(--ink)
 .topbar-logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 14px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
 .topbar-logout:hover{background:rgba(255,255,255,.2)}
 
-/* ── TABS ── */
+/* -- TABS -- */
 .tabs{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 24px;gap:0}
 .tab-btn{padding:14px 20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
 .tab-btn:hover{color:var(--gold-dark)}
@@ -53,7 +53,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--page);color:var(--ink)
 .tab-pane{display:none;padding:24px}
 .tab-pane.active{display:block}
 
-/* ── KPI CARDS ── */
+/* -- KPI CARDS -- */
 .kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:24px}
 .kpi-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px 18px}
 .kpi-label{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-light);margin-bottom:8px}
@@ -63,7 +63,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--page);color:var(--ink)
 .kpi-card.partial{border-left:3px solid #f59e0b}.kpi-card.pending{border-left:3px solid #3b82f6}
 .kpi-card.gold{border-left:3px solid var(--gold)}
 
-/* ── SECTION HEADERS ── */
+/* -- SECTION HEADERS -- */
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .sec-title{font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-mid)}
 .sec-action{background:var(--gold-bar);color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
@@ -71,7 +71,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--page);color:var(--ink)
 .sec-action.outline{background:#fff;color:var(--gold-bar);border:1.5px solid var(--gold-bar)}
 .sec-action.outline:hover{background:var(--gold-pale)}
 
-/* ── TABLES ── */
+/* -- TABLES -- */
 .tbl-wrap{background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px}
 table{width:100%;border-collapse:collapse}
 thead th{background:var(--gold-bar);color:#fff;padding:10px 14px;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;text-align:left}
@@ -81,7 +81,7 @@ tbody tr:hover{background:var(--gold-pale)}
 tbody td{padding:10px 14px;font-size:12px;color:var(--ink-mid);vertical-align:middle}
 .mono{font-family:'IBM Plex Mono',monospace;color:var(--gold-dark);font-size:11px}
 
-/* ── PILLS / BADGES ── */
+/* -- PILLS / BADGES -- */
 .pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
 .pill.pass{background:var(--pass-bg);color:var(--pass);border:1px solid var(--pass-border)}
 .pill.fail{background:var(--fail-bg);color:var(--fail);border:1px solid var(--fail-border)}
@@ -97,20 +97,20 @@ tbody td{padding:10px 14px;font-size:12px;color:var(--ink-mid);vertical-align:mi
 .pill.blacklisted{background:var(--fail-bg);color:var(--fail);border:1px solid var(--fail-border)}
 .mat-tag{display:inline-block;background:var(--gold-pale);color:var(--gold-dark);border:1px solid var(--border-dark);padding:2px 7px;border-radius:4px;font-size:10px;margin:1px}
 
-/* ── ACTION BTNS in table ── */
+/* -- ACTION BTNS in table -- */
 .tbl-btn{background:none;border:1px solid var(--border-dark);color:var(--ink-mid);padding:4px 10px;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif}
 .tbl-btn:hover{background:var(--gold-pale)}
 .tbl-btn.danger{border-color:#FECACA;color:var(--fail)}
 .tbl-btn.primary{background:var(--gold-bar);color:#fff;border-color:var(--gold-bar)}
 .tbl-btn.primary:hover{background:var(--gold-deeper)}
 
-/* ── SCORE BAR ── */
+/* -- SCORE BAR -- */
 .score-bar-wrap{display:flex;align-items:center;gap:8px}
 .score-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
 .score-bar-fill{height:100%;border-radius:3px;transition:width .5s}
 .score-num{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;min-width:32px;text-align:right}
 
-/* ── MODAL ── */
+/* -- MODAL -- */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-bg.open{display:flex}
 .modal{background:#fff;border-radius:10px;width:100%;max-width:700px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2)}
@@ -121,7 +121,7 @@ tbody td{padding:10px 14px;font-size:12px;color:var(--ink-mid);vertical-align:mi
 .modal-body{padding:24px;overflow-y:auto;flex:1}
 .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0}
 
-/* ── FORM FIELDS ── */
+/* -- FORM FIELDS -- */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .form-grid.cols3{grid-template-columns:1fr 1fr 1fr}
 .form-full{grid-column:1/-1}
@@ -133,7 +133,7 @@ select.form-control{cursor:pointer}
 textarea.form-control{resize:vertical;min-height:70px}
 .form-section-hdr{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-dark);padding:8px 0 4px;border-bottom:1px solid var(--border);margin-bottom:4px}
 
-/* ── LINE ITEMS TABLE IN MODAL ── */
+/* -- LINE ITEMS TABLE IN MODAL -- */
 .li-table{width:100%;border-collapse:collapse;margin-top:8px}
 .li-table th{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);padding:6px 8px;background:var(--gold-pale);border:1px solid var(--border);text-align:left}
 .li-table td{padding:4px 6px;border:1px solid var(--border)}
@@ -142,7 +142,7 @@ textarea.form-control{resize:vertical;min-height:70px}
 .li-add-btn{background:none;border:1px dashed var(--border-dark);color:var(--ink-light);padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;margin-top:8px;width:100%;font-family:'Montserrat',sans-serif}
 .li-add-btn:hover{border-color:var(--gold);color:var(--gold-dark)}
 
-/* ── SUPPLIER CARD ── */
+/* -- SUPPLIER CARD -- */
 .sup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:24px}
 .sup-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px}
 .sup-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
@@ -155,7 +155,7 @@ textarea.form-control{resize:vertical;min-height:70px}
 .sup-stat-val{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--ink)}
 .sup-stat-lbl{font-size:9px;color:var(--ink-light)}
 
-/* ── DETAIL VIEW ── */
+/* -- DETAIL VIEW -- */
 .detail-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:16px}
 .detail-row{display:flex;gap:24px;flex-wrap:wrap}
 .detail-field{flex:1;min-width:160px}
@@ -171,22 +171,22 @@ textarea.form-control{resize:vertical;min-height:70px}
 .result-banner.fail .result-banner-text{color:var(--fail)}
 .result-banner.partial .result-banner-text{color:var(--partial)}
 
-/* ── TOAST ── */
+/* -- TOAST -- */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gold-bar);color:#fff;padding:12px 24px;border-radius:6px;font-size:12px;font-weight:600;letter-spacing:.5px;z-index:9990;opacity:0;transition:opacity .3s;pointer-events:none}
 #toast.show{opacity:1}
 
-/* ── FILTERS ── */
+/* -- FILTERS -- */
 .filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:14px 16px;background:var(--gold-pale);border:1px solid var(--border);border-radius:6px}
 .filter-bar select,.filter-bar input{padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:'Montserrat',sans-serif;background:#fff;outline:none;min-width:150px}
 .filter-bar select:focus,.filter-bar input:focus{border-color:var(--gold)}
 
-/* ── EMPTY STATE ── */
+/* -- EMPTY STATE -- */
 .empty{text-align:center;padding:48px 24px;color:var(--ink-light)}
 .empty-icon{font-size:40px;margin-bottom:12px}
 .empty-title{font-size:13px;font-weight:600;color:var(--ink-mid);margin-bottom:6px}
 .empty-sub{font-size:12px}
 
-/* ── RESPONSIVE ── */
+/* -- RESPONSIVE -- */
 @media(max-width:640px){
   .form-grid{grid-template-columns:1fr}
   .kpi-row{grid-template-columns:1fr 1fr}
@@ -338,7 +338,7 @@ textarea.form-control{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- ══ MODALS ══ -->
+<!-- -- MODALS -- -->
 
 <!-- New Inspection Modal -->
 <div class="modal-bg" id="modalInspection">
@@ -609,14 +609,14 @@ textarea.form-control{resize:vertical;min-height:70px}
 <div id="toast"></div>
 
 <script>
-// ─── CONFIG ────────────────────────────────────────────────────────────────
+// --- CONFIG ----------------------------------------------------------------
 const SUPABASE_URL = 'https://ncszurcrkngjcjqsowln.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
 const PASSWORD = 'Vinayak@1998';
 
 const _h = {'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
 
-// ─── AUTH ──────────────────────────────────────────────────────────────────
+// --- AUTH ------------------------------------------------------------------
 function doLogin(){
   if(document.getElementById('loginPwd').value===PASSWORD){
     document.getElementById('loginOverlay').style.display='none';
@@ -634,7 +634,7 @@ function doLogout(){
 }
 document.getElementById('loginPwd').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 
-// ─── INIT ──────────────────────────────────────────────────────────────────
+// --- INIT ------------------------------------------------------------------
 let _suppliers=[], _inspections=[], _actions=[], _currentInspId=null, _updateActionId=null;
 
 async function initApp(){
@@ -643,7 +643,7 @@ async function initApp(){
   populateSupplierFilter();
 }
 
-// ─── API HELPERS ───────────────────────────────────────────────────────────
+// --- API HELPERS -----------------------------------------------------------
 async function _get(table, params=''){
   const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}&limit=1000`,{headers:{..._h,'Prefer':'return=representation'}});
   return r.json();
@@ -657,7 +657,7 @@ async function _patch(table, id, data){
   return r.json();
 }
 
-// ─── TABS ──────────────────────────────────────────────────────────────────
+// --- TABS ------------------------------------------------------------------
 function showTab(name){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -676,7 +676,7 @@ document.querySelectorAll('.tab-btn').forEach(b=>{
   });
 });
 
-// ─── SUPPLIERS ─────────────────────────────────────────────────────────────
+// --- SUPPLIERS -------------------------------------------------------------
 async function loadSuppliers(){
   _suppliers = await _get('suppliers','order=name.asc');
   if(!Array.isArray(_suppliers))_suppliers=[];
@@ -766,7 +766,7 @@ function openNewSupplier(){
   openModal('modalSupplier');
 }
 
-// ─── INSPECTIONS ───────────────────────────────────────────────────────────
+// --- INSPECTIONS -----------------------------------------------------------
 async function loadInspections(){
   let params='order=inspection_date.desc,created_at.desc';
   const sup=document.getElementById('fltSupplier')?.value;
@@ -872,7 +872,7 @@ async function viewInspection(id){
   openModal('modalDetail');
 }
 
-// ─── NEW INSPECTION ─────────────────────────────────────────────────────────
+// --- NEW INSPECTION ---------------------------------------------------------
 function openNewInspection(){
   document.getElementById('modalInspTitle').textContent='New Inspection Report';
   const today=new Date().toISOString().split('T')[0];
@@ -972,7 +972,7 @@ async function saveInspection(){
   renderSupplierCards();
 }
 
-// ─── ACTIONS ───────────────────────────────────────────────────────────────
+// --- ACTIONS ---------------------------------------------------------------
 async function loadActions(){
   let params='order=created_at.desc';
   const type=document.getElementById('fltActionType')?.value;
@@ -1098,7 +1098,7 @@ async function doUpdateAction(){
   await loadDashboard();
 }
 
-// ─── DASHBOARD ─────────────────────────────────────────────────────────────
+// --- DASHBOARD -------------------------------------------------------------
 async function loadDashboard(){
   const all=await _get('qc_inspections','order=inspection_date.desc,created_at.desc');
   if(Array.isArray(all))_inspections=all;
@@ -1166,14 +1166,14 @@ async function loadDashboard(){
   }).join('');
 }
 
-// ─── MODAL HELPERS ─────────────────────────────────────────────────────────
+// --- MODAL HELPERS ---------------------------------------------------------
 function openModal(id){document.getElementById(id).classList.add('open')}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 document.querySelectorAll('.modal-bg').forEach(bg=>{
   bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open')});
 });
 
-// ─── UTILITIES ─────────────────────────────────────────────────────────────
+// --- UTILITIES -------------------------------------------------------------
 function fmtDate(d){
   if(!d)return'—';
   const dt=new Date(d+'T00:00:00');
@@ -1187,3 +1187,4 @@ function toast(msg){
 </script>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -19,7 +19,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Montserrat',sans-serif;background:var(--sheet);color:var(--ink);min-height:100vh;font-size:14px}
 
-/* ── Header ── */
+/* -- Header -- */
 .topbar{background:var(--gold-bar);padding:0 24px;height:56px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(107,91,53,.25)}
 .topbar-logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#fff;letter-spacing:2px;flex:1}
 .topbar-logo span{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:500;opacity:.7;display:block;letter-spacing:3px;margin-top:2px}
@@ -30,17 +30,17 @@ body{font-family:'Montserrat',sans-serif;background:var(--sheet);color:var(--ink
 .api-status.ok{background:#EAF5EE;color:#1A6A40}
 .api-status.missing{background:#FEF0EF;color:#B92B27}
 
-/* ── Main layout ── */
+/* -- Main layout -- */
 .main{max-width:1400px;margin:0 auto;padding:24px 24px 80px}
 
-/* ── Section card ── */
+/* -- Section card -- */
 .card{background:var(--page);border:1px solid var(--border);border-radius:var(--r);margin-bottom:20px;overflow:hidden}
 .card-header{background:var(--gold-pale);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:10px}
 .card-num{background:var(--gold-bar);color:#fff;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .card-title{font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gold-bar)}
 .card-body{padding:20px}
 
-/* ── Step 1: Setup ── */
+/* -- Step 1: Setup -- */
 .setup-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
 .form-group{display:flex;flex-direction:column;gap:6px}
 .form-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-light)}
@@ -51,7 +51,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--sheet);color:var(--ink
 .mode-btn{flex:1;padding:10px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;border:none;background:var(--page);color:var(--ink-light);cursor:pointer;transition:all .15s;letter-spacing:.5px}
 .mode-btn.active{background:var(--gold-bar);color:#fff}
 
-/* ── Step 2: Upload ── */
+/* -- Step 2: Upload -- */
 .drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:48px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--sheet)}
 .drop-zone:hover,.drop-zone.drag-over{border-color:var(--gold-bar);background:var(--gold-pale)}
 .drop-icon{font-size:48px;margin-bottom:12px;opacity:.4}
@@ -66,7 +66,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--sheet);color:var(--ink
 .thumb-num{position:absolute;top:4px;left:4px;background:var(--gold-bar);color:#fff;font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px}
 .thumb-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
 
-/* ── Step 3: Extract ── */
+/* -- Step 3: Extract -- */
 .extract-btn{width:100%;padding:18px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:var(--gold-bar);color:#fff;border:none;border-radius:var(--r);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px}
 .extract-btn:hover:not(:disabled){background:var(--gold-deep);transform:translateY(-1px);box-shadow:0 4px 16px rgba(107,91,53,.3)}
 .extract-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
@@ -76,7 +76,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--sheet);color:var(--ink
 .progress-bar{background:linear-gradient(90deg,var(--gold-bar),var(--gold));height:100%;border-radius:20px;transition:width .4s ease;width:0%}
 .progress-text{font-size:12px;color:var(--ink-light);margin-top:8px;font-family:'IBM Plex Mono',monospace;text-align:center}
 
-/* ── Step 4: Results ── */
+/* -- Step 4: Results -- */
 .results-header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
 .results-kpi{background:var(--gold-pale);border:1px solid var(--border);border-radius:6px;padding:8px 16px;text-align:center}
 .results-kpi .kpi-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--gold-bar);line-height:1}
@@ -121,7 +121,7 @@ td.td-soh{background:rgba(107,91,53,.06);font-weight:600}
 
 .issue-note{font-size:10px;color:var(--amber);font-family:'IBM Plex Mono',monospace;display:block;margin-top:2px}
 
-/* ── Table controls ── */
+/* -- Table controls -- */
 .table-controls{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 .tc-btn{border:1.5px solid var(--border);background:var(--page);color:var(--ink-mid);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;padding:7px 14px;border-radius:6px;cursor:pointer;transition:all .15s}
 .tc-btn:hover{border-color:var(--gold-bar);color:var(--gold-bar)}
@@ -130,7 +130,7 @@ td.td-soh{background:rgba(107,91,53,.06);font-weight:600}
 .tc-search:focus{border-color:var(--gold-bar)}
 .review-count{background:var(--amber-bg);color:var(--amber);font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;display:none}
 
-/* ── Save bar ── */
+/* -- Save bar -- */
 .save-bar{position:fixed;bottom:0;left:0;right:0;background:var(--page);border-top:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:12px;z-index:100;box-shadow:0 -4px 16px rgba(0,0,0,.06)}
 .save-btn{background:var(--gold-bar);color:#fff;border:none;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:12px 28px;border-radius:6px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px}
 .save-btn:hover:not(:disabled){background:var(--gold-deep);transform:translateY(-1px)}
@@ -142,7 +142,7 @@ td.td-soh{background:rgba(107,91,53,.06);font-weight:600}
 .save-result.ok{color:var(--green)}
 .save-result.err{color:var(--red)}
 
-/* ── Settings modal ── */
+/* -- Settings modal -- */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--page);border-radius:var(--r);padding:28px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2)}
@@ -155,18 +155,18 @@ td.td-soh{background:rgba(107,91,53,.06);font-weight:600}
 .modal-save{background:var(--gold-bar);color:#fff;border:none;padding:10px 24px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
 .modal-cancel{background:var(--page);color:var(--ink-mid);border:1.5px solid var(--border);padding:10px 20px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:13px;cursor:pointer}
 
-/* ── Toast ── */
+/* -- Toast -- */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--gold-bar);color:#fff;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;padding:12px 24px;border-radius:24px;z-index:300;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.success{background:#1A6A40}
 .toast.error{background:#B92B27}
 
-/* ── Empty / placeholder states ── */
+/* -- Empty / placeholder states -- */
 .empty-state{text-align:center;padding:48px 24px;color:var(--ink-light)}
 .empty-state .empty-icon{font-size:48px;opacity:.3;margin-bottom:12px}
 .empty-state p{font-size:14px}
 
-/* ── Responsive ── */
+/* -- Responsive -- */
 @media(max-width:768px){
   .setup-grid{grid-template-columns:1fr 1fr}
   .topbar-logo span{display:none}
@@ -342,13 +342,13 @@ td.td-soh{background:rgba(107,91,53,.06);font-weight:600}
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── STATE ───────────────────────────────────────────────────────
+// --- STATE -------------------------------------------------------
 var uploadedImages = [];
 var extractedItems = [];
 var currentMode    = 'quick';
 var apiKey         = '';
 
-// ─── CONSTANTS ───────────────────────────────────────────────────
+// --- CONSTANTS ---------------------------------------------------
 var GEMINI_BASE  = 'https://generativelanguage.googleapis.com/v1beta/models';
 var SUPABASE_URL = 'https://ncszurcrkngjcjqsowln.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
@@ -364,7 +364,7 @@ var FULL_COLS = [
 ];
 var SOH_COL = { key:'balance', label:'SOH / Balance', short:'SOH', isSOH:true };
 
-// ─── STORES ──────────────────────────────────────────────────────
+// --- STORES ------------------------------------------------------
 var STORE_GROUPS = [
   { region:'Abu Dhabi', stores:[
     {code:'A0001',  name:'Bawabat al Sharq Mall Shop'},
@@ -421,7 +421,7 @@ for (var _gi = 0; _gi < STORE_GROUPS.length; _gi++) {
   for (var _si = 0; _si < _grp.length; _si++) { STORES.push(_grp[_si]); }
 }
 
-// ─── INIT ────────────────────────────────────────────────────────
+// --- INIT --------------------------------------------------------
 
 // Prevent browser from navigating to dropped files anywhere on the page
 document.addEventListener('dragover', function(e) { e.preventDefault(); e.stopPropagation(); });
@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
   for (var gi = 0; gi < STORE_GROUPS.length; gi++) {
     var g = STORE_GROUPS[gi];
     var grp = document.createElement('optgroup');
-    grp.label = '── ' + g.region + ' ──';
+    grp.label = '-- ' + g.region + ' --';
     for (var si = 0; si < g.stores.length; si++) {
       var s = g.stores[si];
       var opt = document.createElement('option');
@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('dateInput').value = todays();
 
-  // ── Drop zone ────────────────────────────────────────────────
+  // -- Drop zone ------------------------------------------------
   var dz = document.getElementById('dropZone');
   dz.addEventListener('dragover',  function(e) { e.preventDefault(); e.stopPropagation(); dz.classList.add('drag-over'); });
   dz.addEventListener('dragleave', function(e) { e.stopPropagation(); dz.classList.remove('drag-over'); });
@@ -481,13 +481,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // ── File input (browse button) ───────────────────────────────
+  // -- File input (browse button) -------------------------------
   document.getElementById('fileInput').addEventListener('change', function(e) {
     handleFiles(Array.prototype.slice.call(e.target.files));
     e.target.value = '';
   });
 
-  // ── Paste (Ctrl+V) — works with WhatsApp Copy Image ─────────
+  // -- Paste (Ctrl+V) — works with WhatsApp Copy Image ---------
   document.addEventListener('paste', function(e) {
     var items = e.clipboardData && e.clipboardData.items;
     if (!items) return;
@@ -507,7 +507,7 @@ document.addEventListener('DOMContentLoaded', function() {
   buildTableHead();
 });
 
-// ─── SETTINGS ────────────────────────────────────────────────────
+// --- SETTINGS ----------------------------------------------------
 function openSettings() {
   document.getElementById('apiKeyInput').value = apiKey;
   document.getElementById('settingsModal').classList.add('open');
@@ -533,7 +533,7 @@ function updateApiStatus() {
   }
 }
 
-// ─── IMAGE UPLOAD ─────────────────────────────────────────────────
+// --- IMAGE UPLOAD -------------------------------------------------
 function handleFiles(files) {
   var imageFiles = [];
   for (var i = 0; i < files.length; i++) {
@@ -577,7 +577,7 @@ function removeThumb(i) {
   renderThumbs();
 }
 
-// ─── OCR PROMPT ──────────────────────────────────────────────────
+// --- OCR PROMPT --------------------------------------------------
 function buildGeminiPrompt(storeCode, date, nImages) {
   return 'You are reading Emirates Pride Perfumes stock register sheets.\n' +
     'Store: ' + storeCode + '  |  Date: ' + date + '  |  Images: ' + nImages + '\n\n' +
@@ -598,7 +598,7 @@ function buildGeminiPrompt(storeCode, date, nImages) {
     '{"sheet_date":"' + date + '","store_hint":"any store name visible","overall_confidence":0.95,"items":[{"sku_code":"AP001","product_name":"Product Name","opening":10,"wh_received":5,"store_in":0,"sold":3,"transfer_out":0,"writeoff":0,"balance":12,"balance_check":"OK","row_confidence":0.97}],"total_skus":1,"issues":[]}';
 }
 
-// ─── GEMINI API CALL ─────────────────────────────────────────────
+// --- GEMINI API CALL ---------------------------------------------
 function callGemini(model, parts) {
   var url = GEMINI_BASE + '/' + model + ':generateContent?key=' + apiKey;
   var body = JSON.stringify({ contents: [{ parts: parts }], generationConfig: { temperature: 0.1 } });
@@ -671,7 +671,7 @@ function validateItems(items) {
   return items;
 }
 
-// ─── IMAGE COMPRESSION ────────────────────────────────────────────
+// --- IMAGE COMPRESSION --------------------------------------------
 // Resize to max 1500px on longest side, JPEG 82% — cuts 5MB → ~150KB
 function compressOneImage(dataUrl, callback) {
   var img = new Image();
@@ -705,7 +705,7 @@ function compressAllImages(images, onDone) {
   }
 }
 
-// ─── EXTRACT ─────────────────────────────────────────────────────
+// --- EXTRACT -----------------------------------------------------
 function runExtract() {
   if (!apiKey || apiKey.indexOf('AIza') !== 0) {
     openSettings();
@@ -784,7 +784,7 @@ function setProgress(pct, text) {
   document.getElementById('progressText').textContent = text;
 }
 
-// ─── TABLE ───────────────────────────────────────────────────────
+// --- TABLE -------------------------------------------------------
 function setMode(mode) {
   currentMode = mode;
   document.getElementById('modeQuick').classList.toggle('active', mode === 'quick');
@@ -968,7 +968,7 @@ function updateSaveSummary() {
   document.getElementById('saveSummary').textContent = validRows + ' SKUs ready · Total SOH: ' + sohTotal.toLocaleString() + ' units';
 }
 
-// ─── SAVE TO SUPABASE ─────────────────────────────────────────────
+// --- SAVE TO SUPABASE ---------------------------------------------
 function saveToRegister() {
   var store = document.getElementById('storeSelect').value;
   var date  = document.getElementById('dateInput').value;
@@ -1060,7 +1060,7 @@ function saveToRegister() {
   sendBatch(0);
 }
 
-// ─── EXCEL DOWNLOAD ───────────────────────────────────────────────
+// --- EXCEL DOWNLOAD -----------------------------------------------
 function downloadExcel() {
   var store = document.getElementById('storeSelect').value;
   var date  = document.getElementById('dateInput').value;
@@ -1072,7 +1072,7 @@ function downloadExcel() {
 
   var wb = XLSX.utils.book_new();
 
-  // ── Sheet data ────────────────────────────────────────────────
+  // -- Sheet data ------------------------------------------------
   // Row 1: Title
   // Row 2: Store / Date meta
   // Row 3: blank
@@ -1110,7 +1110,7 @@ function downloadExcel() {
 
   var ws = XLSX.utils.aoa_to_sheet(wsData);
 
-  // ── Column widths ──────────────────────────────────────────────
+  // -- Column widths ----------------------------------------------
   ws['!cols'] = [
     { wch: 4  },  // #
     { wch: 10 },  // SKU Code
@@ -1124,10 +1124,10 @@ function downloadExcel() {
     { wch: 14 }   // SOH / Balance
   ];
 
-  // ── Merge title row across all columns ─────────────────────────
+  // -- Merge title row across all columns -------------------------
   ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }];
 
-  // ── Cell styles (requires xlsx-style; applies where supported) ──
+  // -- Cell styles (requires xlsx-style; applies where supported) --
   // Title cell
   var titleCell = ws['A1'];
   if (titleCell) {
@@ -1172,7 +1172,7 @@ function downloadExcel() {
   showToast('Excel downloaded: ' + filename, 'success');
 }
 
-// ─── CSV DOWNLOAD ─────────────────────────────────────────────────
+// --- CSV DOWNLOAD -------------------------------------------------
 function downloadCSV() {
   var store = document.getElementById('storeSelect').value;
   var date  = document.getElementById('dateInput').value;
@@ -1207,7 +1207,7 @@ function downloadCSV() {
   showToast('CSV downloaded', 'success');
 }
 
-// ─── UTILS ───────────────────────────────────────────────────────
+// --- UTILS -------------------------------------------------------
 function todays() {
   var d = new Date();
   var mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -1232,3 +1232,4 @@ function showToast(msg, type) {
 </script>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -22,7 +22,7 @@ body {
   display: flex; flex-direction: column;
 }
 
-/* ── HEADER ── */
+/* -- HEADER -- */
 .ep-header {
   background: var(--gold-bar);
   color: #fff;
@@ -42,11 +42,11 @@ body {
   text-transform: uppercase; font-weight: 500;
 }
 
-/* ── SCREENS ── */
+/* -- SCREENS -- */
 .screen { display: none; flex: 1; flex-direction: column; }
 .screen.active { display: flex; }
 
-/* ── LOGIN ── */
+/* -- LOGIN -- */
 #login-screen {
   align-items: center; justify-content: center;
   padding: 32px 24px;
@@ -90,7 +90,7 @@ body {
   min-height: 18px;
 }
 
-/* ── DISPATCH SCREEN ── */
+/* -- DISPATCH SCREEN -- */
 #dispatch-screen { padding: 20px 16px; gap: 16px; }
 
 .section-title {
@@ -251,7 +251,7 @@ body {
   <div class="login-card">
     <span class="label">Access PIN</span>
     <input type="password" class="pin-input" id="pin-input"
-           placeholder="• • • • • • • •"
+           placeholder="- - - - - - - -"
            maxlength="20"
            inputmode="text"
            autocomplete="off">
@@ -305,14 +305,14 @@ body {
 
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────────────────────
+// -- CONFIG ------------------------------------------------------------------
 const SUPA_URL  = 'https://ncszurcrkngjcjqsowln.supabase.co';
 const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
 const PIN_HASH  = '36db889176ae1adee9087907c38dca6ab4727f9603bdc5783672dbc496ace827';
 const SESSION_KEY = 'ep_dispatch_auth';
 const HISTORY_LIMIT = 20;
 
-// ── AUTH ─────────────────────────────────────────────────────────────────────
+// -- AUTH ---------------------------------------------------------------------
 async function sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -345,7 +345,7 @@ document.getElementById('pin-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
 });
 
-// ── SCREEN SWITCH ─────────────────────────────────────────────────────────────
+// -- SCREEN SWITCH -------------------------------------------------------------
 function showDispatch() {
   document.getElementById('login-screen').classList.remove('active');
   document.getElementById('dispatch-screen').classList.add('active');
@@ -361,7 +361,7 @@ function showDispatch() {
 // On page load — restore session
 if (sessionStorage.getItem(SESSION_KEY) === '1') showDispatch();
 
-// ── CONNECTION CHECK ───────────────────────────────────────────────────────────
+// -- CONNECTION CHECK -----------------------------------------------------------
 async function checkConnection() {
   const dot = document.getElementById('conn-dot');
   try {
@@ -372,7 +372,7 @@ async function checkConnection() {
   } catch { dot.className = 'conn-dot err'; }
 }
 
-// ── DISPATCH ──────────────────────────────────────────────────────────────────
+// -- DISPATCH ------------------------------------------------------------------
 async function dispatchTask() {
   const instruction = document.getElementById('task-input').value.trim();
   if (!instruction) return;
@@ -409,7 +409,7 @@ async function dispatchTask() {
   }
 }
 
-// ── HISTORY ───────────────────────────────────────────────────────────────────
+// -- HISTORY -------------------------------------------------------------------
 async function loadHistory() {
   try {
     const r = await fetch(
@@ -460,13 +460,13 @@ function escHtml(s) {
           .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-// ── QUICK CHIPS ───────────────────────────────────────────────────────────────
+// -- QUICK CHIPS ---------------------------------------------------------------
 function fillChip(text) {
   document.getElementById('task-input').value = text;
   document.getElementById('task-input').focus();
 }
 
-// ── AUTO-REFRESH BADGE ────────────────────────────────────────────────────────
+// -- AUTO-REFRESH BADGE --------------------------------------------------------
 let _nextRefresh = 15;
 function updateAutoBadge() {
   _nextRefresh = (_nextRefresh <= 1) ? 15 : _nextRefresh - 1;
@@ -476,3 +476,4 @@ setInterval(updateAutoBadge, 1000);
 </script>
 </body>
 </html>
+
