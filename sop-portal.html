@@ -5264,9 +5264,19 @@ function _clearRegionCheck(){
   document.getElementById('inv-rc-results').style.display='none';
 }
 
+// Returns the last N calendar months as YYYY-MM strings (most recent first)
+function _lastNMonths(n){
+  const months=[],d=new Date();
+  for(let i=0;i<n;i++){
+    months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+    d.setMonth(d.getMonth()-1);
+  }
+  return months;
+}
+
 async function _loadInvSalesData(){
   try{
-    const months = ['2026-05','2026-04','2026-03','2026-02','2026-01','2025-12'];
+    const months = _lastNMonths(6);
     let all=[], off=0, PAGE=1000;
     while(true){
       const {data,error}=await sb.from('sales_history')
@@ -5308,7 +5318,7 @@ function _computeInvMetrics(){
   });
 
   // Sales rate: last 3 months only (for velocity / DoS calc)
-  const last3=['2026-05','2026-04','2026-03'];
+  const last3=_lastNMonths(3);
   const salesSum={}; // store→sku→total qty (3 months)
   invSalesData.forEach(r=>{
     if(!last3.includes(r.month_year)) return;
