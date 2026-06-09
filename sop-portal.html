@@ -2510,16 +2510,17 @@ async function loadSalesData() {
     const pages = Math.ceil(count / PAGE);
     const fetches = Array.from({ length: pages }, (_, i) =>
       sb.from('sales_history')
-        .select('sku_code,store_code,month_year,qty_sold')
+        .select('sku_code,store_code,month_year,qty_sold,gwp_qty')
         .range(i * PAGE, (i + 1) * PAGE - 1)
     );
     const results = await Promise.all(fetches);
 
-    // Step 3: combine pages
+    // Step 3: combine pages — EXCLUDE GWP RECORDS (gwp_qty > 0)
     salesData = [];
     for (const { data, error } of results) {
       if (error) throw error;
-      salesData = salesData.concat(data || []);
+      const filtered = (data || []).filter(r => !r.gwp_qty || r.gwp_qty === 0);
+      salesData = salesData.concat(filtered);
     }
 
     salesLoaded = true;
@@ -2583,6 +2584,10 @@ function applySalesFilters() {
   // Data quality warnings
   const warn = document.getElementById('sales-data-warning');
   const warnings = [];
+
+  // ALWAYS show GWP exclusion notice
+  warnings.push('✓ <strong>GWP Data Excluded:</strong> All Gift With Purchase (GWP) records have been removed from this analysis. Only retail paid sales (qty_sold) are included in all metrics, rankings, and KPIs.');
+
   const showsASL = region === 'ALL' || region === 'ASL';
   const showsApr2026 = (year === 'ALL' || year === '2026') &&
     (ptype !== 'monthly' || month === 'ALL' || month === '04') &&
@@ -3317,7 +3322,7 @@ async function loadTesterData() {
         .range(i*PAGE, (i+1)*PAGE-1)
     );
     const sFetches = Array.from({ length: Math.ceil((sCount||0)/PAGE) }, (_, i) =>
-      sb.from('sales_history').select('store_code,month_year,qty_sold').range(i*PAGE, (i+1)*PAGE-1)
+      sb.from('sales_history').select('store_code,month_year,qty_sold,gwp_qty').range(i*PAGE, (i+1)*PAGE-1)
     );
 
     const [tResults, sResults] = await Promise.all([
@@ -3347,12 +3352,14 @@ async function loadTesterData() {
       });
     }
 
-    // Build sales lookup: store+month → total qty + unique SKU count
+    // Build sales lookup: store+month → total qty + unique SKU count (EXCLUDE GWP)
     const salesMap = {};
     const storeInfoMap = {};
     STORES.forEach(s => { storeInfoMap[s.code] = s; });
     for (const { data: sd } of sResults) {
       (sd||[]).forEach(r => {
+        // Skip GWP records (gwp_qty > 0)
+        if (r.gwp_qty && r.gwp_qty > 0) return;
         const k = r.store_code + '|' + r.month_year;
         if (!salesMap[k]) salesMap[k] = { qty: 0 };
         salesMap[k].qty += (r.qty_sold||0);
@@ -7884,7 +7891,12 @@ async function loadIntelligenceData(){
   // Reuse Sales tab cache if already loaded, otherwise fetch fresh
   const salesSrc = (salesLoaded && salesData.length)
     ? Promise.resolve({data:salesData,error:null})
-    : sb.from('sales_history').select('sku_code,store_code,month_year,qty_sold').limit(20000);
+    : sb.from('sales_history').select('sku_code,store_code,month_year,qty_sold,gwp_qty').limit(20000).then(r => {
+        if (r.data) {
+          r.data = r.data.filter(row => !row.gwp_qty || row.gwp_qty === 0);
+        }
+        return r;
+      });
 
   const [r1,r2,r3,r4,r5,r6,r7]=await Promise.allSettled([
     salesSrc,
