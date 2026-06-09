@@ -6204,8 +6204,9 @@ function switchTab(id){
   document.querySelector(`[data-tab="${id}"]`).classList.add('active');
   if(id==='sales'       && !salesLoaded) loadSalesData();
   if(id==='inventory'){
-    if(!invLoaded) loadInvFromSupabase();           // first visit: load SOH + build intel
-    else           buildInvIntelligence();           // return visit: just rebuild intel
+    invSalesLoaded = false;                          // always re-fetch sales so months stay current
+    if(!invLoaded) loadInvFromSupabase();            // first visit: load SOH + build intel
+    else           buildInvIntelligence();           // return visit: rebuild intel with fresh sales
   }
   if(id==='testers')     loadTesterData();
   if(id==='production')  loadProductionTab();
