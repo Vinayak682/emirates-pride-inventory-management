@@ -2438,24 +2438,8 @@ let targetsLoadKey = null;    // tracks which store+month is currently loaded
 function doLogin() {
   const pwd = document.getElementById('loginPwd').value;
   const err = document.getElementById('loginErr');
-  const btn = document.querySelector('.login-btn');
 
-  // Libraries still loading — show message and auto-retry once ready
-  if (!window.supabase) {
-    err.textContent = 'Loading resources… please wait.';
-    err.style.display = 'block';
-    if (btn) btn.textContent = 'Loading…';
-    const interval = setInterval(() => {
-      if (window.supabase) {
-        clearInterval(interval);
-        err.style.display = 'none';
-        if (btn) btn.textContent = 'Enter Command Centre →';
-        if (pwd === SOP_PASS) doLogin();
-      }
-    }, 200);
-    return;
-  }
-
+  // Password check is purely client-side — never block on Supabase loading
   if (pwd === SOP_PASS) {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
@@ -2471,20 +2455,6 @@ function doLogin() {
 }
 document.getElementById('loginPwd').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
-// Show ready state on button once Supabase is available
-(function waitReady(){
-  const btn = document.querySelector('.login-btn');
-  if (!btn) return;
-  if (!window.supabase) {
-    btn.textContent = 'Loading…';
-    btn.style.opacity = '0.6';
-    setTimeout(waitReady, 200);
-  } else {
-    btn.textContent = 'Enter Command Centre →';
-    btn.style.opacity = '1';
-  }
-})();
-
 function doLogout() {
   document.getElementById('loginPwd').value = '';
   document.getElementById('app').style.display = 'none';
@@ -2498,13 +2468,29 @@ function doLogout() {
 let salesLoaded = false;
 
 function initApp() {
-  sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
+  if (!window.supabase) {
+    // CDN still loading — wait up to 10s then proceed anyway
+    let waited = 0;
+    const poll = setInterval(() => {
+      waited += 100;
+      if (window.supabase || waited >= 10000) {
+        clearInterval(poll);
+        _initAppCore();
+      }
+    }, 100);
+    return;
+  }
+  _initAppCore();
+}
+
+function _initAppCore() {
+  if (window.supabase) {
+    sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
+  }
   populateStoreDropdowns();
   setInvDefaultDate();
   refreshWhBadge();
   checkNavDotOnLoad();
-  // Defer sales fetch so the app renders immediately on login
-  // Sales tab is default, so load it after a short yield to let UI paint first
   setTimeout(() => loadSalesData(), 50);
 }
 
