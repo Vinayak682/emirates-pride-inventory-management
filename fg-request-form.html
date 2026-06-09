@@ -3,349 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Request Tester from FG Stock</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>FG to Tester Request — Deactivated</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',sans-serif;background:#F5F3EF;color:#1A1A1A;min-height:100vh;-webkit-tap-highlight-color:transparent;}
-.hdr{background:#1A1A1A;border-bottom:3px solid #C9A44E;padding:14px 18px;text-align:center;}
-.hdr h1{color:#fff;font-size:16px;font-weight:700;margin-bottom:3px;line-height:1.3;}
-.hdr .ar{color:#C9A44E;font-size:13px;font-weight:600;margin-top:2px;direction:rtl;}
-.hdr p{color:#999;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;}
-.wrap{max-width:500px;margin:0 auto;padding:14px 12px 60px;}
-.note{background:#FFF9ED;border:1px solid #E8D5A8;border-radius:10px;padding:11px 13px;font-size:11.5px;color:#7A6530;line-height:1.5;margin-bottom:18px;}
-.note b{color:#1A1A1A;display:block;margin-bottom:4px;}
-.note .ar{direction:rtl;color:#8B7340;margin-top:6px;font-size:11px;}
-.lbl{display:block;font-size:10.5px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;}
-.lbl .ar{float:right;direction:rtl;text-transform:none;font-size:11px;color:#AAA;}
-.req{color:#D94040;}
-.fld{margin-bottom:16px;}
-select,input[type="text"],input[type="date"],input[type="number"],textarea{width:100%;padding:12px 13px;border:2px solid #E0DDD6;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:#1A1A1A;background:#FFFFFF;outline:none;-webkit-appearance:none;appearance:none;transition:border-color 0.15s;}
-select:focus,input:focus,textarea:focus{border-color:#C9A44E;}
-input[type="date"]{background:#F9F8F6;color:#666;}
-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A44E' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:32px;}
-input[type="number"]{text-align:center;}
-textarea{resize:vertical;min-height:60px;}
-.items-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.items-hdr h2{font-size:14px;font-weight:700;}
-.items-hdr .ar{font-size:12px;color:#888;direction:rtl;}
-.add{background:#C9A44E;color:#fff;border:none;border-radius:8px;padding:8px 13px;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;}
-.item{background:#fff;border:1.5px solid #E0DDD6;border-radius:10px;padding:11px;margin-bottom:9px;position:relative;}
-.item-row{display:flex;gap:9px;align-items:flex-end;}
-.item-row .fld{flex:1;margin-bottom:0;}
-.item-row .fld.q{flex:0 0 68px;}
-.del{position:absolute;top:5px;right:7px;background:none;border:none;color:#CCC;font-size:20px;cursor:pointer;padding:3px 7px;line-height:1;}
-.del:hover{color:#D94040;}
-.btn{width:100%;padding:15px;border:none;border-radius:11px;background:#1A1A1A;color:#FFFFFF;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;}
-.btn:active{background:#333;transform:scale(0.98);}
-.btn:disabled{background:#BBB;cursor:not-allowed;transform:none;}
-.ts{text-align:center;font-size:9.5px;color:#AAA;margin-top:9px;font-family:monospace;}
-.ok{display:none;text-align:center;padding:40px 18px;}
-.ok-icon{font-size:52px;margin-bottom:13px;}
-.ok h2{font-size:18px;margin-bottom:7px;}
-.ok .ar{font-size:16px;color:#888;margin-top:5px;direction:rtl;}
-.ok p{font-size:12px;color:#888;line-height:1.6;margin:14px 0 18px;}
-.ok .ref{background:#FFF9ED;border:1px solid #E8D5A8;border-radius:8px;padding:11px;font-family:monospace;font-size:15px;font-weight:700;color:#C9A44E;margin:14px 0;}
-.ok .badge{display:inline-block;padding:6px 12px;border-radius:6px;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;text-transform:uppercase;margin:8px 0;}
+body{font-family:'Montserrat',sans-serif;background:#F5F2EC;color:#1A1A1A;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.hdr{background:#6B5B35;border-bottom:3px solid #C9A84C;padding:16px 20px;text-align:center;width:100%;position:fixed;top:0;left:0;z-index:10;}
+.hdr h1{color:#fff;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+.hdr p{color:rgba(201,168,76,0.85);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-top:3px;}
+.card{background:#fff;border-radius:16px;border:2px solid #E5E0D8;padding:40px 32px;max-width:440px;width:100%;text-align:center;margin-top:80px;box-shadow:0 4px 24px rgba(107,91,53,0.10);}
+.icon{font-size:48px;margin-bottom:18px;}
+.title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#6B5B35;margin-bottom:10px;}
+.subtitle{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8A8278;margin-bottom:24px;}
+.msg{font-size:13.5px;line-height:1.7;color:#4A4540;margin-bottom:28px;}
+.ar{font-family:'Montserrat',sans-serif;direction:rtl;font-size:13px;color:#7A6525;margin-top:12px;line-height:1.7;}
+.divider{border:none;border-top:1px solid #E5E0D8;margin:24px 0;}
+.back-btn{display:inline-block;background:linear-gradient(135deg,#6B5B35,#8A7340);color:#fff;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;padding:12px 28px;border-radius:8px;text-decoration:none;box-shadow:0 3px 10px rgba(107,91,53,0.30);transition:opacity 0.15s;}
+.back-btn:hover{opacity:0.88;}
 </style>
 </head>
 <body>
 <div class="hdr">
-  <p>Emirates Pride Perfumes</p>
-  <h1>Request for Tester from Outlet FG Stock</h1>
-  <div class="ar">طلب تستر من مخزون المتجر</div>
+  <h1>Emirates Pride Perfumes</h1>
+  <p>Integrated Operations Platform</p>
 </div>
-<div class="wrap">
-  <div id="step1">
-    <div class="note">
-      <b>When to Request:</b>
-      Once the tester cannot be supplied from warehouse and management approval taken by the Area Manager.
-      <div class="ar"><b>متى يتم الطلب:</b><br>عندما لا يمكن توفير التستر من المستودع وبعد أخذ موافقة الإدارة من مدير المنطقة.</div>
-    </div>
-    <div class="fld">
-      <label class="lbl">Date <span class="ar">التاريخ</span> <span class="req">*</span></label>
-      <input type="date" id="f_date" readonly>
-    </div>
-    <div class="fld">
-      <label class="lbl">Store Name <span class="ar">اسم المتجر</span> <span class="req">*</span></label>
-      <select id="f_store"><option value="">Select your store / اختر متجرك</option>
-        <optgroup label="── أبوظبي ABU DHABI ──">
-          <option value="Bawabat al Sharq Mall Shop">Bawabat al Sharq Mall Shop</option>
-          <option value="Bawabat al Sharq Mall Kiosk">Bawabat al Sharq Mall Kiosk</option>
-          <option value="Bawabat al Sharq Kiosk ASL">Bawabat al Sharq Kiosk ASL</option>
-          <option value="Dalma Mall Shop">Dalma Mall Shop</option>
-          <option value="Dalma Mall Kiosk">Dalma Mall Kiosk</option>
-          <option value="Deerfield Mall Kiosk">Deerfield Mall Kiosk</option>
-          <option value="Yas Mall Podium">Yas Mall Podium</option>
-          <option value="Yas Mall Kiosk 2">Yas Mall Kiosk 2</option>
-          <option value="Yas Mall Kiosk 3">Yas Mall Kiosk 3</option>
-          <option value="Yas Mall ASL">Yas Mall ASL</option>
-        </optgroup>
-        <optgroup label="── العين AL AIN ──">
-          <option value="Al Ain Mall Kiosk">Al Ain Mall Kiosk</option>
-          <option value="Bawadi Mall Kiosk 1">Bawadi Mall Kiosk 1</option>
-          <option value="Bawadi Mall Kiosk 2">Bawadi Mall Kiosk 2</option>
-          <option value="Bawadi Mall ASL">Bawadi Mall ASL</option>
-          <option value="Jimi Mall Shop">Jimi Mall Shop</option>
-          <option value="Makhani Zakhar Mall Shop">Makhani Zakhar Mall Shop</option>
-          <option value="Makhani Zakhar Mall ASL">Makhani Zakhar Mall ASL</option>
-        </optgroup>
-        <optgroup label="── دبي DUBAI ──">
-          <option value="Dubai Mall Shop">Dubai Mall Shop</option>
-          <option value="Mall of the Emirates Kiosk">Mall of the Emirates Kiosk</option>
-          <option value="Mirdif City Centre Kiosk">Mirdif City Centre Kiosk</option>
-          <option value="Dubai Hills Mall Shop">Dubai Hills Mall Shop</option>
-        </optgroup>
-        <optgroup label="── رأس الخيمة RAK ──">
-          <option value="Manar Mall Shop">Manar Mall Shop</option>
-          <option value="Manar Mall Kiosk">Manar Mall Kiosk</option>
-        </optgroup>
-        <optgroup label="── الفجيرة FUJAIRAH ──">
-          <option value="Fujairah City Centre Kiosk">Fujairah City Centre Kiosk</option>
-          <option value="Fujairah City Centre ASL">Fujairah City Centre ASL</option>
-        </optgroup>
-        <optgroup label="── الشارقة SHARJAH ──">
-          <option value="Zahia City Centre Kiosk">Zahia City Centre Kiosk</option>
-        </optgroup>
-        <optgroup label="── عجمان AJMAN ──">
-          <option value="Ajman City Centre Kiosk">Ajman City Centre Kiosk</option>
-        </optgroup>
-      </select>
-    </div>
-    <div class="fld">
-      <label class="lbl">Employee Name <span class="ar">اسم الموظف</span> <span class="req">*</span></label>
-      <input type="text" id="f_name" placeholder="Full name / الاسم الكامل">
-    </div>
-    <div class="fld">
-      <label class="lbl">Employee ID <span class="ar">رقم الموظف</span> <span class="req">*</span></label>
-      <input type="text" id="f_empid" placeholder="e.g., EMP-1234">
-    </div>
-    <div class="items-hdr">
-      <div><h2>FG Items Required for Tester</h2><div class="ar">المنتجات المطلوب تحويلها لتستر</div></div>
-      <button class="add" onclick="addRow()">+ Add</button>
-    </div>
-    <div id="rows"></div>
-    <div class="fld" style="margin-top:18px;">
-      <label class="lbl">Reason / Remarks (Optional) <span class="ar">السبب / ملاحظات</span></label>
-      <textarea id="f_remarks" placeholder="Optional notes"></textarea>
-    </div>
-    <button class="btn" onclick="submit()">Submit Request / إرسال الطلب</button>
-    <div class="ts" id="ts1"></div>
+<div class="card">
+  <div class="icon">🔒</div>
+  <div class="title">Form Deactivated</div>
+  <div class="subtitle">FG to Tester Conversion Request</div>
+  <div class="msg">
+    This form has been temporarily deactivated.<br>
+    FG to Tester conversion requests are currently suspended.<br>
+    Please contact your Area Manager or Manager for assistance.
   </div>
-  <div id="step2" class="ok">
-    <div class="ok-icon">✅</div>
-    <h2>Request Submitted</h2>
-    <div class="ar">تم إرسال الطلب</div>
-    <div class="ref" id="refNo"></div>
-    <div class="badge">Status: PENDING MANAGEMENT APPROVAL</div>
-    <p>PDF downloaded to your device.<br>WhatsApp message sent to management.<br><br>تم تنزيل ملف PDF وإرسال رسالة واتساب للإدارة</p>
-    <button class="btn" onclick="resetAll()" style="background:#C9A44E;margin-top:14px;">Submit Another Request</button>
+  <div class="ar">
+    تم إيقاف هذا النموذج مؤقتاً.<br>
+    طلبات تحويل المنتج إلى تيستر معلقة حالياً.<br>
+    يرجى التواصل مع مدير المنطقة أو المدير للمساعدة.
   </div>
+  <hr class="divider">
+  <a href="javascript:history.back()" class="back-btn">← Go Back</a>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-const CATS=[
-  // ── EMIRATES PRIDE PERFUMES ──────────────────────────────
-  {cat:'EPP — Caballo Collection',catAr:'كبالو كولكشن',products:[
-    {code:'C00002',en:'White 100ml Perfume',ar:'وايت 100 مل'},
-    {code:'C00004',en:'Maroon 100ml Perfume',ar:'مارون 100 مل'},
-    {code:'C00012',en:'Navy Perfume 100ml',ar:'عطر نيفي 100 مل'},
-    {code:'C00011',en:'Violet 100ml Perfume',ar:'فيوليت 100 مل'},
-    {code:'C00010',en:'Maroon Intense',ar:'مارون انتنس'},
-    {code:'C00013',en:'White Overdose',ar:'وايت أوفردوز'},
-    {code:'C00006',en:'Caballo Green',ar:'كبالو غرتن'},
-    {code:'SP0005',en:'No.4',ar:'رقم 4'},
-    {code:'C00014',en:'Black Perfume 100ml',ar:'بلاك 100 مل'},
-  ]},
-  {cat:'EPP — Bel Collection',catAr:'بيل كولكشن',products:[
-    {code:'B00001',en:'Bergamot bel Amber',ar:'برغموت بالعنبر'},
-    {code:'B00002',en:'Jasmine bel Musk',ar:'جاسمين بالمسك'},
-    {code:'B00003',en:'Amber Bel Oud',ar:'عنبر بالعود'},
-    {code:'B00007',en:'Peaceful Life',ar:'بيسفول لايف'},
-    {code:'B00008',en:'Midnight Glow',ar:'ميدنايت غلو'},
-    {code:'B00021',en:'Midnight Bloom 100ml',ar:'ميدنايت بلوم'},
-    {code:'B00009',en:'Golden Chance',ar:'غولدن تشانس'},
-    {code:'B00004',en:'Meydan',ar:'ميدان'},
-    {code:'B00005',en:'Mystery',ar:'ميستري'},
-    {code:'B00006',en:'Mersal',ar:'مرسال'},
-    {code:'B00010',en:'Sakura',ar:'سكورا'},
-    {code:'B00011',en:'Vetiveria',ar:'فيتيفيريا'},
-    {code:'B00012',en:'Ambergris',ar:'عنبر'},
-    {code:'B00013',en:'Arabica',ar:'أرابيكا'},
-    {code:'B00014',en:'Firewood',ar:'فيروود'},
-    {code:'B00015',en:'Hidden Leather',ar:'هيدن ليذر'},
-    {code:'B00016',en:'Mysterious Rose',ar:'ميستيريوس روز'},
-    {code:'B00017',en:'Thekrayat',ar:'ذكريات'},
-    {code:'B00018',en:'Hidden Tobacco',ar:'هيدن توباكو'},
-    {code:'B00019',en:'Masters Perfume 100ml',ar:'ماسترز برفيوم'},
-    {code:'B00020',en:'Master Signature',ar:'ماستر سيجنتشر'},
-  ]},
-  {cat:'EPP — Heritage Collection',catAr:'كولكشن التراث',products:[
-    {code:'HR0001',en:'Qalah — Heritage',ar:'قلعة'},
-    {code:'HR0002',en:'Danah — Heritage',ar:'دانة'},
-    {code:'HR0003',en:'Al Emarat — Heritage',ar:'الإمارات'},
-    {code:'HR0004',en:'Barjeel — Heritage',ar:'البرجيل'},
-    {code:'HR0005',en:'Khaimah — Heritage',ar:'الخيمة'},
-    {code:'HR0006',en:'Safeena — Heritage',ar:'سفينة'},
-    {code:'HR0007',en:'Dallah — Heritage',ar:'دلة'},
-  ]},
-  {cat:'EPP — Oud',catAr:'العود',products:[
-    {code:'O00001',en:'Oud Amiri',ar:'عود أميري'},
-    {code:'O00002',en:'Oud Meydan',ar:'عود ميدان'},
-    {code:'O00003',en:'Oud Al Emarat',ar:'عود الإمارات'},
-    {code:'O00006',en:'Oud Al Fakhamah',ar:'عود الفخامة'},
-    {code:'O00008',en:'Oud Hindi Malaki — White Box',ar:'عود هندي ملكي'},
-    {code:'O0007',en:'Oud Hindi Khas — Black Box',ar:'عود هندي خاص'},
-  ]},
-  {cat:'EPP — Dakhoon',catAr:'الدخون',products:[
-    {code:'D00001',en:'Dakhoon Al Emarat',ar:'دخون الإمارات'},
-    {code:'D00003',en:'Dakhoon Badia',ar:'دخون بادية'},
-    {code:'D00002',en:'Dakhoon Al Marasim',ar:'دخون المراسيم'},
-    {code:'D00004',en:'Dakhoon Al Dar',ar:'دخون الدار'},
-    {code:'D00005',en:'Dakhoon Al Barzah',ar:'دخون البرزة'},
-    {code:'D00008',en:'Dakhoon Retaj',ar:'دخون رتاج'},
-  ]},
-  {cat:'EPP — Sets & Specials',catAr:'الطقم والإصدارات',products:[
-    {code:'SP0001',en:'White Oud Set Box',ar:'صندوق الوايت عود'},
-    {code:'SP0006',en:'More of Oud',ar:'مور أوف عود'},
-    {code:'SP0012',en:'White Set Box',ar:'صندوق وايت'},
-    {code:'SP0013',en:'Maroon Set Box',ar:'صندوق مارون'},
-    {code:'SP0037',en:'Future Bakhoor 100ml',ar:'بخور المستقبل'},
-    {code:'SP0038',en:'Future Oud 100ml',ar:'عود المستقبل'},
-    {code:'SP0022',en:'Reflection',ar:'ريفليكشن'},
-    {code:'SP0023',en:'Master Signature Box',ar:'صندوق ماستر'},
-    {code:'SP0029',en:'Midnight Glow Set Box',ar:'صندوق ميدنايت غلو'},
-    {code:'DIF-001',en:'Future Oud Reed Diffuser',ar:'معطر عود المستقبل'},
-    {code:'SP0039',en:'Future Traditional Set 2×100ml',ar:'مجموعة المستقبل'},
-    {code:'SP0024',en:'My Signature Set Box',ar:'صندوق ماي سيجنتشر'},
-  ]},
-  {cat:'EPP — Oils & Gifts',catAr:'الزيوت والهدايا',products:[
-    {code:'I00001',en:'Hindi Special',ar:'هندي سبيشل'},
-    {code:'I00002',en:'Seufi Special',ar:'سيوفي سبيشل'},
-    {code:'I00003',en:'White Oil 8ml',ar:'زيت وايت'},
-    {code:'I00004',en:'Maroon Oil 8ml',ar:'زيت مارون'},
-    {code:'I00005',en:'No.4 Oil 8ml',ar:'زيت رقم 4'},
-    {code:'I00006',en:'Musk Oil 8ml',ar:'زيت مسك'},
-    {code:'G00007',en:'Masters 10ml',ar:'ماسترز 10مل'},
-    {code:'G00001',en:'Peaceful Life 10ml + Bag',ar:'بيسفول لايف 10مل'},
-    {code:'G00002',en:'Mysterious Rose 10ml',ar:'ميستيريوس روز 10مل'},
-    {code:'G00003',en:'White Oud 10ml + Bag',ar:'وايت عود 10مل'},
-    {code:'SP0019',en:'Hidden Tobacco 30ml',ar:'هيدن توباكو 30مل'},
-    {code:'SP0031',en:'Summer Collection Set',ar:'طقم مجموعة الصيف'},
-    {code:'SP0021',en:'Dakhoon Sampler',ar:'عينات دخون'},
-    {code:'BG0001',en:'Masters Signature 1.5ml Vial',ar:'ماسترز سيجنتشر 1.5مل'},
-    {code:'G00008',en:'Master Signature 10ml',ar:'ماستر سيجنتشر 10مل'},
-    {code:'SP0035',en:'Midnight Bloom Set 2×10ml',ar:'مجموعة ميدنايت بلوم'},
-    {code:'SP0033',en:'White Kit',ar:'طقم وايت'},
-    {code:'SP0008',en:'Discovery Set',ar:'طقم الاستكشاف'},
-    {code:'SPG002',en:'Future Oud 1.5ml Sampler',ar:'عينة عود المستقبل 1.5مل'},
-    {code:'SPG001',en:'Future Bakhoor 1.5ml Sampler',ar:'عينة بخور المستقبل 1.5مل'},
-  ]},
-  {cat:'EPP — Accessories',catAr:'الإكسسوارات',products:[
-    {code:'AC0001',en:'Medkhan (Small)',ar:'مدخن صغير'},
-    {code:'AC0002',en:'Charcoal',ar:'فحم'},
-    {code:'AC0003',en:'Lighter',ar:'ولاعة'},
-    {code:'AC0004',en:'Picker',ar:'بيكر'},
-    {code:'CDL0001',en:'MS Candle',ar:'شمعة'},
-  ]},
-  {cat:'EPP — Gift Boxes',catAr:'صناديق الهدايا',products:[
-    {code:'BX0002',en:'3 Bel Black Box With 2 Oil',ar:'صندوق 3 بيل أسود'},
-    {code:'BX0014',en:'BOD Gift Box',ar:'صندوق BOD'},
-    {code:'BX0011',en:'Dekoon Gift Set',ar:'طقم هدية دخون'},
-    {code:'BX0012',en:'VIP Combo Box',ar:'صندوق VIP'},
-    {code:'BX0015',en:'Luxury Gift Box',ar:'صندوق فاخر'},
-  ]},
-  {cat:'EPP — Bel Paper Box (Gift Sets)',catAr:'بيل باكيدج هدايا',products:[
-    {code:'B0001-PB',en:'Bergamot bel Amber — Paper Box',ar:'برغموت بالعنبر باكيدج'},
-    {code:'B0002-PB',en:'Jasmine bel Musk — Paper Box',ar:'جاسمين بالمسك باكيدج'},
-    {code:'B0003-PB',en:'Amber Bel Oud — Paper Box',ar:'عنبر بالعود باكيدج'},
-    {code:'B0004-PB',en:'Meydan — Paper Box',ar:'ميدان باكيدج'},
-    {code:'B0005-PB',en:'Mystery — Paper Box',ar:'ميستري باكيدج'},
-    {code:'B0006-PB',en:'Mersal — Paper Box',ar:'مرسال باكيدج'},
-    {code:'B0007-PB',en:'Peaceful Life — Paper Box',ar:'بيسفول لايف باكيدج'},
-    {code:'B0008-PB',en:'Midnight Glow — Paper Box',ar:'ميدنايت غلو باكيدج'},
-    {code:'B00021-PB',en:'Midnight Bloom — Paper Box',ar:'ميدنايت بلوم باكيدج'},
-    {code:'B0009-PB',en:'Golden Chance — Paper Box',ar:'غولدن تشانس باكيدج'},
-    {code:'B0010-PB',en:'Sakura — Paper Box',ar:'سكورا باكيدج'},
-    {code:'B0011-PB',en:'Ambergris — Paper Box',ar:'عنبر باكيدج'},
-    {code:'B0012-PB',en:'Arabica — Paper Box',ar:'أرابيكا باكيدج'},
-    {code:'B0013-PB',en:'Firewood — Paper Box',ar:'فيروود باكيدج'},
-    {code:'B0014-PB',en:'Hidden Leather — Paper Box',ar:'هيدن ليذر باكيدج'},
-    {code:'B0015-PB',en:'Mysterious Rose — Paper Box',ar:'ميستيريوس روز باكيدج'},
-    {code:'B0016-PB',en:'Thekrayat — Paper Box',ar:'ذكريات باكيدج'},
-    {code:'B0017-PB',en:'Hidden Tobacco — Paper Box',ar:'هيدن توباكو باكيدج'},
-    {code:'B0018-PB',en:'Masters — Paper Box',ar:'ماسترز باكيدج'},
-    {code:'B00020-PB',en:'Masters Signature — Paper Box',ar:'ماسترز سيجنتشر باكيدج'},
-  ]},
-  // ── ASL ──────────────────────────────────────────────────
-  {cat:'ASL — Perfumes 50ml',catAr:'عطور ASL ٥٠مل',products:[
-    {code:'AP001',en:'Black Vanilla',ar:'بلاك فانيلا ٥٠مل'},
-    {code:'AP002',en:'Secret Leather',ar:'سيكريت ليذر ٥٠مل'},
-    {code:'AP003',en:'White Bouquet',ar:'وايت بوكيه ٥٠مل'},
-    {code:'AP004',en:'Leather Intense',ar:'ليذر إنتنس ٥٠مل'},
-    {code:'AP005',en:'Rich Vanilla',ar:'ريتش فانيلا ٥٠مل'},
-    {code:'AP006',en:'Spicy Sandal',ar:'سبايسي ساندال ٥٠مل'},
-    {code:'AP007',en:'Velvet Amber',ar:'فيلفيت عنبر ٥٠مل'},
-    {code:'AP008',en:'Dark Musk',ar:'دارك مسك ٥٠مل'},
-    {code:'AP009',en:'Royal Tobacco',ar:'رويال توباكو ٥٠مل'},
-    {code:'AP010',en:'Patchouli Glow',ar:'باتشولي غلو ٥٠مل'},
-    {code:'AP011',en:'Dark Wood Perfume 50ml',ar:'دارك وود برفيوم ٥٠مل'},
-  ]},
-  {cat:'ASL — Hair & Body Mist',catAr:'بخاخ الشعر والجسم ASL',products:[
-    {code:'AH005',en:'Black Vanilla Hair & Body Mist',ar:'بخاخ بلاك فانيلا للشعر والجسم'},
-    {code:'AH006',en:'Secret Leather Hair & Body Mist',ar:'بخاخ سيكريت ليذر للشعر والجسم'},
-    {code:'AH003',en:'Velvet Amber Hair & Body Mist',ar:'بخاخ فيلفيت عنبر للشعر والجسم'},
-    {code:'AH008',en:'Dark Musk Hair & Body Mist',ar:'بخاخ دارك مسك للشعر والجسم'},
-    {code:'AH009',en:'Royal Tobacco Hair & Body Mist',ar:'بخاخ رويال توباكو للشعر والجسم'},
-  ]},
-  {cat:'ASL — Oils 6ml',catAr:'زيوت ASL ٦مل',products:[
-    {code:'AO001',en:'Black Vanilla Oil 6ml',ar:'زيت بلاك فانيلا ٦مل'},
-    {code:'AO002',en:'Secret Leather Oil 6ml',ar:'زيت سيكريت ليذر ٦مل'},
-    {code:'AO003',en:'White Bouquet Oil 6ml',ar:'زيت وايت بوكيه ٦مل'},
-    {code:'AO004',en:'Leather Intense Oil 6ml',ar:'زيت ليذر إنتنس ٦مل'},
-    {code:'AO005',en:'Rich Vanilla Oil 6ml',ar:'زيت ريتش فانيلا ٦مل'},
-    {code:'AO006',en:'Spicy Sandal Oil 6ml',ar:'زيت سبايسي ساندال ٦مل'},
-    {code:'AO007',en:'Velvet Amber Oil 6ml',ar:'زيت فيلفيت عنبر ٦مل'},
-    {code:'AO008',en:'Dark Musk Oil 6ml',ar:'زيت دارك مسك ٦مل'},
-    {code:'AO009',en:'Royal Tobacco Oil 6ml',ar:'زيت رويال توباكو ٦مل'},
-    {code:'AO010',en:'Patchouli Glow Oil 6ml',ar:'زيت باتشولي غلو ٦مل'},
-    {code:'AO011',en:'Dark Wood Oil 6ml',ar:'زيت دارك وود ٦مل'},
-  ]},
-  {cat:'ASL — Body Lotions',catAr:'لوشن الجسم ASL',products:[
-    {code:'ABL001',en:'Royal Tobacco Body Lotion 200ml',ar:'لوشن رويال توباكو ٢٠٠مل'},
-    {code:'ABL002',en:'Velvet Amber Body Lotion 200ml',ar:'لوشن فيلفيت عنبر ٢٠٠مل'},
-    {code:'ABL003',en:'Secret Leather Body Lotion 200ml',ar:'لوشن سيكريت ليذر ٢٠٠مل'},
-    {code:'ABL004',en:'Dark Musk Body Lotion 200ml',ar:'لوشن دارك مسك ٢٠٠مل'},
-  ]},
-  {cat:'ASL — Reed Diffusers & Air Fresheners',catAr:'معطرات ASL',products:[
-    {code:'ARD001',en:'Secret Leather Reed Diffuser 110ml',ar:'معطر سيكريت ليذر ١١٠مل'},
-    {code:'ARD002',en:'Cool Violet Reed Diffuser 110ml',ar:'معطر كول فيوليت ١١٠مل'},
-    {code:'ARD003',en:'White Bouquet Reed Diffuser 110ml',ar:'معطر وايت بوكيه ١١٠مل'},
-    {code:'AAF001',en:'Cool Violet Air Freshener 250ml',ar:'معطر جو كول فيوليت ٢٥٠مل'},
-    {code:'AAF002',en:'White Bouquet Air Freshener 250ml',ar:'معطر جو وايت بوكيه ٢٥٠مل'},
-  ]},
-  {cat:'ASL — Tanning Oil',catAr:'زيت التان ASL',products:[
-    {code:'ATO001',en:'Sunbeam Tanning Oil 250ml',ar:'زيت تان سانبيم ٢٥٠مل'},
-  ]},
-];
-const SB_URL='https://ncszurcrkngjcjqsowln.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25namNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM';
-const WA_NUM='+971556270561';
-let sb,n=0,formData=null;
-window.addEventListener('load',()=>{sb=window.supabase.createClient(SB_URL,SB_KEY);});
-function setToday(){const t=new Date();document.getElementById('f_date').valueAsDate=t;}
-setToday();
-function opts(){let h='<option value="">Select / اختر</option>';CATS.forEach(cat=>{h+='<optgroup label="'+cat.cat+' — '+cat.catAr+'">';cat.products.forEach(p=>{h+='<option value="'+p.code+' | '+p.en+' | '+p.ar+'">'+p.code+' — '+p.en+' — '+p.ar+'</option>';});h+='</optgroup>';});return h;}
-function addRow(){n++;const d=document.createElement('div');d.className='item';d.id='r'+n;d.innerHTML='<button class="del" onclick="this.parentElement.remove()">&times;</button><div class="item-row"><div class="fld"><label class="lbl">Product <span class="ar">المنتج</span> <span class="req">*</span></label><select id="p'+n+'" style="font-size:13px;padding:10px 13px;">'+opts()+'</select></div><div class="fld q"><label class="lbl">Qty <span class="ar">كمية</span> <span class="req">*</span></label><input type="number" id="q'+n+'" value="1" min="1" max="50"></div></div>';document.getElementById('rows').appendChild(d);}
-function now(){const d=new Date(),p=x=>String(x).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
-setInterval(()=>{const e=document.getElementById('ts1');if(e)e.textContent=now()+' UAE';},1000);
-function collectItems(){const items=[];document.querySelectorAll('.item').forEach(card=>{const id=card.id.replace('r','');const p=document.getElementById('p'+id);const q=document.getElementById('q'+id);if(p&&p.value&&q)items.push({product:p.value,qty:parseInt(q.value)||1});});return items;}
-async function submit(){const date=document.getElementById('f_date').value;const store=document.getElementById('f_store').value;const name=document.getElementById('f_name').value.trim();const empid=document.getElementById('f_empid').value.trim();const items=collectItems();const remarks=document.getElementById('f_remarks').value.trim();if(!store){alert('Please select store / يرجى اختيار المتجر');return;}if(!name){alert('Please enter name / يرجى إدخال الاسم');return;}if(!empid){alert('Please enter employee ID / يرجى إدخال رقم الموظف');return;}if(!items.length){alert('Please add at least one product / يرجى إضافة منتج واحد');return;}const ref='FGTST-'+Date.now().toString(36).toUpperCase();const record={request_ref:ref,store_name:store,employee_name:name,employee_id:empid,items:items,remarks:remarks,status:'pending',submitted_at:new Date().toISOString()};try{const{error}=await sb.from('fg_tester_requests').insert([record]);if(error) throw error;formData={ref,date,store,name,empid,items,remarks,status:'pending',timestamp:now()};makePDF();document.getElementById('refNo').textContent='Ref: '+ref;document.getElementById('step1').style.display='none';document.getElementById('step2').style.display='block';window.scrollTo(0,0);setTimeout(()=>{sendWA();},800);}catch(e){console.error(e);alert('Error: '+e.message);}}
-function makePDF(){const{jsPDF}=window.jspdf;const doc=new jsPDF('p','mm','a4');const W=210;let y=15;doc.setFillColor(26,26,26);doc.rect(0,0,W,30,'F');doc.setFillColor(201,164,78);doc.rect(0,30,W,2,'F');doc.setFont('helvetica','bold');doc.setTextColor(201,164,78);doc.setFontSize(8);doc.text('EMIRATES PRIDE PERFUMES',W/2,10,{align:'center'});doc.setTextColor(255,255,255);doc.setFontSize(14);doc.text('REQUEST FOR TESTER FROM OUTLET FG STOCK',W/2,19,{align:'center'});doc.setFontSize(8);doc.setTextColor(150,150,150);doc.text('FG to Tester Conversion Request — Internal Document',W/2,26,{align:'center'});y=40;doc.setFillColor(250,248,245);doc.setDrawColor(232,228,220);doc.roundedRect(15,y-4,(W-30),30,3,3,'FD');doc.setFont('helvetica','bold');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text('Ref:',20,y+2);doc.setFont('helvetica','normal');doc.text(formData.ref,32,y+2);doc.setFont('helvetica','bold');doc.text('Date:',110,y+2);doc.setFont('helvetica','normal');doc.text(formData.date,130,y+2);doc.setFont('helvetica','bold');doc.text('Store:',20,y+9);doc.setFont('helvetica','normal');const storeTxt=formData.store.split('|')[0].trim();doc.text(storeTxt.length>50?storeTxt.substring(0,50)+'...':storeTxt,38,y+9);doc.setFont('helvetica','bold');doc.text('Employee:',20,y+16);doc.setFont('helvetica','normal');doc.text(formData.name+' ('+formData.empid+')',48,y+16);doc.setFont('helvetica','bold');doc.text('Status:',20,y+23);doc.setFont('helvetica','normal');doc.setTextColor(242,138,0);doc.text('PENDING MANAGEMENT APPROVAL',45,y+23);y+=36;doc.setFillColor(26,26,26);doc.rect(15,y,W-30,9,'F');doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);doc.setFontSize(8);doc.text('#',20,y+6);doc.text('PRODUCT / المنتج',30,y+6);doc.text('QTY',175,y+6,{align:'center'});y+=9;let total=0;formData.items.forEach((item,i)=>{const bg=i%2===0?[255,255,255]:[250,248,245];doc.setFillColor(...bg);doc.rect(15,y,W-30,9,'F');doc.setDrawColor(232,228,220);doc.line(15,y+9,W-15,y+9);doc.setFont('helvetica','normal');doc.setTextColor(26,26,26);doc.setFontSize(8);doc.text(String(i+1),20,y+6);const _pp=item.product.split('|');const prodTxt=(_pp[0].trim()+' — '+(_pp[1]||'').trim()).substring(0,55);doc.text(prodTxt,30,y+6);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(String(item.qty),175,y+6,{align:'center'});total+=item.qty;y+=9;});doc.setFillColor(26,26,26);doc.rect(15,y,W-30,9,'F');doc.setFont('helvetica','bold');doc.setTextColor(201,164,78);doc.setFontSize(9);doc.text('TOTAL',30,y+6);doc.text(String(total),175,y+6,{align:'center'});y+=18;if(formData.remarks){doc.setFont('helvetica','bold');doc.setTextColor(26,26,26);doc.setFontSize(9);doc.text('REMARKS:',20,y);y+=5;doc.setFont('helvetica','normal');doc.setTextColor(80,80,80);doc.setFontSize(9);const lines=doc.splitTextToSize(formData.remarks,W-40);doc.text(lines,20,y);y+=lines.length*5+10;}y=Math.max(y+10,210);doc.setDrawColor(200,200,200);doc.setLineWidth(0.3);doc.line(20,y,90,y);doc.line(120,y,190,y);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.setFontSize(8);doc.text('Store Staff Signature',55,y+5,{align:'center'});doc.text('Management Approval',155,y+5,{align:'center'});doc.setFillColor(250,248,245);doc.rect(0,280,W,17,'F');doc.setDrawColor(232,228,220);doc.line(0,280,W,280);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.setFontSize(7);doc.text('Emirates Pride Perfumes - JAFZA - Auto-generated for inventory audit',W/2,286,{align:'center'});doc.text('Ref: '+formData.ref+' - Generated: '+formData.timestamp+' UAE',W/2,291,{align:'center'});const fname='FG_Tester_Request_'+formData.ref+'_PENDING.pdf';doc.save(fname);}
-function sendWA(){const d=formData;let itemsText=d.items.map((it,i)=>{const _wp=it.product.split('|');return(i+1)+'. '+_wp[0].trim()+' — '+(_wp[1]||'').trim()+' x'+it.qty;}).join('\n');const msg='*FG TO TESTER REQUEST*\n━━━━━━━━━━━━━━━━━━━━━━━━\n\n*Ref:* '+d.ref+'\n*Date:* '+d.date+'\n*Store:* '+d.store.split('|')[0].trim()+'\n*Employee:* '+d.name+' ('+d.empid+')\n*Status:* PENDING APPROVAL\n\n*ITEMS REQUESTED:*\n'+itemsText+'\n\n*Total Qty:* '+d.items.reduce((s,i)=>s+i.qty,0)+(d.remarks?'\n\n*Remarks:* '+d.remarks:'')+'\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n*APPROVE/REJECT:*\nhttps://vinayak682.github.io/emirates-pride-inventory-management/fg-approve.html?ref='+d.ref;window.open('https://wa.me/'+WA_NUM.replace(/[^0-9]/g,'')+'?text='+encodeURIComponent(msg),'_blank');}
-function resetAll(){document.getElementById('step1').style.display='block';document.getElementById('step2').style.display='none';document.getElementById('f_store').value='';document.getElementById('f_name').value='';document.getElementById('f_empid').value='';document.getElementById('f_remarks').value='';document.getElementById('rows').innerHTML='';n=0;formData=null;setToday();addRow();window.scrollTo(0,0);}
-addRow();
-</script>
 </body>
 </html>

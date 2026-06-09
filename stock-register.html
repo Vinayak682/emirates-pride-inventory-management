@@ -2005,11 +2005,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
             <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">Export Report</span>
             <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">تصدير التقرير</span>
           </button>
-          <button onclick="goToStockRegister();setTimeout(openFGRequest,1600);" style="background:linear-gradient(135deg,#6B5B35,#8A7340);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 10px rgba(107,91,53,0.35);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-            <span style="font-size:18px;">📦</span>
-            <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">FG Tester Request</span>
-            <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">طلب تيستر من FG</span>
-          </button>
+          <!-- FG Tester Request button deactivated -->
         </div>
 
         <!-- Row 4: Store Supplies -->
@@ -2023,16 +2019,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
           </button>
         </div>
 
-        <!-- Row 5: FG Converted into Tester -->
-        <div>
-          <button onclick="window.open('fg-request-form.html','_blank');" style="width:100%;background:linear-gradient(135deg,#B45309,#D97706);border:none;color:#fff;font-family:'Montserrat',sans-serif;padding:12px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 3px 10px rgba(180,83,9,0.3);transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-            <span style="font-size:18px;">🔄</span>
-            <div style="display:flex;flex-direction:column;align-items:flex-start;">
-              <span style="font-size:11px;font-weight:700;letter-spacing:0.3px;">FG → Tester Request</span>
-              <span style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:10px;font-weight:400;opacity:0.85;">تحويل منتج إلى تجربة</span>
-            </div>
-          </button>
-        </div>
+        <!-- Row 5: FG Converted into Tester — DEACTIVATED -->
       </div>
 
       <!-- MGR: All Stores Grid -->
@@ -2161,7 +2148,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     <button class="top-btn" onclick="openTestersDirect()" style="border-color:rgba(160,120,255,0.35);color:#C4A8FF;" title="Open Tester Bottles">🧴 Testers</button>
     <button class="top-btn" onclick="openSuppliesPanel()" style="border-color:rgba(255,180,80,0.4);color:#FFB84D;" title="Store Supplies — Bags · Tissue">🛍️ Supplies</button>
     <button class="top-btn" onclick="openExport()" style="border-color:rgba(127,200,96,0.3);color:#7FC860;">📥 Export</button>
-    <button class="top-btn" onclick="openFGRequest()" style="border-color:rgba(201,168,76,0.4);color:#C9A84C;">📦 FG Tester Request</button>
+    <!-- FG Tester Request topbar button deactivated -->
     <button class="top-btn stores-btn" id="allStoresBtn" onclick="openStores()">🏪 All Stores</button>
     <button class="top-btn logout" onclick="doLogout()">Logout</button>
     <button class="top-btn fullscreen-btn" id="fsBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
@@ -2982,7 +2969,7 @@ input[type="date"]::-webkit-datetime-edit{color:#E0E0E0;}
     </div>
     <div style="display:flex;gap:8px;">
       <button id="mgrDashTrainingBtn" onclick="openTrainingGuide()" style="background:linear-gradient(135deg,#6B5B35,#9A7B4F);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(107,91,53,0.25);">📖 Training Guide</button>
-      <button onclick="openFGApproval()" style="background:linear-gradient(135deg,#FF6B35,#F7931E);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(255,107,53,0.25);">📦 FG Tester Requests</button>
+      <!-- FG Tester Requests mgr button deactivated -->
       <button id="mgrDashDPBtn" onclick="openDPPanel()" style="background:linear-gradient(135deg,#6B21A8,#7C3AED);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(124,58,237,0.25);">📈 Demand Planning</button>
       <button onclick="openAMMinMaxPanel()" style="background:linear-gradient(135deg,#065F46,#059669);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(5,150,105,0.25);">📊 Stock Guide</button>
       <button onclick="openSecurityDashboard()" style="background:linear-gradient(135deg,#922B21,#C0392B);border:none;border-radius:6px;color:#FFF;font-family:var(--f-body);font-size:11px;padding:7px 14px;cursor:pointer;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(192,57,43,0.25);">🔐 Security Log</button>
