@@ -5468,7 +5468,7 @@ function _renderExecStoryBanner(){
     type:'dead',
     icon:'&#9673;',
     title:`${dead} slow/dead items — ${deadPct}% of tracked SKUs have no recent sales`,
-    body:`These products have SOH but zero sales velocity in Mar–May 2026. Consider store transfers, markdown promotions, or return to warehouse to free shelf space for fast movers.`,
+    body:`These products have SOH but zero sales velocity in the last 3 months. Consider store transfers, markdown promotions, or return to warehouse to free shelf space for fast movers.`,
     action:'See Dead Stock Radar below'
   });
   if(over>40) alerts.push({
@@ -5511,34 +5511,39 @@ function _renderExecStoryBanner(){
 // ── Stockout Countdown ────────────────────────────────────────────
 function _renderStockoutCountdown(){
   const m=_invMetrics;
-  // Reference date from latest snapshot
+  // Snapshot date: used only to compute the actual calendar stockout date
   const snapDates=Object.values(m.latestSnap).map(s=>s.date).filter(Boolean);
   const refDate=snapDates.length?new Date(snapDates.sort().reverse()[0]):new Date();
+  // Days elapsed since snapshot — "days left" is always relative to TODAY, not snapshot
+  const today=new Date();
+  const daysSinceSnap=(today-refDate)/(1000*60*60*24);
 
   const rows=[];
   Object.entries(m.metrics).forEach(([store,skus])=>{
     Object.entries(skus).forEach(([sku,d])=>{
-      if(d.dos===null||d.dos<=0||d.dos>21) return; // only 0-21 days
+      if(d.dos===null||d.dos<0) return;
       if(d.status==='deadstock'||d.status==='inactive') return;
+      const daysLeft=d.dos-daysSinceSnap; // days remaining FROM TODAY
+      if(daysLeft>21) return; // not urgent yet
       const stockoutDate=new Date(refDate);
       stockoutDate.setDate(refDate.getDate()+Math.floor(d.dos));
-      rows.push({store,sku,name:m.nameMap[sku]||sku,...d,stockoutDate});
+      rows.push({store,sku,name:m.nameMap[sku]||sku,...d,stockoutDate,daysLeft});
     });
   });
-  rows.sort((a,b)=>(a.dos||0)-(b.dos||0));
+  rows.sort((a,b)=>(a.daysLeft??0)-(b.daysLeft??0));
 
   // Split into this week (<7d) and this month (7-21d)
-  const thisWeek=rows.filter(r=>r.dos<7);
-  const thisMo=rows.filter(r=>r.dos>=7&&r.dos<=21);
+  const thisWeek=rows.filter(r=>r.daysLeft<7);
+  const thisMo=rows.filter(r=>r.daysLeft>=7&&r.daysLeft<=21);
 
   document.getElementById('inv-countdown-meta').textContent=`${thisWeek.length} out this week · ${thisMo.length} out within 21 days`;
 
   const fmtDate=d=>d.toLocaleDateString('en-AE',{day:'numeric',month:'short'});
   const all=[...thisWeek,...thisMo].slice(0,25);
   document.getElementById('inv-countdown-tbody').innerHTML=all.map((r,i)=>{
-    const isWeek=r.dos<7;
+    const isWeek=r.daysLeft<7;
     const rowBg=isWeek?(i%2===0?'#FFF0F0':'#FFF5F5'):(i%2===0?'#FFFAFA':'#FFF');
-    const dosColor=r.dos<3?'#922B21':r.dos<7?'#C0392B':'#E67E22';
+    const dosColor=r.daysLeft<3?'#922B21':r.daysLeft<7?'#C0392B':'#E67E22';
     const si=getStore(r.store);
     return `<tr style="border-bottom:1px solid #FEE;background:${rowBg};">
       <td style="padding:7px 12px;font-size:11px;max-width:110px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${si.name}</td>
@@ -5549,7 +5554,7 @@ function _renderStockoutCountdown(){
       <td style="padding:7px 12px;text-align:right;font-size:11px;color:var(--ink-light);">${r.dailyRate>0?r.dailyRate.toFixed(2):'-'}/d</td>
       <td style="padding:7px 12px;text-align:center;font-size:12px;font-weight:600;">${fmtDate(r.stockoutDate)}</td>
       <td style="padding:7px 12px;text-align:center;">
-        <span style="background:${dosColor};color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:2px;display:inline-block;min-width:40px;text-align:center;">${r.dos<1?'TODAY':Math.round(r.dos)+'d'}</span>
+        <span style="background:${dosColor};color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:2px;display:inline-block;min-width:40px;text-align:center;">${r.daysLeft<=0?'STOCKOUT':r.daysLeft<1?'TODAY':Math.round(r.daysLeft)+'d'}</span>
       </td>
       <td style="padding:7px 12px;text-align:right;font-family:'IBM Plex Mono',monospace;color:#C0392B;font-weight:700;">${r.orderUnits||Math.ceil(r.rate*2)||'-'}</td>
     </tr>`;
@@ -5844,7 +5849,7 @@ function _renderDeadStockRadar(){
 
 function _monthsAgo(monthYear){
   const[y,mo]=monthYear.split('-').map(Number);
-  const ref=new Date(2026,5,1); // June 2026
+  const ref=new Date();
   return Math.round((ref-(new Date(y,mo-1,1)))/(30*24*3600*1000));
 }
 
@@ -5930,7 +5935,7 @@ function openInvDrilldown(storeCode){
     </div>`).join('')}
   </div>
   <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;color:var(--ink-light);">
-    SOH as at <strong>${snap.date}</strong> &nbsp;·&nbsp; Sales rate: Mar–May 2026
+    SOH as at <strong>${snap.date}</strong> &nbsp;·&nbsp; Sales rate: last 3 months
   </div>
   <div style="overflow-y:auto;">
   <table style="width:100%;border-collapse:collapse;font-size:12px;">
