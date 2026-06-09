@@ -10908,6 +10908,7 @@ function _misSkuCat(sku) {
   return 'Other';
 }
 function _misSkuName(k) {
+  if(typeof SKU_NAMES!=='undefined' && SKU_NAMES[k]) return SKU_NAMES[k];
   const m={};
   if(typeof CATS!=='undefined') CATS.forEach(s=>m[s.code]=s.en);
   if(typeof TESTERS!=='undefined') TESTERS.forEach(s=>m[s.code]=s.en);
