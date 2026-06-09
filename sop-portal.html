@@ -2195,20 +2195,22 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <option value="ASL">ASL UAE</option>
       <option value="OMAN">Oman</option>
     </select>
-    <select class="sel" id="repl-month-from" onchange="renderReplenishment()">
+    <select class="sel" id="repl-month-from" onchange="replLoaded=false;loadReplenishmentTab()">
       <option value="2026-01">Jan 2026</option>
       <option value="2026-02">Feb 2026</option>
       <option value="2026-03">Mar 2026</option>
       <option value="2026-04">Apr 2026</option>
       <option value="2026-05">May 2026</option>
+      <option value="2026-06">Jun 2026</option>
     </select>
-    <span style="font-size:11px;color:var(--ink-light);align-self:center;">-†’</span>
-    <select class="sel" id="repl-month-to" onchange="renderReplenishment()">
+    <span style="font-size:11px;color:var(--ink-light);align-self:center;">→</span>
+    <select class="sel" id="repl-month-to" onchange="replLoaded=false;loadReplenishmentTab()">
       <option value="2026-01">Jan 2026</option>
       <option value="2026-02">Feb 2026</option>
       <option value="2026-03">Mar 2026</option>
       <option value="2026-04">Apr 2026</option>
-      <option value="2026-05" selected>May 2026</option>
+      <option value="2026-05">May 2026</option>
+      <option value="2026-06" selected>Jun 2026</option>
     </select>
     <input type="hidden" id="repl-view-sel" value="map">
     <div class="repl-nav">
@@ -13254,8 +13256,14 @@ async function loadReplenishmentTab() {
     document.getElementById('repl-dashboard').style.display = 'none';
     document.getElementById('repl-upload-zone').style.display = 'none';
     try {
+      const fromMonth = (document.getElementById('repl-month-from')||{}).value || '2026-01';
+      const toMonth   = (document.getElementById('repl-month-to')||{}).value   || '2026-06';
       const { data, error } = await sb.from('replenishment_history')
-        .select('*').order('dispatch_date',{ascending:false}).limit(100000);
+        .select('*')
+        .gte('month_year', fromMonth)
+        .lte('month_year', toMonth)
+        .order('dispatch_date',{ascending:true})
+        .limit(50000);
       if(error && error.code !== 'PGRST116') throw error;
       replData  = data || [];
       replLoaded = true;
