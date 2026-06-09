@@ -2815,6 +2815,68 @@ Full spec written to memory file `pre_push_agent_spec.md`. 7 mandatory checks in
 
 ---
 
+### Session — 9 Jun 2026 (Session 47 — EP Guard Agent: Automated Bug & Security Check System)
+**Files changed**: `scripts/ep-guard.js` (new), `scripts/ep-guard.py` (new), `.github/workflows/ep-guard.yml` (new), `.claude/skills/ep-security-agent.md` (new), `.claude/settings.json` (new), `.gitignore` (updated)
+**Commit**: (this session) → pushed to `main` → GitHub Pages + GitHub Actions live
+
+#### Background:
+- Two separate sessions (15f2e52 and e98cae8) had the SAME `async async` syntax error kill the entire sop-portal.html login
+- User requested an automated agent trained on the full CLAUDE.md + memory file bug history
+- Password `SOP_PASS` was also changed without updating CLAUDE.md (commit aec9dcd) — fixed and documented in Session 46
+
+#### What was built:
+
+**1. `scripts/ep-guard.py` — Python check engine (LOCAL USE)**
+Runs in ~2s. 14 checks trained on all documented incidents.
+
+FAIL checks (any failure blocks push):
+- F1: `async async` double keyword grep (killed login TWICE — commits 15f2e52, e98cae8)
+- F2: Inline `<script>` block syntax patterns (best-effort Python; full JS parse in ep-guard.js)
+- F3: Key globals defined (doLogin, initApp, renderStores, loginV — per file)
+- F4: `doLogin()` NOT gated on `window.supabase` (CDN block bug, commit d92ff1c)
+- F5: No service role key in any HTML/JS (placeholder `YOUR_SERVICE_ROLE_KEY_HERE` excluded)
+- F6: No hardcoded PIN values in HTML files (migrated to Supabase, commit 785306d)
+
+WARN checks (allows push but reports):
+- W1: CDN scripts missing SRI `integrity` attribute
+- W2: SOP_PASS constant matches documented value in CLAUDE.md
+- W3: C1 control chars (U+0080-U+009F) in HTML — indicates UTF-8 corruption
+- W4: `innerHTML` with interpolated user data (XSS risk)
+- W5: `localStorage` not cleared on logout (shared device risk)
+- W6: Supabase CDN `defer` attribute (race condition risk)
+- W7: openpyxl 6-char hex colors (transparent text bug — prepend FF)
+- W8: Security-related `// TODO` comments in code
+
+**Calibration run results:**
+- sop-portal.html: F1-F5 PASS ✅ (F6 n/a)
+- stock-register.html: F1-F6 PASS ✅
+- index.html: F6 FAIL ❌ — `const MGR_PIN="1234"` (legitimate finding — index.html not yet migrated to Supabase PIN auth)
+
+**2. `scripts/ep-guard.js` — Node.js version (GITHUB ACTIONS)**
+Same checks plus full JavaScript `new Function()` parse test (F2 upgrade).
+GitHub Actions installs Node 20 automatically — no local Node needed.
+
+**3. `.github/workflows/ep-guard.yml` — CI/CD gate**
+Runs on every push to `main` and every PR. Blocks merge if any F-check fails.
+Uploads `ep-guard-report.json` as artifact for review.
+
+**4. `.claude/skills/ep-security-agent.md` — AI skill**
+Invoke with `/ep-security-agent` for AI-powered deep review.
+Full knowledge base: 9 bug incidents + 9 security findings.
+Steps: (1) run ep-guard.py, (2) read changed files, (3) deep AI analysis, (4) security report with CVE-class ratings.
+
+**5. `.claude/settings.json` — Pre-push hook**
+PreToolUse on Bash intercepts `git push` commands and auto-runs ep-guard.py first.
+If ep-guard exits non-zero, Claude reports the failure before proceeding.
+
+**Standing security debt (documented, not yet fixed):**
+- `index.html` still has `const MGR_PIN="1234"` — needs Supabase PIN migration
+- CDN SRI hashes missing on all 3 HTML files
+- localStorage not cleared on logout in sop-portal + stock-register
+- `tester_history` RLS still disabled (flagged Session 44)
+
+---
+
 ### Session — 6 Jun 2026 (Session 34 — Finance Tab Audit + Bug Fixes + Dummy Data)
 **Files changed**: `stock-register.html`
 **Commit**: `c364bfd` → pushed to `main` → GitHub Pages live

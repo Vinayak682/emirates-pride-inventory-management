@@ -1,0 +1,38 @@
+name: EP Guard — Bug & Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ep-guard:
+    name: EP Guard Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (for full JS parse test)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run EP Guard (Node.js — full JS parse)
+        run: node scripts/ep-guard.js --json
+        # Exit code 1 = FAIL → workflow fails → push blocked
+        # Exit code 0 = PASS (warnings allowed) → workflow passes
+
+      - name: Run EP Guard (Python — backup)
+        if: failure()
+        run: python scripts/ep-guard.py --json
+
+      - name: Upload EP Guard report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ep-guard-report
+          path: ep-guard-report.json
+          if-no-files-found: warn

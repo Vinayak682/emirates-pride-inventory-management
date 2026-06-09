@@ -3,3 +3,10 @@ pin_inserts.sql
 *.env
 .env.*
 secrets.json
+
+# EP Guard artifacts (generated, not source)
+ep-guard-report.json
+
+# Python cache
+__pycache__/
+*.pyc
