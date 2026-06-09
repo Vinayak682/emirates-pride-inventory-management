@@ -13269,14 +13269,24 @@ async function loadReplenishmentTab() {
     try {
       const fromMonth = (document.getElementById('repl-month-from')||{}).value || '2026-01';
       const toMonth   = (document.getElementById('repl-month-to')||{}).value   || '2026-06';
-      const { data, error } = await sb.from('replenishment_history')
-        .select('*')
+      // Get row count first, then paginate like Sales tab (server PostgREST cap = 1000/req)
+      const { count: replCount, error: cErr } = await sb.from('replenishment_history')
+        .select('*', { count:'exact', head:true })
         .gte('month_year', fromMonth)
-        .lte('month_year', toMonth)
-        .order('dispatch_date',{ascending:true})
-        .limit(50000);
-      if(error && error.code !== 'PGRST116') throw error;
-      replData  = data || [];
+        .lte('month_year', toMonth);
+      if(cErr && cErr.code !== 'PGRST116') throw cErr;
+      const PAGE = 1000;
+      const pages = Math.ceil((replCount||0) / PAGE);
+      const fetches = Array.from({length: pages}, (_,i) =>
+        sb.from('replenishment_history')
+          .select('*')
+          .gte('month_year', fromMonth)
+          .lte('month_year', toMonth)
+          .order('dispatch_date',{ascending:true})
+          .range(i*PAGE, (i+1)*PAGE-1)
+      );
+      const results = await Promise.all(fetches);
+      replData = results.flatMap(r => r.data || []);
       replLoaded = true;
     } catch(e) {
       document.getElementById('repl-loading').innerHTML =
