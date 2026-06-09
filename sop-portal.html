@@ -3634,7 +3634,7 @@ function exportTesterCsv() {
 // MIS TESTER REPORT — Excel Matrix Export
 // ══════════════════════════════════════════════
 
-async async function exportMISTesterReport() {
+async function exportMISTesterReport() {
   if (!testerLoaded) { toast('Load tester data first', 'warn'); return; }
 
   const selMonth = document.getElementById('t-month').value;
