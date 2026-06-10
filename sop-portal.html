@@ -5297,11 +5297,21 @@ function _computeInvMetrics(){
   const STORE_TYPE = {};
   STORES.forEach(s=>{ STORE_TYPE[s.code]=s.type; });
 
-  // Latest snapshot per store
+  // Latest snapshot per store — prefer snapshots with >= 5 SKUs (real SOH upload)
+  // over partial cell-level writes (1-2 SKUs) that may have a newer timestamp
   const latestSnap={};
   invHistory.forEach(h=>{
     if(div!=='ALL' && STORE_TYPE[h.store]!==div) return;
-    if(!latestSnap[h.store]||h.date>latestSnap[h.store].date) latestSnap[h.store]=h;
+    const hSkus = h.data.filter(d=>d.sku_code).length;
+    const cur = latestSnap[h.store];
+    if(!cur) { latestSnap[h.store]=h; return; }
+    const curSkus = cur.data.filter(d=>d.sku_code).length;
+    // Prefer newer date only if it has >= 5 SKUs (real snapshot, not a partial write)
+    // If same date: prefer whichever has more SKUs
+    if((h.date > cur.date && hSkus >= 5) ||
+       (h.date === cur.date && hSkus > curSkus)) {
+      latestSnap[h.store]=h;
+    }
   });
 
   // Build SOH map: store→sku→qty  +  product name map
@@ -5449,12 +5459,17 @@ function _renderExecStoryBanner(){
   const deadPct=total>0?Math.round(dead/total*100):0;
   const criticalStores=[...new Set(Object.entries(m.storeSummary).filter(([,s])=>s.overallStatus==='critical').map(([c])=>getStore(c).name))];
 
+  const snapDatesArr=[...new Set(Object.values(m.latestSnap).map(s=>s.date))].filter(Boolean).sort();
+  const snapDateRange=snapDatesArr.length>1
+    ?`${snapDatesArr[0]} to ${snapDatesArr[snapDatesArr.length-1]}`
+    :(snapDatesArr[0]||'latest snapshot');
+
   const alerts=[];
   if(cr>0||so>0) alerts.push({
     type:'critical',
     icon:'&#9888;',
-    title:`${cr+so} SKUs will stock out within 7 days`,
-    body:`${criticalStores.slice(0,3).join(', ')}${criticalStores.length>3?' + '+(criticalStores.length-3)+' more':''} — issue replenishment orders TODAY before weekend.`,
+    title:`${cr+so} SKUs at critical or stockout level (per ${snapDateRange} snapshot)`,
+    body:`${criticalStores.slice(0,3).join(', ')}${criticalStores.length>3?' + '+(criticalStores.length-3)+' more':''} — issue replenishment orders immediately. Items already past stockout date show STOCKOUT badge.`,
     action:'See Stockout Countdown below'
   });
   if(tCount>0) alerts.push({
@@ -5492,7 +5507,7 @@ function _renderExecStoryBanner(){
 
   document.getElementById('inv-story-banner').innerHTML=`
   <div style="background:var(--gold-bar);padding:14px 20px;margin-bottom:1px;">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:#fff;letter-spacing:.05em;">OPERATIONS BRIEFING — INVENTORY STATUS AS AT ${[...new Set(Object.values(m.latestSnap).map(s=>s.date))].sort().reverse()[0]||'TODAY'}</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:#fff;letter-spacing:.05em;">OPERATIONS BRIEFING — INVENTORY STATUS AS AT ${snapDateRange.toUpperCase()}</div>
     <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">${Object.keys(m.storeSummary).length} stores · ${(Object.values(m.storeSummary).reduce((s,x)=>s+x.totalSoh,0)).toLocaleString()} total units on hand · ${m.last3.join(', ')} sales rate basis</div>
   </div>
   <div style="display:flex;flex-direction:column;gap:2px;">
@@ -5511,20 +5526,21 @@ function _renderExecStoryBanner(){
 // ── Stockout Countdown ────────────────────────────────────────────
 function _renderStockoutCountdown(){
   const m=_invMetrics;
-  // Snapshot date: used only to compute the actual calendar stockout date
-  const snapDates=Object.values(m.latestSnap).map(s=>s.date).filter(Boolean);
-  const refDate=snapDates.length?new Date(snapDates.sort().reverse()[0]):new Date();
-  // Days elapsed since snapshot — "days left" is always relative to TODAY, not snapshot
-  const today=new Date();
-  const daysSinceSnap=(today-refDate)/(1000*60*60*24);
+  // Per-store snapshot date: each store uses its OWN reference date for accuracy
+  const today=new Date(); today.setHours(0,0,0,0);
 
   const rows=[];
   Object.entries(m.metrics).forEach(([store,skus])=>{
+    // Use this store's own snapshot date — NOT a global max across all stores
+    const storeSnap=m.latestSnap[store];
+    const refDate=storeSnap?.date?new Date(storeSnap.date):today;
+    const daysSinceSnap=(today-refDate)/(1000*60*60*24);
     Object.entries(skus).forEach(([sku,d])=>{
       if(d.dos===null||d.dos<0) return;
       if(d.status==='deadstock'||d.status==='inactive') return;
       const daysLeft=d.dos-daysSinceSnap; // days remaining FROM TODAY
       if(daysLeft>21) return; // not urgent yet
+      if(daysLeft<-7) return; // stocked out >7 days ago — already in KPI, skip countdown
       const stockoutDate=new Date(refDate);
       stockoutDate.setDate(refDate.getDate()+Math.floor(d.dos));
       rows.push({store,sku,name:m.nameMap[sku]||sku,...d,stockoutDate,daysLeft});
@@ -5633,8 +5649,8 @@ function _computeTransfers(){
   const SURPLUS_THRESHOLD=90;
   const MIN_TRANSFER=3;
 
-  // Build per-store-SKU monthly sales lookup for last 2 months
-  const MONTHS=['2026-05','2026-04'];
+  // Build per-store-SKU monthly sales lookup for last 2 months (dynamic — never stale)
+  const MONTHS=_lastNMonths(2);
   const monthlySales={}; // store|sku|month → qty
   invSalesData.forEach(r=>{
     if(!MONTHS.includes(r.month_year)) return;
