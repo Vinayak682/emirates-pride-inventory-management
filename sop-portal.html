@@ -2555,6 +2555,47 @@ const SKU_LAUNCHED = {
   'RM2001': '2026-05', 'RM2003': '2026-05', 'RM2004': '2026-05', 'RM2005': '2026-05',
   'RADA-006': '2026-05', 'AP012': '2025-12',
 };
+/* ══ Tester Stock Status (from out-of-stock report 11 Jun 2026) ══ */
+const TESTER_STOCK_STATUS = {
+  outOfStock: [
+    {code:'AC0004-T', name:'Picker-Tester', qty:0},
+    {code:'B00014-T', name:'Firewood-Tester', qty:0},
+    {code:'O00001-T', name:'Oud Amiri-Tester', qty:0},
+    {code:'O00003-T', name:'Oud Al Emarat-Tester', qty:0},
+    {code:'O00006-T', name:'Oud Al Fakhamah-Tester', qty:0},
+    {code:'O00007-T', name:'Oud Hindi Khas-Tester', qty:0},
+    {code:'O00008-T', name:'Oud Hindi Malaki-Tester', qty:0},
+    {code:'SP0006-T', name:'More Of Oud-Tester', qty:0},
+    {code:'B00019-T', name:'Masters 100ml-Tester', qty:250},  /* Received 10-06-2026 */
+    {code:'C00012-T', name:'Navy 100ml-Tester', qty:1},
+    {code:'D00005-T', name:'Dakhoon Al Barzah-Tester', qty:1},
+    {code:'D00008-T', name:'Dakhoon Retaj-Tester', qty:1},
+    {code:'O00002-T', name:'Oud Meydan-Tester', qty:1}
+  ],
+  lowStock: [
+    {code:'HR0005-T', name:'Khaimah Heritage-Tester', qty:2},
+    {code:'B00001-T', name:'Bergamot Bel Amber-Tester', qty:3},
+    {code:'HR0006-T', name:'Safeena Heritage-Tester', qty:3},
+    {code:'HR0002-T', name:'Danah Heritage-Tester', qty:5},
+    {code:'SP0023-TD', name:'Masters Signature Dusk-Tester', qty:6},
+    {code:'I00011-T', name:'Midnight Oil 8ml-Tester', qty:8},
+    {code:'SP0030-T', name:'Midnight Oud 30ml-Tester', qty:10},
+    {code:'B00012-T', name:'Ambergris-Tester', qty:11},
+    {code:'SP0023-TG', name:'Masters Signature Gleam-Tester', qty:11},
+    {code:'B00006-T', name:'Mersal-Tester', qty:15},
+    {code:'BCSTP011', name:'Thekrayat 10ml Sampler', qty:16},
+    {code:'BCSHT002', name:'Hidden Tobacco 10ml Sample', qty:18},
+    {code:'B00016-T', name:'Mysterious Rose-Tester', qty:20},
+    {code:'I00001-T', name:'Hindi Special-Tester', qty:20},
+    {code:'HR0007-T', name:'Dallah Heritage-Tester', qty:23},
+    {code:'B00021-T', name:'Midnight Bloom-Tester', qty:24},
+    {code:'C00002-T', name:'White 100ml-Tester', qty:27},
+    {code:'B00007-T', name:'Peaceful Life-Tester', qty:41},
+    {code:'D00003-T', name:'Dakhoon Badia-Tester', qty:49},
+    {code:'B00018-T', name:'Hidden Tobacco-Tester', qty:50}
+  ]
+};
+
 const MONTH_SHORT = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 const MONTHS = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -4305,6 +4346,77 @@ function renderTesterIntel(skipRebuild) {
       + '<div style="font-size:10px;color:#8A8278;margin-top:3px;">' + k.sub + '</div></div>';
   });
   html += '</div>';
+
+  // ── Zone 1.5: Tester Stock Status Alert ─────────────────────────────
+  const outOfStock = TESTER_STOCK_STATUS.outOfStock || [];
+  const lowStock = TESTER_STOCK_STATUS.lowStock || [];
+  const criticalCount = outOfStock.filter(t => t.qty === 0).length;
+
+  if (criticalCount > 0 || lowStock.length > 0) {
+    html += '<div style="background:linear-gradient(135deg,#FFF5F5 0%,#FFE8E8 100%);border:2px solid #C0392B;border-radius:10px;padding:20px 22px;margin-bottom:28px;">'
+      + '<div style="display:flex;gap:12px;align-items:flex-start;">'
+      + '<div style="font-size:24px;line-height:1;">⚠️</div>'
+      + '<div style="flex:1;">'
+      + '<div style="font-size:13px;font-weight:700;color:#C0392B;margin-bottom:8px;">Tester Stock Alert — ' + (new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'})) + '</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;">';
+
+    // Out of Stock card
+    const outOfStockZero = outOfStock.filter(t => t.qty === 0);
+    html += '<div style="background:#fff;padding:12px 14px;border-radius:6px;border-left:3px solid #C0392B;">'
+      + '<div style="font-size:11px;font-weight:700;color:#C0392B;text-transform:uppercase;letter-spacing:.08em;">🔴 Out of Stock</div>'
+      + '<div style="font-size:20px;font-weight:700;color:#C0392B;margin-top:4px;">' + outOfStockZero.length + '</div>'
+      + '<div style="font-size:9px;color:#8A8278;margin-top:2px;">Cannot dispatch</div>'
+      + '</div>';
+
+    // Low Stock card
+    html += '<div style="background:#fff;padding:12px 14px;border-radius:6px;border-left:3px solid #F39C12;">'
+      + '<div style="font-size:11px;font-weight:700;color:#F39C12;text-transform:uppercase;letter-spacing:.08em;">🟡 Low Stock</div>'
+      + '<div style="font-size:20px;font-weight:700;color:#F39C12;margin-top:4px;">' + lowStock.length + '</div>'
+      + '<div style="font-size:9px;color:#8A8278;margin-top:2px;">Qty < 50 units</div>'
+      + '</div>';
+
+    html += '</div>';
+
+    // Details toggle
+    html += '<details style="cursor:pointer;">'
+      + '<summary style="font-size:11px;font-weight:700;color:#C0392B;text-transform:uppercase;letter-spacing:.08em;user-select:none;">View All Critical Items (' + (outOfStockZero.length + lowStock.length) + ')</summary>'
+      + '<div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">';
+
+    // Out of Stock list
+    if (outOfStockZero.length > 0) {
+      html += '<div>'
+        + '<div style="font-size:10px;font-weight:700;color:#C0392B;margin-bottom:8px;text-transform:uppercase;">Out of Stock (' + outOfStockZero.length + ')</div>';
+      outOfStockZero.forEach(t => {
+        html += '<div style="background:#FFF5F5;padding:6px 8px;margin-bottom:4px;border-radius:4px;font-size:10px;color:#1A1A1A;border-left:2px solid #C0392B;">'
+          + '<div style="font-weight:600;">' + t.name + '</div>'
+          + '<div style="font-size:9px;color:#8A8278;font-family:\'IBM Plex Mono\',monospace;">' + t.code + '</div>'
+          + '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Low Stock list (top 10)
+    if (lowStock.length > 0) {
+      html += '<div>'
+        + '<div style="font-size:10px;font-weight:700;color:#F39C12;margin-bottom:8px;text-transform:uppercase;">Low Stock (Top ' + Math.min(10, lowStock.length) + ')</div>';
+      lowStock.slice(0, 10).forEach(t => {
+        const pctBar = '<div style="background:#FFE8E8;border-radius:2px;height:4px;margin-top:2px;"><div style="background:#F39C12;height:4px;border-radius:2px;width:' + Math.round(t.qty / 60 * 100) + '%;"></div></div>';
+        html += '<div style="background:#FFFAF5;padding:6px 8px;margin-bottom:4px;border-radius:4px;font-size:10px;color:#1A1A1A;border-left:2px solid #F39C12;">'
+          + '<div style="display:flex;justify-content:space-between;margin-bottom:2px;">'
+          + '<span style="font-weight:600;">' + t.name + '</span>'
+          + '<span style="font-weight:700;color:#F39C12;">' + t.qty + '</span>'
+          + '</div>'
+          + '<div style="font-size:9px;color:#8A8278;font-family:\'IBM Plex Mono\',monospace;margin-bottom:2px;">' + t.code + '</div>'
+          + pctBar
+          + '</div>';
+      });
+      if (lowStock.length > 10) html += '<div style="font-size:9px;color:#8A8278;padding:4px 0;">+' + (lowStock.length - 10) + ' more items</div>';
+      html += '</div>';
+    }
+
+    html += '</div></details>';
+    html += '</div></div></div>';
+  }
 
   // ── Zone 2: Monthly Trend Chart ─────────────────────────────────────
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">';
