@@ -4373,12 +4373,6 @@ function renderTesterIntel(skipRebuild) {
   html += buildClassCard('🟢 Efficient (≤10% rate)', '#0A3622', '#D1E7DD', effList, true);
   html += '</div>';
 
-  if (underList.length || overList.length) {
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;">';
-    html += buildClassCard('🔴 Over-Utilised Stores — Full List', '#C0392B', '#F8D7DA', overList, true);
-    html += buildClassCard('⚫ Under-Utilised (0 testers, has sales)', '#842029', '#F8D7DA', underList, false);
-    html += '</div>';
-  }
 
   // ── Zone 4: Full Store Leaderboard ──────────────────────────────────
   const sortBtns = [
