@@ -4568,7 +4568,7 @@ function renderTesterIntel(skipRebuild) {
   }
 
   // ── Zone 1.6: Store Allocation Imbalance (High Sales vs Low Tester Allocation) ──
-  const focusMonthData = _tiStoreMetrics.filter(s => s.sales > 0);
+  const focusMonthData = _tiStoreMetrics.filter(s => s.sales > 0 && !s.code.startsWith('OM'));
   const allocationGaps = focusMonthData
     .map(s => ({
       code: s.code,
@@ -4580,14 +4580,14 @@ function renderTesterIntel(skipRebuild) {
     }))
     .filter(s => s.gap !== 'OK')
     .sort((a, b) => b.sales - a.sales)
-    .slice(0, 8);
+    .slice(0, 10);
 
   if (allocationGaps.length > 0) {
     html += '<div style="background:linear-gradient(135deg,#FFF5F5 0%,#FFE8E8 100%);border:2px solid #C0392B;border-radius:10px;padding:20px 22px;margin-bottom:28px;">'
       + '<div style="display:flex;gap:12px;align-items:flex-start;">'
       + '<div style="font-size:20px;line-height:1;">⚖️</div>'
       + '<div style="flex:1;">'
-      + '<div style="font-size:13px;font-weight:700;color:#C0392B;margin-bottom:12px;text-transform:uppercase;letter-spacing:.08em;">Store Allocation Imbalance — Top Sales Generators</div>'
+      + '<div style="font-size:13px;font-weight:700;color:#C0392B;margin-bottom:12px;text-transform:uppercase;letter-spacing:.08em;">Store Allocation Imbalance — Top 10 Sales Generators</div>'
       + '<div style="font-size:11px;color:#666;margin-bottom:14px;">Stores with highest sales volume are severely underfunded in tester allocation</div>'
       + '<div style="display:grid;grid-template-columns:1fr;gap:8px;">';
 
