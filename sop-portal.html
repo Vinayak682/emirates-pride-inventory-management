@@ -4595,8 +4595,38 @@ function renderTesterIntel(skipRebuild) {
       + '</div>'
       + '<span style="font-size:20px;color:#C0392B;">▼</span>'
       + '</summary>'
-      + '<div style="padding:20px 22px;background:#FFF5F5;">'
-      + '<div style="display:grid;grid-template-columns:1fr;gap:10px;">';
+      + '<div style="padding:20px 22px;background:#FFF5F5;">';
+
+    // Extract top 5 highest sales stores from allocation gaps
+    const top5Sales = allocationGaps.slice(0, 5);
+
+    if (top5Sales.length > 0) {
+      html += '<div style="background:linear-gradient(135deg,#FFE5E5 0%,#FFCCCC 100%);border:2px solid #C0392B;border-radius:8px;padding:16px;margin-bottom:16px;">'
+        + '<div style="font-size:11px;font-weight:700;color:#C0392B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">🔥 CRITICAL TOP 5 — Highest Sales, Lowest Tester Support</div>'
+        + '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">';
+
+      top5Sales.forEach((s, i) => {
+        const salesPct = ((s.sales / gSales) * 100).toFixed(0);
+        const idealTesters = Math.round(s.sales * 0.20);
+        const underalloc = idealTesters - s.testers;
+
+        html += '<div style="background:#fff;padding:10px;border-radius:6px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,.1);">'
+          + '<div style="font-size:14px;font-weight:700;color:#C0392B;margin-bottom:4px;">#' + (i+1) + '</div>'
+          + '<div style="font-size:10px;font-weight:700;color:#1A1A1A;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + s.name + '</div>'
+          + '<div style="font-size:8px;color:#8A8278;font-family:\'IBM Plex Mono\',monospace;margin-bottom:6px;">' + s.code + '</div>'
+          + '<div style="border-top:1px solid #E5E0D8;padding-top:6px;font-size:9px;">'
+          + '<div style="color:#0B7A45;font-weight:700;margin-bottom:2px;">' + s.sales.toLocaleString() + ' sold</div>'
+          + '<div style="color:#1a3a5c;font-weight:700;margin-bottom:2px;">' + s.testers + ' testers</div>'
+          + '<div style="color:#C0392B;font-weight:700;">-' + underalloc + ' short</div>'
+          + '</div>'
+          + '</div>';
+      });
+
+      html += '</div>'
+        + '</div>';
+    }
+
+    html += '<div style="display:grid;grid-template-columns:1fr;gap:10px;">';
 
     allocationGaps.forEach((s, i) => {
       const salesPct = ((s.sales / gSales) * 100).toFixed(0);
