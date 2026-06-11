@@ -4570,15 +4570,21 @@ function renderTesterIntel(skipRebuild) {
   // ── Zone 1.6: Store Allocation Imbalance (High Sales vs Low Tester Allocation) ──
   const focusMonthData = _tiStoreMetrics.filter(s => s.sales > 0 && s.testers > 0 && !s.code.startsWith('OM'));
   const allocationGaps = focusMonthData
-    .map(s => ({
-      code: s.code,
-      name: s.name,
-      sales: s.sales,
-      testers: s.testers,
-      testers_pct: s.sales > 0 ? ((s.testers / s.sales) * 100).toFixed(1) : 0,
-      gap: s.sales > 900 && s.testers < 45 ? 'CRITICAL' : s.sales > 700 && s.testers < 30 ? 'HIGH' : 'OK'
-    }))
-    .filter(s => s.gap !== 'OK')
+    .map(s => {
+      const idealTesters = Math.round(s.sales * 0.20);
+      const shortfall = idealTesters - s.testers;
+      const util_pct = ((s.testers / s.sales) * 100).toFixed(1);
+      return {
+        code: s.code,
+        name: s.name,
+        sales: s.sales,
+        testers: s.testers,
+        testers_pct: util_pct,
+        shortfall: shortfall,
+        gap: shortfall > 200 ? 'CRITICAL' : shortfall > 100 ? 'HIGH' : shortfall > 50 ? 'MEDIUM' : 'OK'
+      };
+    })
+    .filter(s => s.gap !== 'OK' && s.gap !== 'MEDIUM')
     .sort((a, b) => b.sales - a.sales)
     .slice(0, 10);
 
