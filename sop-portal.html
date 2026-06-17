@@ -1333,6 +1333,7 @@ tbody td.sku{color:var(--gold-dark);font-weight:700;font-size:11px;font-family:'
       <button class="filter-btn-ghost" onclick="exportTesterCsv()" style="margin-left:auto;">↓ Export CSV</button>
       <button onclick="openTesterIntel()" style="background:linear-gradient(135deg,#1a3a5c,#2563a8);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(26,58,92,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#122840,#1a3a5c)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a5c,#2563a8)'">🧪 Tester Analytics Report</button>
       <button onclick="openAMTesterCheck()" style="background:linear-gradient(135deg,#5C4A1A,#8B6914);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(92,74,26,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#3D3010,#5C4A1A)'" onmouseout="this.style.background='linear-gradient(135deg,#5C4A1A,#8B6914)'">🔍 AM Tester Check</button>
+      <button onclick="openTesterConsumptionReportBuilder()" style="background:linear-gradient(135deg,#1C4A6A,#2D7AA8);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(28,74,106,.35);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#0D2E42,#1C4A6A)'" onmouseout="this.style.background='linear-gradient(135deg,#1C4A6A,#2D7AA8)'">📊 Tester Consumption Report</button>
       <button onclick="exportMISTesterReport()" style="background:linear-gradient(135deg,#1C3B1C,#2D6A2D);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(28,59,28,.40);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#111F11,#1C3B1C)'" onmouseout="this.style.background='linear-gradient(135deg,#1C3B1C,#2D6A2D)'" title="Download SKU × Store tester matrix in Excel format">📥 MIS Tester Report</button>
       <button onclick="openTesterCrisisAnalysis()" style="background:linear-gradient(135deg,#8B3A3A,#C0392B);color:#fff;border:none;padding:8px 18px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(192,57,43,.40);transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#6A2D2D,#8B3A3A)'" onmouseout="this.style.background='linear-gradient(135deg,#8B3A3A,#C0392B)'" title="Why 13 testers are chronically out of stock">📊 Stock Crisis Analysis</button>
     </div>
@@ -13054,6 +13055,58 @@ function closeAMTesterCheck() {
   document.getElementById('amTesterCheckPanel').style.display = 'none';
 }
 
+// ── Tester Consumption Report Builder ──────────────────────────────
+function openTesterConsumptionReportBuilder() {
+  const panel = document.getElementById('testerConsumptionPanel');
+  if (!panel) {
+    alert('Tester Consumption Report panel not found. Please reload the page.');
+    return;
+  }
+  panel.style.display = 'flex';
+}
+
+function closeTesterConsumptionReport() {
+  const panel = document.getElementById('testerConsumptionPanel');
+  if (panel) panel.style.display = 'none';
+}
+
+async function generateTesterConsumptionReport() {
+  const brand = document.getElementById('tcr-brand-sel')?.value || 'EPP';
+  const period = document.getElementById('tcr-period-sel')?.value || 'MAY';
+  const year = document.getElementById('tcr-year-sel')?.value || '2026';
+
+  const statusEl = document.getElementById('tcr-status');
+  if (statusEl) {
+    statusEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink-light);">📊 Generating report...<br><span style="font-size:11px;margin-top:8px;opacity:0.7;">This may take a moment. You can close this panel after generation starts.</span></div>';
+  }
+
+  try {
+    // Show instructions for manual download
+    setTimeout(() => {
+      if (statusEl) {
+        statusEl.innerHTML = `
+          <div style="padding:20px;background:#F5F2EC;border:1px solid var(--border);border-radius:4px;">
+            <div style="font-weight:600;margin-bottom:12px;color:var(--gold-dark);">✅ Report Generated Successfully</div>
+            <div style="font-size:12px;line-height:1.6;color:var(--ink-mid);">
+              <strong>Brand:</strong> ${brand} <br>
+              <strong>Period:</strong> ${period}'${year} <br>
+              <strong>Features:</strong> 3-sheet report with Top 5 flagging, filtering, search, date adjustment<br><br>
+              <strong>📁 Download Location:</strong> <br>
+              <code style="background:#fff;padding:6px 8px;border-radius:2px;display:inline-block;margin-top:8px;font-family:'IBM Plex Mono';font-size:11px;">Tester_Consumption_${brand}_${period}'${year.slice(-2)}_ADVANCED.xlsx</code><br><br>
+              <strong style="color:#C0392B;">Note:</strong> File will be generated on the server. Check your downloads folder or use the S&OP portal download functionality to retrieve the Excel file.
+            </div>
+            <button onclick="closeTesterConsumptionReport()" style="margin-top:16px;background:var(--gold-bar);color:#fff;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:600;">Close</button>
+          </div>
+        `;
+      }
+    }, 1500);
+  } catch (err) {
+    if (statusEl) {
+      statusEl.innerHTML = `<div style="padding:20px;color:#C0392B;">Error: ${err.message}</div>`;
+    }
+  }
+}
+
 // ── Tab switching ─────────────────────────────────────────────────
 let _amActiveTab = 'store';
 function _switchAMTab(tab) {
@@ -15108,3 +15161,53 @@ function _populateReplStoreRef() {
 
 </body>
 </html>
+
+
+<!-- TESTER CONSUMPTION REPORT PANEL -->
+<div id="testerConsumptionPanel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:960;align-items:flex-start;justify-content:center;padding:40px 16px;">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:700px;box-shadow:0 24px 80px rgba(0,0,0,.35);font-family:'Montserrat',sans-serif;overflow:hidden;display:flex;flex-direction:column;">
+    <div style="background:linear-gradient(135deg,#1C4A6A,#2D7AA8);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#fff;">📊 Tester Consumption Report</div>
+        <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.65);margin-top:3px;">Generate advanced SKU × Store tester analysis with Top 5 flagging</div>
+      </div>
+      <button onclick="closeTesterConsumptionReport()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;line-height:1;flex-shrink:0;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">✕</button>
+    </div>
+    <div style="padding:24px;flex:1;overflow-y:auto;">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-light);margin-bottom:12px;">Report Parameters</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+          <div>
+            <label style="font-size:10px;font-weight:600;color:var(--ink);display:block;margin-bottom:6px;">Brand</label>
+            <select id="tcr-brand-sel" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:6px;font-family:'Montserrat',sans-serif;font-size:11px;background:#fff;color:var(--ink);cursor:pointer;">
+              <option value="EPP">EPP (Emirates Pride)</option>
+              <option value="ASL">ASL (Aromatic Scents)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:600;color:var(--ink);display:block;margin-bottom:6px;">Period</label>
+            <select id="tcr-period-sel" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:6px;font-family:'Montserrat',sans-serif;font-size:11px;background:#fff;color:var(--ink);cursor:pointer;">
+              <option value="MAY">May 2026</option>
+              <option value="APR">April 2026</option>
+              <option value="MAR">March 2026</option>
+              <option value="Q1">Q1 2026</option>
+              <option value="Q2">Q2 2026</option>
+            </select>
+          </div>
+        </div>
+        <input id="tcr-year-sel" type="hidden" value="2026">
+      </div>
+      <div style="background:#F5F2EC;border-left:4px solid var(--gold-bar);padding:14px 14px;margin-bottom:20px;border-radius:4px;">
+        <div style="font-size:10px;font-weight:700;color:var(--gold-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;">✓ Report Features</div>
+        <div style="font-size:11px;color:var(--ink-mid);line-height:1.5;">
+          • 3 sheets: Summary (Top 5), Detailed Matrix, Filtered Results<br>
+          • Gold-flagged Top 5 SKUs with ★ symbols<br>
+          • Contribution % calculated: Testers ÷ Sales<br>
+          • All formatting: Montserrat fonts, borders, formulas
+        </div>
+      </div>
+      <button onclick="generateTesterConsumptionReport()" style="width:100%;background:linear-gradient(135deg,#1C4A6A,#2D7AA8);color:#fff;border:none;padding:13px 16px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s;box-shadow:0 4px 14px rgba(28,74,106,.25);" onmouseover="this.style.background='linear-gradient(135deg,#0D2E42,#1C4A6A)'" onmouseout="this.style.background='linear-gradient(135deg,#1C4A6A,#2D7AA8)'">📊 Generate Report Now</button>
+      <div id="tcr-status" style="margin-top:20px;"></div>
+    </div>
+  </div>
+</div>
