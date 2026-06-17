@@ -297,6 +297,179 @@ async function loadProductMaster() {
 
 ---
 
+## 📊 TESTER CONSUMPTION REPORT FORMAT (Updated 17 Jun 2026)
+
+**AUTHORITATIVE TEMPLATE**: All tester consumption reports MUST follow this exact format.  
+**Sources**: 
+- `Tester_Consumption_EPP_Q1_26_and_May_26_FINAL.xlsx` (EPP format)
+- `Tester_Consumption_ASL_Q1_26_and_May26_FINAL.xlsx` (ASL format)
+
+### Report Structure
+
+**3 Sheets per File:**
+1. **Top 5 Analysis** — Ranking top 5 SKUs by tester consumption
+2. **Monthly Report** (e.g., "May'26") — Monthly SKU × Store matrix
+3. **Quarterly Report** (e.g., "Q1'26 Matrix") — Quarterly aggregation
+
+### Exact Format Specification
+
+#### Row 2: Title (Brand-Specific)
+- **Font**: Bold, 13pt, Dark Blue (#1F3864)
+- **Content**: `[BRAND] — SKU × STORE TESTER CONSUMPTION REPORT`
+  - EPP: `EMIRATES PRIDE PERFUMES — SKU × STORE TESTER CONSUMPTION`
+  - ASL: `AROMATIC SCENTS LAB (ASL) — SKU × STORE TESTER CONSUMPTION`
+
+#### Row 3: Legend
+- **Font**: Normal, 9pt, Dark Blue (#1F3864)
+- **Content**: `T=Testers Dispatched (blue) | S=Sales Generated (green) | Contrib%=Contribution %`
+
+#### Row 4: Main Headers
+| Col A | Col B | Col C | Col D | Col E | Col F | Col G | Col H+ |
+|-------|-------|-------|-------|-------|-------|-------|--------|
+| `#` | `Category` (from product_master.product_family) | `SKU Code` | `Product Name` | `Grand Total Testers` | `Grand Total Sales` | `Grand Sales Contrib%` | Area Manager / Store Headers |
+
+**Font**: Bold, 10pt, Dark Blue (#2C3E50)
+
+#### Row 5: Location/Store Headers
+- Shows Area Manager name or Store grouping
+- **Font**: Bold, 10pt, Dark Blue (#1A5276)
+- Example: `Area Manager: Mohamed Hessin` OR `Area Manager: Mohamed Imad`
+
+#### Row 6: Store Names
+- Individual store names under their AM
+- **Font**: Normal, 9pt
+- Examples: `BAS-Kiosk`, `Bas shop`, `Bas Shop 2`, `Dalma Kiosk`
+
+#### Row 7: Column Indicators (repeating for each store)
+- Pattern repeats: `T | S | Contrib%`
+- **Font**: Bold, 9pt
+
+#### Row 8: Column Totals (Formulas)
+- `=SUM(E9:E87)` for Testers
+- `=SUM(F9:F87)` for Sales
+- `=IFERROR(E8/F8,0)` for Contribution %
+
+#### Rows 9+: Data Rows (by SKU)
+| Col A | Col B | Col C | Col D | Col E | Col F | Col G | Col H-onward |
+|-------|-------|-------|-------|-------|-------|-------|--------------|
+| `#` (row number) | `Category` (e.g., "Caballo Collection") | `SKU Code` | `Product Name` | Testers (number) | Sales (number) | `=IFERROR(IF(F#>0,E#/F#,"-"),"-")` | Per-store T/S/% |
+
+**Font**: Normal, 10pt
+**Borders**: Light gray, 0.5pt
+**Number Format**: General for counts, Percentage for %
+
+### Data Mapping Rules
+
+**Category Column (Col B)**: Use `product_master.product_family`
+```
+Examples:
+  "Caballo Collection"
+  "Bel Collection"
+  "Heritage Collection"
+  "Oud Collection"
+  "Dakhoon Collection"
+  "Rimal Perfume 100ml"
+  "Serenity Perfume 65ml"
+  "ASL 50ml Perfume"
+  "ASL Oil 6ml"
+  "FNF 100 ML"
+```
+
+**SKU Code Column (Col C)**: Use `product_master.product_code` (exactly)
+```
+Examples:
+  "C00002", "B00015", "O00001", "D00001"
+  "AP001", "AO006", "RM2001", "FS Mimosa Glow"
+```
+
+**Product Name Column (Col D)**: Use `product_master.product_name_en`
+```
+Examples:
+  "EPP White Perfume 100ml"
+  "EPP Hidden Leather Perfume 100ml"
+  "EPP Oud Meydan 35grm"
+  "ASL Black Vanilla Perfume 50ml"
+```
+
+### Color Coding
+
+- **Header Background**: Dark Blue (#1F3864, #2C3E50, #283593 depending on context)
+- **Header Text**: White or light gray
+- **Data Rows - Tester values (T)**: Blue font or blue highlight
+- **Data Rows - Sales values (S)**: Green font or green highlight
+- **Alternating Row Background**: Light gray (#F5F5F5) on every other data row
+
+### Store Column Layout (per Area Manager)
+
+**EPP Stores** (Mohamed Hessin = 17 stores):
+- Abu Dhabi: BAS-Kiosk, Bas shop, Bas Shop 2, Dalma Kiosk, Dalma Shop, Deerfield, Yas Kiosk 2, Yas Kiosk 3, Yas Podium
+- Al Ain: Al Ain Mall, Bawadi 1, Bawadi 2, Jimi Mall, Makani Shop
+
+**EPP Stores** (Mohammed Imad = 4 stores):
+- Dubai: Dubai Mall, Mall of Emirates, Mirdif, Dubai Hills
+
+**EPP Stores** (Mohammed Elmatloub = 6 stores):
+- RAK: Manar Mall Shop, Manar Kiosk
+- Fujairah: Fujairah CC
+- Sharjah: Zahia CC
+- Ajman: Ajman CC
+
+**ASL Stores** (5 total):
+- BAS001 (Abu Dhabi)
+- YMK001 (Abu Dhabi - Yas Mall)
+- BAW001 (Al Ain)
+- MAK001 (Al Ain - Makani)
+- FJ0001 (Fujairah)
+
+### Formulas & Calculations
+
+```excel
+# Contribution % = Testers Dispatched ÷ Sales Generated
+=IFERROR(IF(Sales>0, Testers/Sales, "-"), "-")
+
+# Monthly/Quarterly Totals (Row 8)
+Grand Total Testers = SUM(E9:E87)
+Grand Total Sales = SUM(F9:F87)
+Contribution % = IFERROR(Grand Total Testers / Grand Total Sales, 0)
+
+# Per-Store Totals
+Store Testers = SUM of all T values for that store
+Store Sales = SUM of all S values for that store
+Store Contrib% = IFERROR(Store Testers / Store Sales, "-")
+```
+
+### File Naming Convention
+
+**Monthly Reports**:
+- `Tester_Consumption_EPP_[MONTH]'[YY]_FINAL.xlsx`
+- `Tester_Consumption_ASL_[MONTH]'[YY]_FINAL.xlsx`
+- Examples: `Tester_Consumption_EPP_May'26_FINAL.xlsx`, `Tester_Consumption_ASL_Jun'26_FINAL.xlsx`
+
+**Quarterly Reports**:
+- `Tester_Consumption_EPP_Q[#]_[YY]_FINAL.xlsx`
+- `Tester_Consumption_ASL_Q[#]_[YY]_FINAL.xlsx`
+- Examples: `Tester_Consumption_EPP_Q1'26_FINAL.xlsx`, `Tester_Consumption_ASL_Q2'26_FINAL.xlsx`
+
+### Data Source
+
+Data comes from:
+- **Tester Dispatched (T)**: `tester_history` table (when tester unit shipped to store)
+- **Sales Generated (S)**: `sales_history` table (units sold from testers)
+- **Matching Logic**: Match on `store_code`, `product_code`, and `month_year` period
+
+### Top 5 Analysis Sheet Structure
+
+```
+Row 2:  [BRAND] — TOP [N] TESTER PERFORMERS
+Row 3:  Blank
+Row 4:  | Rank | Category | SKU Code | Product Name | Total Testers (T) | Total Sales (S) | Contrib % (T÷S) | % of Total Testers |
+Row 5:  | 1    | ...      | ...      | ...          | ...               | ...             | ...              | ...                |
+Row 6:  | 2    | ...      | ...      | ...          | ...               | ...             | ...              | ...                |
+...
+```
+
+---
+
 # Emirates Pride Perfumes — Integrated Operations Platform
 ## CLAUDE Working Memory (updated 17 Jun 2026)
 
