@@ -68,12 +68,24 @@ Separate API server for the barcode/OCR scanner workflow (`stock-ocr-upload.html
 
 ### Supabase SQL — Execution Order (one-time setup)
 Run these in Supabase SQL Editor in this order:
+
+**⭐ CRITICAL FIRST**: 
+0. `product_master_migration.sql` — **AUTHORITATIVE PRODUCT CATALOG** (610 products from template)
+
+**Then Core Tables**:
 1. `create_tables.sql` — core tables (`sales_history`, `benchmarks_cache`, `transfer_history`, `data_uploads_log`)
 2. `pin_table_setup.sql` — `store_pins` table + `verify_store_pin()` RPC (SECURITY DEFINER)
 3. `security_setup.sql` — `store_sessions`, `audit_log`, `security_config`, Postgres trigger
 4. `am_requests_setup.sql` — `am_weekly_requests`, `am_feedback_sessions`, `am_issues_log`
 5. `am_requests_migration.sql` — adds `fulfilled_items`, `approval_remarks`, `edit_history` columns
 6. `scanner_db_setup.sql` — barcode scanner tables
+
+**✅ Verification after product_master_migration.sql**:
+```sql
+SELECT COUNT(*) as total_products FROM product_master;  -- should be 610
+SELECT DISTINCT product_family FROM product_master ORDER BY product_family;
+SELECT item_status, COUNT(*) FROM product_master GROUP BY item_status;
+```
 
 ### Supabase Edge Function
 ```bash
@@ -160,13 +172,133 @@ Fonts: **Cormorant Garamond** (display/numbers) · **Montserrat** (body/UI) · *
 
 **No dark backgrounds anywhere** — including login screens. The only exception is the executive login in `stock-register.html` which uses a dark theme by deliberate design decision (documented in CLAUDE.md session log Session 8).
 
-### SKU Data
-SKU catalogue (253 SKUs) is embedded as JS arrays inside each HTML file — `CATS[]`, `TESTERS[]`, `SUPPLIES[]`. There is no external SKU JSON file served to the browser. When adding new SKUs, update the array in every HTML file that references it.
+### ✅ AUTHORITATIVE PRODUCT MASTER (Updated 17 Jun 2026)
+
+**STATUS: Consolidated from Product Master Template 13-04-2026.xlsx**
+
+The **single source of truth** for all products is now the `product_master` table in Supabase:
+- **Total Products**: 610 (active, inactive, planned)
+- **Data Last Updated**: 13 April 2026
+- **All product codes** follow the format: `XYYYYY` (e.g., `C00002`, `B00015`, `AP001`, `BX0014`)
+- **All product names** now standardized (EN + AR bilingual)
+- **Pricing** by region: UAE, Saudi Arabia, Oman
+
+**⚠️ OLD CONVENTION REMOVED**: The old embedded JS arrays `CATS[]`, `TESTERS[]`, `SUPPLIES[]` are deprecated. All applications MUST query `product_master` from Supabase instead.
+
+#### Supabase Setup Required
+1. Run `product_master_migration.sql` in Supabase SQL Editor
+2. This creates the `product_master` table with 610 products
+3. Location: `/Downloads/product_master_migration.sql`
+4. Verify: 
+   ```sql
+   SELECT COUNT(*) FROM product_master;  -- should return 610
+   SELECT DISTINCT product_family FROM product_master ORDER BY product_family;
+   ```
+
+#### Product Master Structure
+```sql
+product_code          VARCHAR(20) UNIQUE  -- C00002, B00015, AP001, etc.
+product_name_en       TEXT                -- "EPP White Perfume 100ml"
+product_name_ar       TEXT                -- "عطر وايت 100مل"
+brand                 VARCHAR(100)        -- "Emirates Pride Perfume", "ASL", "Flower Scents", etc.
+product_family        VARCHAR(100)        -- "Caballo Collection", "Bel Collection", "Heritage Collection", etc.
+category              VARCHAR(100)        -- "Perfumes", "Oils", "Dakhoon", "Gift Set", etc.
+sub_category          VARCHAR(100)        -- specific variant if applicable
+item_status           VARCHAR(20)         -- "Active ", "Inactive ", "PPD" (Planned for Discontinuation)
+product_type          VARCHAR(50)         -- "EDP", "Oil", etc.
+volume                VARCHAR(50)         -- "100ml", "50ml", "6ml", etc.
+abc_class             VARCHAR(10)         -- "A", "B", "C" (revenue contribution tier)
+selling_price_uae     NUMERIC(10,2)       -- in AED
+selling_price_saudi   NUMERIC(10,2)       -- in SAR
+selling_price_oman    VARCHAR(50)         -- in OMR
+cbas_uae_id           INTEGER             -- regulatory compliance ID
+cbas_oman_id          INTEGER
+cbas_ksa_id           INTEGER
+ean_barcode           VARCHAR(20)
+online_sales          VARCHAR(10)         -- "Y" or "N"
+offline_sales         VARCHAR(10)         -- "Y" or "N"
+marketplace_sales     VARCHAR(10)         -- "Y" or "N"
+gender                VARCHAR(50)         -- "Unisex", "Men", "Women", etc.
+top_notes             TEXT                -- fragrance composition
+middle_notes          TEXT
+bottom_notes          TEXT
+mono_carton_qty       INTEGER             -- packaging units
+master_carton_qty     INTEGER
+shelf_life            VARCHAR(50)         -- "5 Years", etc.
+```
+
+#### 610 Products Across 7 Brands
+
+| Brand | Product Count | Families | Status |
+|-------|---|---|---|
+| **Emirates Pride Perfume (EPP)** | 292+ | Caballo, Bel, Heritage (7 types), Oud, Dakhoon, Rimal, Serenity, WO'UD, Mirsal, Yumira, Liwan, Future | Active/PPD |
+| **ASL (Aromatic Scents Lab)** | 145+ | 50ml Perfume, Oils, Hair Mist, Body Lotion, Diffuser, Bundle, Tester Paper | Active |
+| **Flower Scents (FS)** | 30+ | FS Perfume 65ml, Sampler | Active |
+| **FNF (Fragrance & Flavours)** | 60+ | Yumira, Liwan, Mirsal, WO'UD, Future Mubakhar | Active |
+| **Rimal** | 32+ | Precious Stones collection (Garnet, Quartz, Jade, Topaz, Jasper, Turquoise, Crystal) | Active |
+| **Serenity** | 31+ | Golden Forest, Mystic Garden, Rosewood Noir, Woodland Harmony, Woods Chill | Active |
+| **Accessories/Supplies** | 20+ | Charcoal, Lighters, Bags, Tester Paper, Cartons | Mixed |
+
+#### Key Families (44 unique families)
+
+**EPP Collections:**
+- Caballo Collection (25 products)
+- Bel Collection (81 products) ← **LARGEST**
+- Heritage Collection (27 products: Al Emarat, Dallah, Danah, Khaimah, Qalah, Safeena)
+- Oud Collection (15 products)
+- Future Collection (19 products: Future Bakhoor, Future Oud, Future Mubakhar)
+- Dakhoon (8 products: Al Barzah, Al Dar, Al Emarat, Al Marasim, Retaj)
+
+**Non-EPP Collections:**
+- ASL 50ml Perfume (23 products)
+- ASL Oils 6ml (34 products)
+- FNF Sampler (25 products)
+- Rimal Perfume 100ml (16 products)
+- Serenity Sampler (19 products)
+- Flower Scents Sampler (15 products)
+
+#### Sample Product Codes by Family
+
+**Caballo (C-series)**: C00002, C00004, C00010, C00011, C00012, C00013, C00014  
+**Bel (B-series)**: B00003, B00005, B00008, B00015, B00018, B00020, B00021  
+**Heritage**: HR0001, HR0002, RM2001, RM2003, etc.  
+**Oud (O-series)**: O00001, O00002, O00003, O00006, O00007, O00008  
+**Dakhoon (D-series)**: D00001, D00008  
+**Gift Boxes**: BX0002, BX0014, SP0005, SP0030, etc.  
+**ASL (A-series)**: AP001–AP012, AO001–AO012, AH001–AH007, AG001–AG019  
+**Rimal (RM-series)**: RM2001, RM2003, RM2004, RM2005  
+**Flower Scents (FS-series)**: FS Mimosa Glow, FS Orange Blossom, FS Pure Jasmin  
+**FNF Collections**: Yumira (FLUFFI, LUVLI, NUTTI), Liwan (GOLDEN HOUR, ROOTS, TIMELESS JOY), Mirsal, WO'UD  
+
+#### Integration with HTML Files
+
+**DEPRECATED**: All old hardcoded SKU arrays (`CATS[]`, `TESTERS[]`, `SUPPLIES[]`) in HTML files must be replaced with Supabase queries.
+
+**NEW PATTERN** (example for `stock-register.html`):
+```javascript
+async function loadProductMaster() {
+    const { data, error } = await supabase
+        .from('product_master')
+        .select('product_code, product_name_en, product_name_ar, brand, product_family, category, abc_class')
+        .eq('item_status', 'Active ')
+        .order('product_family, product_name_en');
+    
+    if (data) {
+        // Group by family
+        const byFamily = {};
+        data.forEach(p => {
+            if (!byFamily[p.product_family]) byFamily[p.product_family] = [];
+            byFamily[p.product_family].push(p);
+        });
+        return byFamily;
+    }
+}
+```
 
 ---
 
 # Emirates Pride Perfumes — Integrated Operations Platform
-## CLAUDE Working Memory (updated May 2026)
+## CLAUDE Working Memory (updated 17 Jun 2026)
 
 ---
 
@@ -203,14 +335,15 @@ SKU catalogue (253 SKUs) is embedded as JS arrays inside each HTML file — `CAT
 - **Service role key**: NOT in client code (must be added securely for write ops)
 
 ### Supabase Tables
-| Table | Rows | Purpose |
-|-------|------|---------|
-| `sales_history` | 17,267+ | SKU-level monthly sales: `sku_code`, `store_code`, `month_year` (YYYY-MM), `qty_sold` |
-| `benchmarks_cache` | 1,458+ | Demand planning benchmarks per SKU-store |
-| `transfer_history` | TBD | Consumption/transfer reports |
-| `data_uploads_log` | TBD | Audit trail of uploads |
-| `sop_inventory_uploads` | NEW | Inventory snapshots per store per upload date |
-| `sop_inventory_history` | NEW | Full upload history for deviation tracking |
+| Table | Rows | Purpose | Status |
+|-------|------|---------|--------|
+| **`product_master`** | **610** | **⭐ AUTHORITATIVE: All products (code, name EN/AR, brand, family, category, pricing, compliance IDs)** | **✅ LIVE (17 Jun 2026)** |
+| `sales_history` | 17,267+ | SKU-level monthly sales: `sku_code`, `store_code`, `month_year` (YYYY-MM), `qty_sold` | ✅ |
+| `benchmarks_cache` | 1,458+ | Demand planning benchmarks per SKU-store | ✅ |
+| `transfer_history` | TBD | Consumption/transfer reports | ⏳ |
+| `data_uploads_log` | TBD | Audit trail of uploads | ⏳ |
+| `sop_inventory_uploads` | NEW | Inventory snapshots per store per upload date | ⏳ |
+| `sop_inventory_history` | NEW | Full upload history for deviation tracking | ⏳ |
 
 ---
 
