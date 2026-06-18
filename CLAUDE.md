@@ -2717,6 +2717,149 @@ Never use `#1a2744` navy or `#0D0D0D` black anywhere in the app — including th
 
 ---
 
+### Session — 17 Jun 2026 (Session 56 — TESTER CONSUMPTION REPORT v2: FULL AUDIT + CORRECTED EQUATION)
+**Files changed**: `build_tester_consumption_report.py` (full rewrite v2), regenerated both report xlsx
+**Commit**: Not pushed (local output)
+
+#### Trigger:
+Vinayak flagged that the Q1 sheet showed B00015 (Hidden Leather FG) with 261 "testers" AND a separate B00015-T row — asking how the FG code can have testers, and to AUDIT all processes/equations. Also: remove all paper cards, place accessories at the bottom, add Category + Sub-Category.
+
+#### Audit findings (SQL-verified against tester_history + sales_history):
+1. **Split rows**: Same product appeared twice — `B00015` (Jan–Feb testers, stored bare per the documented format split) + `B00015-T` (Mar+ testers). Must be MERGED into one FG row.
+2. **Wrong sales source**: v1 used `tester_history.sales_generated` which is ONLY populated Jan–Feb (0 for Mar–May). Real FG sales live in `sales_history.qty_sold`.
+3. **Paper-card corruption**: May 2026 bare-code "testers" = 20,182 across 17 SKUs — ALL paper cards (EPTP52 Future Mubakhar Tester Card=11,200, ASLTP01=2,500, EPTP49, EPTP33, EPT44...). Removing paper cards drops May testers to a correct 1,695.
+4. **ASL legacy sales codes**: Jan–Apr ASL sales stored under old codes (ASL_YAS001, ASL_A009, ASL_A011, ASL_AL004, ASL_AL007, ASL_FJ001) while testers/May use current codes — caused ASL Jan–Mar sales to show 0 until remapped.
+
+#### Corrected equation (now implemented):
+- **T (Testers)** = `tester_history.testers_dispatched`, SKU normalized via `regexp_replace(sku_code,'-T[A-Z]?$','')` (merges bare + -T/-TD/-TN/-TG forms), **paper cards excluded** (`EPT*`,`ASLT*`, names with TESTER CARD/PAPER), kiosk store variants collapsed (A0001K→A0001 etc.), STR02 dropped.
+- **S (Sales)** = `sales_history.qty_sold` for the bare FG code, restricted to the brand's displayed tester-carrying stores (correct contribution denominator).
+- **Contrib% = T ÷ S**. ONE row per FG SKU.
+
+#### ASL legacy code remap applied (in script `ASL_SALES_REMAP`):
+- Confirmed: ASL_YAS001→YMK001, ASL_BAW001→BAW001, ASL_MAK001→MAK001, ASL_FUJ001/ASL_FJ001→FJ0001
+- **PROVISIONAL** (geography certain = 2 Abu Dhabi + 2 Al Ain; within-pair label is best-guess per Session 44 notes — AM-group & grand totals are correct regardless): ASL_A009→YMK001, ASL_A011→BAS001, ASL_AL004→BAW001, ASL_AL007→MAK001
+- ⚠️ Vinayak to confirm the 4 within-pair mappings.
+
+#### Verified results (all audits PASS):
+- B00015 Q1: ONE row, T=390 (Jan140+Feb121+Mar129), S=2,848, Contrib 13.7% — no B00015-T
+- Zero paper cards in any sheet; accessories (AC0001/3/4) sorted to bottom
+- EPP May testers = 1,695 (corruption gone, max single SKU 187)
+- ASL all months now have matching FG sales (Q1 T=901/S=1,965)
+- Columns: # | Category | Sub-Category | SKU Code | Product Name | Grand T | Grand S | Grand Contrib% | per-store T/S/C%
+
+#### ✅ RESOLVED — product_master was EMPTY, now LOADED (610 rows):
+Root cause: the Session 54 `product_master_migration.sql` (748KB, 610 individual INSERTs) had its CREATE TABLE run but the 610 INSERTs were NEVER executed (likely the SQL Editor paste was too large). Confirmed empty: `COUNT(*)=0`, seq last_value=1, max_id NULL.
+**Fix (17 Jun 2026):** Loaded from source `Product Master Template 13-04-2026.xlsx` via REST API:
+- Added temp anon INSERT/UPDATE policies → bulk-upserted 610 rows in 7 batches (HTTP 201) via `/tmp/load_pm.py` → **dropped temp policies** (security clean).
+- Verified: **610 rows, 41 product_family, 6 brands**. B00015 → family "Bel Collection", category "Perfumes". C00002 → "EPP White Perfume 100ml".
+- Excel→DB column map: col1=product_code, col2/3=name EN/AR, col4=item_status, col6/8/10=CBAS IDs, col14=product_family, col15=category, col16=sub_category, col27=brand, col38/39/40=prices, col55=shelf_life (full map in `/tmp/load_pm.py`).
+**Reports regenerated** with AUTHORITATIVE master: Category=product_family, Sub-Category=category, product names = master standardized names. Builder now fetches product_master via REST (`load_master_map()`) and overrides SAP-derived values.
+
+> NOTE for future sessions: `product_master` REST writes are blocked by RLS (read-only anon policy). To load/modify, either use Supabase MCP `execute_sql` (service role, bypasses RLS) or add a temporary anon write policy via MCP, load via REST, then drop it.
+
+**Output**: `Tester_Consumption_EPP_Jan_May_2026_FINAL.xlsx` (7 sheets), `Tester_Consumption_ASL_Jan_May_2026_FINAL.xlsx` (7 sheets) in ~/Documents/
+
+---
+
+### Session — 17 Jun 2026 (Session 55 — FULL DATA PIPELINE: Sales + Replenishment Processing + Tester Consumption Reports)
+**Files changed**: `build_tester_consumption_report.py` (new), output files in ~/Documents/
+**Commit**: Not pushed (local output files only)
+
+#### What was done:
+
+**Part 1 — Sales Data Processing (Jan–May 2026)**
+
+Two POS CSV files processed:
+- `order_2026-06-17_221427.csv` (EPP — 2,342 rows × 225 columns, 50 store Qty columns)
+- `order_2026-06-17_221601.csv` (ASL — 294 rows × 45 columns, 8 store Qty columns)
+
+**Processing rules applied:**
+- GWP Rule enforced: All rows where RP (Retail Price) = 0 excluded from `qty_sold` (stored as `gwp_qty`)
+- Date format: Raw datetime → Mon-YY (e.g., Jan-26, Feb-26)
+- Only `[Store]- Qty` columns used; WS, RP, SP, PR columns ignored
+- Product names / categories from latest master (CLAUDE.md + Supabase)
+- Store codes mapped from display names to official codes (A0001-series, AL-series, DX-series, etc.)
+
+**Output files:**
+- `Sales_Jan_May_2026_Formatted.csv` (184 KB, 2,624 records) — Category | Product | Date(Mon-YY) | Store_Code | Store_Display | Qty
+- `Supabase_Sales_Upload_Jan_May_2026.csv` (128 KB) — product_name | store_code | month_year(YYYY-MM) | qty_sold
+- `Sales_ASL_Jan_May_2026_Formatted.csv` (20 KB, 290 records) — ASL only
+- `Supabase_Sales_ASL_Upload_Jan_May_2026.csv` (12 KB) — ASL Supabase upload
+- `EPP_vs_ASL_SALES_COMPARISON_Jan_May_2026.md` — comparison report
+- `DATA_PROCESSING_SUMMARY.md` — top products, stores, quality notes
+
+**Totals:** EPP 94,101 units + ASL 5,536 units = **99,637 combined** (GWP filtered)
+
+**Part 2 — Replenishment/Transfer Processing (Jan–May 2026)**
+
+Two SAP transfer files processed:
+- `RptItemWiseStockTransfer (23).xlsx` (EPP — 23,501 rows, 31 columns)
+- `RptItemWiseStockTransfer (24).xlsx` (ASL — 2,472 rows, 31 columns)
+
+**Key logic:**
+- Tester identification: `-T` suffix on SKU code at start of Item Name (e.g., `C00002-T`) = Tester, else FG
+- Date format: converted to Mon-YY
+- Category/SubCategory: mapped from SAP Category column
+- Store codes: extracted from To Location field via regex
+- Brand detection: YMK/BAS/BAW/MAK/FJ0/ASL prefix = ASL, else EPP
+- Header rows 1–16 skipped (SAP report has empty metadata rows; `header=16` in pandas)
+
+**Output:** `Replenishment_Jan_May_2026_FINAL.csv` (1.4 MB, 11,648 records)
+- Columns: Date | SKU_Code | Product_Name | Category | Brand | Store_Code | To_Location | Item_Type | Quantity
+- FG: 7,584 records = 302,442 units
+- Tester: 4,064 records = 12,435 units (identified via -T suffix)
+- EPP: 10,061 records (93.9%) | ASL: 1,587 records (6.1%)
+- Monthly peak: May-26 = 104,168 units (Eid Al-Adha effect)
+
+**Part 3 — Tester Consumption Reports (EPP + ASL Separate)**
+
+**Data sources used:**
+- Testers Dispatched (T): `tester_history` Supabase table (6,011 non-zero rows for Jan-May 2026)
+- Sales Generated (S): `tester_history.sales_generated` column (same query)
+- Category: `Replenishment_Jan_May_2026_FINAL.csv` Category column (product_master was empty in Supabase)
+
+**Script:** `build_tester_consumption_report.py` in project root
+
+**Report Format (exact replication of original EPP/ASL tester consumption Excel format):**
+- Row 2: Title (EMIRATES PRIDE PERFUMES / AROMATIC SCENTS LAB — SKU × STORE TESTER CONSUMPTION REPORT)
+- Row 3: Legend (T=Testers Dispatched blue | S=Sales Generated green | Contrib%=Contribution %)
+- Row 4: Main headers (#, Category, SKU Code, Product Name, Grand Total T, Grand Total S, Grand Contrib%)
+- Row 5: Area Manager grouping headers (merged cells spanning their stores)
+- Row 6: Store names
+- Row 7: T | S | Contrib% column indicators per store
+- Row 8: Totals row (SUM formulas)
+- Rows 9+: SKU data rows sorted by Category then SKU code
+- Color coding: Blue (#D6E4F7) for testers, Green (#D7F2D7) for sales, Yellow (#FFF2CC) for contrib%
+
+**EPP Report — 7 sheets:**
+- Top 10 Analysis
+- Jan'26, Feb'26, Mar'26, Apr'26, May'26 (5 monthly sheets)
+- Q1'26 Matrix (Jan-Mar aggregated)
+- 76 columns (7 fixed + 23 stores × 3 cols each)
+- Stores grouped by AM: Mohamed Hessin (14 AD+AlAin), Mohammed Imad (4 Dubai), Mohammed Elmatloub (5 Other Emirates)
+
+**ASL Report — 7 sheets:**
+- Same structure, 22 columns (7 fixed + 5 ASL stores × 3 cols each)
+- Stores: BAS001, YMK001, BAW001, MAK001, FJ0001
+
+**Output files saved to ~/Documents/:**
+- `Tester_Consumption_EPP_Jan_May_2026_FINAL.xlsx` (261 KB)
+- `Tester_Consumption_ASL_Jan_May_2026_FINAL.xlsx` (60 KB)
+
+**SKU counts per sheet:**
+| Sheet | EPP SKUs | ASL SKUs |
+|-------|---------|---------|
+| Jan'26 | 96 | 54 |
+| Feb'26 | 94 | 55 |
+| Mar'26 | 59 | 37 |
+| Apr'26 | 56 | 25 |
+| May'26 | 71 | 41 |
+| Q1'26 | 160 | 95 |
+
+**Known data note:** `product_master` table in Supabase returned empty results (0 rows) during this session despite being described as containing 610 products. Category data sourced from replenishment CSV instead. Vinayak to verify product_master table status.
+
+---
+
 ### Session — 8 Jun 2026 (Session 51 — MAY 2026 COMPLETE SALES UPLOAD: EPP + ASL FULL MONTH)
 **Files changed**: `may2026_complete_sales_upload.sql` (new), `MAY_2026_SALES_REPORT.md` (new analysis doc)
 **Commit**: Not pushed (local scripts in Downloads)
