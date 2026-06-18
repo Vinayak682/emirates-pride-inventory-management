@@ -2768,6 +2768,22 @@ Vinayak confirmed the tester metric must be **FG Warehouse → Store dispatch on
 - **⚠️ DATA GAP**: White Oud **SP0001 is MISSING from product_master** (610 rows) despite 1,999 UAE sales + 255 testers. Vinayak to add it to the master.
 - Brand split: replenishment `Brand` column (SP0001 = 247 EPP + 8 ASL, correctly separated across the two reports).
 
+#### v4 CORRECTION (18 Jun 2026) — White Oud code/category fix + missing-SKU audit:
+Vinayak flagged "White Oud = SP0001" as wrong. Investigation:
+- `SP0001` is a **TESTER code** ("SP0001-T - White Oud-Tester", SAP cat "Perfume Tester"). There is **no bare SP0001 FG perfume** in product_master.
+- The 1,999 White Oud POS sales were **mis-coded under the tester code SP0001** (Jan–Apr only); `SP0009` ("White Oud Set Box") had 0 recorded sales.
+- **Vinayak ruling: White Oud FG = `SP0009`** (it's sold packed in a box). Added `SKU_REMAP={'SP0001':'SP0009'}` to builder → testers + sales roll up to SP0009, which carries the correct master category **Special collection / Gift Set**. SP0001 no longer appears in the reports.
+- **Category fix**: tester SKUs missing from the master were defaulting to SAP "Perfume Tester" as their category — wrong. These are now flagged for manual review instead.
+
+**⚠️ 5 tester-receiving SKUs MISSING from product_master (610) — Vinayak to ADD:**
+| SKU | Name (SAP) | Likely family |
+|---|---|---|
+| `I00011` | Midnight Oil 8ml | CPO Collection |
+| `O00007` | Oud Hindi Khas – Agarwood Box 42g | Agarwood Collection |
+| `SP0001` | White Oud (→ use SP0009 FG) | Special collection |
+| `SP0007` | Reflection 100ml | Special Collection |
+| `SP0030` | Midnight Oud 30ml | Special collection |
+
 ---
 
 ### Session — 17 Jun 2026 (Session 55 — FULL DATA PIPELINE: Sales + Replenishment Processing + Tester Consumption Reports)

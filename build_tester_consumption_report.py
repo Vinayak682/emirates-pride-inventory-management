@@ -392,13 +392,21 @@ def load_tester_dispatch():
     t['month_year']=t.Date.str.split('-').str[0].map(MLBL).radd('2026-')
     t=t[t.month_year.between('2026-01','2026-05')]
     t=t.rename(columns={'SKU_Code':'norm_sku','Brand':'division','Quantity':'testers'})
+    t['norm_sku']=t['norm_sku'].replace(SKU_REMAP)
     return t.groupby(['norm_sku','store_code','division','month_year'],as_index=False)['testers'].sum()
+
+# ─── SKU REMAP — code reconciliation (Vinayak-confirmed) ─────────────────────
+# White Oud FG = SP0009 (boxed Set Box). Its testers + POS sales were mis-coded under
+# the tester code SP0001 → roll both up to SP0009.
+SKU_REMAP = {'SP0001':'SP0009'}
 
 def build_report(brand):
     print(f'\n{"="*60}\nBuilding {brand} Tester Consumption Report (v3 — dispatch testers)...')
     catmap=load_category_map()
     T=load_tester_dispatch()
     S=pd.read_csv('/tmp/sales_fg.csv')
+    S['sku_code']=S['sku_code'].replace(SKU_REMAP)   # SP0001→SP0009 White Oud
+    S=S.groupby(['sku_code','store_code','month_year'],as_index=False)['qty_sold'].sum()
 
     grp=EPP_STORE_GROUPS if brand=='EPP' else ASL_STORE_GROUPS
     store_codes=[c for _,stores in grp for c,_ in stores]
