@@ -2784,6 +2784,20 @@ Vinayak flagged "White Oud = SP0001" as wrong. Investigation:
 | `SP0007` | Reflection 100ml | Special Collection |
 | `SP0030` | Midnight Oud 30ml | Special collection |
 
+#### v5 — THOROUGH PRE-MANAGER AUDIT (18 Jun 2026): full category sweep, all fixed
+Ran a programmatic scan of EVERY row in both built reports (not a hand-typed list) for null/tester/display categories. Found the SP0001-class error in **6 SKUs total**; all corrected so naming + category + numbers are right:
+| SKU (tester) | Fix applied | Result row |
+|---|---|---|
+| `SP0001` White Oud | → SP0009 (boxed FG, sales rolled up) | Special collection / Gift Set |
+| `SP0007` Reflection | → SP0022 (Reflection Set Box, 86 sales) | Gift Set |
+| `O00007` Oud Hindi Khas | manual cat (master typo `O0007`); 452 sales own code | Oud Collection / Oud |
+| `SP0030` Midnight Oud 30ml | manual cat (only `-T` in master); 689 sales own code | Bel Collection / Perfumes |
+| `I00011` Midnight Oil 8ml | manual cat (absent from master); 0 sales | CPO Collection |
+| `SP0018` More Of Oud Oil 8ml | manual cat (only `-T` in master); tester-only | Special collection / Oil |
+Builder now has `SKU_REMAP` (SP0001→SP0009, SP0007→SP0022) + `MANUAL_CAT` (O00007/SP0030/I00011/SP0018).
+**Final scan: EPP 350 rows + ASL 285 rows — 0 bad categories, 0 missing names.** ✓
+**Master gaps for Vinayak to add as proper FG rows**: I00011, SP0030, SP0018 (only `-T` testers exist), fix `O0007`→`O00007` zero-pad typo. White Oud/Reflection FGs correctly sell via box codes SP0009/SP0022.
+
 ---
 
 ### Session — 17 Jun 2026 (Session 55 — FULL DATA PIPELINE: Sales + Replenishment Processing + Tester Consumption Reports)

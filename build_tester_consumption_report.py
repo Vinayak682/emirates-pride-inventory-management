@@ -160,6 +160,9 @@ def load_category_map():
         out[code] = {'Category':info['Category'] or out.get(code,{}).get('Category',''),
                      'SubCategory':info['SubCategory'] or out.get(code,{}).get('SubCategory',''),
                      'Name':info['Name'] or out.get(code,{}).get('Name',code)}
+    # MANUAL overrides for FGs missing/typo'd in product_master (Vinayak-confirmed)
+    for code,(fam,sub,nm) in MANUAL_CAT.items():
+        out[code] = {'Category':fam, 'SubCategory':sub, 'Name':nm}
     return out
 
 # ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -396,9 +399,23 @@ def load_tester_dispatch():
     return t.groupby(['norm_sku','store_code','division','month_year'],as_index=False)['testers'].sum()
 
 # ─── SKU REMAP — code reconciliation (Vinayak-confirmed) ─────────────────────
-# White Oud FG = SP0009 (boxed Set Box). Its testers + POS sales were mis-coded under
-# the tester code SP0001 → roll both up to SP0009.
-SKU_REMAP = {'SP0001':'SP0009'}
+# Tester code differs from the FG sold (these perfumes sell in a Set Box). Roll
+# testers + POS sales up to the boxed FG so naming/category/numbers are correct.
+#   SP0001 (White Oud tester)  → SP0009 (White Oud Set Box, sales were mis-coded under SP0001)
+#   SP0007 (Reflection tester) → SP0022 (Reflection Set Box, holds the 86 sales)
+SKU_REMAP = {'SP0001':'SP0009', 'SP0007':'SP0022'}
+
+# Own-code FGs that received testers but are MISSING/typo'd in product_master.
+# Inject correct family/category/name so the Excel is right (master itself: Vinayak to add).
+#   O00007 = Oud Hindi Khas (master has typo'd FG 'O0007' + tester 'O00007-T'); 452 sales under O00007
+#   SP0030 = Midnight Oud 30ml (only SP0030-T tester in master); 689 sales under SP0030
+#   I00011 = Midnight Oil 8ml (absent from master entirely); 0 sales
+MANUAL_CAT = {
+    'O00007': ('Oud Collection','Oud','EPP Oud Hindi Khas 42grm'),
+    'SP0030': ('Bel Collection','Perfumes','EPP Midnight Oud Perfume 30ml'),
+    'I00011': ('CPO Collection','CPO','EPP Midnight Oil 8ml'),
+    'SP0018': ('Special collection','Oil','EPP More of Oud Oil 8ml'),
+}
 
 def build_report(brand):
     print(f'\n{"="*60}\nBuilding {brand} Tester Consumption Report (v3 — dispatch testers)...')
