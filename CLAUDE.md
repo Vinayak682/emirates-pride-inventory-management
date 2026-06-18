@@ -2759,6 +2759,15 @@ Root cause: the Session 54 `product_master_migration.sql` (748KB, 610 individual
 
 **Output**: `Tester_Consumption_EPP_Jan_May_2026_FINAL.xlsx` (7 sheets), `Tester_Consumption_ASL_Jan_May_2026_FINAL.xlsx` (7 sheets) in ~/Documents/
 
+#### v3 CORRECTION (17 Jun 2026, same session) — TESTER SOURCE = FG-WH → STORE dispatch:
+Vinayak confirmed the tester metric must be **FG Warehouse → Store dispatch only**, not the `tester_history` table. Rebuilt `load_tester_dispatch()` to source testers from `Replenishment_Jan_May_2026_FINAL.csv` (Item_Type='Tester', bare FG SKU codes, paper cards EPT*/ASLT* excluded).
+- **Excluded non-retail destinations**: Head Office (`0001`) and FNF/RM Warehouse (`STR02`) — these are internal staging, NOT store consumption. His original manual numbers (White 24, More Of Oud 38, Safeena 9, Khaimah 15) were inflated by HO/WH.
+- **Store-only corrected**: White C00002 = 3 (20 of 24 were Head Office), More Of Oud SP0006 = 24, Safeena HR0006 = 4, Khaimah HR0005 = 4.
+- **Sales source confirmed** = `sales_history.qty_sold` (actual POS, GWP-excluded, UAE) per Vinayak's choice.
+- **SKU corrections via product_master**: O00006 = "Oud Al Fakhamah" (NOT More Of Oud); More Of Oud = **SP0006** (Set Box). White Oud = **SP0001** (247 EPP store testers / 1,999 sales / 12.4% — the real tester-driven SKU vs plain White C00002 which needs none).
+- **⚠️ DATA GAP**: White Oud **SP0001 is MISSING from product_master** (610 rows) despite 1,999 UAE sales + 255 testers. Vinayak to add it to the master.
+- Brand split: replenishment `Brand` column (SP0001 = 247 EPP + 8 ASL, correctly separated across the two reports).
+
 ---
 
 ### Session — 17 Jun 2026 (Session 55 — FULL DATA PIPELINE: Sales + Replenishment Processing + Tester Consumption Reports)

@@ -29,18 +29,21 @@ from openpyxl.utils import get_column_letter
 OUT_DIR = os.path.expanduser('~/Documents')
 
 # ─── STORE GROUPS (by Area Manager) ──────────────────────────────────────────
+# Tester source = warehouse replenishment dispatch. HO (0001) + FNF WH (STR02) are
+# non-retail staging destinations but ARE part of total dispatch, shown as a trailing
+# group so Grand Total Testers reconciles to the warehouse dispatch totals.
 EPP_STORE_GROUPS = [
     ('Mohamed Hessin', [
         ('A0002','BAS-Kiosk'), ('A0001','Bas Shop'), ('A0010','Bas Shop 2'),
         ('A0004','Dalma Kiosk'), ('A0003','Dalma Shop'), ('A0005','Deerfield'),
-        ('A0006','Yas Mall 3'), ('A0007','Yas Kiosk 2'), ('A0008','Yas Kiosk 3'),
-        ('A0009','Yas Podium'),
+        ('A0007','Yas Kiosk 2'), ('A0008','Yas Kiosk 3'), ('A0009','Yas Podium'),
+        ('A0011','Marina Mall'),
         ('AL001','Al Ain Mall'), ('AL002','Bawadi 1'), ('AL003','Bawadi 2'),
         ('AL004','Jimi Mall'), ('AL006','Makani Shop'),
     ]),
     ('Mohammed Imad', [
         ('DX001','Dubai Mall'), ('DX004','Mall of Emirates'), ('DX005','Mirdif'),
-        ('DX006','Dubai Hills'), ('DX007','Festival City'), ('DX008','DX008'),
+        ('DX006','Dubai Hills'), ('DX008','Festival City'),
     ]),
     ('Mohammed Elmatloub', [
         ('RK001','Manar Shop'), ('RK002','Manar Kiosk'), ('FJ001','Fujairah CC'),
@@ -221,7 +224,7 @@ def build_matrix(ws, brand, tdf, sdf, store_groups, catmap):
     ws.row_dimensions[2].height=28
     # Row 3 legend
     ws.merge_cells(start_row=3,start_column=1,end_row=3,end_column=tot_cols)
-    c=ws.cell(3,1,'T=Testers Dispatched (blue) | S=FG Sales Generated (green) | Contrib%=T÷S   ·   Paper cards excluded · Accessories at bottom')
+    c=ws.cell(3,1,'T=Testers Dispatched FG-WH→Store (blue) | S=FG Sales sales_history (green) | Contrib%=T÷S   ·   HO/Warehouse & paper cards excluded · Accessories at bottom')
     c.fill=fill('FFE8EAF6' if brand=='EPP' else 'FFE0F7FA'); c.font=Font(name='Montserrat',size=9,color='FF424242'); c.alignment=align(w=False)
     ws.row_dimensions[3].height=18
     # Row 4 headers
@@ -371,10 +374,30 @@ ASL_SALES_REMAP = {
     'ASL_AL004':'BAW001', 'ASL_AL007':'MAK001',
 }
 
+# ─── TESTER SOURCE = WAREHOUSE REPLENISHMENT DISPATCH (RptItemWiseStockTransfer) ─
+#   Matches Vinayak's validated totals (White=24, More Of Oud SP0006=38, Safeena=9, Khaimah=15).
+#   Store map: 0001→HO (Head Office), STR02→WH (FNF Warehouse); all else kept as-is.
+#   Paper cards (EPT*/ASLT*) excluded. SKU codes are already bare FG codes in the file
+#   (SP0006 = More Of Oud, O00006 = Oud Al Fakhamah — no mis-mapping).
+def load_tester_dispatch():
+    rep=pd.read_csv(os.path.join(OUT_DIR,'Replenishment_Jan_May_2026_FINAL.csv'))
+    t=rep[rep.Item_Type=='Tester'].copy()
+    t=t[~t.SKU_Code.astype(str).str.startswith(('EPT','ASLT'))]            # drop paper cards
+    t=t[~t.Product_Name.str.contains('TESTER CARD|TESTER PAPER',case=False,na=False)]
+    # TESTER CONSUMPTION = FG Warehouse → STORE only. Exclude Head Office (0001) and
+    # FNF/RM Warehouse (STR02) — those are internal staging, not store consumption.
+    t=t[~t.Store_Code.isin(['0001','STR02'])]
+    t['store_code']=t.Store_Code
+    MLBL={'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06'}
+    t['month_year']=t.Date.str.split('-').str[0].map(MLBL).radd('2026-')
+    t=t[t.month_year.between('2026-01','2026-05')]
+    t=t.rename(columns={'SKU_Code':'norm_sku','Brand':'division','Quantity':'testers'})
+    return t.groupby(['norm_sku','store_code','division','month_year'],as_index=False)['testers'].sum()
+
 def build_report(brand):
-    print(f'\n{"="*60}\nBuilding {brand} Tester Consumption Report (v2 audited)...')
+    print(f'\n{"="*60}\nBuilding {brand} Tester Consumption Report (v3 — dispatch testers)...')
     catmap=load_category_map()
-    T=pd.read_csv('/tmp/tester_norm.csv')
+    T=load_tester_dispatch()
     S=pd.read_csv('/tmp/sales_fg.csv')
 
     grp=EPP_STORE_GROUPS if brand=='EPP' else ASL_STORE_GROUPS
