@@ -394,9 +394,37 @@ def load_tester_dispatch():
     MLBL={'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06'}
     t['month_year']=t.Date.str.split('-').str[0].map(MLBL).radd('2026-')
     t=t[t.month_year.between('2026-01','2026-05')]
-    t=t.rename(columns={'SKU_Code':'norm_sku','Brand':'division','Quantity':'testers'})
+    t=t.rename(columns={'SKU_Code':'norm_sku','Quantity':'testers'})
     t['norm_sku']=t['norm_sku'].replace(SKU_REMAP)
+    # BRAND = product's master brand (NEVER the store-derived replenishment tag).
+    # Root cause fixed: store FJ001 (EPP) vs FJ0001 (ASL) collision had tagged EPP
+    # products as ASL. Authoritative brand comes from product_master.
+    bmap=load_brand_map()
+    t['division']=t['norm_sku'].map(lambda s: sku_brand(s,bmap))
     return t.groupby(['norm_sku','store_code','division','month_year'],as_index=False)['testers'].sum()
+
+# ─── AUTHORITATIVE BRAND ROUTING (from product_master.brand) ─────────────────
+ASL_PREFIXES=('AA','AB','AD','AG','AH','AO','AP','AR','AS','AT','DW')
+def load_brand_map():
+    import urllib.request, json
+    URL=('https://ncszurcrkngjcjqsowln.supabase.co/rest/v1/product_master'
+         '?select=product_code,brand')
+    KEY=('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25n'
+         'amNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.'
+         'i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM')
+    try:
+        req=urllib.request.Request(URL, headers={'apikey':KEY,'Authorization':f'Bearer {KEY}','Range':'0-999'})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            data=json.loads(r.read())
+        return {str(p['product_code']).strip():('ASL' if (p.get('brand') or '')=='Aromatic Scents Lab' else 'EPP')
+                for p in data}
+    except Exception as e:
+        print(f'    · WARN brand map fetch failed ({e}); using prefix fallback'); return {}
+
+def sku_brand(sku, bmap):
+    b=bmap.get(sku)
+    if b: return b                                      # authoritative master brand
+    return 'ASL' if str(sku).startswith(ASL_PREFIXES) else 'EPP'   # prefix fallback (not in master)
 
 # ─── SKU REMAP — code reconciliation (Vinayak-confirmed) ─────────────────────
 # Tester code differs from the FG sold (these perfumes sell in a Set Box). Roll

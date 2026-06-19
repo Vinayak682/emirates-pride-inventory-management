@@ -2798,6 +2798,14 @@ Builder now has `SKU_REMAP` (SP0001→SP0009, SP0007→SP0022) + `MANUAL_CAT` (O
 **Final scan: EPP 350 rows + ASL 285 rows — 0 bad categories, 0 missing names.** ✓
 **Master gaps for Vinayak to add as proper FG rows**: I00011, SP0030, SP0018 (only `-T` testers exist), fix `O0007`→`O00007` zero-pad typo. White Oud/Reflection FGs correctly sell via box codes SP0009/SP0022.
 
+#### v6 — BRAND ROUTING FIX (18 Jun 2026): EPP products were leaking into the ASL report
+**Bug**: ASL Excel contained EPP products (B/C/D/O/I/SP/HR series). **Root cause**: the Session-55 replenishment processing set `Brand` by STORE-code prefix, and rule "`FJ0`=ASL" collided — store `FJ001` (Fujairah CC **Kiosk = EPP**) vs `FJ0001` (Fujairah CC **= ASL**). So all 341 EPP tester units dispatched to FJ001 were tagged ASL and leaked into the ASL report.
+**Fix**: brand is now derived from **`product_master.brand`** (authoritative), NEVER from the store-derived replenishment tag. `load_brand_map()` + `sku_brand()`: brand=='Aromatic Scents Lab' → ASL report; everything else → EPP report; prefix fallback (AA/AB/AD/AG/AH/AO/AP/AR/AS/AT/DW = ASL) only for SKUs absent from master.
+**Verified**: ASL report = 35 SKUs (868 testers), **0 EPP contamination**; EPP report = 63 SKUs (8,261 testers), **0 ASL contamination**. Per-SKU monthly totals reconcile exactly to raw replenishment (B00015=683, C00002=3, White Oud SP0009=255, More Of Oud SP0006=25). 0 bad categories, all names from master.
+**Store map note**: FJ001=EPP (Elmatloub), FJ0001=ASL — both correct in their store groups.
+
+**⏳ PENDING (Vinayak's directive)**: apply product_master as the single source of truth across `sop-portal.html` (Sales & Operations Command Centre) ALL tabs — separate larger task, to be scoped next.
+
 ---
 
 ### Session — 17 Jun 2026 (Session 55 — FULL DATA PIPELINE: Sales + Replenishment Processing + Tester Consumption Reports)
