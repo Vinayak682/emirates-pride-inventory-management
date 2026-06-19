@@ -2717,6 +2717,56 @@ Never use `#1a2744` navy or `#0D0D0D` black anywhere in the app — including th
 
 ---
 
+### Session — 19 Jun 2026 (Session 57 — TESTER CONSUMPTION SYSTEM: FINAL CONSOLIDATED STATE)
+**Files changed**: `build_tester_consumption_report.py` (definitive builder), CLAUDE.md
+**Outputs**: `~/Documents/Tester_Consumption_EPP_Jan_May_2026_FINAL.xlsx`, `~/Documents/Tester_Consumption_ASL_Jan_May_2026_FINAL.xlsx`
+**Commits (this chat, newest last)**: `e001486` · `00b3fb7` · `7b7e0ba` · `af8e542` · `410fb2a` · `0e55077` · `ebb1e5b` — all pushed to `main`
+
+> This entry consolidates the entire chat. It supersedes the scattered v2–v8 notes under Session 56 below (kept for history). **This is the authoritative spec for the two tester-consumption reports.**
+
+#### THE AUTHORITATIVE EQUATION (final)
+- **T (Testers)** = warehouse **FG-WH → STORE** dispatch only, from `Replenishment_Jan_May_2026_FINAL.csv` (`Item_Type='Tester'`).
+  - EXCLUDE Head Office (`0001`) and FNF/RM Warehouse (`STR02`) — internal staging, not store consumption.
+  - EXCLUDE paper cards (`EPT*`,`ASLT*`, names with TESTER CARD/PAPER).
+  - Period Jan–May 2026 (Jun excluded).
+- **S (Sales)** = `sales_history.qty_sold` (actual POS, GWP-excluded, UAE only — KSA/OM excluded).
+- **Contrib% = T ÷ S**. ONE row per FG SKU.
+
+#### MASTER = SINGLE SOURCE OF TRUTH (Vinayak: "holy bible")
+- Wednesday master = `Product Master Template 13-04-2026.xlsx` (Jun 17) = `product_master` (610 rows, loaded this chat).
+- ALL name / category / sub-category / **brand** come ONLY from `product_master`. No SAP-replenishment categories, no hand-typed guesses.
+- Resolver per SKU: (1) bare code in master → (2) its `-T/-TD/-TN/-TG` tester variant in master (use FG family, strip 'Tester'/'Tetser' from name) → (3) flag.
+- **Brand routing** = `product_master.brand`: 'Aromatic Scents Lab' → ASL report; everything else → EPP report. NEVER derive brand from store code (that caused the FJ001/FJ0001 bug).
+
+#### KEY BUGS FOUND & FIXED THIS CHAT
+1. **product_master was EMPTY** (CREATE ran, 610 INSERTs never did) → loaded from source Excel via REST (610 rows, 41 families, 6 brands).
+2. **Wrong S source** — was `tester_history.sales_generated` (only Jan–Feb populated) → switched to `sales_history.qty_sold`.
+3. **HO/WH inflation** — testers to Head Office/Warehouse were counted (White 24→3 after fix).
+4. **Paper-card corruption** — May "20,182 testers" were all paper cards → removed.
+5. **`-T` split rows** — B00015 + B00015-T were 2 rows → merged into one FG row.
+6. **Wrong SKU mappings** — `O00006` = Oud Al Fakhamah (NOT More Of Oud); **More Of Oud = SP0006**; **White Oud = SP0009** (boxed FG; SP0001 is the tester code); **Reflection = SP0022** (box). `SKU_REMAP={'SP0001':'SP0009','SP0007':'SP0022'}`.
+7. **Brand leak (FJ001/FJ0001 collision)** — EPP products dispatched to Fujairah EPP store (`FJ001`) were tagged ASL because rule "`FJ0`=ASL" caught it (ASL store is `FJ0001`). Fixed by master-brand routing. ASL report now 0 EPP contamination.
+8. **ASL sales undercount** — old ASL stores (Yas/Bawadi/Makani/Fujairah) reported real sales under LEGACY codes through April (current Jan–Apr = stragglers); switched to current in May. Reconciled as **MAX(legacy-remapped, current) per (sku,store,month)** — no double-count, no loss.
+
+#### VERIFIED FINAL STATE
+- EPP: 351 rows · ASL: 170 rows · **0 blank/Tester categories, 0 names with 'tester', 0 cross-brand contamination**.
+- EPP testers/month 1,359–1,861 · sales 8,191–18,769 (sane Eid ramp).
+- ASL testers/month 93–216 · sales (after MAX fix) 276–862.
+- Tester totals reconcile EXACTLY to raw replenishment (B00015=683, C00002=3, White Oud SP0009=255, More Of Oud SP0006=25; Fujairah EPP 346, ASL 258).
+- sales_history: 0 duplicate keys.
+
+#### REPORT FORMAT (both files, 7 sheets each)
+Top 10 Analysis · Jan'26 · Feb'26 · Mar'26 · Apr'26 · May'26 · Q1'26 Matrix.
+Columns: `# | Category | Sub-Category | SKU Code | Product Name | Grand Total Testers | Grand Total Sales | Grand Contrib% | <per-store T/S/C%>`. Accessories sorted to bottom. EPP stores grouped by AM (Hessin/Imad/Elmatloub); ASL = single Franchise group (BAS001,YMK001,BAW001,MAK001,FJ0001).
+
+#### ⚠️ OUTSTANDING — for Vinayak to action
+1. **Add 5 SKUs to product_master** (only `-T` testers exist today): `I00011` (Midnight Glow Oil 8ml), `SP0030` (Midnight Oud 30ml), `SP0018` (More Of Oud Oil 8ml); fix `O0007`→`O00007` zero-pad typo; White Oud/Reflection FGs sell via box codes SP0009/SP0022 (OK).
+2. **Confirm 4 ASL legacy store mappings**: `ASL_A009`/`ASL_A011` (Abu Dhabi = BAS001/YMK001) and `ASL_AL004`/`ASL_AL007` (Al Ain = BAW001/MAK001) — within-pair label is best-guess. Grand + AM-group totals correct regardless; only per-store ASL columns depend on this.
+3. **Apply product_master across `sop-portal.html`** (Sales & Operations Command Centre) all tabs — deferred larger task.
+4. For clean monthly sales refresh, provide **per-month POS exports** (the Wednesday `order_*.csv` is a period aggregate with a Jan-skewed system date — NOT valid monthly sales; do not upload it to sales_history).
+
+---
+
 ### Session — 17 Jun 2026 (Session 56 — TESTER CONSUMPTION REPORT v2: FULL AUDIT + CORRECTED EQUATION)
 **Files changed**: `build_tester_consumption_report.py` (full rewrite v2), regenerated both report xlsx
 **Commit**: Not pushed (local output)
