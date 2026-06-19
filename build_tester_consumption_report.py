@@ -86,83 +86,63 @@ def is_accessory(sku, cat):
     if str(sku).upper().startswith('AC'): return True
     return str(cat) in ACC_CATS
 
-# ─── CATEGORY + SUB-CATEGORY MAP — AUTHORITATIVE from product_master (610 rows) ─
-#     Falls back to SAP replenishment for any SKU not present in the master.
-def load_master_map():
+# ─── PRODUCT MASTER = SINGLE SOURCE OF TRUTH (Wed 17-Jun master, 610 rows) ──────
+#  Every name / category / sub-category / brand comes ONLY from product_master.
+#  Resolution order for a tester SKU:  (1) bare code in master  →  (2) its -T/-TD/-TN/-TG
+#  tester variant in master (use the FG family, strip 'Tester' from name)  →  (3) FLAG REVIEW.
+#  NO SAP-replenishment categories, NO hand-typed guesses.
+_MASTER_RAW=None
+def _fetch_master():
+    global _MASTER_RAW
+    if _MASTER_RAW is not None: return _MASTER_RAW
     import urllib.request, json
     URL=('https://ncszurcrkngjcjqsowln.supabase.co/rest/v1/product_master'
-         '?select=product_code,product_name_en,product_family,category,sub_category')
+         '?select=product_code,product_name_en,product_family,category,sub_category,product_type,brand')
     KEY=('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jc3p1cmNya25n'
          'amNqcXNvd2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjA4NTgsImV4cCI6MjA5MzAzNjg1OH0.'
          'i5cPlP7JTTCKMXuFqI81WXbjQa71qBkRBZEBvNf6ZmM')
-    try:
-        req=urllib.request.Request(URL, headers={'apikey':KEY,'Authorization':f'Bearer {KEY}',
-            'Range':'0-999'})
-        with urllib.request.urlopen(req, timeout=20) as r:
-            data=json.loads(r.read())
-        out={}
-        for p in data:
-            code=str(p['product_code']).strip()
-            fam=(p.get('product_family') or '').strip()
-            cat=(p.get('category') or '').strip()
-            sub=(p.get('sub_category') or '').strip()
-            out[code]={'Category':fam or cat,
-                       'SubCategory':sub or cat,
-                       'Name':(p.get('product_name_en') or code).strip()}
-        print(f'    · product_master loaded: {len(out)} SKUs (authoritative)')
-        return out
-    except Exception as e:
-        print(f'    · WARN product_master fetch failed ({e}); using SAP fallback only')
-        return {}
+    req=urllib.request.Request(URL, headers={'apikey':KEY,'Authorization':f'Bearer {KEY}','Range':'0-999'})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        data=json.loads(r.read())
+    _MASTER_RAW={str(p['product_code']).strip():p for p in data}
+    print(f'    · product_master (Wed master) loaded: {len(_MASTER_RAW)} rows — SINGLE SOURCE OF TRUTH')
+    return _MASTER_RAW
 
+def _strip_tester(name):
+    # strip trailing tester marker — handles both spellings 'Tester' and the master's typo 'Tetser'
+    return re.sub(r'\s*-\s*Te[a-z]*\b.*$','',str(name),flags=re.I).strip()
+
+def _sub_from(name, fam):
+    s=str(name).lower()
+    if 'oil' in s: return 'Oil'
+    if 'hair' in s or 'mist' in s: return 'Hair & Body Mist'
+    if 'lotion' in s: return 'Body Lotion'
+    if 'diffuser' in s: return 'Diffuser'
+    if 'air fresh' in s: return 'Air Freshener'
+    if 'spray' in s: return 'All Over Spray'
+    if any(k in s for k in ['set box','gift','box','bundle']): return 'Gift Set'
+    if 'grm' in s or 'oud' in str(fam).lower(): return 'Oud'
+    return 'Perfumes'
+
+TESTER_SUFFIXES=('-T','-TD','-TN','-TG','-TS','-TT')
 def load_category_map():
-    master = load_master_map()
-    rep = pd.read_csv(os.path.join(OUT_DIR,'Replenishment_Jan_May_2026_FINAL.csv'))
-    fg = rep[rep['Item_Type']=='FG'].copy()
-
-    def clean_name(name, sku):
-        n = re.sub(r'^'+re.escape(str(sku))+r'(-T[A-Z]?)?\s*-\s*','',str(name))
-        n = re.sub(r'\s*-Tester.*$','',n,flags=re.I)
-        n = re.sub(r'\s+\d+ML\s*$','',n,flags=re.I)
-        return n.strip()
-
-    def sub_cat(name, cat):
-        s=str(name).lower(); c=str(cat).lower()
-        vol = ''
-        m = re.search(r'(\d+\s?ml|\d+\s?grm|\d+\s?g\b)', s)
-        if m: vol = m.group(1).replace(' ','')
-        if 'oil' in s or 'oil' in c:            return f'Oil {vol}'.strip()
-        if 'hair' in s or 'mist' in s:          return 'Hair & Body Mist'
-        if 'lotion' in s:                       return 'Body Lotion'
-        if 'body wash' in c or 'wash' in s:     return 'Body Wash'
-        if 'diffuser' in s or 'diffuser' in c:  return 'Diffuser'
-        if 'air fresh' in s or 'fresh' in c:    return 'Air Freshener'
-        if 'candle' in s or 'candle' in c:      return 'Candle'
-        if 'dakhoon' in s or 'dakhoon' in c or 'mukhallat' in s: return 'Dakhoon / Bakhoor'
-        if 'spray' in s:                        return 'All Over Spray'
-        if any(k in s for k in ['gift','set box','box','bundle','combo','discovery']) \
-           or any(k in c for k in ['box','set','gift','offers']): return 'Gift Set / Box'
-        if str(sku_placeholder).startswith('AC') if False else False: return 'Accessory'
-        if 'tester' in s:                       return 'Tester'
-        return f'Perfume {vol}'.strip() if vol else 'Perfume'
-
+    m=_fetch_master()
     out={}
-    for sku, grp in fg.groupby('SKU_Code'):
-        cat = grp['Category'].mode().iloc[0] if len(grp['Category'].mode()) else grp['Category'].iloc[0]
-        raw = grp['Product_Name'].iloc[0]
-        global sku_placeholder; sku_placeholder=sku
-        nm  = clean_name(raw, sku)
-        sc  = 'Accessory' if str(sku).upper().startswith('AC') else sub_cat(nm, cat)
-        out[sku] = {'Category':cat, 'SubCategory':sc, 'Name':nm if nm and nm!=sku else str(sku)}
-    # AUTHORITATIVE OVERRIDE: product_master wins where the SKU exists there.
-    # Tester codes carry the bare FG code after normalization, so match directly.
-    for code, info in master.items():
-        out[code] = {'Category':info['Category'] or out.get(code,{}).get('Category',''),
-                     'SubCategory':info['SubCategory'] or out.get(code,{}).get('SubCategory',''),
-                     'Name':info['Name'] or out.get(code,{}).get('Name',code)}
-    # MANUAL overrides for FGs missing/typo'd in product_master (Vinayak-confirmed)
-    for code,(fam,sub,nm) in MANUAL_CAT.items():
-        out[code] = {'Category':fam, 'SubCategory':sub, 'Name':nm}
+    for code,p in m.items():
+        fam=(p.get('product_family') or '').strip()
+        cat=(p.get('category') or '').strip()
+        sub=(p.get('sub_category') or '').strip()
+        nm=(p.get('product_name_en') or code).strip()
+        out[code]={'Category':fam or cat,'SubCategory':sub or cat,'Name':nm}
+    # Derive bare-FG entries from -T tester rows where the bare code is absent in master
+    for code,p in m.items():
+        base=None
+        for suf in TESTER_SUFFIXES:
+            if code.endswith(suf): base=code[:-len(suf)]; break
+        if not base or base in out: continue
+        fam=(p.get('product_family') or '').strip()
+        nm=_strip_tester(p.get('product_name_en') or base)
+        out[base]={'Category':fam,'SubCategory':_sub_from(nm,fam),'Name':nm}
     return out
 
 # ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -459,8 +439,17 @@ def build_report(brand):
     Tb=T[(T.division==brand)].copy()
     S=S.copy()
     if brand=='ASL':
-        S['store_code']=S['store_code'].replace(ASL_SALES_REMAP)
-        S=S.groupby(['sku_code','store_code','month_year'],as_index=False)['qty_sold'].sum()
+        # ASL legacy/current code reconciliation. Vinayak: CURRENT codes authoritative.
+        # Rule that avoids BOTH double-count AND data loss: per (store, month) prefer the
+        # current-code feed; fall back to legacy-remapped only where no current row exists.
+        # (April current feed is the new BAS001 store; the 4 old stores still reported under
+        #  legacy that month — they are NOT duplicates, so they are preserved.)
+        legacy = S['store_code'].str.startswith('ASL_')
+        Sl = S[legacy].copy();  Sc = S[~legacy].copy()
+        Sl['store_code'] = Sl['store_code'].replace(ASL_SALES_REMAP)
+        cur_keys = set(zip(Sc.store_code, Sc.month_year))        # (store,month) covered by current feed
+        Sl = Sl[Sl.apply(lambda r: (r.store_code, r.month_year) not in cur_keys, axis=1)]
+        S = pd.concat([Sc, Sl]).groupby(['sku_code','store_code','month_year'],as_index=False)['qty_sold'].sum()
     Sb=S[S.store_code.isin(store_codes)].copy()  # restrict sales to this brand's stores
 
     MONTHS=['2026-01','2026-02','2026-03','2026-04','2026-05']

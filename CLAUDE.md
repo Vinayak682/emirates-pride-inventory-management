@@ -2806,6 +2806,16 @@ Builder now has `SKU_REMAP` (SP0001→SP0009, SP0007→SP0022) + `MANUAL_CAT` (O
 
 **⏳ PENDING (Vinayak's directive)**: apply product_master as the single source of truth across `sop-portal.html` (Sales & Operations Command Centre) ALL tabs — separate larger task, to be scoped next.
 
+#### v7 — MASTER IS THE SINGLE SOURCE OF TRUTH (18 Jun 2026): Vinayak directive
+> "Whatever naming and codes required, use the master uploaded Wednesday night — that is your holy bible. Treat everything else aside."
+
+Wednesday master confirmed = `Product Master Template 13-04-2026.xlsx` (Downloads, Jun 17 20:51) = the 610-row `product_master` already loaded.
+**Refactored `load_category_map()` to be master-ONLY** (removed SAP-replenishment categories + all hand-typed `MANUAL_CAT` guesses). Resolution per SKU: (1) bare code in master → (2) its `-T/-TD/-TN/-TG` tester variant in master (use FG family, strip 'Tester'/'Tetser' from name) → (3) flag. Brand also 100% from `product_master.brand` (`load_brand_map`/`sku_brand`).
+**Master auto-corrected a hand-typed error**: I00011 was guessed "Midnight Oil" — master says **"Midnight Glow Oil 8ml"** (Bel Collection). All 6 edge SKUs now resolve from master via `-T`: SP0009/SP0022 (bare), O00007/SP0030/I00011/SP0018 (via `-T`).
+**Verified**: EPP 351 rows + ASL 170 rows — 0 blank/Tester categories, 0 names containing 'tester', 0 cross-brand contamination. EPP monthly T 1,359–1,861 / S 8,191–18,769 (sane, Eid ramp).
+**ASL sales dedup** (legacy `ASL_*` vs current codes): rule = prefer current per (store,month), keep legacy-remapped only where no current row exists → no double-count, no data loss. Finding: April current feed is the NEW BAS001 store; the 4 old stores (YMK/BAW/MAK/FJ) still reported under legacy in April — they are NOT duplicates (only MAK001 overlaps), so preserved.
+**⚠️ ASL monthly sales remain erratic (source-data quality)**: ASL legacy/current store codes in `sales_history` are sparse/inconsistent month-to-month (Feb S=41, Mar S=66). This is a `sales_history` ASL source issue, NOT a naming/master issue. Needs clean ASL monthly POS exports to fully resolve.
+
 ---
 
 ### Session — 17 Jun 2026 (Session 55 — FULL DATA PIPELINE: Sales + Replenishment Processing + Tester Consumption Reports)
