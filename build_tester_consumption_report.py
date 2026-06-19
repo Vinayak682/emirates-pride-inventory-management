@@ -439,17 +439,20 @@ def build_report(brand):
     Tb=T[(T.division==brand)].copy()
     S=S.copy()
     if brand=='ASL':
-        # ASL legacy/current code reconciliation. Vinayak: CURRENT codes authoritative.
-        # Rule that avoids BOTH double-count AND data loss: per (store, month) prefer the
-        # current-code feed; fall back to legacy-remapped only where no current row exists.
-        # (April current feed is the new BAS001 store; the 4 old stores still reported under
-        #  legacy that month — they are NOT duplicates, so they are preserved.)
+        # ASL legacy/current code reconciliation. AUDIT (18 Jun): the 4 old stores
+        # (Yas/Bawadi/Makani/Fujairah) reported their REAL sales under LEGACY codes through
+        # April; current-code rows for them Jan–Apr are tiny stragglers. They switched to
+        # current codes in May. BAS001 is current throughout. Legacy & current are the SAME
+        # store under two code systems, so the true value per (sku,store,month) = MAX of the
+        # two feeds — this picks the real value over the straggler and never double-counts.
         legacy = S['store_code'].str.startswith('ASL_')
         Sl = S[legacy].copy();  Sc = S[~legacy].copy()
         Sl['store_code'] = Sl['store_code'].replace(ASL_SALES_REMAP)
-        cur_keys = set(zip(Sc.store_code, Sc.month_year))        # (store,month) covered by current feed
-        Sl = Sl[Sl.apply(lambda r: (r.store_code, r.month_year) not in cur_keys, axis=1)]
-        S = pd.concat([Sc, Sl]).groupby(['sku_code','store_code','month_year'],as_index=False)['qty_sold'].sum()
+        Sl = Sl.groupby(['sku_code','store_code','month_year'],as_index=False)['qty_sold'].sum()
+        Sc = Sc.groupby(['sku_code','store_code','month_year'],as_index=False)['qty_sold'].sum()
+        M = Sl.merge(Sc, on=['sku_code','store_code','month_year'], how='outer', suffixes=('_l','_c'))
+        M['qty_sold'] = M[['qty_sold_l','qty_sold_c']].max(axis=1)
+        S = M[['sku_code','store_code','month_year','qty_sold']]
     Sb=S[S.store_code.isin(store_codes)].copy()  # restrict sales to this brand's stores
 
     MONTHS=['2026-01','2026-02','2026-03','2026-04','2026-05']

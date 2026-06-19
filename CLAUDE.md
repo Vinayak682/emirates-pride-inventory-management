@@ -2816,6 +2816,12 @@ Wednesday master confirmed = `Product Master Template 13-04-2026.xlsx` (Download
 **ASL sales dedup** (legacy `ASL_*` vs current codes): rule = prefer current per (store,month), keep legacy-remapped only where no current row exists → no double-count, no data loss. Finding: April current feed is the NEW BAS001 store; the 4 old stores (YMK/BAW/MAK/FJ) still reported under legacy in April — they are NOT duplicates (only MAK001 overlaps), so preserved.
 **⚠️ ASL monthly sales remain erratic (source-data quality)**: ASL legacy/current store codes in `sales_history` are sparse/inconsistent month-to-month (Feb S=41, Mar S=66). This is a `sales_history` ASL source issue, NOT a naming/master issue. Needs clean ASL monthly POS exports to fully resolve.
 
+#### v8 — ASL SALES DEEP AUDIT + MAX reconciliation (18 Jun 2026)
+Root cause of the erratic ASL S (Feb=41): the 4 OLD ASL stores (Yas/Bawadi/Makani/Fujairah) reported their **real** sales under LEGACY codes (`ASL_A009`,`ASL_A011`,`ASL_AL004`,`ASL_AL007`,`ASL_FJ001`) through April; their CURRENT-code rows Jan–Apr are tiny **stragglers** (Yas Feb: legacy 210 vs current 3). They switched to current codes in **May**. BAS001 is current throughout. The earlier "prefer current per store-month" rule kept the stragglers and discarded the real legacy → massive undercount.
+**Fix**: ASL sales now reconciled as **MAX(legacy-remapped, current) per (sku,store,month)** — picks the real value over the straggler, never double-counts (legacy & current are the same store under two code systems). Verified: ASL S restored to Jan 428 / Feb 276 / Mar 412 / Apr 360 / May 862 (vs broken 41/66). Total ASL-brand-SKU sales at ASL stores = 965–1559/mo; tester-SKU subset (the report S) = the above.
+**Note**: this overrides the earlier "current from April" assumption — the DATA shows old stores stayed on legacy through April. EPP unaffected.
+**⚠️ STILL UNCONFIRMED (Vinayak to verify)**: exact store identity of legacy codes `ASL_A009`,`ASL_A011`,`ASL_AL004`,`ASL_AL007` (geography certain: 2 Abu Dhabi = BAS001/YMK001, 2 Al Ain = BAW001/MAK001; within-pair label is best-guess). ASL **grand totals + AM-group totals are correct** regardless; only per-store columns depend on this. Also: is `ASL_A011`(~331/mo) the same store as current BAS001(~397/mo), or a distinct store? Affects BAS001 column only.
+
 ---
 
 ### Session — 17 Jun 2026 (Session 55 — FULL DATA PIPELINE: Sales + Replenishment Processing + Tester Consumption Reports)
